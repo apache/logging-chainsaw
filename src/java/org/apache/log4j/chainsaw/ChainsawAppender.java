@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2004 The Apache Software Foundation.
+ * Copyright 1999,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,7 @@ public class ChainsawAppender
    * Constructor, initialises the singleton instance of the appender
    */
   public ChainsawAppender() {
+    super(false);
     synchronized (ChainsawAppender.class) {
       if (sSharedAppender == null) {
         sSharedAppender = this;
@@ -109,7 +110,7 @@ public class ChainsawAppender
    * Instantiates and activates an instance of a ChainsawViewer
    * to view the contents of this appender.
    */
-  public void activate() {
+  public void activateOptions() {
     if (viewerClassname == null) {
       viewerClassname = "org.apache.log4j.chainsaw.DefaultViewer";
     }

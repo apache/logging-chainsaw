@@ -43,7 +43,7 @@ import org.apache.log4j.spi.LoggingEventFieldResolver;
  */
 public class ChainsawAppenderHandler extends AppenderSkeleton {
   private static final String DEFAULT_IDENTIFIER = "Unknown";
-  private WorkQueue worker;
+  private WorkQueue worker = new WorkQueue();
   private final Object mutex = new Object();
   private int sleepInterval = 1000;
   private EventListenerList listenerList = new EventListenerList();
@@ -55,13 +55,13 @@ public class ChainsawAppenderHandler extends AppenderSkeleton {
       this);
   private Map customExpressionRules = new HashMap();
 
-  public ChainsawAppenderHandler(ChainsawAppender appender) {
+  public ChainsawAppenderHandler(final ChainsawAppender appender) {
+    super(true);
     appender.setAppender(this);
-    activate();
   }
 
   public ChainsawAppenderHandler() {
-    activate();
+    super(true);
   }
 
   public void setIdentifierExpression(String identifierExpression) {
@@ -94,11 +94,6 @@ public class ChainsawAppenderHandler extends AppenderSkeleton {
   }
 
   public void close() {}
-
-  public void activate() {
-    worker = new WorkQueue();
-    super.activate();
-  }
 
   public boolean requiresLayout() {
     return false;
