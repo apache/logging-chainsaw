@@ -139,10 +139,10 @@
       </fileset>
     </delete>
 
-    <copy todir="${javac.dest}">
-      <fileset dir="src/" includes="**/chainsaw/**/*"/>
-    </copy>
-
+  	<copy todir="${javac.dest}">
+  	  <fileset dir="src/java" includes="**/chainsaw/**/*"/>
+  	</copy>
+  	
     <!-- JavaDoc up some Receiver and other stuff we want to be able to ship with Chainsaw-->
     <javadoc sourcepath="${java.source.dir}"
              destdir="${javac.dest}"
@@ -245,5 +245,16 @@
     </zip>
   </target>
   
+  <!-- ================================================================= -->
+  <!-- Remove all generated (compiled) class files.                      -->
+  <!-- ================================================================= -->
+  <target name="clean" description="Delete all compiled files.">
+    <mkdir dir="${javac.dest}" />  	
+	<delete dir="${javac.dest}"/>  	
+  	<delete>
+     <fileset dir="${jar.dest}" includes="log4j-chainsaw*.jar"/>
+    </delete>	
+  </target>
+
 </project>
 
