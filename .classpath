@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="/logging-log4j"/>
+	<classpathentry kind="lib" path="/workspace/commons-vfs-1.0-dev.jar"/>
+	<classpathentry kind="output" path="build"/>
+</classpath>
