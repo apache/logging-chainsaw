@@ -12,7 +12,7 @@ import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import org.apache.log4j.Category;
+import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
 
 /**
@@ -21,12 +21,9 @@ import org.apache.log4j.spi.LoggingEvent;
  *
  * @author <a href="mailto:oliver@puppycrawl.com">Oliver Burn</a>
  */
-class LoggingReceiver
-    extends Thread
-{
+class LoggingReceiver extends Thread {
     /** used to log messages **/
-    private static final Category LOG =
-        Category.getInstance(LoggingReceiver.class);
+    private static final Logger LOG = Logger.getLogger(LoggingReceiver.class);
 
     /**
      * Helper that actually processes a client connection. It receives events
@@ -34,9 +31,7 @@ class LoggingReceiver
      *
      * @author <a href="mailto:oliver@puppycrawl.com">Oliver Burn</a>
      */
-    private class Slurper
-        implements Runnable
-    {
+    private class Slurper implements Runnable {
         /** socket connection to read events from **/
         private final Socket mClient;
 
@@ -90,9 +85,7 @@ class LoggingReceiver
      * @param aPort port to listen on
      * @throws IOException if an error occurs
      */
-    LoggingReceiver(MyTableModel aModel, int aPort)
-        throws IOException
-    {
+    LoggingReceiver(MyTableModel aModel, int aPort) throws IOException {
         setDaemon(true);
         mModel = aModel;
         mSvrSock = new ServerSocket(aPort);
