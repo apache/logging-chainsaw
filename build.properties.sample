@@ -15,6 +15,6 @@
 #
 # NOTE: VFS requires Commons logging JAR as well, otherwise it won't work.
 
-# Place all the dependencies in this directory
+# Place all the dependencies in this directory (except ORO)
 # Dependencies directory
 deps.dir=lib
