@@ -895,10 +895,10 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     final Vector v = new Vector();
     //add (hopefully useful) default filters
     v.add("LEVEL == TRACE");
-    v.add("LEVEL == DEBUG");
-    v.add("LEVEL == INFO");
-    v.add("LEVEL == WARN");
-    v.add("LEVEL == ERROR");
+    v.add("LEVEL >= DEBUG");
+    v.add("LEVEL >= INFO");
+    v.add("LEVEL >= WARN");
+    v.add("LEVEL >= ERROR");
     v.add("LEVEL == FATAL");
     
     final JComboBox filterCombo = new JComboBox(v);
