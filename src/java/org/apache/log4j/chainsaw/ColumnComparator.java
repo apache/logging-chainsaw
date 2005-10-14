@@ -72,6 +72,12 @@ public class ColumnComparator implements Comparator {
             sort =
                 e1.getNDC().compareToIgnoreCase(
                 e2.getNDC());
+        } else if (e1.getNDC() == null && e2.getNDC() == null) {
+        	sort = 0;
+        } else if (e1.getNDC() == null) {
+        	sort = -1;
+        } else if (e2.getNDC() == null) {
+        	sort = 1;
         }
 
         break;
