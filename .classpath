@@ -2,7 +2,9 @@
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="src" path="/logging-log4j"/>
-	<classpathentry kind="lib" path="/workspace/commons-vfs-1.0-dev.jar"/>
+	<classpathentry kind="src" path="tests"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/log4j"/>
+	<classpathentry kind="lib" path="C:/downloads/vfs/commons-vfs/commons-vfs-1.0-RC2.jar"/>
+	<classpathentry kind="lib" path="C:/downloads/ant/junit.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

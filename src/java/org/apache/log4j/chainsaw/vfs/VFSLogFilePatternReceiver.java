@@ -19,10 +19,12 @@ package org.apache.log4j.chainsaw.vfs;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileSystemManager;
 import org.apache.commons.vfs.VFS;
+import org.apache.commons.vfs.provider.URLFileName;
 import org.apache.log4j.varia.LogFilePatternReceiver;
 
 /**
@@ -142,6 +144,12 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver {
           FileSystemManager fileSystemManager = VFS.getManager();
           FileObject fileObject = fileSystemManager.resolveFile(getFileURL());
           reader = new InputStreamReader(fileObject.getContent().getInputStream());
+          //now that we have a reader, remove additional portions of the file url (sftp passwords, etc.)
+          //check to see if the name is a URLFileName..if so, set file name to not include username/pass
+          if (fileObject.getName() instanceof URLFileName) {
+            URLFileName urlFileName = (URLFileName)fileObject.getName();
+        	setFileURL(urlFileName.getScheme() + "://" + urlFileName.getHostName() + urlFileName.getPath());
+          }
         } catch (FileSystemException fse) {
           getLogger().info("file not available - will try again in 10 seconds");
           synchronized(this) {
