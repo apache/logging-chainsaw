@@ -43,7 +43,6 @@ import org.apache.log4j.spi.LoggingEventFieldResolver;
  */
 public class ChainsawAppenderHandler extends AppenderSkeleton {
   private static final String DEFAULT_IDENTIFIER = "Unknown";
-  private WorkQueue worker = new WorkQueue();
   private final Object mutex = new Object();
   private int sleepInterval = 1000;
   private EventListenerList listenerList = new EventListenerList();
@@ -55,6 +54,15 @@ public class ChainsawAppenderHandler extends AppenderSkeleton {
       this);
   private Map customExpressionRules = new HashMap();
 
+  /**
+   * NOTE: This variable needs to be physically located LAST, because
+   * of the initialization sequence, the WorkQueue constructor starts a thread 
+   * which ends up needing some reference to fields created in ChainsawAppenderHandler (outer instance)
+   * which may not have been created yet.  Becomes a race condition, and therefore
+   * this field initialization should be kept last.
+   */
+  private WorkQueue worker = new WorkQueue();
+  
   public ChainsawAppenderHandler(final ChainsawAppender appender) {
     super(true);
     appender.setAppender(this);
