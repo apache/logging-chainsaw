@@ -1,0 +1,25 @@
+This file just contains a list of things we are considering for Chainsaw.  Please don't take
+the contents as given, just that we all thought they were good ideas worth remembering/prioritizing.
+
+ - A way to send feedback via email from the help menu...maybe we can't have it sent to log4j-dev since that requires the user to be subscribed, but something like that would be helpful
+- Some flash movies of common stuff (specifying the config file, configuring the UI, filtering)
+- Maybe a wiki doc describing the different appender/receiver combinations and usage scenarios (when would I use x, vs y appender/receiver combo)
+  (this is worth considering creating a PDF guide)
+
+- all settings saved as xml or regular text files instead of combination of properties & serialized java object files
+  (use Xstream for bean serialization - BSD license, need to check whether we can use that)
+  
+- would be nice to be able to have a way to modify the detail pane layout & save it as a default layout (default layout would always be used to display events - maybe not bother with settings per tab)
+  (Xstream handy here)
+  
+- someone mentioned in log4j-user that they'd like a way to auto-load an xml log file on chainsaw start (err...could just write an xml file receiver..I already did it but didn't create a real receiver).
+  - Do this via an MRU list in the File menu
+  
+- I talked the JToaster guy into changing his code to ASL v2, so I'd like to support it in the ui..maybe just app-wide expression controls notification (with associated saved preference)
+- might be nice to remember refine focus expressions per tab
+- gui improvements
+- docs (at least the wiki more often), improvements to the tutorial
+
+FYI, I also talked to the person who wrote rssappender and she's probably going to make changes to it to be 1.3 compatible so that it could be included in the core (I assume something like that would be useful to some folks).
+
+- Now that JmDNS is licensed with ASL, we can create a ZeroConfSocketHubAppender and have Chainsaw autodetect things to connect to.
