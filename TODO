@@ -23,3 +23,5 @@ the contents as given, just that we all thought they were good ideas worth remem
 FYI, I also talked to the person who wrote rssappender and she's probably going to make changes to it to be 1.3 compatible so that it could be included in the core (I assume something like that would be useful to some folks).
 
 - Now that JmDNS is licensed with ASL, we can create a ZeroConfSocketHubAppender and have Chainsaw autodetect things to connect to.
+
+- For jars that are not ASL compatible, maybe have Chainsaw auto-download and install in the .plugins area?
