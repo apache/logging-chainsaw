@@ -23,6 +23,8 @@ package org.apache.log4j.chainsaw;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.net.URL;
+import java.util.Iterator;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -30,8 +32,12 @@ import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
+import org.apache.log4j.chainsaw.prefs.MRUFileList;
+import org.apache.log4j.chainsaw.prefs.MRUFileListTest;
 import org.apache.log4j.xml.UtilLoggingXMLDecoder;
 import org.apache.log4j.xml.XMLDecoder;
 
@@ -112,9 +118,53 @@ class FileMenu extends JMenu {
     addSeparator();
     add(saveFile);
     addSeparator();
+
+    final JMenu mrulog4j = new JMenu("MRU...");
+    
+  
+    
+    MRUFileList.addChangeListener(new ChangeListener() {
+        
+        public void stateChanged(ChangeEvent e) {
+            
+            buildMRUMenu(mrulog4j, logUI);
+        }
+        
+    });
+    buildMRUMenu(mrulog4j, logUI);
+    
+    add(mrulog4j);
+    addSeparator();
     add(menuItemExit);
+    
+    
   }
 
+  private void buildMRUMenu(final JMenu mrulog4j, final LogUI logui) {
+        mrulog4j.removeAll();
+        int counter = 1;
+        if (MRUFileList.log4jMRU().getMRUList().size() > 0) {
+            for (Iterator iter = MRUFileList.log4jMRU().getMRUList().iterator(); iter
+                    .hasNext();) {
+                final URL url = (URL) iter.next();
+                // TODO work out the 'name', for local files it can't just be the full path
+                final String name = url.getProtocol().startsWith("file")?url.getPath().substring(url.getPath().lastIndexOf('/')+1):url.getPath();
+                String title = (counter++) + " - " + url.toExternalForm();
+                JMenuItem menuItem = new JMenuItem(new AbstractAction(title) {
+
+                    public void actionPerformed(ActionEvent e) {
+                        FileLoadAction.importURL(logui.handler,
+                                new XMLDecoder(), name, url);
+                    }
+                });
+                mrulog4j.add(menuItem);
+            }
+        } else {
+            JMenuItem none = new JMenuItem("None as yet...");
+            none.setEnabled(false);
+            mrulog4j.add(none);
+        }
+    }
   Action getLog4JFileOpenAction() {
     return loadLog4JAction;
   }

@@ -95,6 +95,7 @@ import org.apache.log4j.chainsaw.icons.LineIconFactory;
 import org.apache.log4j.chainsaw.messages.MessageCenter;
 import org.apache.log4j.chainsaw.plugins.PluginClassLoaderFactory;
 import org.apache.log4j.chainsaw.prefs.LoadSettingsEvent;
+import org.apache.log4j.chainsaw.prefs.MRUFileListPreferenceSaver;
 import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SettingsListener;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
@@ -840,6 +841,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
     getSettingsManager().addSettingsListener(this);
     getSettingsManager().addSettingsListener(applicationPreferenceModel);
+    getSettingsManager().addSettingsListener(MRUFileListPreferenceSaver.getInstance());
     getSettingsManager().loadSettings();
 
     setVisible(true);

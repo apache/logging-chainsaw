@@ -31,6 +31,7 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.chainsaw.prefs.MRUFileList;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.spi.Decoder;
 import org.apache.log4j.spi.LoggingEvent;
@@ -128,6 +129,7 @@ class FileLoadAction extends AbstractAction {
 
         if (url != null) {
             importURL(parent.handler, decoder, name, url);
+            MRUFileList.log4jMRU().opened(url);
         }
     }
 
@@ -157,6 +159,7 @@ class FileLoadAction extends AbstractAction {
                     // TODO Handle the error with a nice msg
                     LOG.error(e1);
                 }
+                MRUFileList.log4jMRU().opened(urlToUse);
             }
         }).start();
     }
