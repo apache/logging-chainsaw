@@ -27,6 +27,7 @@ codebase="@CHAINSAW_CODEBASE@"
     <jar href="lib/log4j-oro.jar"/>
     <jar href="lib/ugli-simple.jar"/>
     <jar href="lib/jakarta-oro-2.0.6.jar"/> 
+    <jar href="lib/xstream-1.1.2.jar"/> 
   </resources> 
   <application-desc main-class="org.apache.log4j.chainsaw.LogUI"/> 
 </jnlp> 
