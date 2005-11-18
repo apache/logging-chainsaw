@@ -46,6 +46,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -130,6 +132,10 @@ import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.LoggingEventFieldResolver;
+import org.omg.PortableInterceptor.LOCATION_FORWARD;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
 
 
 /**
@@ -1406,17 +1412,23 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
    * @see LogPanelPreferenceModel
    */
   public void loadSettings(LoadSettingsEvent event) {
-    preferenceModel.setLevelIcons(event.asBoolean("levelIcons"));
-    preferenceModel.setDateFormatPattern(
-      event.getSetting("dateFormatPattern"));
-    preferenceModel.setLoggerPrecision(event.getSetting("loggerPrecision"));
-    preferenceModel.setToolTips(event.asBoolean("toolTips"));
-    preferenceModel.setScrollToBottom(event.asBoolean("scrollToBottom"));
-    scroll = event.asBoolean("scrollToBottom");
-    preferenceModel.setLogTreePanelVisible(
-      event.asBoolean("logTreePanelVisible"));
-    preferenceModel.setDetailPaneVisible(event.asBoolean("detailPaneVisible"));
 
+    File xmlFile = new File(SettingsManager.getInstance()
+                .getSettingsDirectory(), URLEncoder.encode(identifier));
+
+        if (xmlFile.exists()) {
+            XStream stream = new XStream(new DomDriver());
+            try {
+                LogPanelPreferenceModel storedPrefs = (LogPanelPreferenceModel) stream
+                        .fromXML(new FileReader(xmlFile));
+                preferenceModel.apply(storedPrefs);
+            } catch (Exception e) {
+                e.printStackTrace();
+                // TODO need to log this..
+            }
+        }
+        
+//        TODO needs to be added to LogPanelPreferenceModel?
     logTreePanel.ignore(event.getSettingsStartingWith("Logger.Ignore."));
 
     //first attempt to load encoded file
@@ -1460,17 +1472,16 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
    * @see LogPanelPreferenceModel
    */
   public void saveSettings(SaveSettingsEvent event) {
-    event.saveSetting("levelIcons", preferenceModel.isLevelIcons());
-    event.saveSetting(
-      "dateFormatPattern", preferenceModel.getDateFormatPattern());
-    event.saveSetting("loggerPrecision", preferenceModel.getLoggerPrecision());
-    event.saveSetting("toolTips", preferenceModel.isToolTips());
-    event.saveSetting("scrollToBottom", preferenceModel.isScrollToBottom());
-    event.saveSetting(
-      "detailPaneVisible", preferenceModel.isDetailPaneVisible());
-    event.saveSetting(
-      "logTreePanelVisible", preferenceModel.isLogTreePanelVisible());
+      File xmlFile = new File(SettingsManager.getInstance()
+              .getSettingsDirectory(), URLEncoder.encode(identifier));
 
+          XStream stream = new XStream();
+          try {
+              stream.toXML(preferenceModel, new FileWriter(xmlFile));
+          } catch (Exception e) {
+              e.printStackTrace();
+              // TODO need to log this..
+          }
     Set set = logTreePanel.getHiddenSet();
     int index = 0;
 
