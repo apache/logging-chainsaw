@@ -37,7 +37,6 @@ import javax.swing.event.ChangeListener;
 
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.chainsaw.prefs.MRUFileList;
-import org.apache.log4j.chainsaw.prefs.MRUFileListTest;
 import org.apache.log4j.xml.UtilLoggingXMLDecoder;
 import org.apache.log4j.xml.XMLDecoder;
 
