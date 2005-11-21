@@ -17,92 +17,137 @@
 /*
  * @author Paul Smith <psmith@apache.org>
  *
-*/
+ */
 package org.apache.log4j.chainsaw;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.net.URL;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 
+import org.apache.log4j.Logger;
+import org.apache.log4j.chainsaw.help.HelpManager;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
-
 
 /**
  * A simple About box telling people stuff about this project
- *
+ * 
  * @author Paul Smith <psmith@apache.org>
- *
+ * 
  */
 class ChainsawAbout extends JDialog {
-  ChainsawAbout(JFrame parent) {
-    super(parent, "About Chainsaw v2", true);
-//    setResizable(false);
-    setBackground(Color.white);
-	getContentPane().setLayout(new BorderLayout());
-    JPanel panel = new JPanel(new GridBagLayout());
-//    panel.setOpaque(false);
-    panel.setBackground(Color.white);
-    panel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+    private static final Logger LOG = Logger.getLogger(ChainsawAbout.class);
 
-    GridBagConstraints c = new GridBagConstraints();
+    private final JEditorPane editPane = new JEditorPane("text/html", "");
 
-    c.anchor = GridBagConstraints.WEST;
-    c.gridx = 0;
-    c.gridy = 0;
+    private final JScrollPane scrollPane = new JScrollPane(editPane,
+            JScrollPane.VERTICAL_SCROLLBAR_NEVER,
+            JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-    final JLabel info =
-      new JLabel("<html>Chainsaw 2.0alpha<p><p>" +
-        "Brought to you by the Log4J team:<p>" +
-        "<b>http://logging.apache.org/log4j</b><p><p>" +
-      "Bug report, mailing list and wiki information:<p>" +
-      "<b>http://logging.apache.org/site/bugreport.html</b><p><p>" +
-      "<b>Contributors:</b><ul><li>Scott Deboy &lt;sdeboy@apache.org&gt;</li><li>Paul Smith &lt;psmith@apache.org&gt;</li><li>Ceki G&uuml;lc&uuml; &lt;ceki@apache.org&gt;</li><li>Oliver Burn</li><li>Stephen Pain</li></ul></html>");
+    private final String url = ChainsawAbout.class.getName().replace('.', '/')
+            + ".html";
 
-      JButton button = new JButton("Copy bug report link to clipboard");
-      button.addActionListener(new ActionListener() {
-          public void actionPerformed(ActionEvent event) {
-              Toolkit tk = getToolkit();
-              Clipboard cb = tk.getSystemClipboard();
-              cb.setContents(new StringSelection("http://logging.apache.org/site/bugreport.html"), null);
-              }});
-              panel.add(info, c);
+    private boolean sleep = false;
 
-    JLabel title = new JLabel(ChainsawIcons.ICON_LOG4J);
-    c.gridy = 1;
+    private final Object guard = new Object();
 
-    panel.add(button, c);
+    ChainsawAbout(JFrame parent) {
+        super(parent, "About Chainsaw v2", true);
+        // setResizable(false);
+        setBackground(Color.white);
+        getContentPane().setLayout(new BorderLayout());
 
-    c.gridy = 2;
-    panel.add(title, c);
+        JButton closeButton = new JButton("Close");
+        closeButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                setVisible(false);
+            }
+        });
+        closeButton.setDefaultCapable(true);
 
-    c.gridy = 3;
-    c.anchor = GridBagConstraints.EAST;
-
-    JButton closeButton = new JButton("Close");
-    closeButton.addActionListener(
-      new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          setVisible(false);
+        try {
+            editPane.setPage(this.getClass().getClassLoader().getResource(url));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to find the About panel HTML", e);
         }
-      });
-    closeButton.setDefaultCapable(true);
-    panel.add(closeButton, c);
+        getContentPane().add(scrollPane, BorderLayout.CENTER);
+        getContentPane().add(closeButton, BorderLayout.SOUTH);
 
-	getContentPane().add(panel, BorderLayout.CENTER);
-    pack();
-    setLocationRelativeTo(parent);
-  }
+        editPane.setEditable(false);
+        editPane.addHyperlinkListener(
+                new HyperlinkListener() {
+                    public void hyperlinkUpdate(HyperlinkEvent e) {
+                      if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                          HelpManager.getInstance().setHelpURL(e.getURL());
+                      }
+                    }
+                  });
+        
+        setSize(320, 240);
+        new Thread(new Scroller()).start();
+        scrollPane.getViewport().setViewPosition(new Point(0, 0));
+
+        setLocationRelativeTo(parent);
+    }
+
+    private class Scroller implements Runnable {
+
+        public void run() {
+            while (true) {
+                try {
+                    if (sleep) {
+                        synchronized (guard) {
+                            guard.wait();
+                        }
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    scrollPane.getViewport().setViewPosition(
+                                            new Point(0, 0));
+                                }
+                            });
+                        continue;
+                    }
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            scrollPane.getViewport().setViewPosition(
+                                    new Point(0, scrollPane.getViewport()
+                                            .getViewPosition().y + 1));
+                        }
+                    });
+                    Thread.sleep(100);
+                } catch (Exception e) {
+                    LOG.error("Error during scrolling", e);
+                }
+
+            }
+        }
+    }
+
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+        sleep = !visible;
+        synchronized (guard) {
+            guard.notifyAll();
+        }
+    }
 }
