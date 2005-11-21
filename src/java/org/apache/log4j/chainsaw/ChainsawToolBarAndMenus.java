@@ -56,6 +56,7 @@ import javax.swing.event.ChangeListener;
 import org.apache.log4j.chainsaw.filter.FilterModel;
 import org.apache.log4j.chainsaw.help.HelpManager;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
+import org.apache.log4j.chainsaw.osx.OSXIntegration;
 import org.apache.log4j.chainsaw.receivers.ReceiversHelper;
 
 
@@ -418,9 +419,11 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     viewMenu.add(menuItemClose);
     viewMenu.addSeparator();
     viewMenu.add(menuCustomExpressionPanel);
-    viewMenu.addSeparator();
 
-    viewMenu.add(showAppPrefs);
+    if (!OSXIntegration.IS_OSX) {
+        viewMenu.addSeparator();
+        viewMenu.add(showAppPrefs);
+    }
 
     JMenu helpMenu = new JMenu("Help");
     helpMenu.setMnemonic('H');

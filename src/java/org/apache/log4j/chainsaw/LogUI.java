@@ -93,6 +93,7 @@ import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.chainsaw.icons.LineIconFactory;
 import org.apache.log4j.chainsaw.messages.MessageCenter;
+import org.apache.log4j.chainsaw.osx.OSXIntegration;
 import org.apache.log4j.chainsaw.plugins.PluginClassLoaderFactory;
 import org.apache.log4j.chainsaw.prefs.LoadSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.MRUFileListPreferenceSaver;
@@ -242,6 +243,9 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
    * @param args
    */
   public static void main(String[] args) {
+      if(OSXIntegration.IS_OSX) {
+          System.setProperty("apple.laf.useScreenMenuBar", "true");
+      }
     ApplicationPreferenceModel model = new ApplicationPreferenceModel();
 
     SettingsManager.getInstance().configure(model);
@@ -382,6 +386,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
    *
    */
   private void initGUI() {
+
     setupHelpSystem();
     statusBar = new ChainsawStatusBar();
     setupReceiverPanel();
@@ -440,6 +445,9 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
           preferencesFrame.setVisible(false);
         }
       });
+    
+    OSXIntegration.init(this);
+  
   }
 
   private void initPlugins(PluginRegistry pluginRegistry) {
@@ -1356,12 +1364,12 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     return statusBar;
   }
 
-  void showApplicationPreferences() {
+  public void showApplicationPreferences() {
     applicationPreferenceModelPanel.updateModel();
     preferencesFrame.show();
   }
 
-  void showAboutBox() {
+  public void showAboutBox() {
     if (aboutBox == null) {
       aboutBox = new ChainsawAbout(this);
     }
@@ -1405,15 +1413,16 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
   /**
    * Shutsdown by ensuring the Appender gets a chance to close.
    */
-  private void shutdown() {
+  public boolean shutdown() {
     if (getApplicationPreferenceModel().isConfirmExit()) {
       if (
         JOptionPane.showConfirmDialog(
             LogUI.this, "Are you sure you want to exit Chainsaw?",
             "Confirm Exit", JOptionPane.YES_NO_OPTION,
             JOptionPane.INFORMATION_MESSAGE) != JOptionPane.YES_OPTION) {
-        return;
+        return false;
       }
+      
     }
 
     final JWindow progressWindow = new JWindow();
@@ -1456,6 +1465,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       };
 
     new Thread(runnable).start();
+    return true;
   }
 
   /**

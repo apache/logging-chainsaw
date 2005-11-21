@@ -36,6 +36,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
+import org.apache.log4j.chainsaw.osx.OSXIntegration;
 import org.apache.log4j.chainsaw.prefs.MRUFileList;
 import org.apache.log4j.xml.UtilLoggingXMLDecoder;
 import org.apache.log4j.xml.XMLDecoder;
@@ -133,8 +134,10 @@ class FileMenu extends JMenu {
     buildMRUMenu(mrulog4j, logUI);
     
     add(mrulog4j);
-    addSeparator();
-    add(menuItemExit);
+    if (!OSXIntegration.IS_OSX) {
+        addSeparator();
+        add(menuItemExit);
+    }
     
     
   }

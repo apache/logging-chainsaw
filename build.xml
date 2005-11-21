@@ -245,6 +245,53 @@
       <fileset file="packaging/chainsaw.*"/>
     </zip>
   </target>
+	
+	<!-- This target can only be run on an OS X computer and requires 
+		see http://www.loomcom.com/jarbundler/
+	-->
+	<target name="iSaw" depends="webstart">
+
+		<delete dir="iSaw-Dist" failonerror="false"/>
+		<delete dir="Chainsaw.app" failonerror="false"/>
+		<delete dir="Chainsaw-app" failonerror="false"/>
+		
+		<mkdir dir="iSaw-dist" />
+		<mkdir dir="Chainsaw-app" />
+		<copy file="${webstart-dependant-receivers.jar}" todir="iSaw-dist"/>
+		<copy file="${log4j-chainsaw.jar}" todir="iSaw-dist"/>
+		<copy todir="iSaw-dist">
+			<fileset dir="lib"/>
+		</copy>
+		
+	<taskdef name="jarbundler"
+                  classpath="antlibs/jarbundler-1.4.jar" 
+            classname="com.loomcom.ant.tasks.jarbundler.JarBundler" />
+            
+        <jarbundler dir="."
+                    name="Chainsaw"
+                    mainclass="org.apache.log4j.chainsaw.LogUI"
+                    icon="packaging/logo.icns"
+                    version="1.99.99"
+                    infostring="Chainsaw"
+                    aboutmenuname="Chainsaw"
+                    bundleid="org.apache.log4j.chainsaw.ChainsawBundle"
+                    developmentregion="English"
+                    signature="chainsaw"
+                    jvmversion="1.4+"
+                    vmoptions="-Xms32m -Xmx256m"
+                    smalltabs="true"
+                    antialiasedgraphics="true"
+                    antialiasedtext="true"
+                    liveresize="true"
+                    growboxintrudes="false"
+                    screenmenu="true" >
+          <jarfileset dir="iSaw-dist">
+            <include name="**/*.jar" />
+          </jarfileset>
+        	
+        </jarbundler>
+		<move file="Chainsaw.app" todir="Chainsaw-app" />
+	</target>
   
   <!-- ================================================================= -->
   <!-- Remove all generated (compiled) class files.                      -->
