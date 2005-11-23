@@ -61,12 +61,16 @@ public class ProgressPanel extends JPanel {
 
   public void setProgress(final int progress) {
     try {
-      SwingUtilities.invokeAndWait(
-        new Runnable() {
+      Runnable runnable = new Runnable() {
           public void run() {
             progressBar.setValue(progress);
           }
-        });
+        };
+    if (!SwingUtilities.isEventDispatchThread()) {
+        SwingUtilities.invokeAndWait(runnable);
+    }else {
+        runnable.run();
+    }
     } catch (InterruptedException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
