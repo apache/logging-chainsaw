@@ -55,7 +55,8 @@ public class OSXIntegration {
                         LOG.info("handlePreferences(...) called");
                         logui.showApplicationPreferences();
                     }else if("handleQuit".equals(method.getName())){
-                        setHandled(args[0], logui.shutdown()?Boolean.TRUE:Boolean.FALSE);
+                        setHandled(args[0], logui.exit()?Boolean.TRUE:Boolean.FALSE);
+                        
                     }else if("handleAbout".equals(method.getName())) {
                         logui.showAboutBox();
                         setHandled(args[0], Boolean.TRUE);

@@ -1340,11 +1340,10 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
    * Exits the application, ensuring Settings are saved.
    *
    */
-  void exit() {
-    //    TODO Ask the user if they want to save the settings via a dialog.
+  public boolean exit() {
     getSettingsManager().saveSettings();
 
-    shutdown();
+    return shutdown();
   }
 
   void addWelcomePanel() {
@@ -1464,7 +1463,16 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         }
       };
 
-    new Thread(runnable).start();
+    if (OSXIntegration.IS_OSX) {
+        /**
+         * or OSX we do it in the current thread because otherwise returning
+         * will exit the process before it's had a chance to save things
+         * 
+         */
+        runnable.run();
+    }else {
+        new Thread(runnable).start();
+    }
     return true;
   }
 
