@@ -163,7 +163,7 @@ public class MessageCenter {
 
   private void setupLogger() {
     logger.addAppender(appender);
-    logger.setAdditivity(false);
+    logger.setAdditivity(true);
     logger.setLevel(Boolean.getBoolean("log4j.debug")?Level.DEBUG:Level.INFO);
   }
 
