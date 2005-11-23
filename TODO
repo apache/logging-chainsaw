@@ -30,5 +30,10 @@ FYI, I also talked to the person who wrote rssappender and she's probably going 
 	- (DONE) About/Preference/Menu bar stuff
 	- add ant script to create iSaw.dmg
 	
-* Need ta add appropriate credit to stuff in the Help->About menu (ie. XStream et al)
-	- implement as Scrolling view port (end title movie style effect.)
+*(DONE) (Paul) Need ta add appropriate credit to stuff in the Help->About menu (ie. XStream et al)
+	- (DONE) implement as Scrolling view port (end title movie style effect.)
+	
+- (Paul/Scott) VFS
+	- Fix up VFSPlugin so it's actually useful
+	
+- (Paul) Scrap MessageCenter - just get Chainsaw to log to itself.
