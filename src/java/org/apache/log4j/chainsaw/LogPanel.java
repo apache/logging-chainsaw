@@ -127,6 +127,7 @@ import org.apache.log4j.chainsaw.prefs.LoadSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.Profileable;
 import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
+import org.apache.log4j.chainsaw.xstream.TableColumnConverter;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
@@ -1417,7 +1418,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
                 .getSettingsDirectory(), URLEncoder.encode(identifier));
 
         if (xmlFile.exists()) {
-            XStream stream = new XStream(new DomDriver());
+            XStream stream = buildXStreamForLogPanelPreference();
             try {
                 LogPanelPreferenceModel storedPrefs = (LogPanelPreferenceModel) stream
                         .fromXML(new FileReader(xmlFile));
@@ -1428,22 +1429,10 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
             }
         }
         
-//        TODO needs to be added to LogPanelPreferenceModel?
-    logTreePanel.ignore(event.getSettingsStartingWith("Logger.Ignore."));
+    logTreePanel.ignore(preferenceModel.getHiddenLoggers());
 
-    //first attempt to load encoded file
-    File f =
-      new File(
-        SettingsManager.getInstance().getSettingsDirectory(), URLEncoder.encode(identifier) + COLUMNS_EXTENSION);
-
-    if (!f.exists()) {
-        f =
-            new File(
-              SettingsManager.getInstance().getSettingsDirectory(), identifier + COLUMNS_EXTENSION);
-    }
-
-    if (f.exists()) {
-      loadColumnSettings(f);
+    if (preferenceModel.getColumns().size()>0) {
+        loadColumnSettings();
     } else {
       loadDefaultColumnSettings(event);
     }
@@ -1475,28 +1464,46 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
       File xmlFile = new File(SettingsManager.getInstance()
               .getSettingsDirectory(), URLEncoder.encode(identifier));
 
-          XStream stream = new XStream();
-          try {
-              stream.toXML(preferenceModel, new FileWriter(xmlFile));
-          } catch (Exception e) {
-              e.printStackTrace();
-              // TODO need to log this..
-          }
-    Set set = logTreePanel.getHiddenSet();
-    int index = 0;
-
-    for (Iterator iter = set.iterator(); iter.hasNext();) {
-      Object logger = iter.next();
-      event.saveSetting("Logger.Ignore." + index++, logger.toString());
+//      TODO  TableColumnData is no longer required, delete it
+    updatePreferenceModelColumnDetails();
+    preferenceModel.setHiddenLoggers(new HashSet(logTreePanel.getHiddenSet()));
+    
+    XStream stream = buildXStreamForLogPanelPreference();
+    try {
+        stream.toXML(preferenceModel, new FileWriter(xmlFile));
+    } catch (Exception ex) {
+        ex.printStackTrace();
+        // TODO need to log this..
     }
 
-    saveColumnSettings();
+//    TODO colour settings need to be saved
     saveColorSettings();
   }
 
+    private void updatePreferenceModelColumnDetails() {
+        preferenceModel.getColumns().clear();
+        for (int i = 0; i < table.getColumnModel().getColumnCount(); i++) {
+    
+            TableColumn c = (TableColumn) table.getColumnModel().getColumn(i);
+    
+            if (c.getModelIndex() < ChainsawColumns.getColumnsNames().size()) {
+                preferenceModel.getColumns().add(c);
+            } else {
+                logger.debug("Not saving col ' " + c.getHeaderValue()
+                        + "' not part of standard columns");
+            }
+        }
+    }
+    
+    private XStream buildXStreamForLogPanelPreference() {
+        XStream stream = new XStream(new DomDriver());
+        stream.registerConverter(new TableColumnConverter());
+        return stream;
+    }
+
   /**
-   * Display the panel preferences frame
-   */
+     * Display the panel preferences frame
+     */
   void showPreferences() {
     preferencesPanel.updateModel();
     preferencesFrame.show();
@@ -2091,52 +2098,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
   }
 
   /**
-   * Save panel column settings
-   */
-  private void saveColumnSettings() {
-    ObjectOutputStream o = null;
-
-    try {
-      File f = new File(SettingsManager.getInstance().getSettingsDirectory(),  
-      		URLEncoder.encode(getIdentifier() + COLUMNS_EXTENSION));
-      logger.debug("writing columns to file: " + f);
-      
-      o = new ObjectOutputStream(
-          new BufferedOutputStream(new FileOutputStream(f)));
-
-      Enumeration e = this.table.getColumnModel().getColumns();
-
-      while (e.hasMoreElements()) {
-        TableColumn c = (TableColumn) e.nextElement();
-
-        if (c.getModelIndex() < ChainsawColumns.getColumnsNames().size()) {
-          o.writeObject(
-            new TableColumnData(
-              (String) c.getHeaderValue(), c.getModelIndex(), c.getWidth()));
-        } else {
-          logger.debug(
-            "Not saving col ' " + c.getHeaderValue()
-            + "' not part of standard columns");
-        }
-      }
-
-      o.flush();
-    } catch (FileNotFoundException fnfe) {
-      fnfe.printStackTrace();
-    } catch (IOException ioe) {
-      ioe.printStackTrace();
-    } finally {
-      try {
-        if (o != null) {
-          o.close();
-        }
-      } catch (IOException ioe) {
-        ioe.printStackTrace();
-      }
-    }
-  }
-
-  /**
    * Save panel color settings
    */
   private void saveColorSettings() {
@@ -2170,54 +2131,21 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
   /**
    * Load panel column settings
    */
-  private void loadColumnSettings(File f) {
-    if (f.exists()) {
-      ArrayList newColumns = new ArrayList();
-
-      TableColumnData temp = null;
-      ObjectInputStream s = null;
-
-      try {
-        s = new ObjectInputStream(
-            new BufferedInputStream(new FileInputStream(f)));
-
-        while (true) {
-          temp = (TableColumnData) s.readObject();
-
-          TableColumn tc = new TableColumn(temp.getIndex(), temp.getWidth());
-          tc.setHeaderValue(temp.getColName());
-          newColumns.add(tc);
-        }
-      } catch (EOFException eof) { //end of file - ignore..
-      }catch (IOException ioe) {
-        ioe.printStackTrace();
-      } catch (ClassNotFoundException cnfe) {
-        cnfe.printStackTrace();
-      } finally {
-        if (s != null) {
-          try {
-            s.close();
-          } catch (IOException ioe) {
-            ioe.printStackTrace();
-          }
-        }
-      }
-
+  private void loadColumnSettings() {
       //only remove columns and add serialized columns if 
       //at least one column was read from the file
       TableColumnModel model = table.getColumnModel();
 
-      if (newColumns.size() > 0) {
+      if (preferenceModel.getColumns().size() > 0) {
         //remove columns from model - will be re-added in the correct order
         for (int i = model.getColumnCount() - 1; i > -1; i--) {
           model.removeColumn(model.getColumn(i));
         }
 
-        for (Iterator iter = newColumns.iterator(); iter.hasNext();) {
+        for (Iterator iter = preferenceModel.getColumns().iterator(); iter.hasNext();) {
           model.addColumn((TableColumn) iter.next());
         }
       }
-    }
   }
 
   /**
@@ -2521,86 +2449,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
       } else {
         table.setToolTipText(null);
       }
-    }
-  }
-
-  /**
-   * Column data helper class - this class is serialized when saving column
-   * settings
-   */
-  private class TableColumnData implements Serializable {
-    static final long serialVersionUID = 5350440293110513986L;
-    private String colName;
-    private int index;
-    private int width;
-
-    /**
-     * Creates a new TableColumnData object.
-     *
-     * @param colName
-     * @param index
-     * @param width
-     */
-    public TableColumnData(String colName, int index, int width) {
-      this.colName = colName;
-      this.index = index;
-      this.width = width;
-    }
-
-    /**
-     * Accessor
-     *
-     * @return col name
-     */
-    public String getColName() {
-      return colName;
-    }
-
-    /**
-     * Accessor
-     *
-     * @return displayed index
-     */
-    public int getIndex() {
-      return index;
-    }
-
-    /**
-     * Accessor
-     *
-     * @return width
-     */
-    public int getWidth() {
-      return width;
-    }
-
-    /**
-     * Deserialize the state of the object
-     *
-     * @param in
-     *
-     * @throws IOException
-     * @throws ClassNotFoundException
-     */
-    private void readObject(java.io.ObjectInputStream in)
-      throws IOException, ClassNotFoundException {
-      colName = (String) in.readObject();
-      index = in.readInt();
-      width = in.readInt();
-    }
-
-    /**
-     * Serialize the state of the object
-     *
-     * @param out
-     *
-     * @throws IOException
-     */
-    private void writeObject(java.io.ObjectOutputStream out)
-      throws IOException {
-      out.writeObject(colName);
-      out.writeInt(index);
-      out.writeInt(width);
     }
   }
 

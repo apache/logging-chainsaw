@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -70,7 +71,20 @@ public class LogPanelPreferenceModel implements Serializable{
   private boolean logTreePanelVisible;
   private String loggerPrecision = "";
 
-  /**
+  private List columns = new ArrayList();
+  private Collection hiddenLoggers = new HashSet();
+  
+  public List getColumns() {
+      return columns;
+  }
+
+  public void setColumns(List columns) {
+      Object oldValue = this.columns;
+      this.columns = columns;
+      propertySupport.firePropertyChange("columns", oldValue, columns);
+  }
+
+/**
    * Returns the Date Pattern string for the alternate date formatter.
    * @return date pattern
    */
@@ -137,6 +151,9 @@ public class LogPanelPreferenceModel implements Serializable{
     setDetailPaneVisible(model.isDetailPaneVisible());
     setLogTreePanelVisible(model.isLogTreePanelVisible());
 
+    setColumns(model.getColumns());
+    setHiddenLoggers(model.getHiddenLoggers());
+    
     /**
      * First, iterate and ADD new columns, (this means notifications of adds go out first
      * add to the end
@@ -315,4 +332,14 @@ public class LogPanelPreferenceModel implements Serializable{
   {
     return !DATE_FORMATS.contains(getDateFormatPattern()) && !isUseISO8601Format();
   }
+
+  public void setHiddenLoggers(Collection hiddenSet) {
+      Object oldValue = this.hiddenLoggers;
+      this.hiddenLoggers = hiddenSet;
+      propertySupport.firePropertyChange("hiddenLoggers", oldValue, this.hiddenLoggers);
+  }
+
+public Collection getHiddenLoggers() {
+    return hiddenLoggers;
+}
 }
