@@ -46,7 +46,7 @@ public class ApplicationPreferenceModel implements SettingsListener {
     
     private String identifierExpression = Constants.HOSTNAME_KEY + " - " + Constants.APPLICATION_KEY; 
 
-    private final PropertyChangeSupport propertySupport =
+    private transient final PropertyChangeSupport propertySupport =
         new PropertyChangeSupport(this);
     private int tabPlacement;
     
