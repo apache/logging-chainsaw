@@ -5,6 +5,10 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceEvent;
@@ -24,12 +28,19 @@ import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 
 import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.log4j.chainsaw.ModifiableListModel;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.chainsaw.plugins.GUIPluginSkeleton;
+import org.apache.log4j.net.SocketHubReceiver;
 import org.apache.log4j.net.ZeroConfSocketHubAppender;
 import org.apache.log4j.net.ZeroConfSocketHubAppenderTestBed;
 import org.apache.log4j.net.Zeroconf4log4j;
+import org.apache.log4j.plugins.Plugin;
+import org.apache.log4j.plugins.PluginEvent;
+import org.apache.log4j.plugins.PluginListener;
+import org.apache.log4j.plugins.PluginRegistry;
 import org.apache.log4j.xml.Log4jEntityResolver;
 
 /**
@@ -51,7 +62,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
 
     private static final Logger LOG = Logger.getLogger(ZeroConfPlugin.class);
 
-    private DefaultListModel discoveredDevices = new DefaultListModel();
+    private ModifiableListModel discoveredDevices = new ModifiableListModel();
 
     private final JList listBox = new JList(discoveredDevices);
 
@@ -59,6 +70,9 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
 
     private JmDNS jmDNS;
 
+    
+    private Map serviceInfoToReceiveMap = new HashMap();
+    
     public ZeroConfPlugin() {
         setName("Zeroconf");
     }
@@ -77,9 +91,30 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
 
         listBox.setCellRenderer(new ServiceInfoListCellRenderer());
         listBox.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+        listBox.setFixedCellHeight(75);
+        listBox.setFixedCellWidth(200);
         listBox.setVisibleRowCount(-1);
         listBox.addMouseListener(new ConnectorMouseListener());
         add(scrollPane, BorderLayout.CENTER);
+        
+        LogManager.getLoggerRepository().getPluginRegistry().addPluginListener(new PluginListener() {
+
+            public void pluginStarted(PluginEvent e) {
+                
+            }
+
+            public void pluginStopped(PluginEvent e) {
+                Plugin plugin = e.getPlugin();
+                synchronized(serviceInfoToReceiveMap) {
+                    for (Iterator iter = serviceInfoToReceiveMap.entrySet().iterator(); iter.hasNext();) {
+                        Map.Entry entry = (Map.Entry) iter.next();
+                        if(entry.getValue() == plugin) {
+                            serviceInfoToReceiveMap.remove(entry.getKey());
+                        }
+                    }
+                }
+                discoveredDevices.fireContentsChanged();
+            }});
 
     }
 
@@ -127,13 +162,15 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
 
     }
 
-    private static class ServiceInfoListCellRenderer implements
+    private class ServiceInfoListCellRenderer implements
             ListCellRenderer {
 
         private JPanel panel = new JPanel(new BorderLayout(15, 15));
 
-        private JLabel iconLabel = new JLabel(new ImageIcon(
-                ChainsawIcons.ANIM_RADIO_TOWER));
+        private final ImageIcon ICON = new ImageIcon(
+                ChainsawIcons.ANIM_RADIO_TOWER);
+        
+        private JLabel iconLabel = new JLabel(ICON);
 
         private JLabel nameLabel = new JLabel();
 
@@ -148,16 +185,15 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
             panel.setLayout(new BorderLayout());
             panel.add(iconLabel, BorderLayout.WEST);
 
-            // TODO scale the icon a bit more, it's a touch small
-
             JPanel centerPanel = new JPanel(new BorderLayout(3, 3));
 
             centerPanel.add(nameLabel, BorderLayout.CENTER);
             centerPanel.add(detailLabel, BorderLayout.SOUTH);
             panel.add(centerPanel, BorderLayout.CENTER);
+            
+            
             // TODO add autoconnect label
 
-            // TODO border etching?
             panel.setBorder(BorderFactory.createEtchedBorder());
 
         }
@@ -174,6 +210,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
             ServiceInfo info = (ServiceInfo) value;
             nameLabel.setText(info.getName());
             detailLabel.setText(info.getHostAddress() + ":" + info.getPort());
+            iconLabel.setIcon(serviceInfoToReceiveMap.containsKey(info)?ICON:null);
             return panel;
         }
 
@@ -187,11 +224,38 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
                 ListModel dlm = discoveredDevices;
                 ServiceInfo info = (ServiceInfo) dlm.getElementAt(index);
                 listBox.ensureIndexIsVisible(index);
-                LOG.info("Connection fequest for " + info);
-//                TODO actually do the connection, and 'remember' the connection so we don't do it again.
+                connectTo(info);
             }
         }
 
+    }
+    
+    /**
+     * Starts a receiver to the appender referenced within the ServiceInfo
+     * @param info
+     */
+    private void connectTo(ServiceInfo info) {
+        LOG.info("Connection request for " + info);
+        int port = info.getPort();
+        String hostAddress = info.getHostAddress();
+       
+//        TODO handle different receivers than just SocketHubReceiver
+        SocketHubReceiver receiver = new SocketHubReceiver();
+        receiver.setHost(hostAddress);
+        receiver.setPort(port);
+        receiver.setName(info.getName());
+        
+        LogManager.getLoggerRepository().getPluginRegistry().addPlugin(receiver);
+        receiver.activateOptions();
+        LOG.info("Receiver '" + receiver.getName() + "' has been started");
+        
+        // ServiceInfo obeys equals() and hashCode() contracts, so this should be safe.
+        synchronized (serviceInfoToReceiveMap) {
+            serviceInfoToReceiveMap.put(info, receiver);
+        }
+        
+        // now notify the list model has changed, it needs redrawing of the receiver icon now it's connected
+        discoveredDevices.fireContentsChanged();
     }
 
     public static void main(String[] args) throws InterruptedException {
