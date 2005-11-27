@@ -1,0 +1,46 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+<link rel="stylesheet" href="stylesheet.css" type="text/css">
+</HEAD>
+
+<BODY BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#FF0000" VLINK="#800000" ALINK="#FF00FF" BACKGROUND="?">
+<h1>ZeroConf (Zero Configuration)</h1>
+<p>One of the hardest parts of any network-based application is configuring which bits connect to what, and how 
+do they connect to each other.  Each device that can be connected <emphasis>to</emphasis> already knows
+the configuration details required to connect to it, but every other device that may wish to connect to it
+will need to be provided with this information so the connection can be established.
+</p>
+<p>
+ZeroConf aims to eliminate the time-consuming aspect of connecting devices together. The device broadcasts the 
+configuration details reqired to connect or work with the service over a multicast protocol. You probably already have
+devices on your local network such as printers that are automatically discovered by your computer.
+</p>
+<p>
+Zeroconf is an open-standard that many vendors are using to reduce cost of configuration.  The <b>JmDNS</b> project
+is an Apache 2.0 licensed library that implements the ZeroConf protocol.  Chainsaw and log4j use
+JmDNS to broadcast Appender information so that a matching Receiver can be easily created to connect to each other
+to stream logging messages into Chainsaw.  
+</p>
+<h1>Interesting... So what do I need to use ZeroConf with Chainsaw & log4j?</h1>
+<p>
+TODO
+</p>
+<h1></h1>
+<h1>Cool... But I have some applications that use log4j 1.2.x.  Will it still work?</h1>
+<p>Yes.  We have designed a backward compatible mechanism to expose log4j 1.2.x SocketHubAppender so that Chainsaw can detect it automatically.  
+You just need to download the <code>log4j-zeroconf.jar</code> and the JmDNS package.  Then change your references from <code>SocketHubAppender</code>
+to <code>ZeroConfSocketHubAppender</code>. (We recommend you change the 'name' propety from it's default to make it easy for you to use, other
+wise it's name will appear as the default 'SocketHubAppender'.</p>
+
+<h1>But... Surely there's a catch?</h1>
+<p>A little.  Because it's based on a multicast protocol, routers tend to block these packets, and so it's likely that your production computers,
+which are usually in a heavily protected network won't be able to broadcast their configuration information.  If you have a VPN
+into this sort of network it is possible that these multicast packets can traverse the network.</p>
+
+<h1>Oh... So is this even useful?</h1>
+<p>It's extremely useful for development, QA and staging environments.  Usually the QA/Staging environment is isolated from your development
+team, but having them monitor logs from these machines would be handy.  Or your QA team may want to copy/paste some ERROR messages from
+QA/staging to notify the dev team.  ZeroConf gives your whole software development team an easy way to get access to your logging events.</p>
+</BODY>
+</HTML>

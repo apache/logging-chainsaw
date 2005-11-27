@@ -2,9 +2,12 @@ package org.apache.log4j.chainsaw.zeroconf;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -14,6 +17,7 @@ import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
@@ -21,16 +25,27 @@ import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
+import javax.swing.JToolBar;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
+import javax.swing.SwingUtilities;
+import javax.swing.JPopupMenu.Separator;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.ModifiableListModel;
+import org.apache.log4j.chainsaw.SmallButton;
+import org.apache.log4j.chainsaw.help.HelpManager;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.chainsaw.plugins.GUIPluginSkeleton;
 import org.apache.log4j.net.SocketHubReceiver;
@@ -48,8 +63,10 @@ import org.apache.log4j.xml.Log4jEntityResolver;
  * whatever people are calling it) and allow the user to double click on
  * 'devices' to try and connect to them with no configuration needed.
  * 
- * TODO add autoConnect visuals, and save it in a model TODO need to handle
- * NON-log4j devices that may be broadcast in the interested zones TODO add the
+ * TODO add autoConnect visuals, and save it in a model 
+ * TODO need to handle
+ * NON-log4j devices that may be broadcast in the interested zones 
+ * TODO add the
  * default Zone, and the list of user-specified zones to a preferenceModel
  * 
  * To run this in trial mode, first run {@link ZeroConfSocketHubAppenderTestBed}, then
@@ -72,6 +89,18 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
 
     
     private Map serviceInfoToReceiveMap = new HashMap();
+
+    private JMenu connectToMenu = new JMenu("Connect to");
+    private JMenuItem helpItem = new JMenuItem(new AbstractAction("Learn more about ZeroConf...",
+            ChainsawIcons.ICON_HELP) {
+
+        public void actionPerformed(ActionEvent e) {
+            HelpManager.getInstance()
+                    .showHelpForClass(ZeroConfPlugin.class);
+        }
+    });  
+    
+    private JMenuItem nothingToConnectTo = new JMenuItem("No devices discovered");
     
     public ZeroConfPlugin() {
         setName("Zeroconf");
@@ -95,7 +124,15 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         listBox.setFixedCellWidth(200);
         listBox.setVisibleRowCount(-1);
         listBox.addMouseListener(new ConnectorMouseListener());
+        JToolBar toolbar = new JToolBar();
+        SmallButton helpButton = new SmallButton(helpItem.getAction());
+        helpButton.setText(helpItem.getText());
+        toolbar.add(helpButton);
+        toolbar.setFloatable(false);
+        add(toolbar, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
+        
+        injectMenu();
         
         LogManager.getLoggerRepository().getPluginRegistry().addPluginListener(new PluginListener() {
 
@@ -113,23 +150,125 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
                         }
                     }
                 }
+//                 need to make sure that the menu item tracking this item has it's icon and enabled state updade
+                JMenuItem item = locateMatchingMenuItem(plugin.getName());
+                item.setEnabled(true);
+                item.setIcon(null);
                 discoveredDevices.fireContentsChanged();
             }});
 
     }
 
-    private void deviceDiscovered(ServiceInfo info) {
-        String name = info.getName();
-        for (int i = 0; i < discoveredDevices.getSize(); i++) {
-            if (name.compareToIgnoreCase(((ServiceInfo) discoveredDevices
-                    .elementAt(i)).getName()) < 0) {
-                discoveredDevices.insertElementAt(name, i);
-                return;
+    /**
+     * Attempts to find a JFrame container as a parent,and addse a "Connect to" menu
+     *
+     */
+    private void injectMenu() {
+        
+        JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        if(frame == null) {
+            LOG.info("Could not locate parent JFrame to add menu to");
+        }else {
+            JMenuBar menuBar = frame.getJMenuBar();
+            if(menuBar==null ) {
+                menuBar = new JMenuBar();
+                frame.setJMenuBar(menuBar);
             }
+            insertToLeftOfHelp(menuBar, connectToMenu);
+            connectToMenu.add(nothingToConnectTo);
+            
+            discoveredDevices.addListDataListener(new ListDataListener() {
+
+                public void intervalAdded(ListDataEvent e) {
+                    if(discoveredDevices.getSize()>0) {
+                        connectToMenu.remove(nothingToConnectTo);
+                    }
+                }
+
+                public void intervalRemoved(ListDataEvent e) {
+                    if(discoveredDevices.getSize()==0) {
+                        connectToMenu.add(nothingToConnectTo,0);
+                    }
+                    
+                }
+
+                public void contentsChanged(ListDataEvent e) {
+                }});
+            
+            nothingToConnectTo.setEnabled(false);
+
+            connectToMenu.addSeparator();
+            connectToMenu.add(helpItem);
         }
-        discoveredDevices.addElement(info);
     }
 
+    private void insertToLeftOfHelp(JMenuBar menuBar, JMenu item) {
+        for (int i = 0; i < menuBar.getMenuCount(); i++) {
+            JMenu menu = menuBar.getMenu(i);
+            if(menu.getText().equalsIgnoreCase("help")) {
+                menuBar.add(item, i-1);
+            }
+        }
+        LOG.warn("menu '" + item.getText() + "' was NOT added because the 'Help' menu could not be located");
+    }
+
+    private void deviceDiscovered(final ServiceInfo info) {
+        String name = info.getName();
+        JMenuItem connectToDeviceMenuItem = new JMenuItem(new AbstractAction(info.getName()) {
+
+            public void actionPerformed(ActionEvent e) {
+                connectTo(info);
+            }});
+        
+        if(discoveredDevices.getSize()>0) {
+            for (int i = 0; i < discoveredDevices.getSize(); i++) {
+                if (name.compareToIgnoreCase(((ServiceInfo) discoveredDevices
+                        .elementAt(i)).getName()) < 0) {
+                    discoveredDevices.insertElementAt(info, i);
+                }
+            }
+            Component[] menuComponents = connectToMenu.getMenuComponents();
+            boolean located = false;
+            for (int i = 0; i < menuComponents.length; i++) {
+                Component c = menuComponents[i];
+                if (!(c instanceof JPopupMenu.Separator)) {
+                    JMenuItem item = (JMenuItem) menuComponents[i];
+                    if (item.getText().compareToIgnoreCase(name) < 0) {
+                        connectToMenu.insert(connectToDeviceMenuItem, i);
+                        located = true;
+                        break;
+                    }
+                }
+            }
+            if(!located) {
+                connectToMenu.insert(connectToDeviceMenuItem,0);
+            }
+        }else {
+            discoveredDevices.addElement(info);
+            connectToMenu.insert(connectToDeviceMenuItem,0);
+        }
+    }
+    
+    private void deviceRemoved(String name) {
+        for (int i = 0; i < discoveredDevices.getSize(); i++) {
+            if (name.compareToIgnoreCase(((ServiceInfo) discoveredDevices
+                    .elementAt(i)).getName()) == 0) {
+                discoveredDevices.remove(i);
+            }
+        }
+        Component[] menuComponents = connectToMenu.getMenuComponents();
+        for (int i = 0; i < menuComponents.length; i++) {
+            Component c = menuComponents[i];
+            if (!(c instanceof JPopupMenu.Separator)) {
+                JMenuItem item = (JMenuItem) menuComponents[i];
+                if (item.getText().compareToIgnoreCase(name) == 0) {
+                    connectToMenu.remove(item);
+                    break;
+                }
+            }
+        }
+    }
+        
     private class ZeroConfServiceListener implements ServiceListener {
 
         public void serviceAdded(final ServiceEvent event) {
@@ -153,6 +292,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
 
         public void serviceRemoved(ServiceEvent event) {
             LOG.info("Service Removed: " + event);
+            deviceRemoved(event.getName());
         }
 
         public void serviceResolved(ServiceEvent event) {
@@ -254,8 +394,26 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
             serviceInfoToReceiveMap.put(info, receiver);
         }
         
+//         this instance of the menu item needs to be disabled, and have an icon added
+        JMenuItem item = locateMatchingMenuItem(info.getName());
+        item.setIcon(new ImageIcon(ChainsawIcons.ANIM_NET_CONNECT));
+        item.setEnabled(false);
         // now notify the list model has changed, it needs redrawing of the receiver icon now it's connected
         discoveredDevices.fireContentsChanged();
+    }
+
+    private JMenuItem locateMatchingMenuItem(String name) {
+        Component[] menuComponents = connectToMenu.getMenuComponents();
+        for (int i = 0; i < menuComponents.length; i++) {
+            Component c = menuComponents[i];
+            if (!(c instanceof JPopupMenu.Separator)) {
+                JMenuItem item = (JMenuItem) menuComponents[i];
+                if (item.getText().compareToIgnoreCase(name) == 0) {
+                    return item;
+                }
+            }
+        }
+        throw new IllegalArgumentException("could not locate Menu Item matching name " + name);
     }
 
     public static void main(String[] args) throws InterruptedException {
@@ -265,13 +423,15 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
 
         final ZeroConfPlugin plugin = new ZeroConfPlugin();
 
-        plugin.activateOptions();
 
         JFrame frame = new JFrame();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         frame.getContentPane().setLayout(new BorderLayout());
         frame.getContentPane().add(plugin, BorderLayout.CENTER);
+
+        // needs to be activated after being added to the JFrame for Menu injection to work
+        plugin.activateOptions();
 
         frame.pack();
         frame.setVisible(true);
