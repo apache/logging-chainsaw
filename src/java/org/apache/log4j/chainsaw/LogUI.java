@@ -474,11 +474,20 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     try {
       Class vfsPluginClass = Class.forName("org.apache.log4j.chainsaw.vfs.VFSPlugin");
       Plugin vfsPlugin = (Plugin) vfsPluginClass.newInstance();
-      vfsPlugin.activateOptions();
       pluginRegistry.addPlugin(vfsPlugin);
+      vfsPlugin.activateOptions();
       MessageCenter.getInstance().getLogger().info("Looks like VFS is available... WooHoo!");
     } catch (Throwable e) {
       MessageCenter.getInstance().getLogger().error("Doesn't look like VFS is available", e);
+    }
+    try {
+        Class pluginClass = Class.forName("org.apache.log4j.chainsaw.zeroconf.ZeroConfPlugin");
+        Plugin plugin = (Plugin) pluginClass.newInstance();
+        pluginRegistry.addPlugin(plugin);
+        plugin.activateOptions();
+        MessageCenter.getInstance().getLogger().info("Looks like ZeroConf stuff is available... WooHoo!");
+    } catch (Throwable e) {
+        MessageCenter.getInstance().getLogger().error("Doesn't look like ZeroConf is available", e);
     }
   }
 
@@ -712,7 +721,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
     panePanel.add(getTabbedPane());
     addWelcomePanel();
-    initPlugins(pluginRegistry);
 
     getContentPane().add(toolbar, BorderLayout.NORTH);
     getContentPane().add(statusBar, BorderLayout.SOUTH);
@@ -722,6 +730,13 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     mainReceiverSplitPane.setDividerLocation(-1);
 
     getContentPane().add(mainReceiverSplitPane, BorderLayout.CENTER);
+
+    /**
+     * We need to make sure that all the internal GUI components have been added to the
+     * JFrame so that any plugns that get activated during initPlugins(...) method
+     * have access to inject menus  
+     */
+    initPlugins(pluginRegistry);
 
     mainReceiverSplitPane.setResizeWeight(1.0);
     addWindowListener(
