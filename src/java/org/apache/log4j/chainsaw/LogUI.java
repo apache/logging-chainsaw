@@ -146,8 +146,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
   private ChainsawTabbedPane tabbedPane;
   private JToolBar toolbar;
   private ChainsawStatusBar statusBar;
-  private final ApplicationPreferenceModel applicationPreferenceModel =
-    new ApplicationPreferenceModel();
+  private  ApplicationPreferenceModel applicationPreferenceModel;
   private ApplicationPreferenceModelPanel applicationPreferenceModelPanel;
   private final Map tableModelMap = new HashMap();
   private final Map tableMap = new HashMap();
@@ -248,7 +247,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       }
     ApplicationPreferenceModel model = new ApplicationPreferenceModel();
 
-    SettingsManager.getInstance().configure(model);
+    SettingsManager.getInstance().configure(new ApplicationPreferenceModelSaver(model));
 
     applyLookAndFeel(model.getLookAndFeelClassName());
 
@@ -290,6 +289,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     }
     
     LogUI logUI = new LogUI();
+    logUI.applicationPreferenceModel = model;
 
     if (model.isShowSplash()) {
       showSplash(logUI);
@@ -331,8 +331,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
     logUI.activateViewer();
 
-    logUI.getApplicationPreferenceModel().apply(model);
-
     logger.info("SecurityManager is now: " + System.getSecurityManager());
 
     logUI.checkForNewerVersion();
@@ -359,7 +357,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     //if Chainsaw is launched as an appender, ensure the root logger level is TRACE
     LogManager.getRootLogger().setLevel(Level.TRACE);
     ApplicationPreferenceModel model = new ApplicationPreferenceModel();
-    SettingsManager.getInstance().configure(model);
+    SettingsManager.getInstance().configure(new ApplicationPreferenceModelSaver(model));
 
     cyclicBufferSize = model.getCyclicBufferSize();
     applyLookAndFeel(model.getLookAndFeelClassName());
@@ -863,7 +861,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       });
 
     getSettingsManager().addSettingsListener(this);
-    getSettingsManager().addSettingsListener(applicationPreferenceModel);
+    getSettingsManager().addSettingsListener(new ApplicationPreferenceModelSaver(applicationPreferenceModel));
     getSettingsManager().addSettingsListener(MRUFileListPreferenceSaver.getInstance());
     getSettingsManager().loadSettings();
 

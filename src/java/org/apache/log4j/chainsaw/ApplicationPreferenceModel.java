@@ -30,31 +30,37 @@ import org.apache.log4j.helpers.Constants;
  * @author Paul Smith <psmith@apache.org>
  *
  */
-public class ApplicationPreferenceModel implements SettingsListener {
+public class ApplicationPreferenceModel {
 
-    private boolean showNoReceiverWarning  ;
-    private boolean statusBar;
-    private boolean toolbar;
-    private boolean receivers;
-    private boolean confirmExit;
-    private boolean showSplash;
-    private String lookAndFeelClassName;
-    private int toolTipDisplayMillis;
-    private int cyclicBufferSize;
-    private String lastUsedVersion;
-    private int responsiveness;
+    private boolean showNoReceiverWarning = true ;
+    private boolean statusBar = true;
+    private boolean toolbar = true;
+    private boolean receivers = true;
+    private boolean confirmExit = true;
+    private boolean showSplash = true;
+    private String lookAndFeelClassName = "";
+    private int toolTipDisplayMillis = 4000;
+    private int cyclicBufferSize = 5000;
+    private String lastUsedVersion = "";
+    private int responsiveness = 3;
     
     private String identifierExpression = Constants.HOSTNAME_KEY + " - " + Constants.APPLICATION_KEY; 
 
     private transient final PropertyChangeSupport propertySupport =
         new PropertyChangeSupport(this);
-    private int tabPlacement;
+    
+    private int tabPlacement = 3;
     
     /**
      * If not 'empty', this property will be used as the URL to load log4j configuration at startup
      */
     private String configurationURL="";
-	private boolean okToRemoveSecurityManager;
+	  
+    /**
+     *    this means for Receivers that require optional jars that can't be delivered
+     *    by the Web start classloader, we need to be able to remove the SecurityManager in place
+     */
+    private boolean okToRemoveSecurityManager = false;
 
     /**
      * @param listener
@@ -164,47 +170,6 @@ public class ApplicationPreferenceModel implements SettingsListener {
         firePropertyChange("showNoReceiverWarning", oldShowNoReceiverWarning, newShowNoReceiverWarning);
     }
 
-    /* (non-Javadoc)
-     * @see org.apache.log4j.chainsaw.prefs.SettingsListener#loadSettings(org.apache.log4j.chainsaw.prefs.LoadSettingsEvent)
-     */
-    public void loadSettings(LoadSettingsEvent event) {
-       setShowNoReceiverWarning(event.asBoolean("showNoReceiverWarning"));
-       setIdentifierExpression(event.getSetting("identifierExpression"));
-       setResponsiveness(event.asInt("Responsiveness"));
-       setTabPlacement(event.asInt("tabPlacement"));
-       setStatusBar(event.asBoolean("statusBar"));
-       setToolbar(event.asBoolean("toolbar"));
-       setReceivers(event.asBoolean("receivers"));
-       setLookAndFeelClassName(event.getSetting("lookAndFeelClassName"));
-       setConfirmExit(event.asBoolean("confirmExit"));
-       setShowSplash(event.asBoolean("showSplash"));
-       setToolTipDisplayMillis(event.asInt("toolTipDisplayMillis"));
-       setCyclicBufferSize(event.asInt("cyclicBufferSize"));
-       setConfigurationURL(event.getSetting("configurationURL"));
-       setLastUsedVersion(event.getSetting("lastUsedVersion"));
-       setOkToRemoveSecurityManager(event.asBoolean("okToRemoveSecurityManager"));
-    }
-
-    /* (non-Javadoc)
-     * @see org.apache.log4j.chainsaw.prefs.SettingsListener#saveSettings(org.apache.log4j.chainsaw.prefs.SaveSettingsEvent)
-     */
-    public void saveSettings(SaveSettingsEvent event) {
-        event.saveSetting("showNoReceiverWarning", isShowNoReceiverWarning());
-        event.saveSetting("identifierExpression", getIdentifierExpression());
-        event.saveSetting("Responsiveness", getResponsiveness());
-        event.saveSetting("tabPlacement", getTabPlacement());
-        event.saveSetting("statusBar", isStatusBar());
-        event.saveSetting("toolbar", isToolbar());
-        event.saveSetting("receivers", isReceivers());
-        event.saveSetting("lookAndFeelClassName", getLookAndFeelClassName());
-        event.saveSetting("confirmExit",isConfirmExit());
-        event.saveSetting("showSplash", isShowSplash());
-        event.saveSetting("toolTipDisplayMillis", getToolTipDisplayMillis());
-        event.saveSetting("cyclicBufferSize", getCyclicBufferSize());
-        event.saveSetting("configurationURL", getConfigurationURL());
-        event.saveSetting("lastUsedVersion", getLastUsedVersion());
-        event.saveSetting("okToRemoveSecurityManager", isOkToRemoveSecurityManager());
-    }
 
     /**
      * Takes another model and copies all the values into this model

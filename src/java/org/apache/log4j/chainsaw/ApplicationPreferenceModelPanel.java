@@ -50,6 +50,7 @@ import javax.swing.tree.TreeModel;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.log4j.chainsaw.osx.OSXIntegration;
 
 
 /**
@@ -104,7 +105,18 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
       });
   }
 
-  public static void main(String[] args) {
+//  /**
+//   * This method sets the uncommitedPreferenceModel to have values that
+//   * are 'abnormal', such that the very first call to updateModel()
+//   * ensures that the GUI components get notified of change, and set
+//   * themselves appropriately
+//   *
+//   */
+//  private void configureUncommittedPreferenceModel() {
+////      uncommittedPreferenceModel.setOkToRemoveSecurityManager()
+//  }
+
+public static void main(String[] args) {
     JFrame f = new JFrame("App Preferences Panel Test Bed");
     ApplicationPreferenceModel model = new ApplicationPreferenceModel();
     ApplicationPreferenceModelPanel panel =
@@ -171,6 +183,7 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
       super("Visuals");
       setupComponents();
       setupListeners();
+      setupInitialValues();
     }
 
     /**
@@ -217,20 +230,7 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
           public void propertyChange(PropertyChangeEvent evt) {
             int value = ((Integer) evt.getNewValue()).intValue();
 
-            switch (value) {
-            case SwingConstants.TOP:
-              topPlacement.setSelected(true);
-
-              break;
-
-            case SwingConstants.BOTTOM:
-              bottomPlacement.setSelected(true);
-
-              break;
-
-            default:
-              break;
-            }
+            configureTabPlacement(value);
           }
         });
 
@@ -303,6 +303,15 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
       tabPlacementBox.add(topPlacement);
       tabPlacementBox.add(bottomPlacement);
 
+      /** 
+       * If we're OSX, we're 'not allowed' to change the tab placement... 
+       */
+      if(OSXIntegration.IS_OSX) {
+          tabPlacementBox.setEnabled(false);
+          topPlacement.setEnabled(false);
+          bottomPlacement.setEnabled(false);
+      }
+      
       add(tabPlacementBox);
       add(statusBar);
       add(receivers);
@@ -350,7 +359,38 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
 
       add(
         new JLabel(
-          "Look and Feel change will apply the next time you start Chainsaw"));
+          "<html>Look and Feel change will apply the next time you start Chainsaw.<br>" +
+          "If this value is not set, the default L&F of your system is used.</html>"));
+    }
+    private void configureTabPlacement(int value) {
+        switch (value) {
+        case SwingConstants.TOP:
+          topPlacement.setSelected(true);
+
+          break;
+
+        case SwingConstants.BOTTOM:
+          bottomPlacement.setSelected(true);
+
+          break;
+
+        default:
+          break;
+        }
+    }
+    private void setupInitialValues() {
+        statusBar.setSelected(uncommittedPreferenceModel.isStatusBar());
+        receivers.setSelected(uncommittedPreferenceModel.isReceivers());
+        toolBar.setSelected(uncommittedPreferenceModel.isToolbar());
+        configureTabPlacement(uncommittedPreferenceModel.getTabPlacement());
+        Enumeration e = lookAndFeelGroup.getElements();
+        while(e.hasMoreElements()) {
+            JRadioButton radioButton = (JRadioButton)e.nextElement();
+            if(radioButton.getText().equals(uncommittedPreferenceModel.getLookAndFeelClassName())) {
+                radioButton.setSelected(true);
+                break;
+            }
+        }
     }
   }
 
@@ -634,6 +674,15 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
         uncommittedPreferenceModel.isShowNoReceiverWarning());
       identifierExpression.setText(
         uncommittedPreferenceModel.getIdentifierExpression());
+      
+      confirmExit.setSelected(uncommittedPreferenceModel.isConfirmExit());
+      okToRemoveSecurityManager.setSelected(uncommittedPreferenceModel.isOkToRemoveSecurityManager());
+      showNoReceiverWarning.setSelected(uncommittedPreferenceModel.isShowNoReceiverWarning());
+      showSplash.setSelected(uncommittedPreferenceModel.isShowSplash());
+      identifierExpression.setText(uncommittedPreferenceModel.getIdentifierExpression());
+      toolTipDisplayMillis.setText(uncommittedPreferenceModel.getToolTipDisplayMillis()+"");
+      cyclicBufferSize.setText(uncommittedPreferenceModel.getCyclicBufferSize() + "");
+      configurationURL.setText(uncommittedPreferenceModel.getConfigurationURL());
     }
   }
 }
