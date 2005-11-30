@@ -152,8 +152,10 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
                 }
 //                 need to make sure that the menu item tracking this item has it's icon and enabled state updade
                 JMenuItem item = locateMatchingMenuItem(plugin.getName());
-                item.setEnabled(true);
-                item.setIcon(null);
+                if (item!=null) {
+                    item.setEnabled(true);
+                    item.setIcon(null);
+                }
                 discoveredDevices.fireContentsChanged();
             }});
 
@@ -396,12 +398,20 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         
 //         this instance of the menu item needs to be disabled, and have an icon added
         JMenuItem item = locateMatchingMenuItem(info.getName());
-        item.setIcon(new ImageIcon(ChainsawIcons.ANIM_NET_CONNECT));
-        item.setEnabled(false);
+        if (item!=null) {
+            item.setIcon(new ImageIcon(ChainsawIcons.ANIM_NET_CONNECT));
+            item.setEnabled(false);
+        }
         // now notify the list model has changed, it needs redrawing of the receiver icon now it's connected
         discoveredDevices.fireContentsChanged();
     }
 
+    /**
+     * Finds the matching JMenuItem based on name, may return null if there is no match.
+     * 
+     * @param name
+     * @return
+     */
     private JMenuItem locateMatchingMenuItem(String name) {
         Component[] menuComponents = connectToMenu.getMenuComponents();
         for (int i = 0; i < menuComponents.length; i++) {
@@ -413,7 +423,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
                 }
             }
         }
-        throw new IllegalArgumentException("could not locate Menu Item matching name " + name);
+        return null;
     }
 
     public static void main(String[] args) throws InterruptedException {
