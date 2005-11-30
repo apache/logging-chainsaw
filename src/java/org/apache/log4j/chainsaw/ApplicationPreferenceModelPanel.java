@@ -105,16 +105,6 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
       });
   }
 
-//  /**
-//   * This method sets the uncommitedPreferenceModel to have values that
-//   * are 'abnormal', such that the very first call to updateModel()
-//   * ensures that the GUI components get notified of change, and set
-//   * themselves appropriately
-//   *
-//   */
-//  private void configureUncommittedPreferenceModel() {
-////      uncommittedPreferenceModel.setOkToRemoveSecurityManager()
-//  }
 
 public static void main(String[] args) {
     JFrame f = new JFrame("App Preferences Panel Test Bed");
