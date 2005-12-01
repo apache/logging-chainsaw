@@ -1415,7 +1415,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
   public void loadSettings(LoadSettingsEvent event) {
 
     File xmlFile = new File(SettingsManager.getInstance()
-                .getSettingsDirectory(), URLEncoder.encode(identifier));
+                .getSettingsDirectory(), URLEncoder.encode(identifier) + ".xml");
 
         if (xmlFile.exists()) {
             XStream stream = buildXStreamForLogPanelPreference();
@@ -1462,7 +1462,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
    */
   public void saveSettings(SaveSettingsEvent event) {
       File xmlFile = new File(SettingsManager.getInstance()
-              .getSettingsDirectory(), URLEncoder.encode(identifier));
+              .getSettingsDirectory(), URLEncoder.encode(identifier) + ".xml");
 
 //      TODO  TableColumnData is no longer required, delete it
     updatePreferenceModelColumnDetails();
@@ -1486,12 +1486,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     
             TableColumn c = (TableColumn) table.getColumnModel().getColumn(i);
     
-            if (c.getModelIndex() < ChainsawColumns.getColumnsNames().size()) {
-                preferenceModel.getColumns().add(c);
-            } else {
-                logger.debug("Not saving col ' " + c.getHeaderValue()
-                        + "' not part of standard columns");
-            }
+            preferenceModel.getColumns().add(c);
         }
     }
     
