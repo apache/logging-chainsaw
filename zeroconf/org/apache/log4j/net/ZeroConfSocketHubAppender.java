@@ -23,13 +23,12 @@ public class ZeroConfSocketHubAppender extends SocketHubAppender {
     public static final String DEFAULT_ZEROCONF_ZONE="_log4j._tcp.local.";
     private String zeroConfZone = DEFAULT_ZEROCONF_ZONE;
     
-    private String zeroConfDeviceName = "SocketHubAppender";
-    
     private Object logger;
     private Method logInfoMethod;
     private Method logErrorMethod;
     
     public ZeroConfSocketHubAppender() {
+        setName("SocketHubAppender");
         try {
             Method getLoggerMethod = this.getClass().getMethod("getLogger", new Class[0]);
             logger = getLoggerMethod.invoke(this, new Object[0]);
@@ -52,7 +51,7 @@ public class ZeroConfSocketHubAppender extends SocketHubAppender {
         }
     }
     private ServiceInfo buildServiceInfo() {
-        return new ServiceInfo(zeroConfZone, zeroConfDeviceName, getPort(), "SocketHubAppender on port " + getPort() );
+        return new ServiceInfo(zeroConfZone, getName(), getPort(), "SocketHubAppender on port " + getPort() );
     }
     
     private void logWithlog4j12Compatibility(Level level, String message) {
@@ -71,30 +70,6 @@ public class ZeroConfSocketHubAppender extends SocketHubAppender {
             }
         }
     }
-
-    /**
-     * Sets the name of this appender as it would appear in a ZeroConf browser.
-     * @see #setZeroConfDeviceName(String)
-     * @return String deviceName
-     */
-    public String getZeroConfDeviceName() {
-        return zeroConfDeviceName;
-    }
-
-
-
-
-    /**
-     * Configures the name/label of this appender so that it will appear nicely in a ZeroConf browser, the default
-     * being "SocketHubAppender"
-     * @param zeroConfDeviceName
-     */
-    public void setZeroConfDeviceName(String zeroConfDeviceName) {
-        this.zeroConfDeviceName = zeroConfDeviceName;
-    }
-
-
-
 
     /**
      * Returns the ZeroConf domain that will be used to register this 'device'.

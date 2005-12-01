@@ -15,6 +15,7 @@ public class ZeroConfSocketHubAppenderTestBed {
 
     public static void main(String[] args) throws Exception {
         ZeroConfSocketHubAppender appender = new ZeroConfSocketHubAppender();
+        appender.setName("foo");
         appender.activateOptions();
         Logger LOG = LogManager.getRootLogger();
         LOG.addAppender(appender);

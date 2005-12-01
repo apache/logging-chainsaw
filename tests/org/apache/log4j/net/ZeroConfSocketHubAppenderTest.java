@@ -52,7 +52,7 @@ public class ZeroConfSocketHubAppenderTest extends TestCase {
                 
             }});
         ZeroConfSocketHubAppender appender = new ZeroConfSocketHubAppender();
-        appender.setZeroConfDeviceName("SimpleTest");
+        appender.setName("SimpleTest");
         appender.activateOptions();
         
         Thread.sleep(DEFAULT_TIMEOUT_FOR_ZEROCONF_EVENTS_TO_APPEAR);

@@ -7,6 +7,9 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -48,6 +51,7 @@ import org.apache.log4j.chainsaw.SmallButton;
 import org.apache.log4j.chainsaw.help.HelpManager;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.chainsaw.plugins.GUIPluginSkeleton;
+import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.net.SocketHubReceiver;
 import org.apache.log4j.net.ZeroConfSocketHubAppender;
 import org.apache.log4j.net.ZeroConfSocketHubAppenderTestBed;
@@ -57,6 +61,9 @@ import org.apache.log4j.plugins.PluginEvent;
 import org.apache.log4j.plugins.PluginListener;
 import org.apache.log4j.plugins.PluginRegistry;
 import org.apache.log4j.xml.Log4jEntityResolver;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
 
 /**
  * This plugin is designed to detect specific Zeroconf zones (Rendevouz/Bonjour,
@@ -87,6 +94,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
 
     private JmDNS jmDNS;
 
+    private ZeroConfPreferenceModel preferenceModel;
     
     private Map serviceInfoToReceiveMap = new HashMap();
 
@@ -108,6 +116,21 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
 
     public void shutdown() {
         Zeroconf4log4j.shutdown();
+        save();
+    }
+
+    private void save() {
+        File fileLocation = getPreferenceFileLocation();
+        XStream stream = new XStream(new DomDriver());
+        try {
+            stream.toXML(preferenceModel, new FileWriter(fileLocation));
+        } catch (Exception e) {
+            LOG.error("Failed to save ZeroConfPlugin configuration file",e);
+        }
+    }
+
+    private File getPreferenceFileLocation() {
+        return new File(SettingsManager.getInstance().getSettingsDirectory(), "zeroconfprefs.xml");
     }
 
     public void activateOptions() {
@@ -159,6 +182,18 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
                 discoveredDevices.fireContentsChanged();
             }});
 
+        File fileLocation = getPreferenceFileLocation();
+        XStream stream = new XStream(new DomDriver());
+        if (fileLocation.exists()) {
+            try {
+                this.preferenceModel = (ZeroConfPreferenceModel) stream
+                        .fromXML(new FileReader(fileLocation));
+            } catch (Exception e) {
+                LOG.error("Failed to load ZeroConfPlugin configuration file",e);
+            }
+        }else {
+            this.preferenceModel = new ZeroConfPreferenceModel();
+        }
     }
 
     /**
@@ -215,7 +250,11 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
     }
 
     private void deviceDiscovered(final ServiceInfo info) {
-        String name = info.getName();
+        final String name = info.getName();
+//        TODO currently adding ALL devices to autoConnectlist
+//        preferenceModel.addAutoConnectDevice(name);
+        
+        
         JMenuItem connectToDeviceMenuItem = new JMenuItem(new AbstractAction(info.getName()) {
 
             public void actionPerformed(ActionEvent e) {
@@ -249,6 +288,16 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
             discoveredDevices.addElement(info);
             connectToMenu.insert(connectToDeviceMenuItem,0);
         }
+//         if the device name is one of the autoconnect devices, then connect immediately
+        if (preferenceModel.getAutoConnectDevices().contains(name)) {
+            new Thread(new Runnable() {
+
+                public void run() {
+                    LOG.info("Auto-connecting to " + name);
+                    connectTo(info);
+                }
+            }).start();
+        }
     }
     
     private void deviceRemoved(String name) {
@@ -276,7 +325,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         public void serviceAdded(final ServiceEvent event) {
             LOG.info("Service Added: " + event);
             /**
-             * TODO it's not very clear whether we should do the resolving in a
+             * it's not very clear whether we should do the resolving in a
              * background thread or not.. All it says is to NOT do it in the AWT
              * thread, so I'm thinking it probably should be a background thread
              */
@@ -335,7 +384,6 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
             
             
             // TODO add autoconnect label
-
             panel.setBorder(BorderFactory.createEtchedBorder());
 
         }
@@ -352,7 +400,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
             ServiceInfo info = (ServiceInfo) value;
             nameLabel.setText(info.getName());
             detailLabel.setText(info.getHostAddress() + ":" + info.getPort());
-            iconLabel.setIcon(serviceInfoToReceiveMap.containsKey(info)?ICON:null);
+            iconLabel.setIcon(isConnectedTo(info)?ICON:null);
             return panel;
         }
 
@@ -366,12 +414,35 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
                 ListModel dlm = discoveredDevices;
                 ServiceInfo info = (ServiceInfo) dlm.getElementAt(index);
                 listBox.ensureIndexIsVisible(index);
-                connectTo(info);
+                if(!isConnectedTo(info)) {
+                    connectTo(info);
+                }else {
+                    disconnectFrom(info);
+                }
             }
         }
 
+
     }
-    
+
+    private void disconnectFrom(ServiceInfo info) {
+        if(!isConnectedTo(info)) {
+            return; // not connected, who cares
+        }
+        Plugin plugin;
+        synchronized (serviceInfoToReceiveMap) {
+            plugin = (Plugin) serviceInfoToReceiveMap.get(info);
+        }
+        LogManager.getLoggerRepository().getPluginRegistry().stopPlugin(plugin.getName());
+    }
+    /**
+     * returns true if the serviceInfo record already has a matching connected receiver
+     * @param info
+     * @return
+     */
+    private boolean isConnectedTo(ServiceInfo info) {
+        return serviceInfoToReceiveMap.containsKey(info);
+    }
     /**
      * Starts a receiver to the appender referenced within the ServiceInfo
      * @param info
