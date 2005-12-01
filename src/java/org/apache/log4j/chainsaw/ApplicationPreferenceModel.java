@@ -44,7 +44,7 @@ public class ApplicationPreferenceModel {
     private String lastUsedVersion = "";
     private int responsiveness = 3;
     
-    private String identifierExpression = Constants.HOSTNAME_KEY + " - " + Constants.APPLICATION_KEY; 
+    private String identifierExpression = "PROP.hostname - PROP.application"; 
 
     private transient final PropertyChangeSupport propertySupport =
         new PropertyChangeSupport(this);

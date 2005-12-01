@@ -1148,6 +1148,8 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
           handler.setIdentifierExpression(evt.getNewValue().toString());
         }
       });
+    handler.setIdentifierExpression(applicationPreferenceModel.getIdentifierExpression());
+    
 
     applicationPreferenceModel.addPropertyChangeListener(
       "toolTipDisplayMillis",
@@ -1168,6 +1170,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
           handler.setQueueInterval((value * 1000) - 750);
         }
       });
+    handler.setQueueInterval((applicationPreferenceModel.getResponsiveness() * 1000) - 750);
 
     applicationPreferenceModel.addPropertyChangeListener(
       "tabPlacement",
@@ -1201,7 +1204,8 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
           setStatusBarVisible(value);
         }
       });
-
+    setStatusBarVisible(applicationPreferenceModel.isStatusBar());
+    
     applicationPreferenceModel.addPropertyChangeListener(
       "receivers",
       new PropertyChangeListener() {
@@ -1215,7 +1219,13 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
           }
         }
       });
+//    if (applicationPreferenceModel.isReceivers()) {
+//      showReceiverPanel();
+//    } else {
+//      hideReceiverPanel();
+//    }
 
+    
     applicationPreferenceModel.addPropertyChangeListener(
       "toolbar",
       new PropertyChangeListener() {
@@ -1226,7 +1236,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       });
     toolbar.setVisible(applicationPreferenceModel.isToolbar());
 
-    setStatusBarVisible(applicationPreferenceModel.isStatusBar());
   }
 
   /**

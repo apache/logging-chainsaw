@@ -40,10 +40,13 @@ public class ApplicationPreferenceModelSaver implements SettingsListener {
         XStream stream = new XStream(new DomDriver());
         try {
             File file = getApplicationPreferenceXMLFile(SettingsManager.getInstance().getSettingsDirectory());
-            FileReader reader = new FileReader(file);
-            ApplicationPreferenceModel loadedModel = (ApplicationPreferenceModel) stream.fromXML(reader);
-            model.apply(loadedModel);
-            reader.close();
+            if (file.exists()) {
+                FileReader reader = new FileReader(file);
+                ApplicationPreferenceModel loadedModel = (ApplicationPreferenceModel) stream
+                        .fromXML(reader);
+                model.apply(loadedModel);
+                reader.close();
+            }
         } catch (Exception e) {
 //            TODO exception handling
             e.printStackTrace();
