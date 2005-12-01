@@ -241,6 +241,7 @@ public class ChainsawAppenderHandler extends AppenderSkeleton {
      */
     private class WorkerThread extends Thread {
       public WorkerThread() {
+        super("Chainsaw-WorkerThread");
         setDaemon(true);
         setPriority(Thread.NORM_PRIORITY - 1);
       }
