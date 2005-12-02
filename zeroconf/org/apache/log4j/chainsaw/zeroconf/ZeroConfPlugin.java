@@ -23,6 +23,7 @@ import javax.jmdns.ServiceListener;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
@@ -35,6 +36,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
@@ -85,6 +87,8 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
 public class ZeroConfPlugin extends GUIPluginSkeleton {
 
     private static final Logger LOG = Logger.getLogger(ZeroConfPlugin.class);
+
+    private static final Icon DEVICE_DISCOVERED_ICON = new ImageIcon(ChainsawIcons.ANIM_RADIO_TOWER);
 
     private ModifiableListModel discoveredDevices = new ModifiableListModel();
 
@@ -193,6 +197,35 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
             }
         }else {
             this.preferenceModel = new ZeroConfPreferenceModel();
+        }
+        
+        discoveredDevices.addListDataListener(new ListDataListener() {
+
+            public void intervalAdded(ListDataEvent e) {
+                setIconIfNeeded();
+            }
+
+            public void intervalRemoved(ListDataEvent e) {
+                setIconIfNeeded();
+            }
+
+            public void contentsChanged(ListDataEvent e) {
+                setIconIfNeeded();
+            }});
+    }
+    
+    /**
+     * Sets the icon of this parent container (a JTabbedPane, we hope
+     *
+     */
+    private void setIconIfNeeded() {
+        Container container = this.getParent();
+        if(container instanceof JTabbedPane) {
+            JTabbedPane tabbedPane = (JTabbedPane) container;
+            Icon icon = discoveredDevices.getSize()==0?null:DEVICE_DISCOVERED_ICON;
+            tabbedPane.setIconAt(tabbedPane.indexOfTab(getName()), icon);
+        }else {
+            LOG.warn("Parent is not a TabbedPane, not setting icon: " + container.getClass().getName());
         }
     }
 
