@@ -270,6 +270,15 @@ public class EventDetailLayout extends Layout {
    */
   public void format(Writer output, LoggingEvent event)
     throws IOException {
-    patternLayout.format(output, copyForHTML(event));
+      LoggingEvent newEvent =  copyForHTML(event);
+      /**
+       * Layouts are not thread-safe, but are normally
+       * protected by the fact that their Appender is thread-safe.
+       * 
+       * But here in Chainsaw there is no such guarantees.
+       */ 
+      synchronized(patternLayout) {
+          patternLayout.format(output,newEvent);
+      }
   }
 }
