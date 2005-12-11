@@ -51,7 +51,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.io.StringReader;
 import java.net.URLEncoder;
 import java.text.DateFormat;
@@ -68,6 +67,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
+
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -110,6 +110,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.text.Document;
+
 import org.apache.log4j.Layout;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -133,7 +134,6 @@ import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.LoggingEventFieldResolver;
-import org.omg.PortableInterceptor.LOCATION_FORWARD;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
@@ -1484,7 +1484,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
         preferenceModel.getColumns().clear();
         for (int i = 0; i < table.getColumnModel().getColumnCount(); i++) {
     
-            TableColumn c = (TableColumn) table.getColumnModel().getColumn(i);
+            TableColumn c = table.getColumnModel().getColumn(i);
     
             preferenceModel.getColumns().add(c);
         }
@@ -1501,7 +1501,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
      */
   void showPreferences() {
     preferencesPanel.updateModel();
-    preferencesFrame.show();
+    preferencesFrame.setVisible(true);
   }
 
   /**
@@ -1509,7 +1509,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
    */
   void showColorPreferences() {
     colorFrame.pack();
-    colorFrame.show();
+    colorFrame.setVisible(true);
   }
 
   /**
@@ -1935,7 +1935,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
       undockedFindPreviousAction);
     undockedFindPreviousButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
                               .put(
-      KeyStroke.getKeyStroke(KeyEvent.VK_F3, KeyEvent.SHIFT_MASK),
+      KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_MASK),
       undockedFindPreviousAction.getValue(Action.NAME));
 
     Dimension findSize = new Dimension(170, 22);

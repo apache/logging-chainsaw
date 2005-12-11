@@ -29,6 +29,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 
@@ -46,11 +47,11 @@ public class ChainsawStatusBar extends JPanel {
   private static final int DELAY_PERIOD = 5000;
   private static final String DEFAULT_MSG = "Welcome to Chainsaw v2!";
   private final JLabel statusMsg = new JLabel(DEFAULT_MSG);
-  private final JLabel pausedLabel = new JLabel("", JLabel.CENTER);
-  private final JLabel lineSelectionLabel = new JLabel("", JLabel.CENTER);
-  private final JLabel eventCountLabel = new JLabel("", JLabel.CENTER);
-  private final JLabel receivedEventLabel = new JLabel("0.0", JLabel.CENTER);
-  private final JLabel receivedConnectionlabel = new JLabel("", JLabel.CENTER);
+  private final JLabel pausedLabel = new JLabel("", SwingConstants.CENTER);
+  private final JLabel lineSelectionLabel = new JLabel("", SwingConstants.CENTER);
+  private final JLabel eventCountLabel = new JLabel("", SwingConstants.CENTER);
+  private final JLabel receivedEventLabel = new JLabel("0.0", SwingConstants.CENTER);
+  private final JLabel receivedConnectionlabel = new JLabel("", SwingConstants.CENTER);
   private volatile long lastReceivedConnection = System.currentTimeMillis();
   private final Thread connectionThread;
   private final Icon pausedIcon = new ImageIcon(ChainsawIcons.PAUSE);

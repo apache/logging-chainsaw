@@ -244,7 +244,7 @@ public class EventDetailLayout extends Layout {
     Hashtable hashTable = new Hashtable();
 
     for (Iterator iter = keySet.iterator(); iter.hasNext();) {
-      Object key = (Object) iter.next();
+      Object key = iter.next();
       Object value = event.getProperty(key.toString());
       hashTable.put(escape(key.toString()), escape(value.toString()));
     }

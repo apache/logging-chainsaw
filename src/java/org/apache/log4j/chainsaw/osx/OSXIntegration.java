@@ -5,7 +5,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-import org.apache.commons.vfs.tasks.ShowFileTask;
 import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.LogUI;
 

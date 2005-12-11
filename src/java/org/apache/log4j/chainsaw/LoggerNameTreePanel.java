@@ -276,7 +276,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
 
         public void actionPerformed(ActionEvent e)
         {
-            ignoreDialog.show();
+            ignoreDialog.setVisible(true);
         }};
     showIgnoreDialogAction.putValue(Action.SHORT_DESCRIPTION, "Click to view and manage your hidden/ignored loggers");
     JButton btnShowIgnoreDialog = new SmallButton(showIgnoreDialogAction);
@@ -337,7 +337,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
 
         public void actionPerformed(ActionEvent e)
         {
-            ignoreDialog.hide();
+            ignoreDialog.setVisible(false);
             
         }});
     ignoreListButtonPanel.add(ignoreCloseButton);

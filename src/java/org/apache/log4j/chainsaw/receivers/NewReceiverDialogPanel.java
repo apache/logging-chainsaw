@@ -180,7 +180,7 @@ public class NewReceiverDialogPanel extends JPanel {
 
         dialog.pack();
 
-        dialog.show();
+        dialog.setVisible(true);
     }
 
     /**

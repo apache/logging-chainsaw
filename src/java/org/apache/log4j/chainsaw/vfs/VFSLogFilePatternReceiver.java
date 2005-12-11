@@ -137,7 +137,6 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver {
   public void activateOptions() {
     new Thread(new Runnable() {
       public void run() {
-    initialize();
       while (reader == null) {
         getLogger().info("attempting to load file: " + getFileURL());
         try {
@@ -148,7 +147,8 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver {
           //check to see if the name is a URLFileName..if so, set file name to not include username/pass
           if (fileObject.getName() instanceof URLFileName) {
             URLFileName urlFileName = (URLFileName)fileObject.getName();
-        	setFileURL(urlFileName.getScheme() + "://" + urlFileName.getHostName() + urlFileName.getPath());
+        	setHost(urlFileName.getHostName());
+        	setPath(urlFileName.getPath());
           }
         } catch (FileSystemException fse) {
           getLogger().info("file not available - will try again in 10 seconds");
@@ -159,6 +159,8 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver {
           }
       } 
       }
+      initialize();
+      
       try {
         process(reader);
       } catch (IOException ioe) {

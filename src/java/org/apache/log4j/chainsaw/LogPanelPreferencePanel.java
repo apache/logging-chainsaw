@@ -20,6 +20,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -120,7 +121,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
       });
 
     f.setSize(640, 480);
-    f.show();
+    f.setVisible(true);
   }
 
   /**
@@ -229,7 +230,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
           {
             if (
               (e.getClickCount() > 1)
-                && ((e.getModifiers() & MouseEvent.BUTTON1_MASK) > 0))
+                && ((e.getModifiers() & InputEvent.BUTTON1_MASK) > 0))
             {
               int i = columnList.locationToIndex(e.getPoint());
 

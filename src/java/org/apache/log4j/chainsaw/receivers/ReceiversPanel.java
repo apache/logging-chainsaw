@@ -647,7 +647,7 @@ public class ReceiversPanel extends JPanel {
                         MessageCenter.getInstance().addMessage("Plugin '" + plugin.getName() + "' started");
                       }
                     });
-                  dialog.show();
+                  dialog.setVisible(true);
                 } catch (Exception e1) {
                   e1.printStackTrace();
                   MessageCenter.getInstance().getLogger().error(

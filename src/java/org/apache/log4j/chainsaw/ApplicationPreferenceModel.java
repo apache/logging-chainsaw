@@ -18,11 +18,6 @@ package org.apache.log4j.chainsaw;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
-import org.apache.log4j.chainsaw.prefs.LoadSettingsEvent;
-import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
-import org.apache.log4j.chainsaw.prefs.SettingsListener;
-import org.apache.log4j.helpers.Constants;
-
 
 /**
  * Encapsulates the Chainsaw Application wide properties

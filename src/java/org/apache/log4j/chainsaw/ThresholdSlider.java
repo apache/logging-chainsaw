@@ -16,8 +16,6 @@
 
 package org.apache.log4j.chainsaw;
 
-import org.apache.log4j.Level;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -28,6 +26,9 @@ import java.util.List;
 import javax.swing.DefaultBoundedRangeModel;
 import javax.swing.JLabel;
 import javax.swing.JSlider;
+import javax.swing.SwingConstants;
+
+import org.apache.log4j.Level;
 
 
 /**
@@ -80,7 +81,7 @@ final class ThresholdSlider extends JSlider {
       //      System.out.println("creating levels for :: " + item.toInt() + "," + item.toString());
     }
 
-    setOrientation(JSlider.VERTICAL);
+    setOrientation(SwingConstants.VERTICAL);
     setInverted(true);
     setLabelTable(labelMap);
 

@@ -16,18 +16,10 @@
 
 package org.apache.log4j.chainsaw.layout;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.chainsaw.ChainsawConstants;
-import org.apache.log4j.chainsaw.icons.ChainsawIcons;
-import org.apache.log4j.spi.LoggingEvent;
-import org.apache.log4j.spi.ThrowableInformation;
-import org.apache.log4j.spi.location.LocationInfo;
-
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import java.util.Date;
 import java.util.Hashtable;
 
@@ -42,10 +34,19 @@ import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.WindowConstants;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.chainsaw.ChainsawConstants;
+import org.apache.log4j.chainsaw.icons.ChainsawIcons;
+import org.apache.log4j.spi.LoggingEvent;
+import org.apache.log4j.spi.ThrowableInformation;
+import org.apache.log4j.spi.location.LocationInfo;
 
 
 /**
@@ -69,12 +70,12 @@ public final class LayoutEditorPane extends JPanel {
     new JEditorPane(ChainsawConstants.DETAIL_CONTENT_TYPE, "");
   private final JScrollPane patternEditorScroll =
     new JScrollPane(
-      JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-      JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+      ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+      ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
   private final JScrollPane previewEditorScroll =
     new JScrollPane(
-      JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-      JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+    		ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+    		ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
   private LoggingEvent event;
   private EventDetailLayout layout = new EventDetailLayout();
 
@@ -258,7 +259,7 @@ public final class LayoutEditorPane extends JPanel {
     JDialog dialog = new JDialog((Frame) null, "Pattern Editor");
     dialog.getContentPane().add(new LayoutEditorPane());
     dialog.setResizable(true);
-    dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+    dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
     //    dialog.pack();
     dialog.setSize(new Dimension(640, 480));

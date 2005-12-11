@@ -33,6 +33,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JWindow;
+import javax.swing.SwingConstants;
 
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 
@@ -50,7 +51,7 @@ class ChainsawSplash extends JWindow {
     JPanel panel = new JPanel(new BorderLayout());
     JLabel logo = new JLabel(ChainsawIcons.ICON_LOG4J);
 
-    JLabel text = new JLabel("Chainsaw v2", JLabel.CENTER);
+    JLabel text = new JLabel("Chainsaw v2", SwingConstants.CENTER);
     Font textFont = null;
     String[] preferredFontNames =
       new String[] { "Arial", "Helvetica", "SansSerif" };

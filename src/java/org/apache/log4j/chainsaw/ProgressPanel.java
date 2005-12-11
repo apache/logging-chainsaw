@@ -18,13 +18,13 @@ package org.apache.log4j.chainsaw;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-
 import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 /**
@@ -42,7 +42,7 @@ public class ProgressPanel extends JPanel {
   ProgressPanel(int min, int max, String msg) {
     this.progressBar = new JProgressBar(min, max);
     setBorder(BorderFactory.createLineBorder(Color.black, 1));
-    messageLabel.setHorizontalAlignment(JLabel.HORIZONTAL);
+    messageLabel.setHorizontalAlignment(SwingConstants.HORIZONTAL);
     messageLabel.setText(msg);
     setLayout(new BorderLayout());
 

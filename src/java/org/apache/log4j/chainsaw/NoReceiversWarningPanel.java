@@ -511,7 +511,7 @@ class NoReceiversWarningPanel extends JPanel {
         frame.getContentPane().add(new NoReceiversWarningPanel());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
-        frame.show();
+        frame.setVisible(true);
     }
 
     /**

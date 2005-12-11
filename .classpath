@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="src" path="zeroconf"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="tests"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/log4j"/>
-	<classpathentry kind="lib" path="C:/downloads/vfs/commons-vfs/commons-vfs-1.0-RC2.jar"/>
 	<classpathentry kind="lib" path="C:/downloads/ant/junit.jar"/>
+	<classpathentry kind="lib" path="C:/downloads/jmdns/jmdns-1.0/lib/jmdns.jar"/>
+	<classpathentry kind="lib" path="C:/downloads/xstream/xstream-1.1.2/xstream-1.1.2.jar"/>
+	<classpathentry kind="lib" path="C:/downloads/jakarta/commons/commons-vfs/commons_vfs_1.0_RC7.jar"/>
+	<classpathentry kind="lib" path="C:/downloads/vfs/jsch-0.1.21/dist/lib/jsch-20050802.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

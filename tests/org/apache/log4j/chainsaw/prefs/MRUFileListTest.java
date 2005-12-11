@@ -1,12 +1,11 @@
 package org.apache.log4j.chainsaw.prefs;
 
-import java.net.MalformedURLException;
 import java.net.URL;
+
+import junit.framework.TestCase;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
-
-import junit.framework.TestCase;
 
 public class MRUFileListTest extends TestCase {
     private static final String[] urls = new String[] {

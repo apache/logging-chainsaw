@@ -127,7 +127,7 @@ public static void main(String[] args) {
       });
 
     f.setSize(640, 480);
-    f.show();
+    f.setVisible(true);
   }
 
   /**
@@ -393,7 +393,7 @@ public static void main(String[] args) {
       new JCheckBox("Prompt me on startup if there are no Receivers defined");
     private final JCheckBox showSplash = new JCheckBox("Show Splash screen at startup");
     private final JSlider responsiveSlider =
-      new JSlider(JSlider.HORIZONTAL, 1, 4, 2);
+      new JSlider(SwingConstants.HORIZONTAL, 1, 4, 2);
     private final JCheckBox confirmExit = new JCheckBox("Confirm Exit");
     Dictionary sliderLabelMap = new Hashtable();
     

@@ -48,6 +48,7 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
@@ -114,7 +115,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
 
   ChainsawToolBarAndMenus(final LogUI logui) {
     this.logui = logui;
-    toolbar = new JToolBar(JToolBar.HORIZONTAL);
+    toolbar = new JToolBar(SwingConstants.HORIZONTAL);
     menuBar = new JMenuBar();
     fileMenu = new FileMenu(logui);
     closeAction = createCloseHelpAction();
@@ -851,7 +852,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     //    action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_F));
     action.putValue(
       Action.ACCELERATOR_KEY,
-      KeyStroke.getKeyStroke(KeyEvent.VK_F3, KeyEvent.SHIFT_MASK));
+      KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_MASK));
     action.putValue(
       Action.SHORT_DESCRIPTION,
       "Find the previous occurrence of the rule from the current row");

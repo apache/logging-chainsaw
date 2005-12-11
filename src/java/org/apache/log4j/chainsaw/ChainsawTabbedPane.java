@@ -78,7 +78,6 @@ class ChainsawTabbedPane extends JTabbedPane {
    * @param component
    */
   public synchronized void addANewTab(String name, JComponent component, Icon icon) {
-    int selectedIndex = getSelectedIndex();
     super.insertTab(name, icon, component, null, getTabCount());
 
     super.fireStateChanged();

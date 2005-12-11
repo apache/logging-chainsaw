@@ -81,7 +81,7 @@ public class ReceiversTreeModel extends DefaultTreeModel
             Iterator iterator =
               ((SocketReceiver) item).getConnectedSocketDetails().iterator();
               iterator.hasNext();) {
-            Object details = (Object) iterator.next();
+            Object details = iterator.next();
             receiverNode.add(new DefaultMutableTreeNode(details));
           }
         }
