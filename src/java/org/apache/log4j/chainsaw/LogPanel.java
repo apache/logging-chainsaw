@@ -837,8 +837,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     tableModel.addNewKeyListener(
       new NewKeyListener() {
         public void newKeyAdded(NewKeyEvent e) {
+           // don't add the column if we already know about it, this could be if we've seen it before and saved the column preferences
+            if(table.getColumn(e.getKey())!=null){
+                return;
+            }
           TableColumn col = new TableColumn(e.getNewModelIndex());
           col.setHeaderValue(e.getKey());
+          
           table.addColumn(col);
         }
       });
@@ -1481,12 +1486,12 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
   }
 
     private void updatePreferenceModelColumnDetails() {
-        preferenceModel.getColumns().clear();
+        preferenceModel.clearColumns();
         for (int i = 0; i < table.getColumnModel().getColumnCount(); i++) {
     
             TableColumn c = table.getColumnModel().getColumn(i);
     
-            preferenceModel.getColumns().add(c);
+            preferenceModel.addColumn(c);
         }
     }
     

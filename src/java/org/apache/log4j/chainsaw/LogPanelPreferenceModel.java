@@ -35,6 +35,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.swing.table.TableColumn;
+
 
 /**
  *  Used to encapsulate all the preferences for a given LogPanel
@@ -74,8 +76,44 @@ public class LogPanelPreferenceModel implements Serializable{
   private List columns = new ArrayList();
   private Collection hiddenLoggers = new HashSet();
   
+  /**
+   * Returns an <b>unmodifiable</b> list of the columns.
+   * 
+   * The reason it is unmodifiable is to enforce the requirement that
+   * the List is actually unique columns.  IT _could_ be a set,
+   * but we need to maintain the order of insertion.
+   * 
+   * @return
+   */
   public List getColumns() {
-      return columns;
+      return Collections.unmodifiableList(columns);
+  }
+  
+  public void clearColumns(){
+      columns.clear();
+  }
+  
+  public boolean addColumn(TableColumn column){
+      if(containsHeaderValue(column)){
+          return false;
+      }else{
+          return columns.add(column);
+      }
+  }
+  
+  /**
+   * Quite an inefficient search mechanism to make sure we don't allow duplicate Column headers
+   * @param column
+   * @return
+   */
+  private boolean containsHeaderValue(TableColumn column) {
+      for (Iterator iter = columns.iterator(); iter.hasNext();) {
+        TableColumn c = (TableColumn) iter.next();
+        if(c.getHeaderValue().equals(column.getHeaderValue())){
+            return true;
+        }
+      }
+      return false;
   }
 
   public void setColumns(List columns) {
@@ -151,7 +189,8 @@ public class LogPanelPreferenceModel implements Serializable{
     setDetailPaneVisible(model.isDetailPaneVisible());
     setLogTreePanelVisible(model.isLogTreePanelVisible());
 
-    setColumns(model.getColumns());
+    // we have to copy the list, because getColumns() is unmodifiable
+    setColumns(new ArrayList(model.getColumns()));
     setHiddenLoggers(model.getHiddenLoggers());
     
     /**
