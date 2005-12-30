@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2004 The Apache Software Foundation.
+ * Copyright 1999,2005 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -268,8 +268,7 @@ public class EventDetailLayout extends Layout {
   /* (non-Javadoc)
    * @see org.apache.log4j.Layout#format(java.io.Writer, org.apache.log4j.spi.LoggingEvent)
    */
-  public void format(Writer output, LoggingEvent event)
-    throws IOException {
+  public String format(final LoggingEvent event) {
       LoggingEvent newEvent =  copyForHTML(event);
       /**
        * Layouts are not thread-safe, but are normally
@@ -278,7 +277,7 @@ public class EventDetailLayout extends Layout {
        * But here in Chainsaw there is no such guarantees.
        */ 
       synchronized(patternLayout) {
-          patternLayout.format(output,newEvent);
+          return patternLayout.format(newEvent);
       }
   }
 }
