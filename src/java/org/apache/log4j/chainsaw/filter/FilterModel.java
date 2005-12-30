@@ -17,7 +17,7 @@
 package org.apache.log4j.chainsaw.filter;
 
 import org.apache.log4j.spi.LoggingEvent;
-import org.apache.log4j.spi.location.LocationInfo;
+import org.apache.log4j.spi.LocationInfo;
 
 /**
  * This class is used as a Model for Filtering, and retains the unique entries that

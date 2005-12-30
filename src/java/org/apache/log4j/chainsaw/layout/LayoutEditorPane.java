@@ -46,7 +46,7 @@ import org.apache.log4j.chainsaw.ChainsawConstants;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
-import org.apache.log4j.spi.location.LocationInfo;
+import org.apache.log4j.spi.LocationInfo;
 
 
 /**

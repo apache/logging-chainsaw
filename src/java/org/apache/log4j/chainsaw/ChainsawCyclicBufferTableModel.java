@@ -38,7 +38,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.LoggingEvent;
-import org.apache.log4j.spi.location.LocationInfo;
+import org.apache.log4j.spi.LocationInfo;
 
 
 /**
