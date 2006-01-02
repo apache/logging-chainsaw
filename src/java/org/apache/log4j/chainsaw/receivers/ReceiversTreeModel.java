@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2004 The Apache Software Foundation.
+ * Copyright 1999,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.apache.log4j.chainsaw.receivers;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
+import java.util.Vector;
 import java.util.Enumeration;
 import java.util.Iterator;
 
@@ -29,6 +30,8 @@ import javax.swing.tree.TreeNode;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.net.SocketReceiver;
+import org.apache.log4j.spi.LoggerRepository;
+import org.apache.log4j.spi.LoggerRepositoryEx;
 import org.apache.log4j.plugins.Plugin;
 import org.apache.log4j.plugins.PluginEvent;
 import org.apache.log4j.plugins.PluginListener;
@@ -64,7 +67,13 @@ public class ReceiversTreeModel extends DefaultTreeModel
   public final synchronized ReceiversTreeModel refresh() {
     RootNode.removeAllChildren();
 
-    Collection receivers = LogManager.getLoggerRepository().getPluginRegistry().getPlugins(Receiver.class);
+    LoggerRepository repo = LogManager.getLoggerRepository();
+    Collection receivers;
+    if (repo instanceof LoggerRepositoryEx) {
+        receivers = ((LoggerRepositoryEx) repo).getPluginRegistry().getPlugins(Receiver.class);
+    } else {
+        receivers = new Vector();
+    }
 
     updateRootDisplay();
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2004 The Apache Software Foundation.
+ * Copyright 1999,2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,6 +114,8 @@ import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.Decoder;
 import org.apache.log4j.spi.LoggingEvent;
+import org.apache.log4j.spi.LoggerRepository;
+import org.apache.log4j.spi.LoggerRepositoryEx;
 import org.apache.log4j.xml.XMLDecoder;
 
 
@@ -308,8 +310,12 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     //configuration initialized here
     logUI.ensureChainsawAppenderHandlerAdded();
     logger = LogManager.getLogger(LogUI.class);
-    logger.getLoggerRepository().setProperty(Constants.APPLICATION_KEY,"log");
-    logger.getLoggerRepository().setProperty(Constants.HOSTNAME_KEY,"chainsaw");
+    LoggerRepository repo = logger.getLoggerRepository();
+    if (repo instanceof LoggerRepositoryEx) {
+        LoggerRepositoryEx repox = (LoggerRepositoryEx) repo;
+        repox.setProperty(Constants.APPLICATION_KEY,"log");
+        repox.setProperty(Constants.HOSTNAME_KEY,"chainsaw");
+    }
     
     String config = model.getConfigurationURL();
     if(config!=null && (!(config.trim().equals("")))) {
@@ -595,7 +601,10 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
    * table columns, and sets itself viewable.
    */
   public void activateViewer() {
-    this.pluginRegistry = LogManager.getLoggerRepository().getPluginRegistry();  
+    LoggerRepository repo = LogManager.getLoggerRepository();
+    if (repo instanceof LoggerRepositoryEx) {
+        this.pluginRegistry = ((LoggerRepositoryEx) repo).getPluginRegistry();
+    }  
     initGUI();
 
     initPrefModelListeners();
@@ -924,13 +933,16 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             new Thread(
               new Runnable() {
                 public void run() {
-                  PluginRegistry pluginRegistry = LogManager.getLoggerRepository().getPluginRegistry();
-                  List list = pluginRegistry.getPlugins(Generator.class);
+                  LoggerRepository repo = LogManager.getLoggerRepository();
+                  if (repo instanceof LoggerRepositoryEx) {
+                      PluginRegistry pluginRegistry = ((LoggerRepositoryEx) repo).getPluginRegistry();
+                      List list = pluginRegistry.getPlugins(Generator.class);
 
-                  for (Iterator iter = list.iterator(); iter.hasNext();) {
-                    Plugin plugin = (Plugin) iter.next();
-                    pluginRegistry.stopPlugin(plugin.getName());
-                  }
+                      for (Iterator iter = list.iterator(); iter.hasNext();) {
+                         Plugin plugin = (Plugin) iter.next();
+                         pluginRegistry.stopPlugin(plugin.getName());
+                      }
+                   }
                 }
               }).start();
             setEnabled(false);

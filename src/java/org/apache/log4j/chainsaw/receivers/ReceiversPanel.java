@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2004 The Apache Software Foundation.
+ * Copyright 1999,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,6 +70,8 @@ import org.apache.log4j.chainsaw.icons.LineIconFactory;
 import org.apache.log4j.chainsaw.messages.MessageCenter;
 import org.apache.log4j.net.SocketNodeEventListener;
 import org.apache.log4j.net.SocketReceiver;
+import org.apache.log4j.spi.LoggerRepository;
+import org.apache.log4j.spi.LoggerRepositoryEx;
 import org.apache.log4j.plugins.Pauseable;
 import org.apache.log4j.plugins.Plugin;
 import org.apache.log4j.plugins.PluginRegistry;
@@ -106,10 +108,15 @@ public class ReceiversPanel extends JPanel {
 
   public ReceiversPanel() {
     super(new BorderLayout());
-    pluginRegistry = LogManager.getLoggerRepository().getPluginRegistry();
+    LoggerRepository repo = LogManager.getLoggerRepository();
     final ReceiversTreeModel model = new ReceiversTreeModel();
+    if (repo instanceof LoggerRepositoryEx) {
+       pluginRegistry = ((LoggerRepositoryEx) repo).getPluginRegistry();
+       pluginRegistry.addPluginListener(model);
+    } else {
+       pluginRegistry = null;
+    }
     
-    pluginRegistry.addPluginListener(model);
     receiversTree.setModel(model);
 
     receiversTree.setExpandsSelectedPaths(true);
@@ -362,13 +369,15 @@ public class ReceiversPanel extends JPanel {
     /**
      * add this listener to all SocketReceivers
      */
-    List socketReceivers =
-      pluginRegistry.getPlugins(SocketReceiver.class);
+    if (pluginRegistry == null) {
+    	List socketReceivers =
+      		pluginRegistry.getPlugins(SocketReceiver.class);
 
-    for (Iterator iter = socketReceivers.iterator(); iter.hasNext();) {
-      SocketReceiver element = (SocketReceiver) iter.next();
-      element.addSocketNodeEventListener(listener);
-    }
+    	for (Iterator iter = socketReceivers.iterator(); iter.hasNext();) {
+      		SocketReceiver element = (SocketReceiver) iter.next();
+      		element.addSocketNodeEventListener(listener);
+    	}
+     }
   }
 
   protected ReceiversTreeModel getReceiverTreeModel() {

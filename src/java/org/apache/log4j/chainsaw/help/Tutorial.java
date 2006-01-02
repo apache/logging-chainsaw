@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2004 The Apache Software Foundation.
+ * Copyright 1999,2006 The Apache Software Foundation.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.chainsaw.Generator;
 import org.apache.log4j.plugins.Plugin;
 import org.apache.log4j.plugins.PluginRegistry;
-
+import org.apache.log4j.spi.LoggerRepository;
+import org.apache.log4j.spi.LoggerRepositoryEx;
 
 /**
  * A runnable element that installs into the Log4j environment some fake Receivers
@@ -37,13 +38,16 @@ public class Tutorial implements Runnable {
       Plugin p2 = new Generator("Generator 2");
       Plugin p3 = new Generator("Generator 3");
       
-      PluginRegistry pluginRegistry = LogManager.getLoggerRepository().getPluginRegistry();
-      pluginRegistry.addPlugin(p1);
-      p1.activateOptions();
-      pluginRegistry.addPlugin(p2);
-      p2.activateOptions();
-      pluginRegistry.addPlugin(p3);
-      p3.activateOptions();
+      LoggerRepository repo = LogManager.getLoggerRepository();
+      if (repo instanceof LoggerRepositoryEx) {
+      	PluginRegistry pluginRegistry = ((LoggerRepositoryEx) repo).getPluginRegistry();
+        pluginRegistry.addPlugin(p1);
+        p1.activateOptions();
+        pluginRegistry.addPlugin(p2);
+        p2.activateOptions();
+        pluginRegistry.addPlugin(p3);
+        p3.activateOptions();
+      }
       
   }
 }

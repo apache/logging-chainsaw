@@ -1,5 +1,5 @@
 /*
- * Copyright 1999,2004 The Apache Software Foundation.
+ * Copyright 1999,2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.apache.log4j.net.SocketReceiver;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.LoggingEvent;
+import org.apache.log4j.spi.LoggerRepositoryEx;
 import org.apache.log4j.spi.LoggingEventFieldResolver;
 
 /**
@@ -145,7 +146,7 @@ public class ChainsawAppenderHandler extends AppenderSkeleton {
     });
     LogManager.getRootLogger().addAppender(handler);
     SocketReceiver receiver = new SocketReceiver(4445);
-    LogManager.getLoggerRepository().getPluginRegistry().addPlugin(receiver);
+    ((LoggerRepositoryEx) LogManager.getLoggerRepository()).getPluginRegistry().addPlugin(receiver);
     receiver.activateOptions();
     Thread.sleep(60000);
   }
