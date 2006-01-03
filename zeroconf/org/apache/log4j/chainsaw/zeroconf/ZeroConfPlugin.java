@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -20,6 +21,9 @@ import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
@@ -56,6 +60,7 @@ import org.apache.log4j.net.Zeroconf4log4j;
 import org.apache.log4j.plugins.Plugin;
 import org.apache.log4j.plugins.PluginEvent;
 import org.apache.log4j.plugins.PluginListener;
+import org.apache.log4j.spi.LoggerRepositoryEx;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
@@ -154,7 +159,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         
         injectMenu();
         
-        LogManager.getLoggerRepository().getPluginRegistry().addPluginListener(new PluginListener() {
+        ((LoggerRepositoryEx)LogManager.getLoggerRepository()).getPluginRegistry().addPluginListener(new PluginListener() {
 
             public void pluginStarted(PluginEvent e) {
                 
@@ -395,6 +400,9 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
 
         private JCheckBox autoConnect = new JCheckBox();
 
+        private Box southBox = Box.createVerticalBox();
+        private JCheckBox checkBox = new JCheckBox();
+        
         private ServiceInfoListCellRenderer() {
             Font font = nameLabel.getFont();
             font = font.deriveFont(font.getSize() + 6);
@@ -405,13 +413,18 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
             JPanel centerPanel = new JPanel(new BorderLayout(3, 3));
 
             centerPanel.add(nameLabel, BorderLayout.CENTER);
-            centerPanel.add(detailLabel, BorderLayout.SOUTH);
+            centerPanel.add(southBox, BorderLayout.SOUTH);
             panel.add(centerPanel, BorderLayout.CENTER);
             
-            
-            // TODO add autoconnect label
-            panel.setBorder(BorderFactory.createEtchedBorder());
+            southBox.add(detailLabel);
+            Box hBox = Box.createHorizontalBox();
+            hBox.add(Box.createHorizontalGlue());
+            hBox.add(new JLabel("Auto-connect:"));
+            hBox.add(checkBox);
 
+            southBox.add(hBox);
+            
+            panel.setBorder(BorderFactory.createEtchedBorder());
         }
 
         public Component getListCellRendererComponent(JList list, Object value,
@@ -427,6 +440,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
             nameLabel.setText(info.getName());
             detailLabel.setText(info.getHostAddress() + ":" + info.getPort());
             iconLabel.setIcon(isConnectedTo(info)?ICON:null);
+            checkBox.setSelected(preferenceModel.getAutoConnectDevices().contains(info.getName()));
             return panel;
         }
 
@@ -440,15 +454,38 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
                 ListModel dlm = discoveredDevices;
                 ServiceInfo info = (ServiceInfo) dlm.getElementAt(index);
                 listBox.ensureIndexIsVisible(index);
-                if(!isConnectedTo(info)) {
+                if (!isConnectedTo(info)) {
                     connectTo(info);
-                }else {
+                } else {
                     disconnectFrom(info);
                 }
             }
         }
 
+        public void mousePressed(MouseEvent e) {
+            /**
+             * This methodh handles when the user clicks the
+             * auto-connect
+             */
+            int index = listBox.locationToIndex(e.getPoint());
 
+            if (index != -1) {
+//                Point p = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), )
+                Component c = SwingUtilities.getDeepestComponentAt(ZeroConfPlugin.this, e.getX(), e.getY());
+                if (c instanceof JCheckBox) {
+                    ServiceInfo info = (ServiceInfo) listBox.getModel()
+                            .getElementAt(index);
+                    String name = info.getName();
+                    if (preferenceModel.getAutoConnectDevices().contains(name)) {
+                        preferenceModel.removeAutoConnectDevice(name);
+                    } else {
+                        preferenceModel.addAutoConnectDevice(name);
+                    }
+                    discoveredDevices.fireContentsChanged();
+                    repaint();
+                }
+            }
+        }
     }
 
     private void disconnectFrom(ServiceInfo info) {
@@ -459,7 +496,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         synchronized (serviceInfoToReceiveMap) {
             plugin = (Plugin) serviceInfoToReceiveMap.get(info);
         }
-        LogManager.getLoggerRepository().getPluginRegistry().stopPlugin(plugin.getName());
+        ((LoggerRepositoryEx)LogManager.getLoggerRepository()).getPluginRegistry().stopPlugin(plugin.getName());
     }
     /**
      * returns true if the serviceInfo record already has a matching connected receiver
@@ -484,7 +521,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         receiver.setPort(port);
         receiver.setName(info.getName());
         
-        LogManager.getLoggerRepository().getPluginRegistry().addPlugin(receiver);
+        ((LoggerRepositoryEx)LogManager.getLoggerRepository()).getPluginRegistry().addPlugin(receiver);
         receiver.activateOptions();
         LOG.info("Receiver '" + receiver.getName() + "' has been started");
         

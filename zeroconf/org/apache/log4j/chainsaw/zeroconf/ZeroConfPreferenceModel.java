@@ -39,6 +39,10 @@ public class ZeroConfPreferenceModel {
     public void setMonitoredZones(List monitoredZones) {
         this.monitoredZones = monitoredZones;
     }
+
+    public void removeAutoConnectDevice(String device) {
+        autoConnectDevices.remove(device);
+    }
     
     
 }
