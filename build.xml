@@ -268,10 +268,6 @@
 		<taskdef name="createshellscripts" classpathref="compile.classpath" classname="org.apache.chainsaw.ant.CreateShellScripts" />
 	</target>
 	
-	<target name="testshellscripts" depends="shellscript-taskdef">
-
-	</target>
-	
   <target name="webstart" depends="shellscript-taskdef">
     <property name="webstart" value="true"/>
     <antcall target="chainsaw.jar"/>
