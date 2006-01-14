@@ -254,27 +254,61 @@
     </jar>
   </target>
   
-  <target name="webstart" >
+	<target name="shellscript-taskdef">
+	    <javac deprecation="${deprecation}"
+	           srcdir="anttasks-src"
+	    	   debug="${debug}"
+	           destdir="${javac.dest}">
+	      <patternset>
+	        <include name="**/*.java"/>
+	      </patternset>
+	      <classpath refid="compile.classpath"/>   
+	    </javac>	
+		
+		<taskdef name="createshellscripts" classpathref="compile.classpath" classname="org.apache.chainsaw.ant.CreateShellScripts" />
+	</target>
+	
+	<target name="testshellscripts" depends="shellscript-taskdef">
+
+	</target>
+	
+  <target name="webstart" depends="shellscript-taskdef">
     <property name="webstart" value="true"/>
     <antcall target="chainsaw.jar"/>
     <antcall target="webstart-dependant-receivers.jar"/>
     
+  	<delete dir="webstart-dist"></delete>
+  	
+  	<!-- TODO Now copy all the jars into a new webstart-dist directory -->
+     <copy todir="webstart-dist">
+  		<fileset file="packaging/chainsaw.*"/>
+     	<fileset dir="lib" />
+     	<fileset dir=".">
+     		<include name="log4j-chain*.jar"/>
+     		<include name="webstart*.jar"/>
+     	</fileset>
+  	</copy>
+  	
+	<createshellscripts outputLocation="webstart-dist">
+		<fileset dir="webstart-dist" includes="*.jar"/>
+	</createshellscripts>
+  	
     <input
      message="Please enter key password:"
      addproperty="keypass"
      />
     <signjar verbose="false" keystore="${keystore}" alias="${alias}" storepass="${storepass}" keypass="${keypass}" >
-      <fileset dir=".">
+      <fileset dir="webstart-dist">
         <include name="*.jar"/>
       </fileset>
     </signjar>
     
     <zip destfile="chainsaw-bundle.zip" >
-      <zipfileset dir="."> 
+      <zipfileset dir="webstart-dist"> 
         <include name="*.jar"/>
+        <include name="*.bat"/>
+        <include name="*.sh"/>
       </zipfileset>
-      <fileset file="${jakarta-oro.jar}"/>
-      <fileset file="packaging/chainsaw.*"/>
     </zip>
   </target>
 	
