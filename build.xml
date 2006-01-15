@@ -264,7 +264,11 @@
 	      </patternset>
 	      <classpath refid="compile.classpath"/>   
 	    </javac>	
-		
+		<copy todir="${javac.dest}">
+			<fileset dir="anttasks-src">
+					<include name="*.jnlp"/>
+			</fileset>
+		</copy>
 		<taskdef name="createshellscripts" classpathref="compile.classpath" classname="org.apache.chainsaw.ant.CreateShellScripts" />
 	</target>
 	

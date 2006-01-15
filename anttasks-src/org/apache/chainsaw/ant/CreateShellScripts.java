@@ -1,8 +1,13 @@
 package org.apache.chainsaw.ant;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,9 +59,46 @@ public class CreateShellScripts extends Task {
         try {
             createUnixShellScript(outputLocationDir, filenames);
             createBatShellScript(outputLocationDir, filenames);
+            createJNLP(outputLocationDir, filenames);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new BuildException("Failed to create Scripts",e);
         }        
+    }
+
+    
+    /**
+     * Creates a JNLP file for launching Chainsaw
+     * @param outputLocationDir
+     * @param filenames
+     * @throws IOException
+     */
+    private void createJNLP(File outputLocationDir, Collection filenames) throws IOException {
+//        String templateName = CreateShellScripts.class.getPackage().toString().replace('.', '/')+"/chainsawWebStart.jnlp";
+//        log("Using JNLP template: " + templateName);
+        BufferedReader reader = new BufferedReader(new FileReader(new File("packaging/chainsawWebStart.jnlp")));
+
+        // convert the file to a String
+        StringBuffer buf = new StringBuffer(1024);
+        String line;
+        while((line=reader.readLine())!=null) {
+            buf.append(line).append("\n");
+        }
+        
+        StringBuffer jarBuf = new StringBuffer();
+        for (Iterator iter = filenames.iterator(); iter.hasNext();) {
+            String jar = (String) iter.next();
+            jarBuf.append("\t<jar href=\"lib/"+jar + "\"/>\n");
+        }
+        // now replace the bits we want
+        int jarStringLocation = buf.indexOf("@JARS@");
+        buf.replace(jarStringLocation, jarStringLocation + 6, jarBuf.toString());
+//        TODO replace the CODEBASE stuff
+        
+        File jnlp = new File(outputLocationDir, "chainsawWebStart.jnlp");
+        Writer writer = new FileWriter(jnlp);
+        writer.write(buf.toString());
+        writer.close();
     }
 
     public void addFileSet(FileSet fileSet) {
