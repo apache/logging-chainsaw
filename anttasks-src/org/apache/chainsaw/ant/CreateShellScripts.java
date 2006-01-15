@@ -5,12 +5,11 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
@@ -86,7 +85,27 @@ public class CreateShellScripts extends Task {
         }
         
         StringBuffer jarBuf = new StringBuffer();
-        for (Iterator iter = filenames.iterator(); iter.hasNext();) {
+        
+//        TODO  MUST place chainsaw jar that contains the main class entry as the first jar output...
+        /**
+         * Good one Sun!  For some stupid reason, we MUST list the jar that contains the main-class
+         * FIRST.  Why? Why? WHYYYYYYYYYYYYYYYYYY?
+         * 
+         * So, we sort a copied list and make sure that the chainsaw jar is first.
+         */
+        List list = new ArrayList(filenames);
+        Collections.sort(list, new Comparator() {
+
+            public int compare(Object o1, Object o2) {
+                if(o1.toString().toLowerCase().indexOf("chainsaw")>-1) {
+                    return -1;
+                }else if(o2.toString().toLowerCase().indexOf("chainsaw")>-1) {
+                    return 1;
+                }else {
+                    return 0;
+                }
+            }});
+        for (Iterator iter = list.iterator(); iter.hasNext();) {
             String jar = (String) iter.next();
             jarBuf.append("\t<jar href=\"lib/"+jar + "\"/>\n");
         }
