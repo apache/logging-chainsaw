@@ -285,7 +285,7 @@
      	<fileset dir="lib" />
      	<fileset dir=".">
      		<include name="log4j-chain*.jar"/>
-     		<include name="webstart*.jar"/>
+     		<!--<include name="webstart*.jar"/> -->
      	</fileset>
   	</copy>
   	
@@ -359,7 +359,36 @@
 		<move file="Chainsaw.app" todir="Chainsaw-app" />
 	</target>
   
-  <!-- ================================================================= -->
+  <!-- NOTE: you'll need JSch in your Ant ext libs area for this to work -->
+  <target name="distribution" depends="webstart, iSaw" description="Builds the complete distribution (Webstart, zip + OSX)">
+  	<delete dir="distribution" failonerror="false"/>
+  	<mkdir dir="distribution"/>
+  	<copy todir="distribution">
+  		<fileset dir=".">
+  			<include name="**/chainsaw-bundle.zip"/>
+  		</fileset>
+  	</copy>
+    <zip destfile="distribution/webstart-bundle.zip" >
+       <zipfileset dir="webstart-dist" includes="*.jnlp"/>
+    	   <zipfileset dir="webstart-dist" prefix="lib" includes="*.jar"/>
+     </zip>
+   	
+  	<!-- TODO copy, unpack the os X image template, update the files, close the image, move into distribution directory -->
+
+  	<input addproperty="dist.password" message="Please type in your remote password: (Warning:What you type will appear in plain text on console.)"></input>
+    
+  	<echo message="${dist.user}, ${dist.password}, ${dist.dest}, ${dist.keyfile}" />
+  	
+  	<!-- NOTE: you HAVE to use key based authentication, otherwise it just won't work -->
+  	<scp todir="${dist.user}@people.apache.org:${dist.dest}" passphrase="${dist.password}" keyfile="${dist.keyfile}" verbose="true">
+      <fileset dir="distribution">
+        <include name="**/*.*"/>
+      </fileset>
+    </scp>
+  </target>
+  
+	
+	<!-- ================================================================= -->
   <!-- Remove all generated (compiled) class files.                      -->
   <!-- ================================================================= -->
   <target name="clean" description="Delete all compiled files.">
