@@ -86,7 +86,6 @@ public class CreateShellScripts extends Task {
         
         StringBuffer jarBuf = new StringBuffer();
         
-//        TODO  MUST place chainsaw jar that contains the main class entry as the first jar output...
         /**
          * Good one Sun!  For some stupid reason, we MUST list the jar that contains the main-class
          * FIRST.  Why? Why? WHYYYYYYYYYYYYYYYYYY?
@@ -112,7 +111,6 @@ public class CreateShellScripts extends Task {
         // now replace the bits we want
         int jarStringLocation = buf.indexOf("@JARS@");
         buf.replace(jarStringLocation, jarStringLocation + 6, jarBuf.toString());
-//        TODO replace the CODEBASE stuff
         
         File jnlp = new File(outputLocationDir, "chainsawWebStart.jnlp");
         Writer writer = new FileWriter(jnlp);
