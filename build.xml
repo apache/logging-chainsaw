@@ -389,6 +389,11 @@
         	
         </jarbundler>
 		<move file="Chainsaw.app" todir="Chainsaw-app" />
+		
+		<echo message="Creating DMG image"/>
+		<exec executable="hdiutil">
+			<arg line="create -srcfolder Chainsaw-app chainsaw.dmg"/>
+		</exec>
 	</target>
   
   <!-- NOTE: you'll need JSch in your Ant ext libs area for this to work -->
@@ -398,6 +403,8 @@
   	<copy todir="distribution">
   		<fileset dir=".">
   			<include name="**/chainsaw-bundle.zip"/>
+  			
+  			<include name="chainsaw.dmg" />
   		</fileset>
   	</copy>
     <zip destfile="distribution/webstart-bundle.zip" >
