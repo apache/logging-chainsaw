@@ -165,7 +165,7 @@
   <!-- ================================================================= -->
   <!-- Create log4j-chainsaw.jar, excluding everything else              -->
   <!-- ================================================================= -->
-  <target name="chainsaw.jar" depends="build.chainsaw">
+  <target name="chainsaw.jar" depends="build.chainsaw, BuildZeroConfJar">
     <delete>
       <fileset dir="${jar.dest}">
         <include name="${log4j-chainsaw.jar}"/>
@@ -213,6 +213,8 @@
              ${stem}/chainsaw/icons/*.jpg, 
              ${stem}/chainsaw/icons/LICENCE"
              excludes="**/UnitTest**">
+    	<!-- VFS stuff goes in it's own Jar -->
+     <exclude name="**/vfs/*" />
       <!-- we need to exclude the JMS + DB Receiver BeanInfo for webstart purposes -->
       <exclude name="**/JMS*BeanInfo.class" if="webstart" />
       <exclude name="**/DB*BeanInfo.class" if="webstart" />
@@ -227,6 +229,19 @@
         <attribute name="Class-Path" value="${log4j.jar}"/>
       </manifest>
     </jar>
+  	
+    <jar jarfile="${jar.dest}/log4j-chainsaw-vfs.jar" basedir="${javac.dest}"
+         includes="${stem}/chainsaw/vfs/*.class" >
+        <manifest>
+          <attribute name="Manifest-version" value="1.0"/>
+          <section name="org/apache/log4j/">
+            <attribute name="Implementation-Title" value="log4j VFS"/>
+            <attribute name="Implementation-Version" value="${version}"/>
+            <attribute name="Implementation-Vendor" value="Apache Software Foundation"/>
+          </section>
+        </manifest>
+	</jar>
+  	
   </target>
 
   <!-- ================================================================= -->
@@ -285,15 +300,32 @@
      	<fileset dir="lib" />
      	<fileset dir=".">
      		<include name="log4j-chain*.jar"/>
+     		<include name="log4j-zeroconf*.jar"/>
      		<!--<include name="webstart*.jar"/> -->
      	</fileset>
   	</copy>
+  	<!-- TODO When zeroconf is ready, remove this! -->
+  	<delete>
+  		<fileset  dir="webstart-dist">
+  			<include name="*zeroconf*"/>
+  			<include name="jmdns*"/>
+  		</fileset>
+  	</delete>
   	
-	<createshellscripts outputLocation="webstart-dist">
+  	
+	<createshellscripts outputLocation="webstart-dist" scriptType="shell">
 		<fileset dir="webstart-dist" includes="*.jar"/>
 	</createshellscripts>
-  	
-    <input
+
+  	<!-- Webstart distribution can't have VFS because of stupid classloading rules, so we exclude it-->
+  	<createshellscripts outputLocation="webstart-dist" scriptType="webstart">
+		<fileset dir="webstart-dist" includes="*.jar">
+			<exclude name="commons*.jar"/>
+			<exclude name="*vfs*.jar"/>
+		</fileset>
+	</createshellscripts>	
+    
+  	<input
      message="Please enter key password:"
      addproperty="keypass"
      />

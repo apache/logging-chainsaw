@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -38,6 +39,9 @@ public class CreateShellScripts extends Task {
     private String outputLocation;
 
     private Vector fileSets = new Vector();
+    private String scriptType="";
+    
+    private Collection KNOWN_SCRIPT_TYPES = Arrays.asList(new String[] {"shell", "webstart"});
 
     public String getOutputLocation() {
         return outputLocation;
@@ -49,6 +53,11 @@ public class CreateShellScripts extends Task {
 
     public void execute() throws BuildException {
         super.execute();
+        if(getScriptType().length()==0) {
+            throw new BuildException("scriptType property has not been set");
+        }else if (!KNOWN_SCRIPT_TYPES.contains(getScriptType())) {
+            throw new BuildException("scriptType '"+ getScriptType() + "' is not one of then known types: " + KNOWN_SCRIPT_TYPES);
+        }
         File outputLocationDir = new File(getOutputLocation());
         if(!outputLocationDir.exists()) {
             log("Creating director(ies) ->" + getOutputLocation());
@@ -56,9 +65,12 @@ public class CreateShellScripts extends Task {
         }
         Collection filenames = getFilenames();
         try {
-            createUnixShellScript(outputLocationDir, filenames);
-            createBatShellScript(outputLocationDir, filenames);
-            createJNLP(outputLocationDir, filenames);
+            if (getScriptType().equals("shell")) {
+                createUnixShellScript(outputLocationDir, filenames);
+                createBatShellScript(outputLocationDir, filenames);
+            }else {
+                createJNLP(outputLocationDir, filenames);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             throw new BuildException("Failed to create Scripts",e);
@@ -175,6 +187,14 @@ public class CreateShellScripts extends Task {
             }
         }
         return jars;
+    }
+
+    public String getScriptType() {
+        return scriptType;
+    }
+
+    public void setScriptType(String scriptType) {
+        this.scriptType = scriptType.toLowerCase();
     }
 
 }
