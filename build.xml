@@ -288,6 +288,12 @@
 	</target>
 	
   <target name="webstart" depends="shellscript-taskdef">
+  	
+  	<tstamp />
+  	<property name="chainsaw-bundle.zip" value="chainsaw-bundle-${DSTAMP}.zip" />
+  	<property name="chainsaw.dmg" value="chainsaw-${DSTAMP}.dmg" />
+  	<property name="webstart-bundle.zip" value="webstart-bundle-${DSTAMP}.zip" />
+  	
     <property name="webstart" value="true"/>
     <antcall target="chainsaw.jar"/>
     <antcall target="webstart-dependant-receivers.jar"/>
@@ -335,7 +341,7 @@
       </fileset>
     </signjar>
     
-    <zip destfile="chainsaw-bundle.zip" >
+    <zip destfile="${chainsaw-bundle.zip}" >
       <zipfileset dir="webstart-dist"> 
         <include name="*.jar"/>
         <include name="*.bat"/>
@@ -392,7 +398,7 @@
 		
 		<echo message="Creating DMG image"/>
 		<exec executable="hdiutil">
-			<arg line="create -srcfolder Chainsaw-app chainsaw.dmg"/>
+			<arg line="create -srcfolder Chainsaw-app ${chainsaw.dmg}"/>
 		</exec>
 	</target>
   
@@ -402,12 +408,12 @@
   	<mkdir dir="distribution"/>
   	<copy todir="distribution">
   		<fileset dir=".">
-  			<include name="**/chainsaw-bundle.zip"/>
+  			<include name="**/${chainsaw-bundle.zip}"/>
   			
-  			<include name="chainsaw.dmg" />
+  			<include name="${chainsaw.dmg}" />
   		</fileset>
   	</copy>
-    <zip destfile="distribution/webstart-bundle.zip" >
+    <zip destfile="distribution/${webstart-bundle.zip}" >
        <zipfileset dir="webstart-dist" includes="*.jnlp"/>
     	   <zipfileset dir="webstart-dist" prefix="lib" includes="*.jar"/>
      </zip>
