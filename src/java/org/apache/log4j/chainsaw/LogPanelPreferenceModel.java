@@ -18,13 +18,9 @@
  */
 package org.apache.log4j.chainsaw;
 
-import org.apache.log4j.chainsaw.prefs.SettingsManager;
-
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,9 +29,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import javax.swing.table.TableColumn;
+
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+import org.apache.log4j.chainsaw.prefs.SettingsManager;
 
 
 /**
@@ -45,6 +44,7 @@ import javax.swing.table.TableColumn;
 public class LogPanelPreferenceModel implements Serializable{
   public static final String ISO8601 = "ISO8601";
   public static final Collection DATE_FORMATS;
+  private static final Logger logger = LogManager.getLogger(LogPanelPreferenceModel.class);
 
   static {
     Collection list = new ArrayList();
@@ -66,14 +66,15 @@ public class LogPanelPreferenceModel implements Serializable{
     new PropertyChangeSupport(this);
   private String dateFormatPattern = ISO8601;
   private boolean levelIcons;
-  private Set visibleColumns = new HashSet(ChainsawColumns.getColumnsNames());
+  private List allColumns = new ArrayList();
+  private List visibleColumns = new ArrayList();
+  private List visibleColumnOrder = new ArrayList();
   private boolean detailPaneVisible;
   private boolean toolTips;
   private boolean scrollToBottom;
   private boolean logTreePanelVisible;
   private String loggerPrecision = "";
 
-  private List columns = new ArrayList();
   private Collection hiddenLoggers = new HashSet();
   
   /**
@@ -86,39 +87,62 @@ public class LogPanelPreferenceModel implements Serializable{
    * @return
    */
   public List getColumns() {
-      return Collections.unmodifiableList(columns);
-  }
-  
-  public void clearColumns(){
-      columns.clear();
-  }
-  
-  public boolean addColumn(TableColumn column){
-      if(containsHeaderValue(column)){
-          return false;
-      }else{
-          return columns.add(column);
-      }
+      return Collections.unmodifiableList(allColumns);
   }
   
   /**
-   * Quite an inefficient search mechanism to make sure we don't allow duplicate Column headers
-   * @param column
+   * Returns an <b>unmodifiable</b> list of the visible columns.
+   * 
+   * The reason it is unmodifiable is to enforce the requirement that
+   * the List is actually unique columns.  IT _could_ be a set,
+   * but we need to maintain the order of insertion.
+   * 
    * @return
    */
-  private boolean containsHeaderValue(TableColumn column) {
-      for (Iterator iter = columns.iterator(); iter.hasNext();) {
-        TableColumn c = (TableColumn) iter.next();
-        if(c.getHeaderValue().equals(column.getHeaderValue())){
-            return true;
-        }
-      }
-      return false;
+  public List getVisibleColumns() {
+      return Collections.unmodifiableList(visibleColumns);
   }
-
-  public void setColumns(List columns) {
-      Object oldValue = this.columns;
-      this.columns = columns;
+  
+  public void clearColumns(){
+      Object oldValue = this.allColumns;
+      allColumns = new ArrayList();
+      propertySupport.firePropertyChange("columns", oldValue, allColumns);
+  }
+  
+  private TableColumn findColumnByHeader(List list, String header) {
+	  for (Iterator iter = list.iterator();iter.hasNext();) {
+		  TableColumn c = (TableColumn)iter.next();
+		  if (c.getHeaderValue().equals(header)) {
+			  return c;
+		  }
+	  }
+	  return null;
+  }
+  
+  public void setVisibleColumnOrder(List visibleColumnOrder) {
+	  this.visibleColumnOrder = visibleColumnOrder;
+  }
+  
+  public List getVisibleColumnOrder() {
+	  return visibleColumnOrder;
+  }
+  
+  public boolean addColumn(TableColumn column){
+	  if (findColumnByHeader(allColumns, column.getHeaderValue().toString()) != null) {
+		  return false;
+	  }
+	  
+      Object oldValue = allColumns;
+      allColumns = new ArrayList(allColumns);
+      allColumns.add(column);
+      
+      propertySupport.firePropertyChange("columns", oldValue, allColumns);
+      return true;
+  }
+  
+  private void setColumns(List columns) {
+      Object oldValue = allColumns;
+      allColumns = new ArrayList(columns);
       propertySupport.firePropertyChange("columns", oldValue, columns);
   }
 
@@ -130,6 +154,12 @@ public class LogPanelPreferenceModel implements Serializable{
     return dateFormatPattern;
   }
 
+  public final void setDefaultDatePatternFormat() {
+	    String oldVal = this.dateFormatPattern;
+	    this.dateFormatPattern = ISO8601;
+	    propertySupport.firePropertyChange(
+	    	      "dateFormatPattern", oldVal, this.dateFormatPattern);
+  }
   /**
    * @param dateFormatPattern
    */
@@ -188,38 +218,13 @@ public class LogPanelPreferenceModel implements Serializable{
     setScrollToBottom(model.isScrollToBottom());
     setDetailPaneVisible(model.isDetailPaneVisible());
     setLogTreePanelVisible(model.isLogTreePanelVisible());
+    setVisibleColumnOrder(model.getVisibleColumnOrder());
 
     // we have to copy the list, because getColumns() is unmodifiable
-    setColumns(new ArrayList(model.getColumns()));
-    setHiddenLoggers(model.getHiddenLoggers());
+    setColumns(model.getColumns());
     
-    /**
-     * First, iterate and ADD new columns, (this means notifications of adds go out first
-     * add to the end
-     */
-    for (Iterator iter = model.visibleColumns.iterator(); iter.hasNext();) {
-      String column = (String) iter.next();
-
-      if (!this.visibleColumns.contains(column)) {
-        setColumnVisible(column, true);
-      }
-    }
-
-    /**
-     * Now go through and apply removals
-     */
-    /**
-     * this copy is needed to stop ConcurrentModificationException
-     */
-    Set thisSet = new HashSet(this.visibleColumns);
-
-    for (Iterator iter = thisSet.iterator(); iter.hasNext();) {
-      String column = (String) iter.next();
-
-      if (!model.visibleColumns.contains(column)) {
-        setColumnVisible(column, false);
-      }
-    }
+    setVisibleColumns(model.getVisibleColumns());
+    setHiddenLoggers(model.getHiddenLoggers());
   }
 
   /**
@@ -270,31 +275,42 @@ public class LogPanelPreferenceModel implements Serializable{
    * @param columnName
    * @return column visible flag
    */
-  public boolean isColumnVisible(String columnName) {
-    return visibleColumns.contains(columnName);
+  public boolean isColumnVisible(TableColumn column) {
+	  return (visibleColumns.contains(column));
+  }
+
+  private void setVisibleColumns(List visibleColumns) {
+      Object oldValue = new ArrayList();
+      this.visibleColumns = new ArrayList(visibleColumns);
+      
+      propertySupport.firePropertyChange("visibleColumns", oldValue, this.visibleColumns);
   }
 
   public void setColumnVisible(String columnName, boolean isVisible) {
-    boolean oldValue = visibleColumns.contains(columnName);
-    boolean newValue = isVisible;
+    boolean wasVisible = findColumnByHeader(visibleColumns, columnName) != null;
+    boolean newVisible = isVisible;
 
-    if (isVisible) {
-      visibleColumns.add(columnName);
-    } else {
-      visibleColumns.remove(columnName);
-    }
-
-    propertySupport.firePropertyChange(
-      new PropertyChangeEvent(
-        this, "visibleColumns", new Boolean(oldValue), new Boolean(newValue)));
+    //because we're a list and not a set, ensure we keep at most
+    //one entry for a tablecolumn
+    Object col = findColumnByHeader(allColumns, columnName);
+    if (newVisible && !wasVisible) {
+		visibleColumns.add(col);
+		visibleColumnOrder.add(col);
+	    propertySupport.firePropertyChange("visibleColumns", new Boolean(newVisible), new Boolean(wasVisible));      
+	}
+    if (!newVisible && wasVisible) {
+		visibleColumns.remove(col);
+		visibleColumnOrder.remove(col);
+	    propertySupport.firePropertyChange("visibleColumns", new Boolean(newVisible), new Boolean(wasVisible));      
+	}
   }
-
+  
   /**
    * Toggles the state between visible, non-visible for a particular Column name
    * @param column
    */
-  public void toggleColumn(String column) {
-    setColumnVisible(column, !isColumnVisible(column));
+  public void toggleColumn(TableColumn column) {
+    setColumnVisible(column.getHeaderValue().toString(), !isColumnVisible(column));
   }
 
   /**

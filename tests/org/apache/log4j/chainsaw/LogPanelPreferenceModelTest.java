@@ -17,7 +17,6 @@ public class LogPanelPreferenceModelTest extends TestCase {
          */
         
         model.setLevelIcons(!model.isLevelIcons());
-        model.setColumnVisible(ChainsawColumns.getColumnName(ChainsawColumns.INDEX_LOGGER_COL_NAME), false);
         model.setDateFormatPattern("yyyyDDmm");
         model.setLoggerPrecision("FATAL");
         model.setLogTreePanelVisible(!model.isLogTreePanelVisible());
@@ -36,8 +35,6 @@ public class LogPanelPreferenceModelTest extends TestCase {
         assertEquals(model.isLogTreePanelVisible(), restored.isLogTreePanelVisible());
         assertEquals(model.isScrollToBottom(), restored.isScrollToBottom());
         assertEquals(model.isToolTips(), restored.isToolTips());
-        
-        assertEquals(!model.isColumnVisible(ChainsawColumns.getColumnName(ChainsawColumns.INDEX_LOGGER_COL_NAME)), restored.isColumnVisible(ChainsawColumns.getColumnName(ChainsawColumns.INDEX_LOGGER_COL_NAME)));
         
         
         

@@ -64,7 +64,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -111,7 +110,6 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.text.Document;
 
-import org.apache.log4j.Layout;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
@@ -218,7 +216,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
   private final FilterModel filterModel = new FilterModel();
   private final RuleColorizer colorizer = new RuleColorizer();
   private final RuleMediator ruleMediator = new RuleMediator();
-  private Layout detailLayout = new EventDetailLayout();
+  private EventDetailLayout detailLayout = new EventDetailLayout();
   private double lastDetailPanelSplitLocation = DEFAULT_DETAIL_SPLIT_LOCATION;
   private double lastLogTreePanelSplitLocation =
     DEFAULT_LOG_TREE_SPLIT_LOCATION;
@@ -438,7 +436,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
           }
         }
       });
-
+    
     preferenceModel.addPropertyChangeListener(
       "toolTips",
       new PropertyChangeListener() {
@@ -451,44 +449,17 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     preferenceModel.addPropertyChangeListener(
       "visibleColumns",
       new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-          TableColumnModel columnModel = table.getColumnModel();
-
-          for (int i = 0; i < columnModel.getColumnCount(); i++) {
-            TableColumn column = columnModel.getColumn(i);
-
-            if (
-              !preferenceModel.isColumnVisible(
-                  column.getHeaderValue().toString())) {
-              columnModel.removeColumn(column);
-            }
-          }
-
-          Set columnSet = new HashSet();
-          Enumeration enumeration = columnModel.getColumns();
-
-          while (enumeration.hasMoreElements()) {
-            TableColumn column = (TableColumn) enumeration.nextElement();
-
-            columnSet.add(column.getHeaderValue());
-          }
-
-          for (
-            Iterator iter = ChainsawColumns.getColumnsNames().iterator();
-              iter.hasNext();) {
-            String column = (String) iter.next();
-
-            if (
-              preferenceModel.isColumnVisible(column)
-                && !columnSet.contains(column)) {
-              TableColumn newCol =
-                new TableColumn(
-                  ChainsawColumns.getColumnsNames().indexOf(column));
-              newCol.setHeaderValue(column);
-              columnModel.addColumn(newCol);
-            }
-          }
-        }
+    	public void propertyChange(PropertyChangeEvent evt) {
+    		//remove all columns and re-add visible
+            TableColumnModel columnModel = table.getColumnModel();
+            while (columnModel.getColumnCount() > 0) {
+                columnModel.removeColumn(columnModel.getColumn(0)); 
+    		}
+            for (Iterator iter = preferenceModel.getVisibleColumnOrder().iterator();iter.hasNext();) {
+    			TableColumn c = (TableColumn)iter.next();
+    			columnModel.addColumn(c);
+    		}
+    	}
       });
 
     PropertyChangeListener datePrefsChangeListener =
@@ -504,8 +475,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
           if (model.isUseISO8601Format()) {
             renderer.setDateFormatter(new SimpleDateFormat(Constants.ISO8601_PATTERN));
           } else {
+      		try {
             renderer.setDateFormatter(
               new SimpleDateFormat(model.getDateFormatPattern()));
+            		} catch (IllegalArgumentException iae) {
+            			model.setDefaultDatePatternFormat();
+                        renderer.setDateFormatter(new SimpleDateFormat(Constants.ISO8601_PATTERN));
+            		}
           }
 
           table.tableChanged(new TableModelEvent(tableModel));
@@ -836,15 +812,27 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
      */
     tableModel.addNewKeyListener(
       new NewKeyListener() {
-        public void newKeyAdded(NewKeyEvent e) {
+        public void newKeyAdded(final NewKeyEvent e) {
+        	SwingUtilities.invokeLater(new Runnable() {
+        		public void run() {
            // don't add the column if we already know about it, this could be if we've seen it before and saved the column preferences
-            if(table.getColumn(e.getKey())!=null){
+            //this may throw an illegalargexception - ignore it because we need to add only if not already added
+        	//if the column is already added, don't add again
+        	
+        	try {
+        	if(table.getColumn(e.getKey())!=null){
                 return;
-            }
+            } 
+        	} catch (IllegalArgumentException iae) {}
           TableColumn col = new TableColumn(e.getNewModelIndex());
           col.setHeaderValue(e.getKey());
-          
-          table.addColumn(col);
+
+          if (preferenceModel.addColumn(col)) {
+        	  table.addColumn(col);
+        	  preferenceModel.setColumnVisible(e.getKey().toString(), true);
+          }
+        		}
+        	});
         }
       });
 
@@ -1409,7 +1397,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
       detailPaneUpdater.setSelectedRow(table.getSelectedRow());
     }
   }
-
+  
   /**
    * Load settings from the panel preference model
    *
@@ -1424,37 +1412,60 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
 
         if (xmlFile.exists()) {
             XStream stream = buildXStreamForLogPanelPreference();
+            ObjectInputStream in = null;
             try {
-                LogPanelPreferenceModel storedPrefs = (LogPanelPreferenceModel) stream
-                        .fromXML(new FileReader(xmlFile));
+            	FileReader r = new FileReader(xmlFile);
+            	in = stream.createObjectInputStream(r);
+            	
+                LogPanelPreferenceModel storedPrefs = (LogPanelPreferenceModel)in.readObject();
                 preferenceModel.apply(storedPrefs);
+                TableColumnModel columnModel = table.getColumnModel();
+                //remove previous columns
+                while (columnModel.getColumnCount() > 0) {
+                	columnModel.removeColumn(columnModel.getColumn(0));
+                }
+                //add visible column order columns
+                for (Iterator iter = preferenceModel.getVisibleColumnOrder().iterator();iter.hasNext();) {
+                	TableColumn col = (TableColumn)iter.next();
+                	columnModel.addColumn(col);
+                }
+
+                try {
+                	//may be panel configs that don't have these values
+                lowerPanel.setDividerLocation(in.readInt());
+                nameTreeAndMainPanelSplit.setDividerLocation(in.readInt());
+                detailLayout.setConversionPattern(in.readObject().toString());
+                Point p = (Point)in.readObject();
+                undockedFrame.setLocation(p.x, p.y);
+                undockedFrame.setSize(((Dimension)in.readObject()));
+                } catch (EOFException eof){}
             } catch (Exception e) {
                 e.printStackTrace();
                 // TODO need to log this..
+            } finally {
+            	if (in != null) {
+            		try {
+            			in.close();
+            		} catch (IOException ioe) {}
+            	}
             }
-        }
+        } else {
+            loadDefaultColumnSettings(event);
+		}
         
     logTreePanel.ignore(preferenceModel.getHiddenLoggers());
-
-    if (preferenceModel.getColumns().size()>0) {
-        loadColumnSettings();
-    } else {
-      loadDefaultColumnSettings(event);
-    }
 
     //first attempt to load encoded file
     File f2 =
       new File(
         SettingsManager.getInstance().getSettingsDirectory(), URLEncoder.encode(identifier) + COLORS_EXTENSION);
 
-    if (!f2.exists()) {
+    if (f2.exists()) {
+        loadColorSettings(f2);
+    } else {
         f2 =
             new File(
               SettingsManager.getInstance().getSettingsDirectory(), identifier + COLORS_EXTENSION);
-    }
-
-    if (f2.exists()) {
-      loadColorSettings(f2);
     }
   }
 
@@ -1469,32 +1480,41 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
       File xmlFile = new File(SettingsManager.getInstance()
               .getSettingsDirectory(), URLEncoder.encode(identifier) + ".xml");
 
-//      TODO  TableColumnData is no longer required, delete it
-    updatePreferenceModelColumnDetails();
     preferenceModel.setHiddenLoggers(new HashSet(logTreePanel.getHiddenSet()));
+    List visibleOrder = new ArrayList();
+    Enumeration cols = table.getColumnModel().getColumns();
+    while (cols.hasMoreElements()) {
+    	TableColumn c = (TableColumn)cols.nextElement();
+    	visibleOrder.add(c);
+    }
+    preferenceModel.setVisibleColumnOrder(visibleOrder);
     
     XStream stream = buildXStreamForLogPanelPreference();
+    ObjectOutputStream s = null;
     try {
-        stream.toXML(preferenceModel, new FileWriter(xmlFile));
+    	FileWriter w = new FileWriter(xmlFile);
+    	s = stream.createObjectOutputStream(w);
+    	s.writeObject(preferenceModel);
+    	s.writeInt(lowerPanel.getDividerLocation());
+    	s.writeInt(nameTreeAndMainPanelSplit.getDividerLocation());
+    	s.writeObject(detailLayout.getConversionPattern());
+    	s.writeObject(undockedFrame.getLocation());
+    	s.writeObject(undockedFrame.getSize());
     } catch (Exception ex) {
         ex.printStackTrace();
         // TODO need to log this..
+    } finally {
+    	if (s != null) {
+    		try {
+    			s.close();
+    		} catch (IOException ioe) {}
+    	}
     }
 
 //    TODO colour settings need to be saved
     saveColorSettings();
   }
 
-    private void updatePreferenceModelColumnDetails() {
-        preferenceModel.clearColumns();
-        for (int i = 0; i < table.getColumnModel().getColumnCount(); i++) {
-    
-            TableColumn c = table.getColumnModel().getColumn(i);
-    
-            preferenceModel.addColumn(c);
-        }
-    }
-    
     private XStream buildXStreamForLogPanelPreference() {
         XStream stream = new XStream(new DomDriver());
         stream.registerConverter(new TableColumnConverter());
@@ -1505,7 +1525,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
      * Display the panel preferences frame
      */
   void showPreferences() {
-    preferencesPanel.updateModel();
     preferencesFrame.setVisible(true);
   }
 
@@ -1603,9 +1622,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     externalPanel.add(undockedToolbar, BorderLayout.NORTH);
     externalPanel.add(nameTreeAndMainPanelSplit, BorderLayout.CENTER);
     externalPanel.setDocked(false);
-    undockedFrame.setSize(getSize());
-
-    undockedFrame.setLocation(getBounds().x, getBounds().y);
 
     undockedFrame.setVisible(true);
     dockingAction.putValue(Action.NAME, "Dock");
@@ -2129,26 +2145,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
   }
 
   /**
-   * Load panel column settings
-   */
-  private void loadColumnSettings() {
-      //only remove columns and add serialized columns if 
-      //at least one column was read from the file
-      TableColumnModel model = table.getColumnModel();
-
-      if (preferenceModel.getColumns().size() > 0) {
-        //remove columns from model - will be re-added in the correct order
-        for (int i = model.getColumnCount() - 1; i > -1; i--) {
-          model.removeColumn(model.getColumn(i));
-        }
-
-        for (Iterator iter = preferenceModel.getColumns().iterator(); iter.hasNext();) {
-          model.addColumn((TableColumn) iter.next());
-        }
-      }
-  }
-
-  /**
    * Load default column settings if no settings exist for this identifier
    *
    * @param event
@@ -2182,11 +2178,15 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
         table.removeColumn(column);
       }
     }
-
+    preferenceModel.setDetailPaneVisible(event.asBoolean("detailPaneVisible"));
+    preferenceModel.setLogTreePanelVisible(event.asBoolean("logTreePanelVisible"));
     //re-add columns to the table in the order provided from the list
     for (Iterator iter = sortedColumnList.iterator(); iter.hasNext();) {
       TableColumn element = (TableColumn) iter.next();
-      table.addColumn(element);
+      if (preferenceModel.addColumn(element)) {
+          table.addColumn(element);
+    	  preferenceModel.setColumnVisible(element.getHeaderValue().toString(), true);
+      }
     }
 
     String columnWidths = event.getSetting(TABLE_COLUMN_WIDTHS);
@@ -2213,13 +2213,10 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
         logger.error("Error decoding a Table width", e);
       }
     }
+    undockedFrame.setSize(getSize());
+    undockedFrame.setLocation(getBounds().x, getBounds().y);
 
-    SwingUtilities.invokeLater(
-    	      new Runnable() {
-    	        public void run() {
-    	          repaint();
-    	        }
-    	      });
+      repaint();
     }
 
   public JTextField getFindTextField() {
@@ -2474,9 +2471,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
         if (
           (column.getModelIndex() + 1) == ChainsawColumns.INDEX_THROWABLE_COL_NAME) {
           column.setCellEditor(throwableRenderPanel);
-        }
-        if (column.getModelIndex() > 0) {
-            preferenceModel.setColumnVisible(column.getHeaderValue().toString(), true);
         }
       }
     }

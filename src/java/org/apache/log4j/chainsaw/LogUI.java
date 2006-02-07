@@ -435,13 +435,16 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             
         }});
    
-    JLabel lbl  = new JLabel();
+    final JLabel lbl  = new JLabel();
     lbl.setEnabled(false);
-    String dndTitle = "Drag & Drop XML log files here";
-    getTabbedPane().addANewTab(dndTitle,lbl,null, "You can Drag & Drop XML log files onto the Tabbed Pane and they will be loaded into Chainsaw" );
-    getTabbedPane().setEnabledAt(getTabbedPane().indexOfTab(dndTitle), false);
-    ensureWelcomePanelVisible();
-    
+    final String dndTitle = "Drag & Drop XML log files here";
+    SwingUtilities.invokeLater(new Runnable() {
+    	public void run() {
+    	    ensureWelcomePanelVisible();
+    	    getTabbedPane().addANewTab(dndTitle,lbl,null, "You can Drag & Drop XML log files onto the Tabbed Pane and they will be loaded into Chainsaw" );
+    	    getTabbedPane().setEnabledAt(getTabbedPane().indexOfTab(dndTitle), false);
+    	}
+    });
     applicationPreferenceModelPanel = new ApplicationPreferenceModelPanel(applicationPreferenceModel);
     applicationPreferenceModelPanel.setOkCancelActionListener(
       new ActionListener() {
@@ -557,9 +560,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       // ensure that the Welcome Panel is made visible
       if(!getTabbedPane().containsWelcomePanel()) {
           addWelcomePanel();
-      }
-      if(getTabbedPane().getSelectedComponent()!=welcomePanel) {
-          getTabbedPane().setSelectedIndex(getTabbedPane().indexOfComponent(welcomePanel));
       }
   }
   
@@ -1374,6 +1374,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     getTabbedPane().insertTab(
       "Welcome",  new ImageIcon(ChainsawIcons.ABOUT),welcomePanel,
       "Welcome/Help", 0);
+    getTabbedPane().setSelectedComponent(welcomePanel);
   }
 
   void removeWelcomePanel() {
@@ -1831,13 +1832,13 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       /**
                * Let the new LogPanel receive this batch
                */
-      thisPanel.receiveEventBatch(ident, events);
 
       SwingUtilities.invokeLater(
         new Runnable() {
           public void run() {
             getTabbedPane().addANewTab(
               ident, thisPanel, new ImageIcon(ChainsawIcons.ANIM_RADIO_TOWER));
+            thisPanel.receiveEventBatch(ident, events);
           }
         });
 

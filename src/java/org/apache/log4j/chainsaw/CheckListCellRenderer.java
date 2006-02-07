@@ -10,6 +10,7 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.table.TableColumn;
 
 
 /**
@@ -42,7 +43,7 @@ public abstract class CheckListCellRenderer extends JCheckBox
   public Component getListCellRendererComponent(
     JList list, Object value, int index, boolean isSelected,
     boolean cellHasFocus) {
-    setText(value.toString());
+	  setText(((TableColumn)value).getHeaderValue().toString());
     setBackground(
       isSelected ? list.getSelectionBackground() : list.getBackground());
     setForeground(
