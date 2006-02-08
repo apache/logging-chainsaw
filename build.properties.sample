@@ -22,3 +22,7 @@
 # Place all the dependencies in this directory (except ORO)
 # Dependencies directory
 deps.dir=lib
+
+# The location of the log4j source code (unpacked), required if you want to build the HTML JavaDoc for the Receivers 
+# into the Chainsaw GUI.  This is a MUST for building the complete distribution
+log4j.src=../log4j/
