@@ -157,7 +157,7 @@ public class CreateShellScripts extends Task {
 
     
     private void writeExecutionLine(Collection fileNames, Writer writer, char jarSeparator) throws IOException {
-        writer.write("java -classpath ");
+        writer.write("java -Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.Log4JLogger -classpath ");
         for (Iterator iter = fileNames.iterator(); iter.hasNext();) {
             String fileName = (String) iter.next();
             writer.write(fileName);
