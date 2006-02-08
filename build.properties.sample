@@ -16,7 +16,8 @@
 # See http://jakarta.apache.org/commons/sandbox/vfs/download.html for 
 # file system-specific jars required when running Chainsaw with a VFSLogFilePatternReceiver
 #
-# NOTE: VFS requires Commons logging JAR as well, otherwise it won't work.
+# NOTE: VFS requires Commons logging JAR as well, otherwise it won't work, just grab 
+# the API jar and place it in this directory alongside VFS jar.
 
 # Place all the dependencies in this directory (except ORO)
 # Dependencies directory
