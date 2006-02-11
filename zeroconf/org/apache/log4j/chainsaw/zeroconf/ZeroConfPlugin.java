@@ -3,7 +3,6 @@ package org.apache.log4j.chainsaw.zeroconf;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -19,32 +18,28 @@ import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.JToolBar;
-import javax.swing.ListCellRenderer;
-import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.DefaultTableCellRenderer;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.apache.log4j.chainsaw.ModifiableListModel;
 import org.apache.log4j.chainsaw.SmallButton;
 import org.apache.log4j.chainsaw.help.HelpManager;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
@@ -52,6 +47,7 @@ import org.apache.log4j.chainsaw.plugins.GUIPluginSkeleton;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.net.SocketHubReceiver;
 import org.apache.log4j.net.ZeroConfSocketHubAppender;
+import org.apache.log4j.net.ZeroConfSocketHubAppenderTestBed;
 import org.apache.log4j.net.Zeroconf4log4j;
 import org.apache.log4j.plugins.Plugin;
 import org.apache.log4j.plugins.PluginEvent;
@@ -66,7 +62,6 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
  * whatever people are calling it) and allow the user to double click on
  * 'devices' to try and connect to them with no configuration needed.
  * 
- * TODO add autoConnect visuals, and save it in a model 
  * TODO need to handle
  * NON-log4j devices that may be broadcast in the interested zones 
  * TODO add the
@@ -84,11 +79,11 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
 
     private static final Icon DEVICE_DISCOVERED_ICON = new ImageIcon(ChainsawIcons.ANIM_RADIO_TOWER);
 
-    private ModifiableListModel discoveredDevices = new ModifiableListModel();
+    private ZeroConfDeviceModel discoveredDevices = new ZeroConfDeviceModel();
 
-    private final JList listBox = new JList(discoveredDevices);
-
-    private final JScrollPane scrollPane = new JScrollPane(listBox);
+    private JTable deviceTable = new JTable(discoveredDevices);
+    
+    private final JScrollPane scrollPane = new JScrollPane(deviceTable);
 
     private JmDNS jmDNS;
 
@@ -139,12 +134,11 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
                 ZeroConfSocketHubAppender.DEFAULT_ZEROCONF_ZONE,
                 new ZeroConfServiceListener());
 
-        listBox.setCellRenderer(new ServiceInfoListCellRenderer());
-        listBox.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-        listBox.setFixedCellHeight(75);
-        listBox.setFixedCellWidth(200);
-        listBox.setVisibleRowCount(-1);
-        listBox.addMouseListener(new ConnectorMouseListener());
+        jmDNS.addServiceListener(ZeroConfSocketHubAppender.DEFAULT_ZEROCONF_ZONE, discoveredDevices);
+        
+        deviceTable.addMouseListener(new ConnectorMouseListener());
+
+        
         JToolBar toolbar = new JToolBar();
         SmallButton helpButton = new SmallButton(helpItem.getAction());
         helpButton.setText(helpItem.getText());
@@ -167,17 +161,12 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
                     for (Iterator iter = serviceInfoToReceiveMap.entrySet().iterator(); iter.hasNext();) {
                         Map.Entry entry = (Map.Entry) iter.next();
                         if(entry.getValue() == plugin) {
-                            serviceInfoToReceiveMap.remove(entry.getKey());
+                                iter.remove();
                         }
                     }
                 }
 //                 need to make sure that the menu item tracking this item has it's icon and enabled state updade
-                JMenuItem item = locateMatchingMenuItem(plugin.getName());
-                if (item!=null) {
-                    item.setEnabled(true);
-                    item.setIcon(null);
-                }
-                discoveredDevices.fireContentsChanged();
+                discoveredDevices.fireTableDataChanged();
             }});
 
         File fileLocation = getPreferenceFileLocation();
@@ -192,20 +181,8 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         }else {
             this.preferenceModel = new ZeroConfPreferenceModel();
         }
-        
-        discoveredDevices.addListDataListener(new ListDataListener() {
-
-            public void intervalAdded(ListDataEvent e) {
-                setIconIfNeeded();
-            }
-
-            public void intervalRemoved(ListDataEvent e) {
-                setIconIfNeeded();
-            }
-
-            public void contentsChanged(ListDataEvent e) {
-                setIconIfNeeded();
-            }});
+        discoveredDevices.setZeroConfPreferenceModel(preferenceModel);
+        discoveredDevices.setZeroConfPluginParent(this);
     }
     
     /**
@@ -216,7 +193,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         Container container = this.getParent();
         if(container instanceof JTabbedPane) {
             JTabbedPane tabbedPane = (JTabbedPane) container;
-            Icon icon = discoveredDevices.getSize()==0?null:DEVICE_DISCOVERED_ICON;
+            Icon icon = discoveredDevices.getRowCount()==0?null:DEVICE_DISCOVERED_ICON;
             tabbedPane.setIconAt(tabbedPane.indexOfTab(getName()), icon);
         }else {
             LOG.warn("Parent is not a TabbedPane, not setting icon: " + container.getClass().getName());
@@ -241,22 +218,15 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
             insertToLeftOfHelp(menuBar, connectToMenu);
             connectToMenu.add(nothingToConnectTo);
             
-            discoveredDevices.addListDataListener(new ListDataListener() {
+            discoveredDevices.addTableModelListener(new TableModelListener (){
 
-                public void intervalAdded(ListDataEvent e) {
-                    if(discoveredDevices.getSize()>0) {
+                public void tableChanged(TableModelEvent e) {
+                    if(discoveredDevices.getRowCount()==0) {
+                        connectToMenu.add(nothingToConnectTo,0);
+                    }else if(discoveredDevices.getRowCount()>0) {
                         connectToMenu.remove(nothingToConnectTo);
                     }
-                }
-
-                public void intervalRemoved(ListDataEvent e) {
-                    if(discoveredDevices.getSize()==0) {
-                        connectToMenu.add(nothingToConnectTo,0);
-                    }
                     
-                }
-
-                public void contentsChanged(ListDataEvent e) {
                 }});
             
             nothingToConnectTo.setEnabled(false);
@@ -266,6 +236,12 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         }
     }
 
+    /**
+     * Hack method to locate the JMenu that is the Help menu, and inserts the new menu
+     * just to the left of it.
+     * @param menuBar
+     * @param item
+     */
     private void insertToLeftOfHelp(JMenuBar menuBar, JMenu item) {
         for (int i = 0; i < menuBar.getMenuCount(); i++) {
             JMenu menu = menuBar.getMenu(i);
@@ -276,6 +252,12 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         LOG.warn("menu '" + item.getText() + "' was NOT added because the 'Help' menu could not be located");
     }
 
+    /**
+     * When a device is discovered, we create a menu item for it so it can be connected to via that
+     * GUI mechanism, and also if the device is one of the auto-connect devices then a background thread
+     * is created to connect the device.
+     * @param info
+     */
     private void deviceDiscovered(final ServiceInfo info) {
         final String name = info.getName();
 //        TODO currently adding ALL devices to autoConnectlist
@@ -288,13 +270,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
                 connectTo(info);
             }});
         
-        if(discoveredDevices.getSize()>0) {
-            for (int i = 0; i < discoveredDevices.getSize(); i++) {
-                if (name.compareToIgnoreCase(((ServiceInfo) discoveredDevices
-                        .elementAt(i)).getName()) < 0) {
-                    discoveredDevices.insertElementAt(info, i);
-                }
-            }
+        if(discoveredDevices.getRowCount()>0) {
             Component[] menuComponents = connectToMenu.getMenuComponents();
             boolean located = false;
             for (int i = 0; i < menuComponents.length; i++) {
@@ -312,7 +288,6 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
                 connectToMenu.insert(connectToDeviceMenuItem,0);
             }
         }else {
-            discoveredDevices.addElement(info);
             connectToMenu.insert(connectToDeviceMenuItem,0);
         }
 //         if the device name is one of the autoconnect devices, then connect immediately
@@ -327,13 +302,11 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         }
     }
     
+    /**
+     * When a device is removed or disappears we need to remove any JMenu item associated with it.
+     * @param name
+     */
     private void deviceRemoved(String name) {
-        for (int i = 0; i < discoveredDevices.getSize(); i++) {
-            if (name.compareToIgnoreCase(((ServiceInfo) discoveredDevices
-                    .elementAt(i)).getName()) == 0) {
-                discoveredDevices.remove(i);
-            }
-        }
         Component[] menuComponents = connectToMenu.getMenuComponents();
         for (int i = 0; i < menuComponents.length; i++) {
             Component c = menuComponents[i];
@@ -347,6 +320,11 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         }
     }
         
+    /**
+     * Listens out on the JmDNS/ZeroConf network for new devices that appear
+     * and adds/removes these device information from the list/model.
+     *
+     */
     private class ZeroConfServiceListener implements ServiceListener {
 
         public void serviceAdded(final ServiceEvent event) {
@@ -380,76 +358,21 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
 
     }
 
-    private class ServiceInfoListCellRenderer implements
-            ListCellRenderer {
 
-        private JPanel panel = new JPanel(new BorderLayout(15, 15));
-
-        private final ImageIcon ICON = new ImageIcon(
-                ChainsawIcons.ANIM_RADIO_TOWER);
-        
-        private JLabel iconLabel = new JLabel(ICON);
-
-        private JLabel nameLabel = new JLabel();
-
-        private JLabel detailLabel = new JLabel();
-
-        private JCheckBox autoConnect = new JCheckBox();
-
-        private Box southBox = Box.createVerticalBox();
-        private JCheckBox checkBox = new JCheckBox();
-        
-        private ServiceInfoListCellRenderer() {
-            Font font = nameLabel.getFont();
-            font = font.deriveFont(font.getSize() + 6);
-            nameLabel.setFont(font);
-            panel.setLayout(new BorderLayout());
-            panel.add(iconLabel, BorderLayout.WEST);
-
-            JPanel centerPanel = new JPanel(new BorderLayout(3, 3));
-
-            centerPanel.add(nameLabel, BorderLayout.CENTER);
-            centerPanel.add(southBox, BorderLayout.SOUTH);
-            panel.add(centerPanel, BorderLayout.CENTER);
-            
-            southBox.add(detailLabel);
-            Box hBox = Box.createHorizontalBox();
-            hBox.add(Box.createHorizontalGlue());
-            hBox.add(new JLabel("Auto-connect:"));
-            hBox.add(checkBox);
-
-            southBox.add(hBox);
-            
-            panel.setBorder(BorderFactory.createEtchedBorder());
-        }
-
-        public Component getListCellRendererComponent(JList list, Object value,
-                int index, boolean isSelected, boolean cellHasFocus) {
-            if (isSelected) {
-                panel.setBackground(list.getSelectionBackground());
-                panel.setForeground(list.getSelectionForeground());
-            } else {
-                panel.setBackground(list.getBackground());
-                panel.setForeground(list.getForeground());
-            }
-            ServiceInfo info = (ServiceInfo) value;
-            nameLabel.setText(info.getName());
-            detailLabel.setText(info.getHostAddress() + ":" + info.getPort());
-            iconLabel.setIcon(isConnectedTo(info)?ICON:null);
-            checkBox.setSelected(preferenceModel.getAutoConnectDevices().contains(info.getName()));
-            return panel;
-        }
-
-    }
-
+    /**
+     * When the user double clicks on a row, then the device is connected to,
+     * the only exception is when clicking in the check box column for auto connect.
+     */
     private class ConnectorMouseListener extends MouseAdapter {
 
         public void mouseClicked(MouseEvent e) {
             if (e.getClickCount() == 2) {
-                int index = listBox.locationToIndex(e.getPoint());
-                ListModel dlm = discoveredDevices;
-                ServiceInfo info = (ServiceInfo) dlm.getElementAt(index);
-                listBox.ensureIndexIsVisible(index);
+                int row = deviceTable.rowAtPoint(e.getPoint());
+                if(deviceTable.columnAtPoint(e.getPoint())==2) {
+                    return;
+                }
+                ServiceInfo info = discoveredDevices.getServiceInfoAtRow(row);
+                
                 if (!isConnectedTo(info)) {
                     connectTo(info);
                 } else {
@@ -463,24 +386,24 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
              * This methodh handles when the user clicks the
              * auto-connect
              */
-            int index = listBox.locationToIndex(e.getPoint());
-
-            if (index != -1) {
-//                Point p = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), )
-                Component c = SwingUtilities.getDeepestComponentAt(ZeroConfPlugin.this, e.getX(), e.getY());
-                if (c instanceof JCheckBox) {
-                    ServiceInfo info = (ServiceInfo) listBox.getModel()
-                            .getElementAt(index);
-                    String name = info.getName();
-                    if (preferenceModel.getAutoConnectDevices().contains(name)) {
-                        preferenceModel.removeAutoConnectDevice(name);
-                    } else {
-                        preferenceModel.addAutoConnectDevice(name);
-                    }
-                    discoveredDevices.fireContentsChanged();
-                    repaint();
-                }
-            }
+//            int index = listBox.locationToIndex(e.getPoint());
+//
+//            if (index != -1) {
+////                Point p = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), )
+//                Component c = SwingUtilities.getDeepestComponentAt(ZeroConfPlugin.this, e.getX(), e.getY());
+//                if (c instanceof JCheckBox) {
+//                    ServiceInfo info = (ServiceInfo) listBox.getModel()
+//                            .getElementAt(index);
+//                    String name = info.getName();
+//                    if (preferenceModel.getAutoConnectDevices().contains(name)) {
+//                        preferenceModel.removeAutoConnectDevice(name);
+//                    } else {
+//                        preferenceModel.addAutoConnectDevice(name);
+//                    }
+//                    discoveredDevices.fireContentsChanged();
+//                    repaint();
+//                }
+//            }
         }
     }
 
@@ -493,13 +416,19 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
             plugin = (Plugin) serviceInfoToReceiveMap.get(info);
         }
         ((LoggerRepositoryEx)LogManager.getLoggerRepository()).getPluginRegistry().stopPlugin(plugin.getName());
+        
+        JMenuItem item = locateMatchingMenuItem(info.getName());
+        if (item!=null) {
+            item.setIcon(null);
+            item.setEnabled(true);
+        }
     }
     /**
      * returns true if the serviceInfo record already has a matching connected receiver
      * @param info
      * @return
      */
-    private boolean isConnectedTo(ServiceInfo info) {
+    boolean isConnectedTo(ServiceInfo info) {
         return serviceInfoToReceiveMap.containsKey(info);
     }
     /**
@@ -532,8 +461,8 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
             item.setIcon(new ImageIcon(ChainsawIcons.ANIM_NET_CONNECT));
             item.setEnabled(false);
         }
-        // now notify the list model has changed, it needs redrawing of the receiver icon now it's connected
-        discoveredDevices.fireContentsChanged();
+//        // now notify the list model has changed, it needs redrawing of the receiver icon now it's connected
+//        discoveredDevices.fireContentsChanged();
     }
 
     /**
