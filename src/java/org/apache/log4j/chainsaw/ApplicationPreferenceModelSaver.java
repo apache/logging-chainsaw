@@ -19,7 +19,7 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
  * 
  * The Model passed to this class' constructor is the instance of the ApplicationPreference
  * that will be saved, and will have properties modified by loading from the
- * 'chainsaw.xml' file in the .chainsaw directory of the user's home directory.
+ * 'chainsaw.settings.xml' file in the .chainsaw directory of the user's home directory.
  * 
  * @author psmith
  *
@@ -68,7 +68,7 @@ public class ApplicationPreferenceModelSaver implements SettingsListener {
     }
 
     private File getApplicationPreferenceXMLFile(File settingsLocation) {
-        return new File(settingsLocation, "chainsaw.xml");
+        return new File(settingsLocation, "chainsaw.settings.xml");
     }
 
 }
