@@ -31,9 +31,29 @@ to stream logging messages into Chainsaw.
 <h2>Interesting... So what do I need to use ZeroConf with Chainsaw & log4j?</h2>
 <p>
 The log4j team has created an additional JAR file that can be added to your existing
-application to enable ZeroConf configuration. You just need to download the <code>log4j-zeroconf.jar</code> and the JmDNS package.  Then change your references from <code>SocketHubAppender</code>
-to <code>ZeroConfSocketHubAppender</code>. (We recommend you change the 'name' propety from it's default to make it easy for you to use, other
+application to enable ZeroConf configuration. You just need to download the <code>log4j-zeroconf.jar</code> and the JmDNS package and add 
+both JARs to your application's classpath. </p>
+<p> Then change your references from <code>SocketHubAppender</code>
+to <code><b>ZeroConf</b>SocketHubAppender</code>. (We recommend you change the 'name' propety from it's default to make it easy for you to use, other
 wise it's name will appear as the default 'SocketHubAppender').
+</p>
+<p>You're log4j.xml configuration file could be as simple as this:</p>
+<pre>
+&lt;log4j:configuration debug="false" threshold="debug"  xmlns:log4j="http://jakarta.apache.org/log4j/&gt;
+    &lt;appender name="zeroconf" class="org.apache.log4j.net.ZeroConfSocketHubAppender"&gt;
+        &lt;param name="Name" value="MyZeroConfSockeHubAppender" /&gt;
+    &lt;/appender&gt;
+    &lt;!--ROOT Logger--&gt;
+    &lt;root&gt;
+        &lt;level value="INFO" /&gt;
+        &lt;appender-ref ref="zeroconf" /&gt;
+    &lt;/root&gt;
+&lt;/log4j:configuration&gt;
+</pre>
+<p>
+Once you have started your application using this new appender, then from within Chainsaw, the ZeroConf tab will show detected
+applications.  You can simply double click on the detected app, and Chainsaw will connect a Receiver to it.  You can even tick the "Auto-Connet"
+check box, and next time Chainsaw see's this application, it will automatically connect to it.
 </p>
 <h2>Cool... But I have some applications that use log4j 1.2.x.  Will it still work?</h2>
 <p>Yes.  We have designed a backward compatible mechanism to expose log4j 1.2.x SocketHubAppender so that Chainsaw can detect it automatically.  
