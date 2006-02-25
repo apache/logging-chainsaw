@@ -70,12 +70,14 @@ import org.apache.log4j.chainsaw.icons.LineIconFactory;
 import org.apache.log4j.chainsaw.messages.MessageCenter;
 import org.apache.log4j.net.SocketNodeEventListener;
 import org.apache.log4j.net.SocketReceiver;
-import org.apache.log4j.spi.LoggerRepository;
-import org.apache.log4j.spi.LoggerRepositoryEx;
 import org.apache.log4j.plugins.Pauseable;
 import org.apache.log4j.plugins.Plugin;
+import org.apache.log4j.plugins.PluginEvent;
+import org.apache.log4j.plugins.PluginListener;
 import org.apache.log4j.plugins.PluginRegistry;
 import org.apache.log4j.plugins.Receiver;
+import org.apache.log4j.spi.LoggerRepository;
+import org.apache.log4j.spi.LoggerRepositoryEx;
 
 
 /**
@@ -83,7 +85,7 @@ import org.apache.log4j.plugins.Receiver;
  *
  *
  * @author Paul Smith <psmith@apache.org>
- * @author Scott Debogy <sdeboy@apache.org>
+ * @author Scott Deboy <sdeboy@apache.org>
  */
 public class ReceiversPanel extends JPanel {
   final Action newReceiverButtonAction;
@@ -113,6 +115,24 @@ public class ReceiversPanel extends JPanel {
     if (repo instanceof LoggerRepositoryEx) {
        pluginRegistry = ((LoggerRepositoryEx) repo).getPluginRegistry();
        pluginRegistry.addPluginListener(model);
+
+       //iterate over visual receivers and call setcontainer
+       Collection c = pluginRegistry.getPlugins(VisualReceiver.class);
+       for (Iterator iter = c.iterator();iter.hasNext();) {
+    	   ((VisualReceiver)iter.next()).setContainer(this);
+       }
+       
+       pluginRegistry.addPluginListener(new PluginListener() {
+		public void pluginStarted(PluginEvent e) {
+			//if we get a plugin started callback, set the container
+			if (e.getPlugin() instanceof VisualReceiver) {
+				((VisualReceiver)e.getPlugin()).setContainer(ReceiversPanel.this);
+			}
+		}
+
+		public void pluginStopped(PluginEvent e) {
+		}
+       });
     } else {
        pluginRegistry = null;
     }

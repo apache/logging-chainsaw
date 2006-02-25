@@ -39,6 +39,8 @@ public class VFSLogFilePatternReceiverBeanInfo extends SimpleBeanInfo {
         new PropertyDescriptor("tailing", VFSLogFilePatternReceiver.class),
         new PropertyDescriptor(
           "filterExpression", VFSLogFilePatternReceiver.class),
+          new PropertyDescriptor(
+                  "promptForUserInfo", VFSLogFilePatternReceiver.class),
       };
     } catch (Exception e) {
     }
