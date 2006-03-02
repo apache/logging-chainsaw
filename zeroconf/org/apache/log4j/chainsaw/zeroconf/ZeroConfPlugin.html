@@ -31,7 +31,8 @@ to stream logging messages into Chainsaw.
 <h2>Interesting... So what do I need to use ZeroConf with Chainsaw & log4j?</h2>
 <p>
 The log4j team has created an additional JAR file that can be added to your existing
-application to enable ZeroConf configuration. You just need to download the <code>log4j-zeroconf.jar</code> and the JmDNS package and add 
+application to enable ZeroConf configuration. You just need to download the <code>log4j-zeroconf.jar</code> and the JmDNS package (you must use
+at least version 1.0 of JmDNS) and add 
 both JARs to your application's classpath. </p>
 <p> Then change your references from <code>SocketHubAppender</code>
 to <code><b>ZeroConf</b>SocketHubAppender</code>. (We recommend you change the 'name' propety from it's default to make it easy for you to use, other
@@ -52,7 +53,7 @@ wise it's name will appear as the default 'SocketHubAppender').
 </pre>
 <p>
 Once you have started your application using this new appender, then from within Chainsaw, the ZeroConf tab will show detected
-applications.  You can simply double click on the detected app, and Chainsaw will connect a Receiver to it.  You can even tick the "Auto-Connet"
+applications.  You can simply double click on the detected app, and Chainsaw will connect a Receiver to it.  You can even tick the "Auto-Connect"
 check box, and next time Chainsaw see's this application, it will automatically connect to it.
 </p>
 <h2>Cool... But I have some applications that use log4j 1.2.x.  Will it still work?</h2>
