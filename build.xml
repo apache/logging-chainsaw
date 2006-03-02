@@ -317,19 +317,14 @@
      		<!--<include name="webstart*.jar"/> -->
      	</fileset>
   	</copy>
-  	<!-- TODO When zeroconf is ready, remove this! -->
-  	<delete>
-  		<fileset  dir="webstart-dist">
-  			<include name="*zeroconf*"/>
-  			<include name="jmdns*"/>
-  		</fileset>
-  	</delete>
-  	
+ 	
   	
 	<createshellscripts outputLocation="webstart-dist" scriptType="shell">
 		<fileset dir="webstart-dist" includes="*.jar">
 			<exclude name="commons*.jar"/>
 			<exclude name="*vfs*.jar"/>
+			<exclude name="*-jms-*.jar"/>
+			<exclude name="*-db-*.jar"/>
 		</fileset>
 	</createshellscripts>
 
@@ -338,6 +333,8 @@
 		<fileset dir="webstart-dist" includes="*.jar">
 			<exclude name="commons*.jar"/>
 			<exclude name="*vfs*.jar"/>
+			<exclude name="*-jms-*.jar"/>
+			<exclude name="*-db-*.jar"/>
 		</fileset>
 	</createshellscripts>	
     
@@ -356,6 +353,10 @@
         <include name="*.jar"/>
         <include name="*.bat"/>
         <include name="*.sh"/>
+		<exclude name="commons*.jar"/>
+		<exclude name="*vfs*.jar"/>
+		<exclude name="*-jms-*.jar"/>
+		<exclude name="*-db-*.jar"/>
       </zipfileset>
     </zip>
   </target>
