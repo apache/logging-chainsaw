@@ -40,8 +40,10 @@ import javax.swing.SwingUtilities;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileSystemManager;
+import org.apache.commons.vfs.FileSystemOptions;
 import org.apache.commons.vfs.VFS;
 import org.apache.commons.vfs.provider.URLFileName;
+import org.apache.commons.vfs.provider.sftp.SftpFileSystemConfigBuilder;
 import org.apache.log4j.chainsaw.receivers.VisualReceiver;
 import org.apache.log4j.varia.LogFilePatternReceiver;
 
@@ -276,7 +278,10 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
           getLogger().info("attempting to load file: " + getFileURL());
           try {
             FileSystemManager fileSystemManager = VFS.getManager();
-            FileObject fileObject = fileSystemManager.resolveFile(getFileURL());
+            FileSystemOptions opts = new FileSystemOptions();
+            SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
+
+            FileObject fileObject = fileSystemManager.resolveFile(getFileURL(), opts);
             reader = new InputStreamReader(fileObject.getContent().getInputStream());
             //now that we have a reader, remove additional portions of the file url (sftp passwords, etc.)
             //check to see if the name is a URLFileName..if so, set file name to not include username/pass
