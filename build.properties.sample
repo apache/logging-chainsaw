@@ -1,8 +1,8 @@
 
 # Chainsaw requires the following jars to build and run:
-# * Jakarta ORG 2.0.6+
 # * Jakarta Commons VFS 1.0 RC1+ (requires sub-dependecy of Jakarta Commons Logging).
 # * XStream - http://xstream.codehaus.org (BSD License)
+# * Log4j 1.3 jars 
 # 
 # Place the Jars in a local 'lib' folder, and Chainsaw should compile and run
 #
@@ -16,10 +16,8 @@
 # See http://jakarta.apache.org/commons/sandbox/vfs/download.html for 
 # file system-specific jars required when running Chainsaw with a VFSLogFilePatternReceiver
 #
-# NOTE: VFS requires Commons logging JAR as well, otherwise it won't work, just grab 
-# the API jar and place it in this directory alongside VFS jar.
+# NOTE: VFS requires Commons logging JAR to run
 
-# Place all the dependencies in this directory (except ORO)
 # Dependencies directory
 deps.dir=lib
 

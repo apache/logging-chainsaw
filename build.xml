@@ -88,8 +88,8 @@
   <target name="vfs" depends="vfsCheck" unless="vfs-present">
     <echo>
       Could not find vfs classes (http://jakarta.apache.org/commons/sandbox/vfs/). 
-      Did you forget to set "vfs.jar" property in 
-      build.properties to point to a valid vfs jar file?  
+      Did you forget to add the commons-vfs jar to the directory specified by deps.dir 
+      in build.properties?  
 
       Chainsaw will be built but will not include support 
       for VFSLogFilePatternReceiver
