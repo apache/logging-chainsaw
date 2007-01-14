@@ -375,7 +375,8 @@
 		<copy file="${webstart-dependant-receivers.jar}" todir="iSaw-dist"/>
 		<copy file="${log4j-chainsaw.jar}" todir="iSaw-dist"/>
 		<copy todir="iSaw-dist">
-			<fileset dir="lib">
+			<fileset dir="webstart-dist">
+				<include name="*.jar" />
 				<exclude name="commons*.jar"/>
 				<exclude name="*vfs*.jar"/>
 			</fileset>
