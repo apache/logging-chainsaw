@@ -437,7 +437,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
 
     default:
 
-      if (columnIndex <= columnNames.size()) {
+      if (columnIndex < columnNames.size()) {
         return event.getProperty(columnNames.get(columnIndex).toString());
       }
     }

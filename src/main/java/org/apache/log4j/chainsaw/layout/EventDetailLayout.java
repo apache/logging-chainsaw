@@ -191,16 +191,15 @@ public class EventDetailLayout extends Layout {
         li = formatLocationInfo(event);
     }
     Hashtable properties = formatProperties(event);
-    LoggingEvent copy = new LoggingEvent();
-    copy.setLogger(logger);
-    copy.setTimeStamp(event.getTimeStamp());
-    copy.setLevel(event.getLevel());
-    copy.setThreadName(threadName);
-    copy.setMessage(msg);
-    copy.setNDC(ndc);
-    copy.setThrowableInformation(event.getThrowableInformation());
-    copy.setLocationInformation(li);
-    copy.setProperties(properties);
+    LoggingEvent copy = new LoggingEvent(null,
+	   logger, event.getTimeStamp(),
+	   event.getLevel(),
+	   msg,
+	   threadName,
+	   event.getThrowableInformation(),
+	   ndc,
+	   li,
+	   properties);
     
     return copy;
   }

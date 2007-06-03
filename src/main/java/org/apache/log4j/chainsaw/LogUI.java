@@ -53,6 +53,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -83,10 +84,12 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.log4j.LoggerRepositoryExImpl;
 import org.apache.log4j.chainsaw.dnd.FileDnDTarget;
 import org.apache.log4j.chainsaw.help.HelpManager;
 import org.apache.log4j.chainsaw.help.Tutorial;
@@ -104,9 +107,9 @@ import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.chainsaw.receivers.ReceiversPanel;
 import org.apache.log4j.chainsaw.version.VersionManager;
 import org.apache.log4j.helpers.Constants;
-import org.apache.log4j.joran.JoranConfigurator;
 import org.apache.log4j.net.SocketNodeEventListener;
 import org.apache.log4j.plugins.Plugin;
+import org.apache.log4j.plugins.PluginConfigurator;
 import org.apache.log4j.plugins.PluginEvent;
 import org.apache.log4j.plugins.PluginListener;
 import org.apache.log4j.plugins.PluginRegistry;
@@ -114,9 +117,11 @@ import org.apache.log4j.plugins.Receiver;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.Decoder;
-import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.LoggerRepository;
 import org.apache.log4j.spi.LoggerRepositoryEx;
+import org.apache.log4j.spi.LoggingEvent;
+import org.apache.log4j.spi.RepositorySelector;
+import org.apache.log4j.xml.DOMConfigurator;
 import org.apache.log4j.xml.XMLDecoder;
 
 
@@ -190,6 +195,10 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
    */
   private EventListenerList shutdownListenerList = new EventListenerList();
   private WelcomePanel welcomePanel;
+
+  private static final Object repositorySelectorGuard = new Object();
+  private static final LoggerRepositoryExImpl repositoryExImpl = new LoggerRepositoryExImpl(LogManager.getLoggerRepository());
+  
   private PluginRegistry pluginRegistry;
 
   /**
@@ -245,9 +254,19 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
    * @param args
    */
   public static void main(String[] args) {
+  
       if(OSXIntegration.IS_OSX) {
           System.setProperty("apple.laf.useScreenMenuBar", "true");
       }
+      
+    
+    LogManager.setRepositorySelector(new RepositorySelector() {
+
+        public LoggerRepository getLoggerRepository() {
+            return repositoryExImpl;
+        }}, repositorySelectorGuard);
+    
+    
     ApplicationPreferenceModel model = new ApplicationPreferenceModel();
 
     SettingsManager.getInstance().configure(new ApplicationPreferenceModelSaver(model));
@@ -298,6 +317,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       showSplash(logUI);
     }
     logUI.cyclicBufferSize = model.getCyclicBufferSize();
+    logUI.pluginRegistry = repositoryExImpl.getPluginRegistry();
 
     logUI.handler = new ChainsawAppenderHandler();
     logUI.handler.addEventBatchListener(logUI.new NewTabEventBatchReceiver());
@@ -1889,8 +1909,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             try {
               // we temporarily swap the TCCL so that plugins can find resources
               Thread.currentThread().setContextClassLoader(classLoader);
-              JoranConfigurator jc = new JoranConfigurator();
-              jc.doConfigure(url, LogManager.getLoggerRepository());
+              PluginConfigurator.configure(url);
             }finally{
                 // now switch it back...
                 Thread.currentThread().setContextClassLoader(previousTCCL);
