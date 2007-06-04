@@ -4,8 +4,78 @@
   <groupId>log4j</groupId>
   <artifactId>log4j-chainsaw</artifactId>
   <version>1.99.0</version>
+  <name>log4j-chainsaw</name>
   <description>Graphical Viewer for Logging events from a local or remote log4j event system</description>
+  <properties>
+  	<chainsaw.mainclass>org.apache.log4j.chainsaw.LogUI</chainsaw.mainclass>
+  </properties>
+	<repositories>
+		<repository>
+			<id>Codehaus Snapshots</id>
+			<url>http://snapshots.repository.codehaus.org/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>Codehaus Snapshots</id>
+			<url>http://snapshots.repository.codehaus.org/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</pluginRepository>
+	</pluginRepositories>
   <build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>appassembler-maven-plugin</artifactId>
+				<configuration>
+					<programs>
+						<program>
+							<mainClass>${chainsaw.mainclass}</mainClass>
+							<name>chainsaw</name>
+						</program>
+					</programs>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>assemble</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>appbundler-maven-plugin</artifactId>
+				<version>1.0-SNAPSHOT</version>
+				<configuration>
+					<mainClass>${chainsaw.mainclass}</mainClass>
+					<dictionaryFile>src/main/resources/Info.plist</dictionaryFile>
+					<iconFile>${basedir}/src/main/resources/logo.icns</iconFile>
+					<bundleName>Chainsaw</bundleName>
+				</configuration>
+<!-- By default, we don't want the OSX distribution run; not everyone has a Mac to build it on.  (Poor them..)				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>bundle</goal>
+						</goals>
+					</execution>
+				</executions>
+-->
+			</plugin>
+		</plugins>
   </build>
   <dependencies>
     <dependency>
@@ -66,4 +136,3 @@
   </dependency>
   </dependencies>
 </project>
-
