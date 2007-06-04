@@ -1,57 +1,34 @@
 HOWTOBUILD.txt
 ==============
 
-This document outlines the steps required to build and run log4j Chainsaw v2.
+For General Users
+=================
+Firstly, you'll need maven 2.0.4+ to build Chainsaw:
 
-Comments/Changes/Bugs for this document and build process: 
-  * Log4j Developers list (log4j-dev@logging.apache.org)
+http://maven.apache.org
+
+Once setup, 
+
+mvn install
+
+This will automatically build and assemble the Chainsaw distribution which includes a .sh & .bat shell script to run Chainsaw:
+
+[*nix]
+sh target/appassembler/bin/chainsaw
+
+[Windows]
+target/appassembler/bin/chainsaw.bat
+
+[OSX]
+You can use the *nix steps above, or go one extra step for a nicer OSX experience
+
+mvn package appbundler:bundle
+
+This will create an OSX distribution, look inside the target folder for the packaged OSX applicationd and .dmg distribution.  You can drag the application to your /Applications folder, or just double click it from the target folder.
+
+For log4j developers
+====================
 
 
-Assumptions
-===========
-* Familiar with Ant, and have it installed (http://ant.apache.org/) 
-  (requires the 1.5.x series of Ant, including Conditions support)
-
-Dependencies
-============
-
-Chainsaw requires:
-
-* log4j1.3 full jar
-* jakarata ORO 2.0.6+
-* XStream (http://xstream.codehaus.org)
-
-Optionally, you can add Jakarta Commons VFS, and it's dependencies to have extra features inside Chainsaw
-See http://jakarta.apache.org/commons/sandbox/vfs/ for more information
-
-Simply placing all the dependant jars inside the directory specified by the 'deps.dir' build property (lib by default)
-will get you going.
 
 
-Step-by-Step to build Chainsaw
-======================================
-
-1. Download logging-chainsaw (you've probably already done this if you're reading
-   this...)
-
-2. Copy the build.properties.sample file -> build.properties
-
-3. Edit the build.properties file and modify to suit your needs.  
-
-4. Download and install the dependancies and place the jars in the directory specified by the 'deps.dir' in 
-   the build.properties file.
-   
-## NOT CURRENTLY IMPLEMENTED
-##4. If you haven't downloaded the required dependencies outlined in the build.properties file
-##   there is an ant target to help you:
-##   
-##   ant getdeps
-##   
-##   This will download all the required jars for Chainsaw v2 and place them in the directory
-##   specified in build.properties (it's the deps.dir property, usually ./lib)
-   
-5. After you have all the dependencies From the logging-log4j root directory, type:
-
-      ant chainsaw
-    
-   That's it ;)
