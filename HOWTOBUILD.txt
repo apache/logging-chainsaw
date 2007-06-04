@@ -7,11 +7,27 @@ Firstly, you'll need maven 2.0.4+ to build Chainsaw:
 
 http://maven.apache.org
 
-Once setup, 
 
-mvn install
+Next, an interim step is required until log4j 1.2.15, log4j-components, log4j-receivers, and log4j-expression-filter are voted on and released:
 
-This will automatically build and assemble the Chainsaw distribution which includes a .sh & .bat shell script to run Chainsaw:
+* SVN check out the following projects:
+	log4j-component - http://svn.apache.org/repos/asf/logging/sandbox/log4j/component/
+	log4j-receivers - http://svn.apache.org/repos/asf/logging/sandbox/log4j/receivers/
+	log4j-expression-filter - http://svn.apache.org/repos/asf/logging/sandbox/log4j/expression-filter/
+	
+	log4j 1.2.15 - http://svn.apache.org/repos/asf/logging/log4j/branches/v1_2-branch/
+	
+  In each of these checkout directories:
+  	mvn install
+  This will install into your local maven repository the correct SNAPSHOT releases of the required dependencies. 
+  These dependencies are not yet available in the standard maven repositories, and so failure to complete this 
+  step will prevent you from building Chainsaw.
+
+* Back into the log4j-chainsaw check where this document you are reading is placed:
+
+	mvn install
+
+This will automatically build and assemble the Chainsaw distribution which includes a .sh & .bat shell script to run Chainsaw.  You can then run Chainsaw as follows:
 
 [*nix]
 sh target/appassembler/bin/chainsaw
@@ -24,11 +40,44 @@ You can use the *nix steps above, or go one extra step for a nicer OSX experienc
 
 mvn package appbundler:bundle
 
-This will create an OSX distribution, look inside the target folder for the packaged OSX applicationd and .dmg distribution.  You can drag the application to your /Applications folder, or just double click it from the target folder.
+This will create an OSX distribution, look inside the target folder for the packaged OSX application and .dmg distribution.  You can drag the application to your /Applications folder, or just double click it from the target folder.
 
 For log4j developers
 ====================
 
+Creating a Webstart distribution
+================================
 
+To create the Webstart distribution requires:
+	* a keystore configured with a valid code signing key
+		I've always found this link useful:
+			http://www.dallaway.com/acad/webstart/
+			
+	* A maven profile that defines the parameters for code signing (otherwise passwords and stuff need to be embedded in the pom.xml)
+	 	Edit your ${user.home}/.m2/settings.xml file, such that it has something like:
 
-
+		<settings>
+		....
+		<profiles>
+		....
+		  <profile>
+		 	<id>chainsaw-signing</id>
+		    <properties>
+		      <chainsaw.webstart.keystore>/somepath/keystore</chainsaw.webstart.keystore>
+		      <chainsaw.webstart.keypass>somesupersecurepassword</chainsaw.webstart.keypass>
+		      <chainsaw.webstart.storepass>someothersupersecurepassword</chainsaw.webstart.storepass>
+		      <chainsaw.webstart.alias>aliasofcertificateinkeystore</chainsaw.webstart.alias>
+		    </properties>
+		  </profile>
+		...
+		</profiles>
+		....
+		</settings>
+		
+	Then create the webstart package:
+	
+	mvn -Pchainsaw-signing install webstart:jnlp
+	
+	Inside the target folder will contain a .zip file containing the webstart distribution, including the generated .jnlp file.  
+	
+	

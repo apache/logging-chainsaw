@@ -127,7 +127,7 @@
            </sign>
 
            <!--install>false</install--> <!-- not yet supported -->
-           <verbose>true</verbose>
+           <verbose>false</verbose>
 
         </configuration>
       </plugin>
