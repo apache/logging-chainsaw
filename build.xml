@@ -9,7 +9,7 @@
   <property name="version" value="2.0alpha-1"/>
   
     <!-- The directory where source files are stored. -->
-  <property name="java.source.dir" value="src/java/"/>
+  <property name="java.source.dir" value="src/main/java/"/>
   
   <!-- The stem where most log4j source code is located. -->
   <property name="stem" value="org/apache/log4j"/>
@@ -199,7 +199,7 @@
     </delete>
 
   	<copy todir="${javac.dest}">
-  	  <fileset dir="src/java" includes="**/chainsaw/**/*"/>
+  	  <fileset dir="src/main/java" includes="**/chainsaw/**/*"/>
   	</copy>
       
       
