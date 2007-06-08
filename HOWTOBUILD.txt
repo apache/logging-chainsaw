@@ -11,9 +11,9 @@ http://maven.apache.org
 Next, an interim step is required until log4j 1.2.15, log4j-components, log4j-receivers, and log4j-expression-filter are voted on and released:
 
 * SVN check out the following projects:
-	log4j-component - http://svn.apache.org/repos/asf/logging/sandbox/log4j/component/
-	log4j-receivers - http://svn.apache.org/repos/asf/logging/sandbox/log4j/receivers/
-	log4j-expression-filter - http://svn.apache.org/repos/asf/logging/sandbox/log4j/expression-filter/
+	log4j-component - http://svn.apache.org/repos/asf/logging/log4j/companions/component/trunk/
+	log4j-receivers - http://svn.apache.org/repos/asf/logging/log4j/companions/receivers/trunk/
+	log4j-filter - http://svn.apache.org/repos/asf/logging/log4j/companions/filters/trunk/
 	
 	log4j 1.2.15 - http://svn.apache.org/repos/asf/logging/log4j/branches/v1_2-branch/
 	
@@ -29,7 +29,7 @@ Next, an interim step is required until log4j 1.2.15, log4j-components, log4j-re
   cd log4j-receivers
   mvn package javadoc:jar
 
-  mvn install:install-file -DgroupId=log4j -DartifactId=apache-log4j-receivers-javadoc -Dpackaging=jar -Dversion=0.1-SNAPSHOT -Dfile=target/apache-log4j-receivers-0.1-SNAPSHOT-javadoc.jar
+  mvn install:install-file -DgroupId=log4j -DartifactId=apache-log4j-receivers-javadoc -Dpackaging=jar -Dversion=1.0-SNAPSHOT -Dfile=target/apache-log4j-receivers-1.0-SNAPSHOT-javadoc.jar
 
 * Back into the log4j-chainsaw check where this document you are reading is placed:
 

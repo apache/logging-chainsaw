@@ -180,27 +180,27 @@
     <dependency>
       <groupId>log4j</groupId>
       <artifactId>apache-log4j-component</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <version>1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>log4j</groupId>
-      <artifactId>apache-log4j-expression-filter</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <artifactId>apache-log4j-filters</artifactId>
+      <version>1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>log4j</groupId>
       <artifactId>apache-log4j-receivers</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <version>1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>log4j</groupId>
       <artifactId>apache-log4j-receivers-javadoc</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <version>1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
-      <version>1.2.15</version>
+      <version>1.2.15-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>jmdns</groupId>
