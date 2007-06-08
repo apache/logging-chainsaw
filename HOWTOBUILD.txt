@@ -1,8 +1,8 @@
 HOWTOBUILD.txt
 ==============
 
-For General Users
-=================
+For General Users & log4j developers
+=====================================
 Firstly, you'll need maven 2.0.4+ to build Chainsaw:
 
 http://maven.apache.org
@@ -19,9 +19,17 @@ Next, an interim step is required until log4j 1.2.15, log4j-components, log4j-re
 	
   In each of these checkout directories:
   	mvn install
+
   This will install into your local maven repository the correct SNAPSHOT releases of the required dependencies. 
   These dependencies are not yet available in the standard maven repositories, and so failure to complete this 
   step will prevent you from building Chainsaw.
+
+* Create the Receivers javadoc that needs to be embedded into chainsaw 
+
+  cd log4j-receivers
+  mvn package javadoc:jar
+
+  mvn install:install-file -DgroupId=log4j -DartifactId=apache-log4j-receivers-javadoc -Dpackaging=jar -Dversion=0.1-SNAPSHOT -Dfile=target/apache-log4j-receivers-0.1-SNAPSHOT-javadoc.jar
 
 * Back into the log4j-chainsaw check where this document you are reading is placed:
 
