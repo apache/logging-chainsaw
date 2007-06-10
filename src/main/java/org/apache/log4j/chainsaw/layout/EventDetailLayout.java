@@ -17,18 +17,15 @@
 
 package org.apache.log4j.chainsaw.layout;
 
-import org.apache.log4j.Layout;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.spi.LoggingEvent;
-import org.apache.log4j.spi.LocationInfo;
-
-import java.io.IOException;
-import java.io.Writer;
-
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
+
+import org.apache.log4j.EnhancedPatternLayout;
+import org.apache.log4j.Layout;
+import org.apache.log4j.Logger;
+import org.apache.log4j.spi.LocationInfo;
+import org.apache.log4j.spi.LoggingEvent;
 
 
 /**
@@ -42,7 +39,7 @@ import java.util.Set;
  * @author Paul Smith <psmith@apache.org>
  */
 public class EventDetailLayout extends Layout {
-  private PatternLayout patternLayout = new PatternLayout();
+  private EnhancedPatternLayout patternLayout = new EnhancedPatternLayout();
 
   public EventDetailLayout() {
   }

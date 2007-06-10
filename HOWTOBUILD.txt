@@ -12,6 +12,7 @@ Next, an interim step is required until log4j 1.2.15, log4j-components, log4j-re
 
 * SVN check out the following projects:
 	log4j-component - http://svn.apache.org/repos/asf/logging/log4j/companions/component/trunk/
+	log4j-pattern-layout - http://svn.apache.org/repos/asf/logging/log4j/companions/pattern-layout/trunk/
 	log4j-receivers - http://svn.apache.org/repos/asf/logging/log4j/companions/receivers/trunk/
 	log4j-filter - http://svn.apache.org/repos/asf/logging/log4j/companions/filters/trunk/
 	
