@@ -204,13 +204,13 @@
     </dependency>
     <dependency>
       <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.15-SNAPSHOT</version>
+      <artifactId>log4j-zeroconf</artifactId>
+      <version>1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>jmdns</groupId>
-      <artifactId>jmdns</artifactId>
-      <version>1.0</version>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>1.2.15-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>xstream</groupId>
