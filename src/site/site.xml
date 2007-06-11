@@ -12,6 +12,8 @@
   <body>
     <links>
       <item name="Apache" href="http://www.apache.org/" />
+	  <item name="Logging Services" href="http://logging.apache.org" />
+	  <item name="log4j" href="http://logging.apache.org/log4j" />
     </links>
 
     <menu name="">
