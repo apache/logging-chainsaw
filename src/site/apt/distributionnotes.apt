@@ -1,0 +1,24 @@
+Important Distribution Notes
+
+	Due to Java classloading rules, it is impossible to ship the Jakarta Commons VFS extension to Chainsaw OR have DBReceiver or JMSReceiver bundled with Chainsaw.
+	
+	Several VFS filestore implementation jars cannot be shipped with Chainsaw because of licensing issues, and for JMSReceiver and DBReceiver you are required
+	to have proprietary driver jars locally which we obviously can't ship. You can follow these steps to enable the DB, JMS and/or VFS components inside Chainsaw.
+		
+		* [DBReceiver] Download the DB extension to Chainsaw
+		
+		* [JMSReceiver] Download the JMS extension to Chainsaw
+		
+		* [VFS] Download the VFS extension to Chainsaw
+		
+		* [VFS] Download VFS
+		
+		* [VFS] Download Commons Logging Jars
+		
+		* [VFS] Download the VFS filestore implementation jars you wish to use
+		
+			
+	Place all these jars in your .chainsaw/plugins directory (the .chainsaw directory is in your home directory)
+	Start Chainsaw, which should now recognize the existence of these components and allow you to use them.
+		
+	This applies to all distributions.

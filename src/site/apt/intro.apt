@@ -1,0 +1,39 @@
+
+Introduction
+
+	Welcome to the home of Chainsaw v2!
+	
+	Chainsaw v2 is a companion application to Log4j written by members of the Log4j development
+    community. Like a number of Open Source
+    projects, this new version was built upon inspirations, ideas and creations of others. 
+    Chainsaw v2 has it's roots from the original Chainsaw utility written by Oliver Burn, 
+    and with inspiration from the Log Factor 5 utility contributed by ThoughtWorks Inc. 
+ 
+                                                
+
+Available Distributions	
+
+	* Java Web Start
+	
+	* Standalone -.sh/.bat
+	
+	* OS X 'native' distribution (uses Java still, but looks like a real OSX application)
+	
+	
+ 	Click {{{download.html}Download}} link for more information.
+
+So what is it really?
+
+	It's a GUI-based Log viewer. A picture tells a thousand words...
+	
+[images/chainsaw-1.jpg] Screenshot
+                                       
+	These screen shots were taken on Windows 2000, running Sun JDK 1.4.2.
+	Rather than rely on a combination of tail/grep/vi or equivalent to view/query/trace-through
+    a huge trail of logging events, you can use Chainsaw.  Chainsaw can read log files formatted in Log4j's XMLLayout, receive
+    events from remote locations, read events from a DB, it can even work with the JDK 1.4 logging events.
+
+      
+Tutorial and User Manual
+
+	Chainsaw already includes help with with a Quick Reference and a Tutorial to get you started, all viewable from within the GUI!. A User Manual will be made available around release time. 

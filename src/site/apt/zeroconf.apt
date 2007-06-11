@@ -1,0 +1,38 @@
+ZeroConf - Zero Configuration
+
+	Chainsaw has ZeroConf elements embedded within it, but you'll need to add a few things to your application to enable your application for ZeroConf.
+
+	Download:                                            
+	
+		* log4j ZeroConf extension
+		
+		* {{{http://sourceforge.net/projects/jmdns/}JmDNS}}
+		
+		* Add the <log4j-zeroconf.jar> and the <jmdns.jar> from these bundles and add them to your application's classpath. 
+		
+		* Modify your log4j configuration so that it use the ZeroConfSocketHubAppender.  
+		
+	Here is a complete log4j.xml file that you can use as a base:
+	
++-------------------------------+						
+<log4j:configuration debug="false" threshold="debug"  xmlns:log4j="http://jakarta.apache.org/log4j/>
+    <appender name="zeroconf" class="org.apache.log4j.net.ZeroConfSocketHubAppender">
+        <param name="Name" value="MyZeroConfSockeHubAppender" />
+    </appender>
+    <!--ROOT Logger-->
+    <root>
+        <level value="INFO" />
+        <appender-ref ref="zeroconf" />
+    </root>
+</log4j:configuration>
++-------------------------------+
+
+	Once configured and your applicatiion started, you should be able to click on the Zeroconf tab inside Chainsaw, and see the "MyZeroConfSocketHubAppender" listed.  If you double click on the row, Chainsaw will automatically connect to your application and start receiving events.  You can tick the 'auto-connect' option to have Chainsaw immediately connect as soon as it sees your application started.  Great for Dev/QA environment.
+	
+	The Zeroconf-enabled SocketHubAppender broadcasts it's existence via a multicast protocol, passing enough information for Chainsaw to be able to connect to it.
+	
+Firewalls
+
+	Multicast protocols generally don't pass through firewall, so in a production environment Zeroconf won't work.
+	
+	

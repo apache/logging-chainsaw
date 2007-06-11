@@ -1,0 +1,19 @@
+Quick Tour of Chainsaw features
+
+	Heres just a brief run down of some of the features of Chainsaw v2:
+                                                
+       * <<View remote events>> - Remote events are "received" by Chainsaw using Log4j 1.3's new Receiver concept.
+
+       * <<Saved Preferences>> - You can fully customize each Tab the way you want it, and it will restore it's state the next time.
+
+       * <<Responsive>> - When events are screaming in, you don't want the GUI to meltdown.  You can control how responsive the GUI is and determine the frequency of updates.
+
+       * <<Tabs/Docking>> - Chainsaw routes separate applications/remote hosts' events to a unique Tab within the GUI.  These tabs can be undocked from the main window.  Using these features you can manage multiple application logs using the one GUI.
+
+       * <<Coloring>> - You can specify your own rules to color each event row depending on the attributes of a LoggingEvent to help you locate important events.
+
+       * <<Dynamic and powerful filtering>> - Helps you locate stuff. There's support for quick-and-dirty filtering, right through to advanced expression-based filtering (e.g.  "LOGGER == 'com.mycompany' &amp;&amp; LEVEL == ERROR" ).
+
+       * <<Cyclic>> - A tab view can support a Cyclic-based model, which constrains it's view to the last X events, ensuring you don't hog memory.  This is great for monitoring live applications.
+
+       * <<Built-in documentation and tutorial>> - HTML-based documentation included in the package.

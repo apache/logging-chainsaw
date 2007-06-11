@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="${project.name}">
+  <bannerLeft>
+    <name>Chainsaw</name>
+    <src>http://logging.apache.org/log4j/docs/images/logo.jpg</src>
+    <href>http://logging.apache.org/log4j/docs/chainsaw.html</href>
+  </bannerLeft>
+<!--  <bannerRight>
+    <src>http://logging.apache.org/log4j/docs/chainsaw.html</src>
+  </bannerRight>
+-->
+  <body>
+    <links>
+      <item name="Apache" href="http://www.apache.org/" />
+    </links>
+
+    <menu name="">
+      <item name="Introduction" href="intro.html"/>
+      <item name="Download" href="download.html"/>
+	  <item name="Quick Tour" href="quicktour.html" />
+	  <item name="Zeroconf" href="zeroconf.html" />
+	  <item name="Important Distribution Notes" href="distributionnotes.html" />
+    </menu>
+
+    <menu ref="reports"/>
+
+  </body>
+</project>
