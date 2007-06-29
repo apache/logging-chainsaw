@@ -21,17 +21,26 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>log4j</groupId>
   <artifactId>apache-chainsaw</artifactId>
-  <version>1.99.0</version>
-  <name>apache-chainsaw</name>
   <packaging>jar</packaging>
-  <description>Graphical Viewer for Logging events from a local or remote log4j event system</description>
+  <version>1.99.0</version>
+  <name>Apache Chainsaw</name>
+  <description>Graphical Viewer for Logging events from a local or remote log4j event system.</description>
+  <url>http://logging.apache.org:80/log4j/companions/chainsaw</url>
+  <issueManagement>
+    <system>Bugzilla</system>
+    <url>http://issues.apache.org/bugzilla/</url>
+  </issueManagement>
+  <ciManagement>
+  		<system>Gump</system>
+  		 <url>http://vmgump.apache.org/gump/public/logging-log4j-chainsaw/logging-log4j-chainsaw/index.html</url>
+  </ciManagement>
   <mailingLists>
        <mailingList>
                <name>log4j-user</name>
                <subscribe>log4j-user-subscribe@logging.apache.org</subscribe>
                <unsubscribe>log4j-user-unsubscribe@logging.apache.org</unsubscribe>
                <post>log4j-user@logging.apache.org</post>
-               <archive>http://mail-archives.apache.org/mod_mbox/logging-log4j-dev/</archive>
+               <archive>http://mail-archives.apache.org/mod_mbox/logging-log4j-user/</archive>
                <otherArchives>
                        <otherArchive>http://marc.theaimsgroup.com/?l=log4j-user&amp;r=1&amp;w=2</otherArchive>
                    <otherArchive>http://dir.gmane.org/gmane.comp.jakarta.log4j.user</otherArchive>
@@ -51,7 +60,7 @@
   </mailingLists>
   <licenses>
     <license>
-      <name>The Apache Software License, Version 2.0</name>
+      <name>Apache License, Version 2.0</name>
       <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
       <distribution>repo</distribution>
     </license>
@@ -100,7 +109,103 @@
 		</pluginRepository>
 	</pluginRepositories>
   <build>
-		<plugins>
+    <plugins>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <workingDirectory>target</workingDirectory>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+            <source>1.2</source>
+            <target>1.1</target>
+        </configuration>
+      </plugin>
+	  <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+		        <manifest>
+					<mainClass>${chainsaw.mainclass}</mainClass>
+					<addClasspath>true</addClasspath>
+				</manifest>
+                <manifestSections>
+                <manifestSection>
+                    <name>org.apache.log4j</name>
+                    <manifestEntries>
+                        <Implementation-Title>${project.name}</Implementation-Title>
+                        <Implementation-Version>${project.version}</Implementation-Version>
+                        <Implementation-Vendor>Apache Software Foundation</Implementation-Vendor>
+                    </manifestEntries>
+                </manifestSection>
+                </manifestSections>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>site</phase>
+            <id>untag-site</id>
+            <configuration>
+                <tasks>
+                    <taskdef name="replaceregexp" classname="org.apache.tools.ant.taskdefs.optional.ReplaceRegExp" />                
+                   <replaceregexp file="target/site/source-repository.html" match="/tags/[^ ]*" replace="/trunk" flags="g" />
+                </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+       <dependencies>
+          <dependency>
+            <groupId>ant</groupId>
+            <artifactId>ant-nodeps</artifactId>
+            <version>1.6.5</version>
+          </dependency>
+        </dependencies>
+      </plugin>	 
+	  <plugin>
+         <artifactId>maven-assembly-plugin</artifactId>
+         <configuration>
+           <descriptors>
+              <descriptor>src/assembly/bin.xml</descriptor>
+           </descriptors>
+           <appendAssemblyId>false</appendAssemblyId>
+        </configuration>
+        <executions>
+            <execution>
+                <goals>
+                    <goal>assembly</goal>
+                </goals>
+            </execution>
+        </executions>
+	 </plugin>
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <executions>
+            <execution>
+                <goals>
+                    <goal>jar</goal>
+                    <goal>javadoc</goal>
+                </goals>
+            </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-source-plugin</artifactId>
+        <executions>
+            <execution>
+                <goals>
+                    <goal>jar</goal>
+                </goals>
+            </execution>
+        </executions>
+      </plugin>     
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>appassembler-maven-plugin</artifactId>
@@ -253,6 +358,56 @@
 	<scope>test</scope>
   </dependency>
   </dependencies>
+  <reporting>
+    <excludeDefaults>true</excludeDefaults>  
+    <plugins>
+      <plugin>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>scm</report>
+              <report>dependencies</report>
+              <report>cim</report>
+              <report>issue-tracking</report>
+              <report>mailing-list</report>
+              <report>license</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>jxr-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+          <artifactId>maven-release-plugin</artifactId>
+          <configuration>
+              <goals>site-deploy</goals>
+              <goals>assembly:assembly</goals>
+          </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-changes-plugin</artifactId>
+      	<reportSets>
+          <reportSet>
+            <reports>
+              <report>changes-report</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+        <configuration>
+        	<issueLinkTemplate>%URL%/show_bug.cgi?id=%ISSUE%</issueLinkTemplate>
+        </configuration>
+      </plugin>      
+      <plugin>
+        <artifactId>maven-pmd-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </reporting>
  <distributionManagement>
     <repository>
       <id>logging.repo</id>
