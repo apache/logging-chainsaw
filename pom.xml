@@ -16,8 +16,7 @@
  limitations under the License.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>log4j</groupId>
   <artifactId>apache-chainsaw</artifactId>
@@ -31,32 +30,32 @@
     <url>http://issues.apache.org/bugzilla/</url>
   </issueManagement>
   <ciManagement>
-  		<system>Gump</system>
-  		 <url>http://vmgump.apache.org/gump/public/logging-log4j-chainsaw/logging-log4j-chainsaw/index.html</url>
+    <system>Gump</system>
+    <url>http://vmgump.apache.org/gump/public/logging-log4j-chainsaw/logging-log4j-chainsaw/index.html</url>
   </ciManagement>
   <mailingLists>
-       <mailingList>
-               <name>log4j-user</name>
-               <subscribe>log4j-user-subscribe@logging.apache.org</subscribe>
-               <unsubscribe>log4j-user-unsubscribe@logging.apache.org</unsubscribe>
-               <post>log4j-user@logging.apache.org</post>
-               <archive>http://mail-archives.apache.org/mod_mbox/logging-log4j-user/</archive>
-               <otherArchives>
-                       <otherArchive>http://marc.theaimsgroup.com/?l=log4j-user&amp;r=1&amp;w=2</otherArchive>
-                   <otherArchive>http://dir.gmane.org/gmane.comp.jakarta.log4j.user</otherArchive>
-               </otherArchives>
-       </mailingList>
-       <mailingList>
-               <name>log4j-dev</name>
-               <subscribe>log4j-dev-subscribe@logging.apache.org</subscribe>
-               <unsubscribe>log4j-dev-unsubscribe@logging.apache.org</unsubscribe>
-               <post>log4j-dev@logging.apache.org</post>
-               <archive>http://mail-archives.apache.org/mod_mbox/logging-log4j-dev/</archive>
-               <otherArchives>
-                   <otherArchive>http://marc.theaimsgroup.com/?l=log4j-dev&amp;r=1&amp;w=2</otherArchive>
-                   <otherArchive>http://dir.gmane.org/gmane.comp.jakarta.log4j.devel</otherArchive>
-               </otherArchives>
-       </mailingList>
+    <mailingList>
+      <name>log4j-user</name>
+      <subscribe>log4j-user-subscribe@logging.apache.org</subscribe>
+      <unsubscribe>log4j-user-unsubscribe@logging.apache.org</unsubscribe>
+      <post>log4j-user@logging.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/logging-log4j-user/</archive>
+      <otherArchives>
+        <otherArchive>http://marc.theaimsgroup.com/?l=log4j-user&amp;r=1&amp;w=2</otherArchive>
+        <otherArchive>http://dir.gmane.org/gmane.comp.jakarta.log4j.user</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>log4j-dev</name>
+      <subscribe>log4j-dev-subscribe@logging.apache.org</subscribe>
+      <unsubscribe>log4j-dev-unsubscribe@logging.apache.org</unsubscribe>
+      <post>log4j-dev@logging.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/logging-log4j-dev/</archive>
+      <otherArchives>
+        <otherArchive>http://marc.theaimsgroup.com/?l=log4j-dev&amp;r=1&amp;w=2</otherArchive>
+        <otherArchive>http://dir.gmane.org/gmane.comp.jakarta.log4j.devel</otherArchive>
+      </otherArchives>
+    </mailingList>
   </mailingLists>
   <licenses>
     <license>
@@ -66,48 +65,74 @@
     </license>
   </licenses>
   <scm>
-       <connection>scm:svn:http://svn.apache.org/repos/asf/logging/chainsaw/trunk</connection>
-       <developerConnection>scm:svn:https://svn.apache.org/repos/asf/logging/chainsaw/trunk</developerConnection>
-       <url>http://svn.apache.org/repos/asf/logging/chainsaw/trunk/</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/logging/chainsaw/trunk</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/logging/chainsaw/trunk</developerConnection>
+    <url>http://svn.apache.org/repos/asf/logging/chainsaw/trunk/</url>
   </scm>
   <organization>
     <name>Apache Software Foundation</name>
     <url>http://www.apache.org</url>
   </organization>
-
+  <developers>
+    <developer>
+      <id>mwomack</id>
+      <name>Mark Womack</name>
+      <email>mwomack@apache.org</email>
+    </developer>
+    <developer>
+      <id>carnold</id>
+      <name>Curt Arnold</name>
+      <email>carnold@apache.org</email>
+    </developer>
+    <developer>
+      <id>sdeboy</id>
+      <name>Scott Deboy</name>
+      <email>sdeboy@apache.org</email>
+    </developer>
+    <developer>
+      <id>psmith</id>
+      <name>Paul Smith</name>
+      <email>psmith@apache.org</email>
+    </developer>
+  </developers>
+  <contributors>
+    <contributor>
+      <name>Isuru Suriarachchi</name>
+    </contributor>
+  </contributors>
   <properties>
-  	<chainsaw.mainclass>org.apache.log4j.chainsaw.LogUI</chainsaw.mainclass>
+    <chainsaw.mainclass>org.apache.log4j.chainsaw.LogUI</chainsaw.mainclass>
   </properties>
-    <!--  TODO: These element should be removed before release -->
-	<repositories>
-		<repository>
-			<id>Codehaus Snapshots</id>
-			<url>http://snapshots.repository.codehaus.org/</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-		</repository>
-	  <repository>
-		 <id>logging.rc</id>
-		 <name>logging services release candidates</name> 
-	     <url>http://people.apache.org/builds/logging/repo</url>
-	</repository>
-	</repositories>
-	<pluginRepositories>
-		<pluginRepository>
-			<id>Codehaus Snapshots</id>
-			<url>http://snapshots.repository.codehaus.org/</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-		</pluginRepository>
-	</pluginRepositories>
+<!--  TODO: These element should be removed before release -->
+  <repositories>
+    <repository>
+      <id>Codehaus Snapshots</id>
+      <url>http://snapshots.repository.codehaus.org/</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+    </repository>
+    <repository>
+      <id>logging.rc</id>
+      <name>logging services release candidates</name>
+      <url>http://people.apache.org/builds/logging/repo</url>
+    </repository>
+  </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>Codehaus Snapshots</id>
+      <url>http://snapshots.repository.codehaus.org/</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+    </pluginRepository>
+  </pluginRepositories>
   <build>
     <plugins>
       <plugin>
@@ -119,28 +144,28 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-            <source>1.2</source>
-            <target>1.1</target>
+          <source>1.2</source>
+          <target>1.1</target>
         </configuration>
       </plugin>
-	  <plugin>
+      <plugin>
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <archive>
-		        <manifest>
-					<mainClass>${chainsaw.mainclass}</mainClass>
-					<addClasspath>true</addClasspath>
-				</manifest>
-                <manifestSections>
-                <manifestSection>
-                    <name>org.apache.log4j</name>
-                    <manifestEntries>
-                        <Implementation-Title>${project.name}</Implementation-Title>
-                        <Implementation-Version>${project.version}</Implementation-Version>
-                        <Implementation-Vendor>Apache Software Foundation</Implementation-Vendor>
-                    </manifestEntries>
-                </manifestSection>
-                </manifestSections>
+            <manifest>
+              <mainClass>${chainsaw.mainclass}</mainClass>
+              <addClasspath>true</addClasspath>
+            </manifest>
+            <manifestSections>
+              <manifestSection>
+                <name>org.apache.log4j</name>
+                <manifestEntries>
+                  <Implementation-Title>${project.name}</Implementation-Title>
+                  <Implementation-Version>${project.version}</Implementation-Version>
+                  <Implementation-Vendor>Apache Software Foundation</Implementation-Vendor>
+                </manifestEntries>
+              </manifestSection>
+            </manifestSections>
           </archive>
         </configuration>
       </plugin>
@@ -151,91 +176,91 @@
             <phase>site</phase>
             <id>untag-site</id>
             <configuration>
-                <tasks>
-                    <taskdef name="replaceregexp" classname="org.apache.tools.ant.taskdefs.optional.ReplaceRegExp" />                
-                   <replaceregexp file="target/site/source-repository.html" match="/tags/[^ ]*" replace="/trunk" flags="g" />
-                </tasks>
+              <tasks>
+                <taskdef name="replaceregexp" classname="org.apache.tools.ant.taskdefs.optional.ReplaceRegExp"/>
+                <replaceregexp file="target/site/source-repository.html" match="/tags/[^ ]*" replace="/trunk" flags="g"/>
+              </tasks>
             </configuration>
             <goals>
               <goal>run</goal>
             </goals>
           </execution>
         </executions>
-       <dependencies>
+        <dependencies>
           <dependency>
             <groupId>ant</groupId>
             <artifactId>ant-nodeps</artifactId>
             <version>1.6.5</version>
           </dependency>
         </dependencies>
-      </plugin>	 
-	  <plugin>
-         <artifactId>maven-assembly-plugin</artifactId>
-         <configuration>
-           <descriptors>
-              <descriptor>src/assembly/bin.xml</descriptor>
-           </descriptors>
-           <appendAssemblyId>false</appendAssemblyId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptors>
+            <descriptor>src/assembly/bin.xml</descriptor>
+          </descriptors>
+          <appendAssemblyId>false</appendAssemblyId>
         </configuration>
         <executions>
-            <execution>
-                <goals>
-                    <goal>assembly</goal>
-                </goals>
-            </execution>
+          <execution>
+            <goals>
+              <goal>assembly</goal>
+            </goals>
+          </execution>
         </executions>
-	 </plugin>
+      </plugin>
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
         <executions>
-            <execution>
-                <goals>
-                    <goal>jar</goal>
-                    <goal>javadoc</goal>
-                </goals>
-            </execution>
+          <execution>
+            <goals>
+              <goal>jar</goal>
+              <goal>javadoc</goal>
+            </goals>
+          </execution>
         </executions>
       </plugin>
       <plugin>
         <artifactId>maven-source-plugin</artifactId>
         <executions>
-            <execution>
-                <goals>
-                    <goal>jar</goal>
-                </goals>
-            </execution>
+          <execution>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
         </executions>
-      </plugin>     
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>appassembler-maven-plugin</artifactId>
-				<configuration>
-					<programs>
-						<program>
-							<mainClass>${chainsaw.mainclass}</mainClass>
-							<name>chainsaw</name>
-						</program>
-					</programs>
-				</configuration>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>assemble</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>appbundler-maven-plugin</artifactId>
-				<version>1.0-SNAPSHOT</version>
-				<configuration>
-					<mainClass>${chainsaw.mainclass}</mainClass>
-					<dictionaryFile>src/main/resources/Info.plist</dictionaryFile>
-					<iconFile>${basedir}/src/main/resources/logo.icns</iconFile>
-					<bundleName>Chainsaw</bundleName>
-				</configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>appassembler-maven-plugin</artifactId>
+        <configuration>
+          <programs>
+            <program>
+              <mainClass>${chainsaw.mainclass}</mainClass>
+              <name>chainsaw</name>
+            </program>
+          </programs>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>assemble</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>appbundler-maven-plugin</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <configuration>
+          <mainClass>${chainsaw.mainclass}</mainClass>
+          <dictionaryFile>src/main/resources/Info.plist</dictionaryFile>
+          <iconFile>${basedir}/src/main/resources/logo.icns</iconFile>
+          <bundleName>Chainsaw</bundleName>
+        </configuration>
 <!-- By default, we don't want the OSX distribution run; not everyone has a Mac to build it on.  (Poor them..)				<executions>
 					<execution>
 						<phase>package</phase>
@@ -245,8 +270,7 @@
 					</execution>
 				</executions>
 -->
-			</plugin>
-			
+      </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>webstart-maven-plugin</artifactId>
@@ -262,48 +286,42 @@
         </executions>
 -->
         <configuration>
-
-           <!-- JNLP generation -->
-           <jnlp>
-             <!-- default values -->
-             <!--resources>${project.basedir}/src/main/jnlp</resources-->
-             <!--inputTemplateResourcePath>${project.basedir}</inputTemplateResourcePath-->
-             <!--inputTemplate>src/jnlp/template.vm</inputTemplate--> <!-- relative to inputTemplateResourcePath -->
-             <outputFile>webstart.jnlp</outputFile> <!-- defaults to launch.jnlp -->
-
-             <!-- used to automatically identify the jar containing the main class. -->
-             <!-- this is perhaps going to change -->
-             <mainClass>${chainsaw.mainclass}</mainClass>
-           </jnlp>
-
-
-           <!-- SIGNING -->
-           <!-- defining this will automatically sign the jar and its dependencies, if necessary -->
-           <sign>
-             <keystore>${chainsaw.webstart.keystore}</keystore>
-             <keypass>${chainsaw.webstart.keypass}</keypass> 
-             <storepass>${chainsaw.webstart.storepass}</storepass> 
-             <storetype></storetype>
-             <alias>${chainsaw.webstart.alias}</alias>
-             <validity></validity>
-
-             <dnameCn></dnameCn>
-             <dnameOu></dnameOu>
-             <dnameO></dnameO>
-             <dnameL></dnameL>
-             <dnameSt></dnameSt>
-             <dnameC></dnameC>
-
-             <verify>false</verify>
-           </sign>
-
-           <!--install>false</install--> <!-- not yet supported -->
-           <verbose>false</verbose>
-
+<!-- JNLP generation -->
+          <jnlp>
+<!-- default values -->
+<!--resources>${project.basedir}/src/main/jnlp</resources-->
+<!--inputTemplateResourcePath>${project.basedir}</inputTemplateResourcePath-->
+<!--inputTemplate>src/jnlp/template.vm</inputTemplate-->
+<!-- relative to inputTemplateResourcePath -->
+            <outputFile>webstart.jnlp</outputFile>
+<!-- defaults to launch.jnlp -->
+<!-- used to automatically identify the jar containing the main class. -->
+<!-- this is perhaps going to change -->
+            <mainClass>${chainsaw.mainclass}</mainClass>
+          </jnlp>
+<!-- SIGNING -->
+<!-- defining this will automatically sign the jar and its dependencies, if necessary -->
+          <sign>
+            <keystore>${chainsaw.webstart.keystore}</keystore>
+            <keypass>${chainsaw.webstart.keypass}</keypass>
+            <storepass>${chainsaw.webstart.storepass}</storepass>
+            <storetype/>
+            <alias>${chainsaw.webstart.alias}</alias>
+            <validity/>
+            <dnameCn/>
+            <dnameOu/>
+            <dnameO/>
+            <dnameL/>
+            <dnameSt/>
+            <dnameC/>
+            <verify>false</verify>
+          </sign>
+<!--install>false</install-->
+<!-- not yet supported -->
+          <verbose>false</verbose>
         </configuration>
       </plugin>
-
-		</plugins>
+    </plugins>
   </build>
   <dependencies>
     <dependency>
@@ -345,51 +363,40 @@
       <groupId>commons-vfs</groupId>
       <artifactId>commons-vfs</artifactId>
       <version>1.0</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>jakarta-regexp</groupId>
       <artifactId>jakarta-regexp</artifactId>
       <version>1.4</version>
     </dependency>
-  <dependency>
-    <groupId>junit</groupId>
-    <artifactId>junit</artifactId>
-    <version>3.8.1</version>
-	<scope>test</scope>
-  </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <reporting>
-    <excludeDefaults>true</excludeDefaults>  
+    <excludeDefaults>true</excludeDefaults>
     <plugins>
       <plugin>
         <artifactId>maven-project-info-reports-plugin</artifactId>
-        <reportSets>
-          <reportSet>
-            <reports>
-              <report>scm</report>
-              <report>dependencies</report>
-              <report>cim</report>
-              <report>issue-tracking</report>
-              <report>mailing-list</report>
-              <report>license</report>
-            </reports>
-          </reportSet>
-        </reportSets>
       </plugin>
       <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>jxr-maven-plugin</artifactId>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>jxr-maven-plugin</artifactId>
       </plugin>
       <plugin>
-          <artifactId>maven-release-plugin</artifactId>
-          <configuration>
-              <goals>site-deploy</goals>
-              <goals>assembly:assembly</goals>
-          </configuration>
+        <artifactId>maven-release-plugin</artifactId>
+        <configuration>
+          <goals>site-deploy</goals>
+          <goals>assembly:assembly</goals>
+        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-changes-plugin</artifactId>
-      	<reportSets>
+        <reportSets>
           <reportSet>
             <reports>
               <report>changes-report</report>
@@ -397,9 +404,9 @@
           </reportSet>
         </reportSets>
         <configuration>
-        	<issueLinkTemplate>%URL%/show_bug.cgi?id=%ISSUE%</issueLinkTemplate>
+          <issueLinkTemplate>%URL%/show_bug.cgi?id=%ISSUE%</issueLinkTemplate>
         </configuration>
-      </plugin>      
+      </plugin>
       <plugin>
         <artifactId>maven-pmd-plugin</artifactId>
       </plugin>
@@ -408,7 +415,7 @@
       </plugin>
     </plugins>
   </reporting>
- <distributionManagement>
+  <distributionManagement>
     <repository>
       <id>logging.repo</id>
       <url>scp://people.apache.org/www/people.apache.org/builds/logging/repo/</url>
@@ -417,5 +424,5 @@
       <id>logging.site</id>
       <url>scp://people.apache.org/www/logging.apache.org/chainsaw</url>
     </site>
-  </distributionManagement>   
+  </distributionManagement>
 </project>

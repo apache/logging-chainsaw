@@ -64,5 +64,6 @@
 		<item name="Duplication" href="/cpd.html"/>
 		<item name="PMD" href="/pmd.html"/>
 	</menu>
+	<menu ref="reports"/>
   </body>
 </project>

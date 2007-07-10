@@ -20,5 +20,10 @@
     <title>Apache Chainsaw</title>
   </properties>
   <body>
+      <release version="1.99.99" date="UNKNOWN" description="">
+      <action dev="psmith" issue="42789" type="add" due-to=" Isuru Suriarachchi  " due-to-email="">
+		Added support for remembering filter expressions for each LogPanel
+      </action>
+    </release>
   </body>
 </document>
