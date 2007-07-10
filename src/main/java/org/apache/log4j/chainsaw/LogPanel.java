@@ -90,6 +90,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
+import javax.swing.JButton;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
@@ -186,6 +187,7 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
  *@author Scott Deboy (sdeboy at apache.org)
  *@author Paul Smith (psmith at apache.org)
  *@author Stephen Pain
+ *@author Isuru Suriarachchi
  *
  */
 public class LogPanel extends DockablePanel implements EventBatchListener,
@@ -233,9 +235,11 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
   static final String TABLE_COLUMN_WIDTHS = "table.columns.widths";
   static final String COLUMNS_EXTENSION = ".columns";
   static final String COLORS_EXTENSION = ".colors";
+  private static final int LOG_PANEL_SERIALIZATION_VERSION_NUMBER = 1;
   private int previousLastIndex = -1;
   private final DateFormat timestampExpressionFormat = new SimpleDateFormat(Constants.TIMESTAMP_RULE_FORMAT);
   private final Logger logger = LogManager.getLogger(LogPanel.class);
+  private final Vector filterExpressionVector;
 
   /**
    * Creates a new LogPanel object.  If a LogPanel with this identifier has
@@ -893,16 +897,17 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     upperLeftPanel.add(filterLabel);
 
     //hold a reference to the combobox model so that we can check to prevent duplicates
-    final Vector v = new Vector();
+    //final Vector filterExpressionVector = new Vector();
+    filterExpressionVector = new Vector();
     //add (hopefully useful) default filters
-    v.add("LEVEL == TRACE");
-    v.add("LEVEL >= DEBUG");
-    v.add("LEVEL >= INFO");
-    v.add("LEVEL >= WARN");
-    v.add("LEVEL >= ERROR");
-    v.add("LEVEL == FATAL");
+    filterExpressionVector.add("LEVEL == TRACE");
+    filterExpressionVector.add("LEVEL >= DEBUG");
+    filterExpressionVector.add("LEVEL >= INFO");
+    filterExpressionVector.add("LEVEL >= WARN");
+    filterExpressionVector.add("LEVEL >= ERROR");
+    filterExpressionVector.add("LEVEL == FATAL");
     
-    final JComboBox filterCombo = new JComboBox(v);
+    final JComboBox filterCombo = new JComboBox(filterExpressionVector);
     filterCombo.setSelectedIndex(-1);
     final JTextField filterText;
 
@@ -930,7 +935,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
               }
 
               //should be 'valid expression' check
-              if (!(v.contains(filterCombo.getSelectedItem()))) {
+              if (!(filterExpressionVector.contains(filterCombo.getSelectedItem()))) {
                 filterCombo.addItem(filterCombo.getSelectedItem());
               }
             }
@@ -951,6 +956,25 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
 
     JPanel upperRightPanel =
       new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+
+    //Adding a button to clear filter expressions which are currently remembered by Chainsaw...
+    final JButton clearButton = new JButton("Clear expression");
+    clearButton.setToolTipText("Click here to remove the selected expression from the list");
+    clearButton.addActionListener(
+            new AbstractAction() {
+                public void actionPerformed(ActionEvent e){
+                    String selectedItem = filterCombo.getSelectedItem().toString();
+                    if (e.getSource() == clearButton && !selectedItem.equals("")){
+                        if (filterExpressionVector.contains(selectedItem)){
+                            filterExpressionVector.remove(selectedItem);
+                        }
+                        filterCombo.setSelectedIndex(-1);
+                    }
+                }
+            }
+    );
+
+    upperRightPanel.add(clearButton);
 
     upperPanel.add(upperRightPanel, BorderLayout.EAST);
 
@@ -1439,7 +1463,30 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
                 Point p = (Point)in.readObject();
                 undockedFrame.setLocation(p.x, p.y);
                 undockedFrame.setSize(((Dimension)in.readObject()));
-                } catch (EOFException eof){}
+
+                int versionNumber = 0;
+                Vector savedVector;
+
+                //this version number is checked to identify whether there is a Vector comming next
+                try {
+                    versionNumber = in.readInt();
+                } catch (EOFException eof){
+                }
+
+                //read the vector only if the version number is greater than 0. higher version numbers can be
+                //used in the future to save more data structures
+                if (versionNumber > 0){
+                    savedVector = (Vector) in.readObject();
+                    for(int i = 0 ; i < savedVector.size() ; i++){
+                        Object item = savedVector.get(i);
+                        if(!filterExpressionVector.contains(item)){
+                            filterExpressionVector.add(item);
+                        }
+                    }
+                }
+
+                } catch (EOFException eof){
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 // TODO need to log this..
@@ -1496,11 +1543,14 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     	FileWriter w = new FileWriter(xmlFile);
     	s = stream.createObjectOutputStream(w);
     	s.writeObject(preferenceModel);
-    	s.writeInt(lowerPanel.getDividerLocation());
+        s.writeInt(lowerPanel.getDividerLocation());
     	s.writeInt(nameTreeAndMainPanelSplit.getDividerLocation());
     	s.writeObject(detailLayout.getConversionPattern());
     	s.writeObject(undockedFrame.getLocation());
     	s.writeObject(undockedFrame.getSize());
+        //this is a version number written to the file to identify that there is a Vector serialized after this
+        s.writeInt(LOG_PANEL_SERIALIZATION_VERSION_NUMBER);
+        s.writeObject(filterExpressionVector);
     } catch (Exception ex) {
         ex.printStackTrace();
         // TODO need to log this..
