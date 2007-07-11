@@ -24,6 +24,9 @@
       <action dev="psmith" issue="42789" type="add" due-to=" Isuru Suriarachchi  " due-to-email="">
 		Added support for remembering filter expressions for each LogPanel
       </action>
+      <action dev="psmith" issue="42851" type="add" due-to=" Isuru Suriarachchi  " due-to-email="">
+		Added 'Go To Line' feature to navigate to a particular event #
+      </action>
     </release>
   </body>
 </document>

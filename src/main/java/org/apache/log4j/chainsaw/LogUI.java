@@ -678,11 +678,15 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, Event.CTRL_MASK);
     KeyStroke ksLeft =
       KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, Event.CTRL_MASK);
+    KeyStroke ksGotoLine =
+      KeyStroke.getKeyStroke(KeyEvent.VK_G,  Event.CTRL_MASK);
 
     getTabbedPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
       ksRight, "MoveRight");
     getTabbedPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
       ksLeft, "MoveLeft");
+    getTabbedPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+      ksGotoLine, "GotoLine");
 
     Action moveRight =
       new AbstractAction() {
@@ -708,8 +712,25 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         }
       };
 
+    Action gotoLine =
+      new AbstractAction() {
+        public void actionPerformed(ActionEvent e) {
+          String inputLine = JOptionPane.showInputDialog(LogUI.this, "Enter the line number to go:", "Goto Line", -1);
+          int lineNumber = Integer.parseInt(inputLine);
+          List eventList = getCurrentLogPanel().getFilteredEvents();
+
+          if (lineNumber > 0 && lineNumber <= eventList.size()) {
+              getCurrentLogPanel().setSelectedEvent(lineNumber);
+          } else {
+              JOptionPane.showMessageDialog(LogUI.this, "You have entered an invalid line number", "Error", 0);
+          }
+        }
+      };
+
+
     getTabbedPane().getActionMap().put("MoveRight", moveRight);
     getTabbedPane().getActionMap().put("MoveLeft", moveLeft);
+    getTabbedPane().getActionMap().put("GotoLine", gotoLine);
 
     /**
          * We listen for double clicks, and auto-undock currently selected Tab if

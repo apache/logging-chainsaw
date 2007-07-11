@@ -1712,6 +1712,15 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
   }
 
   /**
+   * Change the selected event on the log panel
+   *
+   * @param eventNumber
+   */
+  void setSelectedEvent(int eventNumber){
+      table.scrollToRow(eventNumber - 1, 0);
+  }
+
+  /**
    * Add a preference propertyChangeListener
    *
    * @param listener
