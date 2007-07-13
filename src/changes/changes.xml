@@ -21,12 +21,16 @@
   </properties>
   <body>
       <release version="1.99.99" date="UNKNOWN" description="">
-      <action dev="psmith" issue="42789" type="add" due-to=" Isuru Suriarachchi  " due-to-email="">
+      <action dev="psmith" issue="42789" type="add" due-to="Isuru Suriarachchi" due-to-email="">
 		Added support for remembering filter expressions for each LogPanel
       </action>
-      <action dev="psmith" issue="42851" type="add" due-to=" Isuru Suriarachchi  " due-to-email="">
+      <action dev="psmith" issue="42851" type="add" due-to="Isuru Suriarachchi" due-to-email="">
 		Added 'Go To Line' feature to navigate to a particular event #
       </action>
+      <action dev="psmith" issue="42883" type="add" due-to="Isuru Suriarachchi" due-to-email="">
+		Added ability to hide Welcome and Drag and Drop panels.
+      </action>
+
     </release>
   </body>
 </document>

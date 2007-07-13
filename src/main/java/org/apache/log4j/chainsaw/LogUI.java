@@ -456,16 +456,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             
         }});
    
-    final JLabel lbl  = new JLabel();
-    lbl.setEnabled(false);
-    final String dndTitle = "Drag & Drop XML log files here";
-    SwingUtilities.invokeLater(new Runnable() {
-    	public void run() {
-    	    ensureWelcomePanelVisible();
-    	    getTabbedPane().addANewTab(dndTitle,lbl,null, "You can Drag & Drop XML log files onto the Tabbed Pane and they will be loaded into Chainsaw" );
-    	    getTabbedPane().setEnabledAt(getTabbedPane().indexOfTab(dndTitle), false);
-    	}
-    });
+    addDragDropPanel();
     applicationPreferenceModelPanel = new ApplicationPreferenceModelPanel(applicationPreferenceModel);
     applicationPreferenceModelPanel.setOkCancelActionListener(
       new ActionListener() {
@@ -477,6 +468,23 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     OSXIntegration.init(this);
   
   }
+
+  private void addDragDropPanel(){
+    final JLabel lbl  = new JLabel();
+    lbl.setEnabled(false);
+    final String dndTitle = "Drag & Drop XML log files here";
+    SwingUtilities.invokeLater(new Runnable() {
+    	public void run() {
+    	    ensureWelcomePanelVisible();
+    	    getTabbedPane().addANewTab(dndTitle,lbl,null, "You can Drag & Drop XML log files onto the Tabbed Pane and they will be loaded into Chainsaw" );
+    	    getTabbedPane().setEnabledAt(getTabbedPane().indexOfTab(dndTitle), false);
+            if (!getPanelMap().containsKey(dndTitle)) {
+              getPanelMap().put(dndTitle, lbl);
+            }
+        }
+    });
+  }
+
 
   private void initPlugins(PluginRegistry pluginRegistry) {
     pluginRegistry.addPluginListener(
@@ -804,15 +812,28 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     final Action hideCurrentTabAction =
       new AbstractAction("Hide") {
         public void actionPerformed(ActionEvent e) {
-          displayPanel(getCurrentLogPanel().getIdentifier(), false);
-          tbms.stateChange();
+          Component selectedComp = getTabbedPane().getSelectedComponent();
+          if (selectedComp instanceof LogPanel) {
+            displayPanel(getCurrentLogPanel().getIdentifier(), false);
+            tbms.stateChange();
+          } else {
+            getTabbedPane().remove(selectedComp);
+          }
         }
       };
 
     final Action hideOtherTabsAction =
       new AbstractAction("Hide Others") {
         public void actionPerformed(ActionEvent e) {
-          String currentName = getCurrentLogPanel().getIdentifier();
+          Component selectedComp = getTabbedPane().getSelectedComponent();
+          String currentName;
+          if (selectedComp instanceof LogPanel) {
+            currentName = getCurrentLogPanel().getIdentifier();
+          } else if (selectedComp instanceof WelcomePanel) {
+            currentName = "Welcome";
+          } else {
+            currentName = "Drag & Drop XML log files here";
+          }
 
           int count = getTabbedPane().getTabCount();
           int index = 0;
@@ -870,28 +891,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
     final PopupListener tabPopupListener = new PopupListener(tabPopup);
     getTabbedPane().addMouseListener(tabPopupListener);
-
-    final ChangeListener actionEnabler =
-      new ChangeListener() {
-        public void stateChanged(ChangeEvent arg0) {
-          boolean enabled = getCurrentLogPanel() != null;
-          hideCurrentTabAction.setEnabled(enabled);
-          hideOtherTabsAction.setEnabled(enabled);
-        }
-      };
-
-    getTabbedPane().addChangeListener(actionEnabler);
-
-    getTabbedPane().addContainerListener(
-      new ContainerListener() {
-        public void componentAdded(ContainerEvent arg0) {
-          actionEnabler.stateChanged(null);
-        }
-
-        public void componentRemoved(ContainerEvent arg0) {
-          actionEnabler.stateChanged(null);
-        }
-      });
 
     this.handler.addPropertyChangeListener(
       "dataRate",
@@ -1418,6 +1417,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       "Welcome",  new ImageIcon(ChainsawIcons.ABOUT),welcomePanel,
       "Welcome/Help", 0);
     getTabbedPane().setSelectedComponent(welcomePanel);
+    getPanelMap().put("Welcome", welcomePanel);
   }
 
   void removeWelcomePanel() {
@@ -1451,9 +1451,14 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
     while (iter.hasNext()) {
       Map.Entry entry = (Map.Entry) iter.next();
-      m.put(
-        entry.getKey(),
-        new Boolean(((DockablePanel) entry.getValue()).isDocked()));
+      Object o = entry.getValue();
+      boolean valueToSend;
+      if (o instanceof LogPanel){
+        valueToSend = ((DockablePanel) entry.getValue()).isDocked();
+      } else {
+        valueToSend = true;
+      }
+      m.put(entry.getKey(), new Boolean(valueToSend));
     }
 
     return m;
@@ -1461,21 +1466,31 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
   void displayPanel(String panelName, boolean display) {
     Object o = getPanelMap().get(panelName);
+    Component p = null;
 
     if (o instanceof LogPanel) {
-      LogPanel p = (LogPanel) o;
+      p = (LogPanel) o;
+    } else if (o instanceof WelcomePanel) {
+      p = (WelcomePanel) o;
+    } else if (o instanceof JLabel) {
+      p = (JLabel) o;
+    }
 
       int index = getTabbedPane().indexOfTab(panelName);
 
       if ((index == -1) && display) {
-        getTabbedPane().addTab(panelName, p);
+        if (panelName.equals("Drag & Drop XML log files here")){
+          addDragDropPanel();
+        } else {
+          getTabbedPane().addTab(panelName, p);
+        }
       }
 
       if ((index > -1) && !display) {
         getTabbedPane().removeTabAt(index);
       }
-    }
-  }
+   }
+  
 
   /**
    * Shutsdown by ensuring the Appender gets a chance to close.
