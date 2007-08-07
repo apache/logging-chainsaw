@@ -2052,7 +2052,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             while (true) {
               //if this tab is active, remove the icon
               //don't process undocked tabs
-              if (
+              if (getTabbedPane().indexOfTab(ident) > -1 && 
                 getTabbedPane().getSelectedIndex() == getTabbedPane()
                                                           .indexOfTab(ident)) {
                 getTabbedPane().setIconAt(
@@ -2094,7 +2094,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
     public void stateChanged(ChangeEvent event) {
       if (
-        getTabbedPane().indexOfTab(ident) == getTabbedPane().getSelectedIndex()) {
+        getTabbedPane().indexOfTab(ident) > -1 && getTabbedPane().indexOfTab(ident) == getTabbedPane().getSelectedIndex()) {
         getTabbedPane().setIconAt(getTabbedPane().indexOfTab(ident), SELECTED);
       }
     }

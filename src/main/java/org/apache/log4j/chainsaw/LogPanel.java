@@ -963,13 +963,15 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     clearButton.addActionListener(
             new AbstractAction() {
                 public void actionPerformed(ActionEvent e){
-                    String selectedItem = filterCombo.getSelectedItem().toString();
-                    if (e.getSource() == clearButton && !selectedItem.equals("")){
-                        if (filterExpressionVector.contains(selectedItem)){
-                            filterExpressionVector.remove(selectedItem);
+                	Object selectedItem = filterCombo.getSelectedItem();
+                    if (e.getSource() == clearButton && selectedItem != null && !selectedItem.toString().equals("")){
+                        if (filterExpressionVector.contains(selectedItem.toString())){
+                            filterExpressionVector.remove(selectedItem.toString());
                         }
                         filterCombo.setSelectedIndex(-1);
                     }
+                    //don't just remove the entry from the store, clear the refine focus field
+                    filterText.setText(null);
                 }
             }
     );
