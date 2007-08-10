@@ -27,8 +27,6 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ContainerEvent;
-import java.awt.event.ContainerListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -121,7 +119,6 @@ import org.apache.log4j.spi.LoggerRepository;
 import org.apache.log4j.spi.LoggerRepositoryEx;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.RepositorySelector;
-import org.apache.log4j.xml.DOMConfigurator;
 import org.apache.log4j.xml.XMLDecoder;
 
 
@@ -724,12 +721,16 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       new AbstractAction() {
         public void actionPerformed(ActionEvent e) {
           String inputLine = JOptionPane.showInputDialog(LogUI.this, "Enter the line number to go:", "Goto Line", -1);
-          int lineNumber = Integer.parseInt(inputLine);
-          List eventList = getCurrentLogPanel().getFilteredEvents();
+          try {
+        	  int lineNumber = Integer.parseInt(inputLine);
+              List eventList = getCurrentLogPanel().getFilteredEvents();
 
-          if (lineNumber > 0 && lineNumber <= eventList.size()) {
-              getCurrentLogPanel().setSelectedEvent(lineNumber);
-          } else {
+              if (lineNumber > 0 && lineNumber <= eventList.size()) {
+                  getCurrentLogPanel().setSelectedEvent(lineNumber);
+              } else {
+                  JOptionPane.showMessageDialog(LogUI.this, "You have entered an invalid line number", "Error", 0);
+              }
+          } catch (NumberFormatException nfe) {
               JOptionPane.showMessageDialog(LogUI.this, "You have entered an invalid line number", "Error", 0);
           }
         }
