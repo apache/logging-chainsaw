@@ -108,7 +108,7 @@ class FileLoadAction extends AbstractAction {
             File selectedFile = chooser.getSelectedFile();
 
             try {
-                url = selectedFile.toURL();
+                url = selectedFile.toURI().toURL();
                 name = selectedFile.getName();
             } catch (Exception ex) {
                 // TODO: handle exception

@@ -72,7 +72,7 @@ public class PluginClassLoaderFactory {
         List list = new ArrayList();
         // add the plugin directory as a resource loading path
         try {
-			list.add(pluginDirectory.toURL());
+			list.add(pluginDirectory.toURI().toURL());
 		} catch (Exception e) {
 			throw new RuntimeException(e.getMessage());
 		}
@@ -81,7 +81,7 @@ public class PluginClassLoaderFactory {
 				String name = strings[i];
 				File file = new File(pluginDirectory, name);
 				try {
-					list.add(file.toURL());
+					list.add(file.toURI().toURL());
 					logger.info("Added " + file.getAbsolutePath()
 							+ " to Plugin class loader list");
 				} catch (Exception e) {

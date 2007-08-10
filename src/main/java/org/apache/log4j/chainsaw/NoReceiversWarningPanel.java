@@ -481,7 +481,7 @@ class NoReceiversWarningPanel extends JPanel {
             return null;
         }
 
-        return chooser.getSelectedFile().toURL();
+        return chooser.getSelectedFile().toURI().toURL();
     }
 
     /**

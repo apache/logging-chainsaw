@@ -61,7 +61,7 @@ public final class HelpManager {
             }else if(new File("docs/api").exists()) {
             	File dir = new File("docs/api");
             	logger.info("Detected Local JavaDocs at " + dir.toString());
-            	helpLocator.installLocator(dir.toURL());
+            	helpLocator.installLocator(dir.toURI().toURL());
             } else {
             	logger.warn("Could not find any local JavaDocs, you might want to consider running 'ant javadoc'. The release version will be able to access Javadocs from the Apache website.");
             }

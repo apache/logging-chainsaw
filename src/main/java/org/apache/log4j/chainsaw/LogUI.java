@@ -441,7 +441,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                         try {
                             getStatusBar().setMessage("Loading " + file.getAbsolutePath() + "...");
                             FileLoadAction.importURL(handler, decoder, file
-                                    .getName(), file.toURL());
+                                    .getName(), file.toURI().toURL());
                         } catch (Exception e) {
                             String errorMsg = "Failed to import a file";
                             logger.error(errorMsg, e);
