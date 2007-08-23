@@ -75,6 +75,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -90,7 +91,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
-import javax.swing.JButton;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
@@ -223,9 +223,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
   private double lastDetailPanelSplitLocation = DEFAULT_DETAIL_SPLIT_LOCATION;
   private double lastLogTreePanelSplitLocation =
     DEFAULT_LOG_TREE_SPLIT_LOCATION;
-  private boolean bypassScrollFind;
   private Point currentPoint;
-  private boolean scroll;
   private boolean paused = false;
   private Rule findRule;
   private final JPanel findPanel;
@@ -254,8 +252,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     logger.debug("creating logpanel for " + identifier);
 
     setLayout(new BorderLayout());
-    scroll = true;
-
     findPanel = new JPanel();
 
     final Map columnNameKeywordMap = new HashMap();
@@ -298,7 +294,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
 
     setDetailPaneConversionPattern(
       DefaultLayoutFactory.getDefaultPatternLayout());
-    ((EventDetailLayout) detailLayout).setConversionPattern(
+      detailLayout.setConversionPattern(
       DefaultLayoutFactory.getDefaultPatternLayout());
 
     undockedFrame = new JFrame(identifier);
@@ -385,6 +381,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
           preferenceModel.setScrollToBottom(menuItemScrollBottom.isSelected());
         }
       });
+    menuItemScrollBottom.setSelected(isScrollToBottom());
 
     menuItemScrollBottom.setIcon(
       new ImageIcon(ChainsawIcons.SCROLL_TO_BOTTOM));
@@ -535,8 +532,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
         public void propertyChange(PropertyChangeEvent evt) {
           boolean value = ((Boolean) evt.getNewValue()).booleanValue();
           menuItemScrollBottom.setSelected(value);
-          scroll = value;
-          if (scroll) {
+          if (value) {
           	table.scrollToBottom(table.columnAtPoint(table.getVisibleRect().getLocation()));
           }
         }
@@ -714,10 +710,10 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
            * 
            * note: previouslast is set after it is evaluated in the bypass scroll check
           */
-          //System.out.println("rowcount: " + (table.getRowCount() - 1) + ", last: " + evt.getLastIndex() +", previous last: " + previousLastIndex + "..first: " + evt.getFirstIndex());
+         //System.out.println("rowcount: " + (table.getRowCount() - 1) + ", last: " + evt.getLastIndex() +", previous last: " + previousLastIndex + "..first: " + evt.getFirstIndex() + ", isadjusting: " + evt.getValueIsAdjusting());
           
-          boolean bypassScrollSelection = (lastIndexOnLastRow && lastIndexSame && previousLastIndex != evt.getFirstIndex());
-          if (bypassScrollSelection && scroll && table.getRowCount() > 0) {
+          boolean disableScrollToBottom = (lastIndexOnLastRow && lastIndexSame && previousLastIndex != evt.getFirstIndex());
+          if (disableScrollToBottom && isScrollToBottom() && table.getRowCount() > 0) {
           	preferenceModel.setScrollToBottom(false);
           }
           previousLastIndex = evt.getLastIndex();
@@ -1415,7 +1411,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
       tableModel.fireTableEvent(
         first, tableModel.getLastAdded(), events.size());
 
-      if (scroll && !bypassScrollFind) {
+      if (isScrollToBottom()) {
         table.scrollToBottom(
           table.columnAtPoint(table.getVisibleRect().getLocation()));
       }
@@ -1749,17 +1745,15 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
   }
 
   public boolean updateRule(String ruleText) {
-    if ((ruleText == null) || ((ruleText != null) && ruleText.equals(""))) {
+    if ((ruleText == null) || (ruleText.equals(""))) {
       findRule = null;
       colorizer.setFindRule(null);
-      bypassScrollFind = false;
       findField.setToolTipText(
         "Enter expression - right click or ctrl-space for menu");
-
       return false;
     } else {
-      bypassScrollFind = true;
-
+      //only turn off scroltobottom when finding something (find not empty)
+      preferenceModel.setScrollToBottom(false);
       try {
         findField.setToolTipText(
           "Enter expression - right click or ctrl-space for menu");
@@ -1950,7 +1944,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
         new SmallToggleButton(dockToggleScrollToBottomAction);
       preferenceModel.addPropertyChangeListener("scrollToBottom", new PropertyChangeListener() {
       	public void propertyChange(PropertyChangeEvent evt) {
-      	    toggleScrollToBottomButton.setSelected(preferenceModel.isScrollToBottom());    		
+      	    toggleScrollToBottomButton.setSelected(isScrollToBottom());    		
       	}
       });
 
