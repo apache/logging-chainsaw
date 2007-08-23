@@ -52,6 +52,7 @@ import javax.swing.filechooser.FileFilter;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.net.PortBased;
 import org.apache.log4j.net.SocketAppender;
 import org.apache.log4j.net.SocketHubReceiver;
@@ -77,6 +78,8 @@ class NoReceiversWarningPanel extends JPanel {
             "I'm fine thanks, don't worry");
     private final JRadioButton searchOption = new JRadioButton(
             "Let me search for a configuration file");
+    private final JRadioButton chainsawSavedConfigOption = new JRadioButton(
+            "Load configuration file saved by Chainsaw");
     private final JRadioButton manualOption = new JRadioButton(
             "Let me define Receivers manually");
     private final JButton okButton = new JButton("Ok");
@@ -144,7 +147,7 @@ class NoReceiversWarningPanel extends JPanel {
         add(Box.createVerticalStrut(20), gc);
 
         JPanel optionpanel = new JPanel();
-        optionpanel.setLayout(new GridLayout(4, 1, 3, 3));
+        optionpanel.setLayout(new GridLayout(5, 1, 3, 3));
         optionpanel.setBackground(getBackground());
         optionpanel.setBorder(BorderFactory.createEtchedBorder());
 
@@ -158,6 +161,12 @@ class NoReceiversWarningPanel extends JPanel {
             "Allows you to choose a Log4J Configuration file that contains Receiver definitions");
 
         searchOption.setMnemonic('S');
+        
+        chainsawSavedConfigOption.setToolTipText(
+             "Allows you to load Receiver definitions saved by Chanisaw previously");
+ 
+        chainsawSavedConfigOption.setMnemonic('C');
+
 
         manualOption.setToolTipText(
             "Opens the Receivers panel so you can define them via a GUI");
@@ -174,10 +183,12 @@ class NoReceiversWarningPanel extends JPanel {
         justLoadingFile.setOpaque(false);
 
         optionGroup.add(searchOption);
+        optionGroup.add(chainsawSavedConfigOption);
         optionGroup.add(manualOption);
         optionGroup.add(justLoadingFile);
         optionGroup.add(simpleReceiver);
 
+        chainsawSavedConfigOption.setEnabled(getModel().isChinsawConfigFileExists());
 
         gc.gridy = 3;
 
@@ -373,6 +384,7 @@ class NoReceiversWarningPanel extends JPanel {
             };
 
         searchOption.addActionListener(al);
+        chainsawSavedConfigOption.addActionListener(al);
         manualOption.addActionListener(al);
         justLoadingFile.addActionListener(al);
         simpleReceiver.addActionListener(al);
@@ -415,6 +427,7 @@ class NoReceiversWarningPanel extends JPanel {
         optionpanel.add(justLoadingFile);
         optionpanel.add(simpleSocketPanel);
         optionpanel.add(searchOptionPanel);
+        optionpanel.add(chainsawSavedConfigOption);
         optionpanel.add(manualOption);
 
         add(optionpanel, gc);
@@ -531,6 +544,11 @@ class NoReceiversWarningPanel extends JPanel {
     class PanelModel {
 
         private URL configUrl;
+        private File file;
+
+        public PanelModel(){
+            file = new File(SettingsManager.getInstance().getSettingsDirectory(), "receiver-configs.xml");
+        }
 
         boolean isLoadLogFile() {
 
@@ -555,6 +573,11 @@ class NoReceiversWarningPanel extends JPanel {
         boolean isLoadConfig() {
 
             return searchOption.isSelected();
+        }
+
+        boolean isLoadSavedConfigs() {
+
+            return chainsawSavedConfigOption.isSelected();
         }
 
         boolean isManualMode() {
@@ -588,6 +611,25 @@ class NoReceiversWarningPanel extends JPanel {
         URL getConfigToLoad() {
 
             return configUrl;
+        }
+
+        boolean isChinsawConfigFileExists(){
+
+            return file.exists();
+
+        }
+
+        URL getSavedConfigToLoad() {
+            try {
+                if (file.exists()){
+                    return file.toURL();
+                } else {
+                    logger.debug("No configuration file found");
+                }
+            } catch (MalformedURLException e) {
+                logger.error("Error laoding saved configurations by Chainsaw", e);
+            }
+            return null;
         }
     }
 }

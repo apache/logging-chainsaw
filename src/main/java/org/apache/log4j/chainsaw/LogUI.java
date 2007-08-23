@@ -923,6 +923,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     getSettingsManager().addSettingsListener(this);
     getSettingsManager().addSettingsListener(new ApplicationPreferenceModelSaver(applicationPreferenceModel));
     getSettingsManager().addSettingsListener(MRUFileListPreferenceSaver.getInstance());
+    getSettingsManager().addSettingsListener(receiversPanel);
     getSettingsManager().loadSettings();
 
     setVisible(true);
@@ -1399,9 +1400,14 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
               MessageCenter.getInstance().getLogger().info(
                 "An error occurred creating your Receiver");
             }
-          } else if (noReceiversWarningPanel.getModel().isLoadConfig()) {
-            final URL url =
-              noReceiversWarningPanel.getModel().getConfigToLoad();
+          } else if (noReceiversWarningPanel.getModel().isLoadConfig() ||
+                  noReceiversWarningPanel.getModel().isLoadSavedConfigs()) {
+            final URL url;
+            if (noReceiversWarningPanel.getModel().isLoadSavedConfigs()) {
+                url = noReceiversWarningPanel.getModel().getSavedConfigToLoad();
+            } else {
+                url = noReceiversWarningPanel.getModel().getConfigToLoad();
+            }
 
             if (url != null) {
               MessageCenter.getInstance().getLogger().debug(

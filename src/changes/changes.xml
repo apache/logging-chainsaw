@@ -30,7 +30,9 @@
       <action dev="psmith" issue="42883" type="add" due-to="Isuru Suriarachchi" due-to-email="">
 		Added ability to hide Welcome and Drag and Drop panels.
       </action>
-
+	<action dev="psmith" issue="43158" type="add due-to="Isuru Suriarachchi" due-to-email="">
+		Added ability to remember last created receivers in an xml file, and load them at startup.
+	</action>
     </release>
   </body>
 </document>
