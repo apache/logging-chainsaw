@@ -46,6 +46,7 @@ import java.security.PermissionCollection;
 import java.security.Permissions;
 import java.security.Policy;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -83,12 +84,12 @@ import javax.swing.event.EventListenerList;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
+import org.apache.log4j.Appender;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.LoggerRepositoryExImpl;
-import org.apache.log4j.MDC;
 import org.apache.log4j.chainsaw.dnd.FileDnDTarget;
 import org.apache.log4j.chainsaw.help.HelpManager;
 import org.apache.log4j.chainsaw.help.Tutorial;
@@ -113,6 +114,8 @@ import org.apache.log4j.plugins.PluginEvent;
 import org.apache.log4j.plugins.PluginListener;
 import org.apache.log4j.plugins.PluginRegistry;
 import org.apache.log4j.plugins.Receiver;
+import org.apache.log4j.rewrite.PropertyRewritePolicy;
+import org.apache.log4j.rewrite.RewriteAppender;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.Decoder;
@@ -264,11 +267,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             return repositoryExImpl;
         }}, repositorySelectorGuard);
     
-    //set hostname & application properties which will cause Chainsaw-generated
-    //logging events to route (by default) to a tab named 'chainsaw-log'
-    MDC.put(Constants.HOSTNAME_KEY, "chainsaw");
-    MDC.put(Constants.APPLICATION_KEY, "log");
-
     ApplicationPreferenceModel model = new ApplicationPreferenceModel();
 
     SettingsManager.getInstance().configure(new ApplicationPreferenceModelSaver(model));
@@ -323,6 +321,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
     logUI.handler = new ChainsawAppenderHandler();
     logUI.handler.addEventBatchListener(logUI.new NewTabEventBatchReceiver());
+    
     /**
      * TODO until we work out how JoranConfigurator might be able to have
      * configurable class loader, if at all.  For now we temporarily replace the
@@ -333,13 +332,27 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     //configuration initialized here
     logUI.ensureChainsawAppenderHandlerAdded();
     logger = LogManager.getLogger(LogUI.class);
-    LoggerRepository repo = logger.getLoggerRepository();
-    if (repo instanceof LoggerRepositoryEx) {
-        LoggerRepositoryEx repox = (LoggerRepositoryEx) repo;
-        repox.setProperty(Constants.APPLICATION_KEY,"log");
-        repox.setProperty(Constants.HOSTNAME_KEY,"chainsaw");
-    }
+
+    //set hostname & application properties which will cause Chainsaw-generated
+    //logging events to route (by default) to a tab named 'chainsaw-log'
+    PropertyRewritePolicy policy = new PropertyRewritePolicy();
+    policy.setProperties("hostname=chainsaw,application=log");
     
+    RewriteAppender rewriteAppender = new RewriteAppender();
+    rewriteAppender.setRewritePolicy(policy);
+
+    Enumeration appenders = Logger.getLogger("org.apache.log4j").getAllAppenders();
+    if (!appenders.hasMoreElements()) {
+    	appenders = Logger.getRootLogger().getAllAppenders();
+    }
+    while (appenders.hasMoreElements()) {
+    	Appender nextAppender = (Appender)appenders.nextElement();
+    	rewriteAppender.addAppender(nextAppender);
+    }
+    Logger.getLogger("org.apache.log4j").removeAllAppenders();
+    Logger.getLogger("org.apache.log4j").addAppender(rewriteAppender);
+    Logger.getLogger("org.apache.log4j").setAdditivity(false);
+
     String config = model.getConfigurationURL();
     if(config!=null && (!(config.trim().equals("")))) {
         config = config.trim();

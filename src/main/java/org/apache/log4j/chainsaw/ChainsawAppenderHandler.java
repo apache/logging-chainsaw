@@ -222,10 +222,6 @@ public class ChainsawAppenderHandler extends AppenderSkeleton {
 
     protected WorkQueue() {
       workerThread = new WorkerThread();
-      //clear the chainsaw-log mdc entries which is used to send Chainsaw-generated
-      //logging events to a special chainsaw-log tab
-      MDC.remove(Constants.HOSTNAME_KEY);
-      MDC.remove(Constants.APPLICATION_KEY);
       workerThread.start();
     }
 
