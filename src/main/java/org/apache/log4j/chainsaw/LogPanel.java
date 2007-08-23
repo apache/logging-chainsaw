@@ -2295,6 +2295,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
       } catch (EOFException eof) { //end of file - ignore..
       }catch (IOException ioe) {
         ioe.printStackTrace();
+        //unable to load file - delete it
+        f.delete();
       } catch (ClassNotFoundException cnfe) {
         cnfe.printStackTrace();
       } finally {

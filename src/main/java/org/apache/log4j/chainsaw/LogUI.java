@@ -37,6 +37,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -352,6 +353,12 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     Logger.getLogger("org.apache.log4j").removeAllAppenders();
     Logger.getLogger("org.apache.log4j").addAppender(rewriteAppender);
     Logger.getLogger("org.apache.log4j").setAdditivity(false);
+    
+    Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+		public void uncaughtException(Thread t, Throwable e) {
+			logger.error("Uncaught exception in thread " + t, e);
+		}
+    });
 
     String config = model.getConfigurationURL();
     if(config!=null && (!(config.trim().equals("")))) {
