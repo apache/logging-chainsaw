@@ -26,6 +26,7 @@ import java.util.Map;
 import javax.swing.event.EventListenerList;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.LogManager;
+import org.apache.log4j.MDC;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.net.SocketReceiver;
 import org.apache.log4j.rule.ExpressionRule;
@@ -221,6 +222,10 @@ public class ChainsawAppenderHandler extends AppenderSkeleton {
 
     protected WorkQueue() {
       workerThread = new WorkerThread();
+      //clear the chainsaw-log mdc entries which is used to send Chainsaw-generated
+      //logging events to a special chainsaw-log tab
+      MDC.remove(Constants.HOSTNAME_KEY);
+      MDC.remove(Constants.APPLICATION_KEY);
       workerThread.start();
     }
 

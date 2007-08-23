@@ -88,6 +88,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.LoggerRepositoryExImpl;
+import org.apache.log4j.MDC;
 import org.apache.log4j.chainsaw.dnd.FileDnDTarget;
 import org.apache.log4j.chainsaw.help.HelpManager;
 import org.apache.log4j.chainsaw.help.Tutorial;
@@ -263,7 +264,11 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             return repositoryExImpl;
         }}, repositorySelectorGuard);
     
-    
+    //set hostname & application properties which will cause Chainsaw-generated
+    //logging events to route (by default) to a tab named 'chainsaw-log'
+    MDC.put(Constants.HOSTNAME_KEY, "chainsaw");
+    MDC.put(Constants.APPLICATION_KEY, "log");
+
     ApplicationPreferenceModel model = new ApplicationPreferenceModel();
 
     SettingsManager.getInstance().configure(new ApplicationPreferenceModelSaver(model));
