@@ -14,6 +14,8 @@
 ~~ limitations under the License.
 Download
 
+   Latest Development Build:  Date: 2006-03-02 (SVN tag 'release_20060302')
+
 	* {{{http://logging.apache.org/log4j/docs/webstart/chainsaw/chainsawWebStart.jnlp}Java Web Start}} 
 	
 	* {{{http://logging.apache.org/log4j/docs/webstart/chainsaw/chainsaw.dmg}OSX}} - .dmg bundled distribution.  Drag to your /Applications folder

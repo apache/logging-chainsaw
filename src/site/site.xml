@@ -31,7 +31,6 @@
     <breadcrumbs>
       <item name="Apache" href="http://www.apache.org/" />
 	  <item name="Logging Services" href="http://logging.apache.org" />
-	  <item name="log4j" href="http://logging.apache.org/log4j" />
 	  <item name="Chainsaw" href="http://logging.apache.org:80/chainsaw" />
     </breadcrumbs>
 
@@ -39,14 +38,13 @@
 	   <item name="Download" href="/download.html"/>
 	   <item name="Changes" href="/changes-report.html"/>
 	   <item name="License" href="/license.html"/>
-	   <item name="Important Distribution Notes" href="distributionnotes.html" />
+	   <item name="Important Distribution Notes" href="/distributionnotes.html" />
 	</menu>
 
     <menu name="About Chainsaw">
-      <item name="Introduction" href="index.html"/>
-      <item name="Download" href="download.html"/>
-	  <item name="Quick Tour" href="quicktour.html" />
-	  <item name="Zeroconf" href="zeroconf.html" />
+      <item name="Introduction" href="/index.html"/>
+	  <item name="Quick Tour" href="/quicktour.html" />
+	  <item name="Zeroconf" href="/zeroconf.html" />
 	  <item name="Roadmap" href="/roadmap.html"/>
 	  <item name="JavaDoc" href="/apidocs/index.html"/>
    </menu>
@@ -64,6 +62,13 @@
 		<item name="Duplication" href="/cpd.html"/>
 		<item name="PMD" href="/pmd.html"/>
 	</menu>
-	<menu ref="reports"/>
+	
+	<menu name="Apache">
+		<item name="Home" href="http://www.apache.org"/>	
+		<item name="Sponsorship" href="http://www.apache.org/foundation/sponsorship.html"/>
+		<item name="Thanks" href="http://www.apache.org/foundation/thanks.html"/>
+		<item name="Conferences" href="http://www.apachecon.com"/>
+	</menu>
+	
   </body>
 </project>
