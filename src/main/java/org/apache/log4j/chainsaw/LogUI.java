@@ -110,7 +110,7 @@ import org.apache.log4j.chainsaw.version.VersionManager;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.net.SocketNodeEventListener;
 import org.apache.log4j.plugins.Plugin;
-import org.apache.log4j.plugins.PluginConfigurator;
+import org.apache.log4j.xml.DOMConfigurator;
 import org.apache.log4j.plugins.PluginEvent;
 import org.apache.log4j.plugins.PluginListener;
 import org.apache.log4j.plugins.PluginRegistry;
@@ -1996,7 +1996,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             try {
               // we temporarily swap the TCCL so that plugins can find resources
               Thread.currentThread().setContextClassLoader(classLoader);
-              PluginConfigurator.configure(url);
+              DOMConfigurator.configure(url);
             }finally{
                 // now switch it back...
                 Thread.currentThread().setContextClassLoader(previousTCCL);
