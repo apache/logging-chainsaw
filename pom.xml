@@ -391,7 +391,7 @@
     </repository>
     <site>
       <id>logging.site</id>
-      <url>scp://localhost/${user.dir}/target/site-deploy</url>
+      <url>file:///${user.dir}/target/site-deploy</url>
     </site>
   </distributionManagement>
   <properties>

@@ -18,18 +18,18 @@ ZeroConf - Zero Configuration
 
 	Download:                                            
 	
-		* log4j ZeroConf extension
+		[[1]] {{{http://logging.apache.org/log4j/docs/webstart/chainsaw/log4j-zeroconf.zip}log4j ZeroConf extension}}
 		
-		* {{{http://sourceforge.net/projects/jmdns/}JmDNS}}
+		[[2]] {{{http://sourceforge.net/projects/jmdns/}JmDNS}}
 		
-		* Add the <log4j-zeroconf.jar> and the <jmdns.jar> from these bundles and add them to your application's classpath. 
+		[[3]] Add the <log4j-zeroconf.jar> and the <jmdns.jar> from these bundles and add them to your application's classpath. 
 		
-		* Modify your log4j configuration so that it use the ZeroConfSocketHubAppender.  
+		[[4]] Modify your log4j configuration so that it use the ZeroConfSocketHubAppender.  
 		
 	Here is a complete log4j.xml file that you can use as a base:
 	
 +-------------------------------+						
-<log4j:configuration debug="false" threshold="debug"  xmlns:log4j="http://jakarta.apache.org/log4j/>
+<log4j:configuration debug="false" threshold="debug"  xmlns:log4j="http://jakarta.apache.org/log4j/">
     <appender name="zeroconf" class="org.apache.log4j.net.ZeroConfSocketHubAppender">
         <param name="Name" value="MyZeroConfSockeHubAppender" />
     </appender>
