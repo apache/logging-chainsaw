@@ -30,8 +30,8 @@
   <body>
     <breadcrumbs>
       <item name="Apache" href="http://www.apache.org/" />
-	  <item name="Logging Services" href="http://logging.apache.org" />
-	  <item name="Chainsaw" href="http://logging.apache.org:80/chainsaw" />
+	  <item name="Logging Services" href="http://logging.apache.org/" />
+	  <item name="Chainsaw" href="http://logging.apache.org:80/chainsaw/" />
     </breadcrumbs>
 
 	<menu name="Get Chainsaw">
