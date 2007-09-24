@@ -741,7 +741,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
 
     action.putValue(
       Action.SHORT_DESCRIPTION,
-      "Undocks the current Log panel into it's own window");
+      "Undocks the current Log panel into its own window");
 
     //	TODO think of some mnemonics and HotKeys for this action
     return action;
