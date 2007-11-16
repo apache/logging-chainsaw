@@ -20,6 +20,7 @@ package org.apache.log4j.chainsaw.helper;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
@@ -72,5 +73,13 @@ public final class SwingHelper {
     cancelButton.setAction(closeAction);
     dialog.getRootPane().getActionMap().put(CANCEL_ACTION_KEY, closeAction);
     
+  }
+
+  public static void invokeOnEDT(Runnable runnable) {
+    if (EventQueue.isDispatchThread()) {
+      runnable.run();
+    } else {
+      EventQueue.invokeLater(runnable);
+    }
   }
 }

@@ -23,9 +23,10 @@ import java.awt.event.MouseListener;
 
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
+
+import org.apache.log4j.chainsaw.helper.SwingHelper;
 
 
 /**
@@ -92,36 +93,23 @@ public class JSortTable extends JTable implements MouseListener {
     getTableHeader().resizeAndRepaint();
   }
 
-  public void scrollToRow(final int row, final int col) {
-    SwingUtilities.invokeLater(
-      new Runnable() {
-        public void run() {
-          if ((row > -1) && (row < getRowCount())) {
-            try {
-              setRowSelectionInterval(row, row);
-              scrollRectToVisible(getCellRect(row, col +1, true));
-            } catch (IllegalArgumentException iae) {
-            }
-             //ignore..out of bounds
-          }
-        }
-      });
-  }
-
-  public void scrollToBottom(final int col) {
-    SwingUtilities.invokeLater(
-      new Runnable() {
-        public void run() {
-          int row = getRowCount() - 1;
-
+  public void scrollTo(final int row, final int col) {
+    SwingHelper.invokeOnEDT(new Runnable() {
+      public void run() {
+        if ((row > -1) && (row < getRowCount())) {
           try {
             setRowSelectionInterval(row, row);
-            scrollRectToVisible(getCellRect(row, col + 1, true));
+            scrollRectToVisible(getCellRect(row, col, true));
           } catch (IllegalArgumentException iae) {
+            //ignore..out of bounds
           }
-           //ignore..out of bounds
         }
-      });
+      }
+    });
+  }
+
+  public void scrollToRow(int row) {
+    scrollTo(row, columnAtPoint(getVisibleRect().getLocation()));
   }
 
   public boolean isSortedColumnAscending() {

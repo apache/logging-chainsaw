@@ -112,6 +112,9 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.text.Document;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
+
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
@@ -129,14 +132,12 @@ import org.apache.log4j.chainsaw.prefs.Profileable;
 import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.chainsaw.xstream.TableColumnConverter;
+import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.LoggingEventFieldResolver;
-
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
 
 
 /**
@@ -533,7 +534,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
           boolean value = ((Boolean) evt.getNewValue()).booleanValue();
           menuItemScrollBottom.setSelected(value);
           if (value) {
-          	table.scrollToBottom(table.columnAtPoint(table.getVisibleRect().getLocation()));
+            scrollToBottom();
           }
         }
       });
@@ -690,33 +691,42 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
 
     table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
+    table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+        public void valueChanged(ListSelectionEvent evt) {
+            if (((evt.getFirstIndex() == evt.getLastIndex())
+                && (evt.getFirstIndex() > 0)) || (evt.getValueIsAdjusting())) {
+              return;
+            }
+            boolean lastIndexOnLastRow = (evt.getLastIndex() == (table.getRowCount() - 1));
+            boolean lastIndexSame = (previousLastIndex == evt.getLastIndex());
+
+            /*
+             * when scroll-to-bottom is active, here is what events look like:
+             * rowcount-1: 227, last: 227, previous last: 191..first: 191
+             *
+             * when the user has unselected the bottom row, here is what the events look like:
+             * rowcount-1: 227, last: 227, previous last: 227..first: 222
+             *
+             * note: previouslast is set after it is evaluated in the bypass scroll check
+            */
+           //System.out.println("rowcount: " + (table.getRowCount() - 1) + ", last: " + evt.getLastIndex() +", previous last: " + previousLastIndex + "..first: " + evt.getFirstIndex() + ", isadjusting: " + evt.getValueIsAdjusting());
+
+            boolean disableScrollToBottom = (lastIndexOnLastRow && lastIndexSame && previousLastIndex != evt.getFirstIndex());
+            if (disableScrollToBottom && isScrollToBottom() && table.getRowCount() > 0) {
+              preferenceModel.setScrollToBottom(false);
+            }
+            previousLastIndex = evt.getLastIndex();
+          }
+        }
+    );
+
     table.getSelectionModel().addListSelectionListener(
       new ListSelectionListener() {
         public void valueChanged(ListSelectionEvent evt) {
-          if (
-            ((evt.getFirstIndex() == evt.getLastIndex())
+          if (((evt.getFirstIndex() == evt.getLastIndex())
               && (evt.getFirstIndex() > 0)) || (evt.getValueIsAdjusting())) {
             return;
           }
-          boolean lastIndexOnLastRow = (evt.getLastIndex() == (table.getRowCount() - 1));
-          boolean lastIndexSame = (previousLastIndex == evt.getLastIndex());
-
-          /*
-           * when scroll-to-bottom is active, here is what events look like:
-           * rowcount-1: 227, last: 227, previous last: 191..first: 191
-           * 
-           * when the user has unselected the bottom row, here is what the events look like:
-           * rowcount-1: 227, last: 227, previous last: 227..first: 222
-           * 
-           * note: previouslast is set after it is evaluated in the bypass scroll check
-          */
-         //System.out.println("rowcount: " + (table.getRowCount() - 1) + ", last: " + evt.getLastIndex() +", previous last: " + previousLastIndex + "..first: " + evt.getFirstIndex() + ", isadjusting: " + evt.getValueIsAdjusting());
-          
-          boolean disableScrollToBottom = (lastIndexOnLastRow && lastIndexSame && previousLastIndex != evt.getFirstIndex());
-          if (disableScrollToBottom && isScrollToBottom() && table.getRowCount() > 0) {
-          	preferenceModel.setScrollToBottom(false);
-          }
-          previousLastIndex = evt.getLastIndex();
 
           final ListSelectionModel lsm = (ListSelectionModel) evt.getSource();
 
@@ -798,8 +808,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
           }
 
           detailDialog.setLocation(lowerPanel.getLocationOnScreen());
-          SwingUtilities.invokeLater(
-            new Runnable() {
+          SwingHelper.invokeOnEDT(new Runnable() {
               public void run() {
                 detailDialog.setVisible(true);
               }
@@ -814,7 +823,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     tableModel.addNewKeyListener(
       new NewKeyListener() {
         public void newKeyAdded(final NewKeyEvent e) {
-        	SwingUtilities.invokeLater(new Runnable() {
+        	SwingHelper.invokeOnEDT(new Runnable() {
         		public void run() {
            // don't add the column if we already know about it, this could be if we've seen it before and saved the column preferences
             //this may throw an illegalargexception - ignore it because we need to add only if not already added
@@ -1347,6 +1356,10 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
   	preferenceModel.setScrollToBottom(!preferenceModel.isScrollToBottom());
   }
   
+  private void scrollToBottom() {
+    table.scrollToRow(tableModel.getRowCount() - 1);
+  }
+
   /**
    * Accessor
    *
@@ -1376,51 +1389,60 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
    * @param ident identifier shared by events
    * @param events list of LoggingEvent objects
    */
-  public void receiveEventBatch(String ident, List events) {
-    /*
-     * if this panel is paused, we totally ignore events
-     */
-    if (isPaused()) {
-      return;
-    }
+  public void receiveEventBatch(String ident, final List events) {
 
-    //table.getSelectionModel().setValueIsAdjusting(true);
-    boolean rowAdded = false;
+    SwingHelper.invokeOnEDT(new Runnable() {
+      public void run() {
+        /*
+        * if this panel is paused, we totally ignore events
+        */
+        if (isPaused()) {
+          return;
+        }
 
-    int first = tableModel.getLastAdded() + 1;
+        final int selectedRow = table.getSelectedRow();
+        final LoggingEvent selectedEvent;
+        if (selectedRow >= 0) {
+          selectedEvent = tableModel.getRow(selectedRow);
+        } else {
+          selectedEvent = null;
+        }
 
-    for (Iterator iter = events.iterator(); iter.hasNext();) {
-      LoggingEvent event = (LoggingEvent) iter.next();
+        boolean rowAdded = false;
 
-      updateOtherModels(event);
+        for (Iterator iter = events.iterator(); iter.hasNext();) {
+          LoggingEvent event = (LoggingEvent) iter.next();
 
-      boolean isCurrentRowAdded = tableModel.isAddRow(event, true);
-      rowAdded = rowAdded ? true : isCurrentRowAdded;
-    }
+          updateOtherModels(event);
 
-    table.getSelectionModel().setValueIsAdjusting(false);
+          rowAdded = rowAdded || tableModel.isAddRow(event);
+        }
 
-    //tell the model to notify the count listeners
-    tableModel.notifyCountListeners();
+        //tell the model to notify the count listeners
+        tableModel.notifyCountListeners();
 
-    if (rowAdded) {
-      if (tableModel.isSortEnabled()) {
-        tableModel.sort();
+        if (rowAdded) {
+          if (tableModel.isSortEnabled()) {
+            tableModel.sort();
+          }
+
+          //always update detail pane (since we may be using a cyclic buffer which is full)
+          detailPaneUpdater.setSelectedRow(table.getSelectedRow());
+        }
+
+        if (isScrollToBottom()) {
+          scrollToBottom();
+        } else if (selectedEvent != null) {
+          final int newIndex = tableModel.getRowIndex(selectedEvent);
+          if (newIndex >= 0) {
+            // Don't scroll, just maintain selection...
+            table.setRowSelectionInterval(newIndex, newIndex);
+          }
+        }
       }
-
-      tableModel.fireTableEvent(
-        first, tableModel.getLastAdded(), events.size());
-
-      if (isScrollToBottom()) {
-        table.scrollToBottom(
-          table.columnAtPoint(table.getVisibleRect().getLocation()));
-      }
-
-      //always update detail pane (since we may be using a cyclic buffer which is full)
-      detailPaneUpdater.setSelectedRow(table.getSelectedRow());
-    }
+    });
   }
-  
+
   /**
    * Load settings from the panel preference model
    *
@@ -1676,7 +1698,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     dockingAction.putValue(Action.NAME, "Dock");
     dockingAction.putValue(Action.SMALL_ICON, ChainsawIcons.ICON_DOCK);
     if (row > -1) {
-    	table.scrollToRow(row, table.columnAtPoint(table.getVisibleRect().getLocation()));
+    	table.scrollToRow(row);
     }
   }
 
@@ -1715,7 +1737,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
    * @param eventNumber
    */
   void setSelectedEvent(int eventNumber){
-      table.scrollToRow(eventNumber - 1, 0);
+      table.scrollTo(eventNumber - 1, 0);
   }
 
   /**
@@ -2053,7 +2075,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
    * Update the status bar with current selected row and row count
    */
   private void updateStatusBar() {
-    SwingUtilities.invokeLater(
+    SwingHelper.invokeOnEDT(
       new Runnable() {
         public void run() {
           statusBar.setSelectedLine(
@@ -2113,8 +2135,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
           tableModel.find(findRule, table.getSelectedRow() + 1, true);
 
         if (nextRow > -1) {
-          table.scrollToRow(
-            nextRow, table.columnAtPoint(table.getVisibleRect().getLocation()));
+          table.scrollToRow(nextRow);
           findField.setToolTipText("Enter an expression");
         }
       } catch (IllegalArgumentException iae) {
@@ -2138,9 +2159,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
           tableModel.find(findRule, table.getSelectedRow() - 1, false);
 
         if (previousRow > -1) {
-          table.scrollToRow(
-            previousRow,
-            table.columnAtPoint(table.getVisibleRect().getLocation()));
+          table.scrollToRow(previousRow);
           findField.setToolTipText("Enter an expression");
         }
       } catch (IllegalArgumentException iae) {
@@ -2165,7 +2184,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     dockingAction.putValue(Action.NAME, "Undock");
     dockingAction.putValue(Action.SMALL_ICON, ChainsawIcons.ICON_UNDOCK);
     if (row > -1) {
-    	table.scrollToRow(row, table.columnAtPoint(table.getVisibleRect().getLocation()));
+    	table.scrollToRow(row);
     }
   }
 
@@ -2612,7 +2631,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
 		          	try {
 		          		final Document doc = detail.getEditorKit().createDefaultDocument();
 		          		detail.getEditorKit().read(new StringReader(buf.toString()), doc, 0);
-				      	SwingUtilities.invokeLater(new Runnable() {
+				      	SwingHelper.invokeOnEDT(new Runnable() {
 				      		public void run() {
 				      			detail.setDocument(doc);
 				      			detail.setCaretPosition(0);
@@ -2627,7 +2646,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
           	try {
           		final Document doc = detail.getEditorKit().createDefaultDocument();
           		detail.getEditorKit().read(new StringReader("<html>Nothing selected</html>"), doc, 0);
-		      	SwingUtilities.invokeLater(new Runnable() {
+		      	SwingHelper.invokeOnEDT(new Runnable() {
 		      		public void run() {
 		      			detail.setDocument(doc);
 		      			detail.setCaretPosition(0);

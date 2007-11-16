@@ -17,12 +17,11 @@
 
 package org.apache.log4j.chainsaw;
 
+import java.beans.PropertyChangeListener;
+import java.util.List;
+
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.LoggingEvent;
-
-import java.beans.PropertyChangeListener;
-
-import java.util.List;
 
 
 /**
@@ -132,10 +131,9 @@ public interface EventContainer extends SortTableModel, LoggerNameModel {
   /**
    * Adds a row to the model.
    * @param e event
-   * @param valueIsAdjusting
    * @return flag representing whether or not the row is being displayed (not filtered)
    */
-  boolean isAddRow(LoggingEvent e, boolean valueIsAdjusting);
+  boolean isAddRow(LoggingEvent e);
 
   /**
    * Fire appropriate table update events for the range.

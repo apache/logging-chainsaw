@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.awt.EventQueue;
 
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
@@ -36,6 +37,7 @@ import javax.swing.table.AbstractTableModel;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.LoggingEvent;
@@ -135,7 +137,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
           }
         }
       } finally {
-      	SwingUtilities.invokeLater(new Runnable() {
+      	SwingHelper.invokeOnEDT(new Runnable() {
       		public void run() {
       			if (filteredList.size() > 0) {
 	      			if (previousSize == filteredList.size()) {
@@ -262,7 +264,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
             currentSortAscending));
       }
 
-     	SwingUtilities.invokeLater(new Runnable() {
+     	SwingHelper.invokeOnEDT(new Runnable() {
      		public void run() {
       			fireTableRowsUpdated(0, Math.max(filteredList.size() - 1, 0));
       		}
@@ -295,7 +297,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
       uniqueRow = 0;
     }
 
-    SwingUtilities.invokeLater(new Runnable() {
+    SwingHelper.invokeOnEDT(new Runnable() {
     	public void run() {
     	    fireTableDataChanged();
     	}
@@ -445,7 +447,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     return "";
   }
 
-  public boolean isAddRow(LoggingEvent e, boolean valueIsAdjusting) {
+  public boolean isAddRow(LoggingEvent e) {
     boolean rowAdded = false;
 
     Object id = e.getProperty(Constants.LOG4J_ID_KEY);
@@ -494,7 +496,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
       }
     }
 
-    if (!valueIsAdjusting) {
+    if (rowAdded) {
       int lastAdded = getLastAdded();
       fireTableEvent(lastAdded, lastAdded, 1);
     }
@@ -506,16 +508,16 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     int last = 0;
 
     if (cyclic) {
-      last = ((CyclicBufferList) filteredList).getLast();
+      last = ((CyclicBufferList) filteredList).getLast() - 1;
     } else {
-      last = filteredList.size();
+      last = filteredList.size() - 1;
     }
 
-    return last;
+    return Math.max(0, last);
   }
 
   public void fireTableEvent(final int begin, final int end, final int count) {
-  	SwingUtilities.invokeLater(new Runnable() {
+  	SwingHelper.invokeOnEDT(new Runnable() {
   		public void run() {
     if (cyclic) {
       if (!reachedCapacity) {
