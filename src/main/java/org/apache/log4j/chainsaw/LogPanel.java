@@ -1415,7 +1415,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
 
           updateOtherModels(event);
 
-          rowAdded = rowAdded || tableModel.isAddRow(event);
+          boolean isCurrentRowAdded = tableModel.isAddRow(event);
+          rowAdded = rowAdded || isCurrentRowAdded;
         }
 
         //tell the model to notify the count listeners
@@ -1425,7 +1426,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
           if (tableModel.isSortEnabled()) {
             tableModel.sort();
           }
-
+          
           //always update detail pane (since we may be using a cyclic buffer which is full)
           detailPaneUpdater.setSelectedRow(table.getSelectedRow());
         }
