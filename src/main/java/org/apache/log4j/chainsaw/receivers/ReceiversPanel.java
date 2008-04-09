@@ -409,7 +409,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
     /**
      * add this listener to all SocketReceivers
      */
-    if (pluginRegistry == null) {
+    if (pluginRegistry != null) {
     	List socketReceivers =
       		pluginRegistry.getPlugins(SocketReceiver.class);
 

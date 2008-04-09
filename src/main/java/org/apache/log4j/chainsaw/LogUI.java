@@ -403,8 +403,20 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
    *
    */
   public void activateViewer(ChainsawAppender appender) {
+
+    if(OSXIntegration.IS_OSX) {
+        System.setProperty("apple.laf.useScreenMenuBar", "true");
+    }
+    
+    LogManager.setRepositorySelector(new RepositorySelector() {
+
+      public LoggerRepository getLoggerRepository() {
+          return repositoryExImpl;
+      }}, repositorySelectorGuard);
+
     //if Chainsaw is launched as an appender, ensure the root logger level is TRACE
     LogManager.getRootLogger().setLevel(Level.TRACE);
+
     ApplicationPreferenceModel model = new ApplicationPreferenceModel();
     SettingsManager.getInstance().configure(new ApplicationPreferenceModelSaver(model));
 
@@ -422,9 +434,17 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
           }
         });
     
-    activateViewer();
+    applicationPreferenceModel = new ApplicationPreferenceModel();
+
+    SettingsManager.getInstance().configure(new ApplicationPreferenceModelSaver(model));
+
+    applyLookAndFeel(model.getLookAndFeelClassName());
+
+    createChainsawGUI(model, null);
 
     getApplicationPreferenceModel().apply(model);
+
+    activateViewer();
   }
 
   /**
@@ -457,6 +477,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             
             Thread thread = new Thread(new Runnable() {
 
+            	
                 public void run() {
                     logger.debug("Loading files: " + fileList);
                     for (Iterator iter = fileList.iterator(); iter.hasNext();) {
@@ -479,9 +500,10 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             thread.start();
             
         }});
-   
-    addDragDropPanel();
+
+	addDragDropPanel();
     applicationPreferenceModelPanel = new ApplicationPreferenceModelPanel(applicationPreferenceModel);
+
     applicationPreferenceModelPanel.setOkCancelActionListener(
       new ActionListener() {
         public void actionPerformed(ActionEvent e) {
