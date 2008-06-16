@@ -17,19 +17,13 @@
 
 package org.apache.log4j.chainsaw;
 
-import org.apache.log4j.chainsaw.color.Colorizer;
-import org.apache.log4j.chainsaw.icons.LevelIconFactory;
-import org.apache.log4j.helpers.Constants;
-import org.apache.log4j.spi.LoggingEvent;
-
 import java.awt.Color;
 import java.awt.Component;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-
 import java.util.Date;
 import java.util.Map;
+import java.util.TimeZone;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -37,6 +31,11 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
+
+import org.apache.log4j.chainsaw.color.Colorizer;
+import org.apache.log4j.chainsaw.icons.LevelIconFactory;
+import org.apache.log4j.helpers.Constants;
+import org.apache.log4j.spi.LoggingEvent;
 
 
 /**
@@ -60,6 +59,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private DateFormat dateFormatInUse = DATE_FORMATTER;
   private int loggerPrecision = 0;
   private boolean toolTipsVisible;
+  private String dateFormatTZ;
 
   /**
    * Creates a new TableColorizingRenderer object.
@@ -197,6 +197,11 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
    */
   void setDateFormatter(DateFormat formatter) {
     this.dateFormatInUse = formatter;
+    if (dateFormatInUse != null && dateFormatTZ != null && !("".equals(dateFormatTZ))) {
+      dateFormatInUse.setTimeZone(TimeZone.getTimeZone(dateFormatTZ));
+    } else {
+      dateFormatInUse.setTimeZone(TimeZone.getDefault());
+    }
   }
 
   /**
@@ -222,6 +227,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     if (!(o instanceof Date)) {
       return (o == null ? "" : o);
     }
+    
     return dateFormatInUse.format((Date) o);
   }
 
@@ -239,5 +245,15 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
    */
   public void setLevelUseIcons(boolean levelUseIcons) {
     this.levelUseIcons = levelUseIcons;
+  }
+
+  public void setTimeZone(String dateFormatTZ) {
+    this.dateFormatTZ = dateFormatTZ;
+
+    if (dateFormatInUse != null && dateFormatTZ != null && !("".equals(dateFormatTZ))) {
+      dateFormatInUse.setTimeZone(TimeZone.getTimeZone(dateFormatTZ));
+    } else {
+      dateFormatInUse.setTimeZone(TimeZone.getDefault());
+    }
   }
 }

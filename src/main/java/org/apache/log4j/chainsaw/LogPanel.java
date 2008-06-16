@@ -112,15 +112,13 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.text.Document;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
-
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.chainsaw.color.ColorPanel;
 import org.apache.log4j.chainsaw.color.RuleColorizer;
 import org.apache.log4j.chainsaw.filter.FilterModel;
+import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.chainsaw.icons.LineIconFactory;
 import org.apache.log4j.chainsaw.layout.DefaultLayoutFactory;
@@ -132,12 +130,14 @@ import org.apache.log4j.chainsaw.prefs.Profileable;
 import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.chainsaw.xstream.TableColumnConverter;
-import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.LoggingEventFieldResolver;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
 
 
 /**
@@ -475,6 +475,10 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
           simpleTimeButton.setSelected(
             !model.isUseISO8601Format() && !model.isCustomDateFormat());
 
+          if (model.getTimeZone() != null) {
+            renderer.setTimeZone(model.getTimeZone());
+          }
+          
           if (model.isUseISO8601Format()) {
             renderer.setDateFormatter(new SimpleDateFormat(Constants.ISO8601_PATTERN));
           } else {
@@ -493,8 +497,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
 
     preferenceModel.addPropertyChangeListener(
       "dateFormatPattern", datePrefsChangeListener);
-    preferenceModel.addPropertyChangeListener(
-      "dateFormatPattern", datePrefsChangeListener);
+    preferenceModel.addPropertyChangeListener("dateFormatTimeZone", datePrefsChangeListener);
 
     preferenceModel.addPropertyChangeListener(
       "loggerPrecision",

@@ -18,7 +18,6 @@ package org.apache.log4j.chainsaw;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -41,6 +40,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.table.TableColumn;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -223,11 +223,12 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
     //~ Instance fields =======================================================
 
     private JTextField customFormatText = new JTextField("", 10);
-    private JTextField loggerPrecision = new JTextField(5);
+    private JTextField loggerPrecision = new JTextField(10);
     private JRadioButton rdCustom = new JRadioButton("Custom Format");
     private final JRadioButton rdISO =
       new JRadioButton(
         "<html><b>Fast</b> ISO 8601 format (yyyy-MM-dd HH:mm:ss)</html>");
+    private final JTextField timeZone = new JTextField(10);
     private final JRadioButton rdLevelIcons = new JRadioButton("Icons");
     private final JRadioButton rdLevelText = new JRadioButton("Text");
     private JRadioButton rdLast;
@@ -248,24 +249,17 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
       setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
       JPanel dateFormatPanel = new JPanel();
+      dateFormatPanel.setLayout(new BoxLayout(dateFormatPanel, BoxLayout.Y_AXIS));
       dateFormatPanel.setBorder(
         BorderFactory.createTitledBorder(
           BorderFactory.createEtchedBorder(), "Timestamp"));
-      dateFormatPanel.setLayout(
-        new BoxLayout(dateFormatPanel, BoxLayout.Y_AXIS));
-      dateFormatPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-      customFormatText.setPreferredSize(new Dimension(100, 20));
-      customFormatText.setMaximumSize(customFormatText.getPreferredSize());
-      customFormatText.setMinimumSize(customFormatText.getPreferredSize());
-      customFormatText.setEnabled(false);
-
-      rdCustom.setSelected(preferenceModel.isCustomDateFormat());
 
       ButtonGroup bgDateFormat = new ButtonGroup();
 
-      rdISO.setAlignmentX(0);
       rdISO.setSelected(preferenceModel.isUseISO8601Format());
+
+      rdISO.setHorizontalTextPosition(SwingConstants.RIGHT);
+      rdISO.setAlignmentX(Component.LEFT_ALIGNMENT);      
 
       bgDateFormat.add(rdISO);
       dateFormatPanel.add(rdISO);
@@ -276,9 +270,9 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
       {
         final String format = (String) iter.next();
         final JRadioButton rdFormat = new JRadioButton(format);
-        rdFormat.setAlignmentX(0);
+        rdFormat.setHorizontalTextPosition(SwingConstants.RIGHT);
+        rdFormat.setAlignmentX(Component.LEFT_ALIGNMENT);      
 
-        bgDateFormat.add(rdFormat);
         rdFormat.addActionListener(new ActionListener()
           {
             public void actionPerformed(ActionEvent e)
@@ -302,7 +296,16 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
           });
 
         dateFormatPanel.add(rdFormat);
+        bgDateFormat.add(rdFormat);
       }
+
+      customFormatText.setPreferredSize(new Dimension(100, 20));
+      customFormatText.setMaximumSize(customFormatText.getPreferredSize());
+      customFormatText.setMinimumSize(customFormatText.getPreferredSize());
+      customFormatText.setEnabled(false);
+
+      bgDateFormat.add(rdCustom);
+      rdCustom.setSelected(preferenceModel.isCustomDateFormat());
 
       // add a custom date format
       if (preferenceModel.isCustomDateFormat())
@@ -311,19 +314,22 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
         customFormatText.setEnabled(true);
       }
 
-      rdCustom.setAlignmentX(0);
-      bgDateFormat.add(rdCustom);
+      JPanel customPanel = new JPanel();
+      customPanel.setLayout(new BoxLayout(customPanel, BoxLayout.X_AXIS));
+      customPanel.add(rdCustom);
+      customPanel.add(customFormatText);
+      customPanel.setAlignmentX(Component.LEFT_ALIGNMENT);      
 
-      Box customBox = Box.createHorizontalBox();
+      dateFormatPanel.add(customPanel);
+      dateFormatPanel.add(Box.createVerticalStrut(5));
 
-      //      Following does not work in JDK 1.3.1
-      //      customBox.setAlignmentX(0);
-      customBox.add(rdCustom);
-      customBox.add(customFormatText);
-      customBox.add(Box.createHorizontalGlue());
-      dateFormatPanel.add(customBox);
+      JLabel dateFormatLabel = new JLabel("Time zone of events on tab (leave blank for local time zone");
+      dateFormatPanel.add(dateFormatLabel);
 
-      //      dateFormatPanel.add(Box.createVerticalGlue());
+      timeZone.setMaximumSize(timeZone.getPreferredSize());
+      dateFormatPanel.add(Box.createVerticalStrut(5));
+      dateFormatPanel.add(timeZone);
+      
       add(dateFormatPanel);
 
       JPanel levelFormatPanel = new JPanel();
@@ -353,21 +359,18 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
           BorderFactory.createEtchedBorder(), "Logger"));
       loggerFormatPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
+      loggerFormatPanel.add(Box.createVerticalStrut(3));
+
       final JLabel precisionLabel =
-        new JLabel("Number of package levels to hide)");
-      final JLabel precisionLabel2 =
-        new JLabel("leave blank to display full logger");
+        new JLabel("Number of package levels to hide (leave blank to display full logger)");
 
       loggerFormatPanel.add(precisionLabel);
-      loggerFormatPanel.add(precisionLabel2);
+      loggerFormatPanel.add(Box.createVerticalStrut(5));
 
-      JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT));
-
-      p.add(loggerPrecision);
-      loggerFormatPanel.add(p);
+      loggerPrecision.setMaximumSize(loggerPrecision.getPreferredSize());
+      loggerFormatPanel.add(loggerPrecision);
 
       add(loggerFormatPanel);
-
       add(Box.createVerticalGlue());
     }
 
@@ -386,6 +389,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
     	}
     	
     	loggerPrecision.setText(preferenceModel.getLoggerPrecision());
+    	timeZone.setText(preferenceModel.getTimeZone());
     }
 
     /*
@@ -396,6 +400,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
     		preferenceModel.setDateFormatPattern(customFormatText.getText());
     	}
     	preferenceModel.setLoggerPrecision(loggerPrecision.getText());
+    	preferenceModel.setTimeZone(timeZone.getText());
     }
 
     /**
@@ -468,6 +473,13 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
             rdLast = rdISO;
           }
         });
+      preferenceModel.addPropertyChangeListener(
+          "dateFormatTimeZone", new PropertyChangeListener() {
+              public void propertyChange(PropertyChangeEvent evt) {
+                  timeZone.setText(preferenceModel.getTimeZone());
+              }
+          }
+      );
 
       ActionListener levelIconListener = new ActionListener()
         {

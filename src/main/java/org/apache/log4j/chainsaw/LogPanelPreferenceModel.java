@@ -77,6 +77,7 @@ public class LogPanelPreferenceModel implements Serializable{
   private String loggerPrecision = "";
 
   private Collection hiddenLoggers = new HashSet();
+  private String timeZone;
   
   /**
    * Returns an <b>unmodifiable</b> list of the columns.
@@ -215,6 +216,7 @@ public class LogPanelPreferenceModel implements Serializable{
     setLoggerPrecision(model.getLoggerPrecision());
     setDateFormatPattern(model.getDateFormatPattern());
     setLevelIcons(model.isLevelIcons());
+    setTimeZone(model.getTimeZone());
     setToolTips(model.isToolTips());
     setScrollToBottom(model.isScrollToBottom());
     setDetailPaneVisible(model.isDetailPaneVisible());
@@ -395,7 +397,17 @@ public class LogPanelPreferenceModel implements Serializable{
       propertySupport.firePropertyChange("hiddenLoggers", oldValue, this.hiddenLoggers);
   }
 
-public Collection getHiddenLoggers() {
+  public Collection getHiddenLoggers() {
     return hiddenLoggers;
-}
+  }
+
+  public String getTimeZone() {
+    return timeZone;
+  }
+  
+  public void setTimeZone(String timeZone) {
+      Object oldValue = this.timeZone;
+      this.timeZone = timeZone;
+      propertySupport.firePropertyChange("dateFormatTimeZone", oldValue, this.timeZone);
+  }
 }
