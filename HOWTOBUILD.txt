@@ -16,8 +16,11 @@ Next, an interim step is required until log4j 1.2.15, log4j-components, log4j-re
 	log4j-receivers - http://svn.apache.org/repos/asf/logging/log4j/companions/receivers/trunk/
 	log4j-filters - http://svn.apache.org/repos/asf/logging/log4j/companions/filters/trunk/
 	log4j-zeroconf - http://svn.apache.org/repos/asf/logging/log4j/companions/zeroconf/trunk/
+
+  while Chainsaw has a marked dependency on log4j 1.2.15, building log4j-zeroconf requires log4j 1.2.16-SNAPSHOT, so you will also need to get:
+  
+  log4j - https://svn.apache.org/repos/asf/logging/log4j/trunk
 	
-	log4j 1.2.15 - http://svn.apache.org/repos/asf/logging/log4j/branches/v1_2-branch/
 	
   In each of these checkout directories:
   	mvn install
@@ -26,14 +29,8 @@ Next, an interim step is required until log4j 1.2.15, log4j-components, log4j-re
   These dependencies are not yet available in the standard maven repositories, and so failure to complete this 
   step will prevent you from building Chainsaw.
 
-* Create the Receivers javadoc that needs to be embedded into chainsaw 
 
-  cd log4j-receivers
-  mvn package javadoc:jar
-
-  mvn install:install-file -DgroupId=log4j -DartifactId=apache-log4j-receivers-javadoc -Dpackaging=jar -Dversion=1.0-SNAPSHOT -Dfile=target/apache-log4j-receivers-1.0-SNAPSHOT-javadoc.jar
-
-* Back into the log4j-chainsaw check where this document you are reading is placed:
+* cd to Chainsaw project checkout directory
 
 	mvn install
 
