@@ -4,7 +4,7 @@
   <groupId>log4j</groupId>
   <artifactId>apache-chainsaw</artifactId>
   <name>Apache Chainsaw</name>
-  <version>1.99.0</version>
+  <version>1.99.0-SNAPSHOT</version>
   <description>Graphical Viewer for Logging events from a local or remote log4j event system.</description>
   <url>http://logging.apache.org:80/chainsaw</url>
   <issueManagement>
@@ -179,6 +179,7 @@
         <artifactId>maven-assembly-plugin</artifactId>
         <executions>
           <execution>
+			<phase>package</phase>
             <goals>
               <goal>assembly</goal>
             </goals>
@@ -187,8 +188,11 @@
         <configuration>
           <descriptors>
             <descriptor>src/assembly/bin.xml</descriptor>
+			<descriptor>src/assembly/standalone.xml</descriptor>
           </descriptors>
-          <appendAssemblyId>false</appendAssemblyId>
+<!-- we append the assembly ID here,but note that the bin assembly does not have an id specified
+	in its config, so it doesn't have a suffix -->
+          <appendAssemblyId>true</appendAssemblyId>
         </configuration>
       </plugin>
       <plugin>
@@ -199,6 +203,28 @@
               <goal>jar</goal>
               <goal>javadoc</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-artifacts</id>
+            <phase>package</phase>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>target/${project.artifactId}-${project.version}-standalone.zip</file>
+                  <type>zip</type>
+                  <classifier>standalone</classifier>
+                </artifact>
+              </artifacts>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -224,6 +250,7 @@
           </execution>
         </executions>
         <configuration>
+          <showConsoleWindow>false</showConsoleWindow>
           <programs>
             <program>
               <mainClass>${chainsaw.mainclass}</mainClass>
@@ -307,6 +334,12 @@
       <groupId>log4j</groupId>
       <artifactId>apache-log4j-receivers</artifactId>
       <version>1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>apache-log4j-receivers</artifactId>
+      <version>1.0-SNAPSHOT</version>
+      <classifier>javadoc</classifier>
     </dependency>
     <dependency>
       <groupId>log4j</groupId>

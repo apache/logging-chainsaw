@@ -16,12 +16,14 @@
 
 -->
 <assembly>
-	<id>bin</id>
+<!-- We deliberately don't specify an ID here, because during the assembly process we don't want the
+		bin assembly to have any suffix on its name. Other assemblies need their Id suffixed, but this one
+		doesn't 
+		<id>bin</id> -->
 	<formats>
 		<format>zip</format>
 		<format>tar.gz</format>
 	</formats>
-	<baseDirectory>apache-chainsaw-${project.version}</baseDirectory>
 	<includeSiteDirectory>true</includeSiteDirectory>
 	<dependencySets>
 	   <dependencySet/>
