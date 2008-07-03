@@ -346,19 +346,22 @@ public class ColorPanel extends JPanel {
       }
     }
 
+    //all rules are valid, they can be applied
     if (result.toString().equals("")) {
       ((ExpressionTableCellRenderer) table.getColumnModel().getColumn(0).getCellRenderer())
       .setToolTipText("Double click to edit");
       statusBar.setText("");
+
+      //only update rules if there were no errors
+      Map map = new HashMap();
+      map.put(ruleSet, list);
+      colorizer.setRules(map);
+
     } else {
-      statusBar.setText("Errors - see expression tooltip");
+      statusBar.setText("Errors - see expression tooltip (color filters won't be active until errors are resolved)");
       ((ExpressionTableCellRenderer) table.getColumnModel().getColumn(0).getCellRenderer())
       .setToolTipText("<html>" + result.toString() + "</html>");
     }
-    Map map = new HashMap();
-    map.put(ruleSet, list);
-
-    colorizer.setRules(map);
   }
 
   JPanel buildClosePanel() {
