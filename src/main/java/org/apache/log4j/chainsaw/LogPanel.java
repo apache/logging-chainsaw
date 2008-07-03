@@ -18,6 +18,7 @@
 package org.apache.log4j.chainsaw;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -98,6 +99,7 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.DocumentEvent;
@@ -239,6 +241,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
   private final DateFormat timestampExpressionFormat = new SimpleDateFormat(Constants.TIMESTAMP_RULE_FORMAT);
   private final Logger logger = LogManager.getLogger(LogPanel.class);
   private final Vector filterExpressionVector;
+  private static final Color INVALID_EXPRESSION_BACKGROUND = new Color(251, 186, 186);
 
   /**
    * Creates a new LogPanel object.  If a LogPanel with this identifier has
@@ -935,10 +938,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
             if (e.getActionCommand().equals("comboBoxEdited")) {
               try {
                 //verify the expression is valid
-                ExpressionRule.getRule(
-                  filterCombo.getSelectedItem().toString());
+                ExpressionRule.getRule(filterCombo.getSelectedItem().toString());
+                //valid expression, reset background color in case we were previously an invalid expression
+                filterText.setBackground(UIManager.getColor("TextField.background"));
               } catch (IllegalArgumentException iae) {
-                //don't add expressions that aren't valid
+                  //don't add expressions that aren't valid
+                  //invalid expression, change background of the field
+                  filterText.setBackground(INVALID_EXPRESSION_BACKGROUND);
                 return;
               }
 
@@ -1771,9 +1777,11 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
   }
 
   public boolean updateRule(String ruleText) {
-    if ((ruleText == null) || (ruleText.equals(""))) {
+    if ((ruleText == null) || (ruleText.trim().equals(""))) {
       findRule = null;
       colorizer.setFindRule(null);
+      //reset background color in case we were previously an invalid expression
+      findField.setBackground(UIManager.getColor("TextField.background"));
       findField.setToolTipText(
         "Enter expression - right click or ctrl-space for menu");
       return false;
@@ -1785,10 +1793,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
           "Enter expression - right click or ctrl-space for menu");
         findRule = ExpressionRule.getRule(ruleText);
         colorizer.setFindRule(findRule);
-
+        //valid expression, reset background color in case we were previously an invalid expression
+        findField.setBackground(UIManager.getColor("TextField.background"));
         return true;
       } catch (IllegalArgumentException re) {
         findField.setToolTipText(re.getMessage());
+        //invalid expression, change background of the field
+        findField.setBackground(INVALID_EXPRESSION_BACKGROUND);
         colorizer.setFindRule(null);
 
         return false;
@@ -2474,7 +2485,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
      * Update refinement rule based on the entered expression.
      */
     private void setFilter() {
-      if (filterText.getText().equals("")) {
+      if (filterText.getText().trim().equals("")) {
+        //reset background color in case we were previously an invalid expression
+        filterText.setBackground(UIManager.getColor("TextField.background"));
         ruleMediator.setRefinementRule(null);
         filterText.setToolTipText(defaultToolTip);
       } else {
@@ -2482,7 +2495,11 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
           ruleMediator.setRefinementRule(
             ExpressionRule.getRule(filterText.getText()));
           filterText.setToolTipText(defaultToolTip);
+          //valid expression, reset background color in case we were previously an invalid expression
+          filterText.setBackground(UIManager.getColor("TextField.background"));
         } catch (IllegalArgumentException iae) {
+          //invalid expression, change background of the field
+          filterText.setBackground(INVALID_EXPRESSION_BACKGROUND);
           filterText.setToolTipText(iae.getMessage());
         }
       }
