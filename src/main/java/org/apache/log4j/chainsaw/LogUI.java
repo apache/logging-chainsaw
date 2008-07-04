@@ -311,7 +311,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 			});
     }
     
-    LogUI logUI = new LogUI();
+    final LogUI logUI = new LogUI();
     logUI.applicationPreferenceModel = model;
 
     if (model.isShowSplash()) {
@@ -367,9 +367,26 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
           URL configURL = new URL(config);
           logUI.loadConfigurationUsingPluginClassLoader(configURL);
         }catch(MalformedURLException e) {
-            logger.error("Failed to convert config string to url", e);
+            logger.error("Initial configuration - failed to convert config string to url", e);
         }
     }
+    
+    //register a listener to load the configuration when it changes (avoid having to restart Chainsaw when applying a new configuration)
+    //this doesn't remove receivers from receivers panel, it just triggers DOMConfigurator.configure.
+	model.addPropertyChangeListener("configurationURL", new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            String newConfiguration = evt.getNewValue().toString();
+            if (newConfiguration != null && !(newConfiguration.trim().equals(""))) {
+                newConfiguration = newConfiguration.trim();
+                try {
+                    logger.info("loading updated configuration: " + newConfiguration);
+                    URL newConfigurationURL = new URL(newConfiguration);
+                    logUI.loadConfigurationUsingPluginClassLoader(newConfigurationURL);
+                } catch (MalformedURLException e) {
+                    logger.error("Updated configuration - failed to convert config string to URL", e);
+                }
+            }
+        }});
 
     if (config == null) {
       logger.info("No auto-configuration file found within the ApplicationPreferenceModel");
