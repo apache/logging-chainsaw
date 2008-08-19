@@ -239,6 +239,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
     		  while (container == null) {
     			  try {
     				  waitForContainerLock.wait(1000);
+    				  getLogger().debug("waiting for setContainer call");
     			  } catch (InterruptedException ie){}
     		  }
     	  }
@@ -249,6 +250,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
     		  while ((containerFrame1 = (Frame)SwingUtilities.getAncestorOfClass(Frame.class, container)) == null) {
     			  try {
     				  waitForContainerLock.wait(1000);
+    				  getLogger().debug("waiting for container's frame to be available");
     			  } catch (InterruptedException ie) {}
     		  }
     	  }
@@ -266,22 +268,34 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
     	  			  f.setLocation(d.width /2, d.height/2);
     	  			  f.setVisible(true);
     	  				if (null == f.getUserName() || null == f.getPassword()) {
-    	  					getLogger().warn("No username or password provided - not loading file " + getFileURL());
+    	  					getLogger().info("Username and password not both provided, not using credentials");
     	  				} else {
-    	  					password = new String(f.getPassword());
-    	  					int index = getFileURL().indexOf("://");
-    	  					String firstPart = getFileURL().substring(0, index);
-    	  					String lastPart = getFileURL().substring(index + "://".length());
-    	  					setFileURL(firstPart + "://" + f.getUserName()+ ":" + new String(password) + "@" + lastPart);
-    	  				      new Thread(new VFSReader()).start();
+    	  				    String oldURL = getFileURL();
+    	  					int index = oldURL.indexOf("://");
+    	  					String firstPart = oldURL.substring(0, index);
+    	  					String lastPart = oldURL.substring(index + "://".length());
+    	  					setFileURL(firstPart + "://" + f.getUserName()+ ":" + new String(f.getPassword()) + "@" + lastPart);
+
+    	  			        setHost(oldURL.substring(0, index + "://".length()));
+    	  		            setPath(oldURL.substring(index + "://".length()));
     	  				}
+    	  				new Thread(new VFSReader()).start();
     	  			  }
     	  		  });
     		  }}).start();
       } else {
-		int index = getFileURL().indexOf("://");
-		String lastPart = getFileURL().substring(index + "://".length());
-		password = lastPart.substring(lastPart.indexOf(":") + 1, lastPart.indexOf("@"));
+        String oldURL = getFileURL();
+		int index = oldURL.indexOf("://");
+		String lastPart = oldURL.substring(index + "://".length());
+		int passEndIndex = lastPart.indexOf("@");
+		if (passEndIndex > -1) { //we have a username/password
+		    int passBeginIndex = lastPart.indexOf(":");
+//	        String userName = lastPart.substring(0, passBeginIndex);
+	        password = lastPart.substring(passBeginIndex + 1, passEndIndex);
+            setHost(oldURL.substring(0, index + "://".length()));
+            setPath(lastPart.substring(passEndIndex + 1));
+		}
+		
    	    new Thread(new VFSReader()).start();
       }
    }
