@@ -303,6 +303,10 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
               }
               selectedReceiver.shutdown();
               selectedReceiver.activateOptions();
+              //allow the visual receiver to get a container on restart
+              if (selectedReceiver instanceof VisualReceiver) {
+                  ((VisualReceiver)selectedReceiver).setContainer(ReceiversPanel.this);
+              }
             }
           };
 

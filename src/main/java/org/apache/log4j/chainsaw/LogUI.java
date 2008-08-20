@@ -334,7 +334,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     logUI.ensureChainsawAppenderHandlerAdded();
     logger = LogManager.getLogger(LogUI.class);
 
-    //set hostname & application properties which will cause Chainsaw-generated
+    //set hostname & application properties which will cause Chainsaw and other apache-generated
     //logging events to route (by default) to a tab named 'chainsaw-log'
     PropertyRewritePolicy policy = new PropertyRewritePolicy();
     policy.setProperties("hostname=chainsaw,application=log");
@@ -342,7 +342,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     RewriteAppender rewriteAppender = new RewriteAppender();
     rewriteAppender.setRewritePolicy(policy);
 
-    Enumeration appenders = Logger.getLogger("org.apache.log4j").getAllAppenders();
+    Enumeration appenders = Logger.getLogger("org.apache").getAllAppenders();
     if (!appenders.hasMoreElements()) {
     	appenders = Logger.getRootLogger().getAllAppenders();
     }
@@ -350,9 +350,11 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     	Appender nextAppender = (Appender)appenders.nextElement();
     	rewriteAppender.addAppender(nextAppender);
     }
-    Logger.getLogger("org.apache.log4j").removeAllAppenders();
-    Logger.getLogger("org.apache.log4j").addAppender(rewriteAppender);
-    Logger.getLogger("org.apache.log4j").setAdditivity(false);
+    Logger.getLogger("org.apache").removeAllAppenders();
+    Logger.getLogger("org.apache").addAppender(rewriteAppender);
+    Logger.getLogger("org.apache").setAdditivity(false);
+    //set the commons.vfs.cache logger to info, since it can contain password information
+    Logger.getLogger("org.apache.commons.vfs.cache").setLevel(Level.INFO);
     
     Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
 		public void uncaughtException(Thread t, Throwable e) {

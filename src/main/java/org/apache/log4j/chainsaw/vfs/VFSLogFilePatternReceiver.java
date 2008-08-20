@@ -222,8 +222,8 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
    * Read and process the log file.
    */
   public void activateOptions() {
-	  
-      if (promptForUserInfo) {
+      //on receiver restart, only prompt for credentials if we don't already have them
+      if (promptForUserInfo && getFileURL().indexOf("@") == -1) {
     	  /*
     	  if promptforuserinfo is true, wait for a reference to the container 
     	  (via the VisualReceiver callback).
@@ -303,7 +303,8 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
   private class VFSReader implements Runnable {
         public void run() {
         	FileObject fileObject = null;
-            while (reader == null) {
+        	//thread should end when we're no longer active
+            while (reader == null && isActive()) {
             	int atIndex = getFileURL().indexOf("@");
             	int protocolIndex = getFileURL().indexOf("://");
             	
@@ -315,7 +316,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                     //if jsch not in classpath, can get NoClassDefFoundError here
                     try {
                     	SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
-                    	SftpFileSystemConfigBuilder.getInstance().setUserInfo(opts, new MyUserInfo());
+                    	SftpFileSystemConfigBuilder.getInstance().setUserInfo(opts, new MyUserInfo(password));
                     } catch (NoClassDefFoundError ncdfe) {
                     	getLogger().warn("JSch not on classpath!", ncdfe);
                     }
@@ -353,7 +354,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                     //if jsch not in classpath, can get NoClassDefFoundError here
                     try {
                     	SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
-                    	SftpFileSystemConfigBuilder.getInstance().setUserInfo(opts, new MyUserInfo());
+                    	SftpFileSystemConfigBuilder.getInstance().setUserInfo(opts, new MyUserInfo(password));
                     } catch (NoClassDefFoundError ncdfe) {
                     	getLogger().warn("JSch not on classpath!", ncdfe);
                     }
@@ -388,9 +389,9 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                 } while (isTailing());
 
             } catch (IOException ioe) {
-                getLogger().info("stream closed");
+                getLogger().info("stream closed", ioe);
             }
-            getLogger().debug("processing " + getFileURL() + " complete");
+            getLogger().debug("processing complete");
             shutdown();
         }
     }
@@ -474,9 +475,14 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
    * 
    * @author sdeboy
    */
-  public class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+  public static class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+    private final String thisPassword;
+    
+    public MyUserInfo(String thisPassword) {
+        this.thisPassword = thisPassword;
+    }
 	public String[] promptKeyboardInteractive(String destination, String loginName, String instruction, String[] prompt, boolean[] echo) {
-		return new String[]{password};
+		return new String[]{thisPassword};
 	}
 
 	public String getPassphrase() {
