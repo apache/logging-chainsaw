@@ -33,9 +33,10 @@
 	<action dev="psmith" issue="43158" type="add" due-to="Isuru Suriarachchi" due-to-email="">
 		Added ability to remember last created receivers in an xml file, and load them at startup.
 	</action>
-	<action dev="psmith" issue="ASF Bugzilla Bug 42883" type="add" due-to="Isuru Suriarachchi" due-to-email="">
+	<action dev="psmith" issue="42883" type="add" due-to="Isuru Suriarachchi" due-to-email="">
 		Added ability to remember hidden log panels.
 	</action>
+	<action dev="psmith" issue="42670" type="fix">Address memory leak when using cyclic model</action>
     </release>
   </body>
 </document>

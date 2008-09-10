@@ -28,10 +28,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.awt.EventQueue;
 
 import javax.swing.ProgressMonitor;
-import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 import javax.swing.table.AbstractTableModel;
 
@@ -40,8 +38,8 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.rule.Rule;
-import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.LocationInfo;
+import org.apache.log4j.spi.LoggingEvent;
 
 
 /**
@@ -60,6 +58,7 @@ import org.apache.log4j.spi.LocationInfo;
  */
 class ChainsawCyclicBufferTableModel extends AbstractTableModel
   implements EventContainer, PropertyChangeListener {
+
   private static final int DEFAULT_CAPACITY = 5000;
   private boolean cyclic = true;
   private int cyclicBufferSize = DEFAULT_CAPACITY;
@@ -68,22 +67,22 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   Set idSet = new HashSet(cyclicBufferSize);
   private boolean currentSortAscending;
   private int currentSortColumn;
-  private EventListenerList eventListenerList = new EventListenerList();
-  private List columnNames = new ArrayList(ChainsawColumns.getColumnsNames());
+  private final EventListenerList eventListenerList = new EventListenerList();
+  private final List columnNames = new ArrayList(ChainsawColumns.getColumnsNames());
   private boolean sortEnabled = false;
   private boolean reachedCapacity = false;
   private final Logger logger = LogManager.getLogger(ChainsawCyclicBufferTableModel.class);
 
   //  protected final Object syncLock = new Object();
-  private LoggerNameModel loggerNameModelDelegate =
+  private final LoggerNameModel loggerNameModelDelegate =
     new LoggerNameModelSupport();
 
   //because we may be using a cyclic buffer, if an ID is not provided in the property, 
   //use and increment this row counter as the ID for each received row
   int uniqueRow;
-  private Set uniquePropertyKeys = new HashSet();
+  private final Set uniquePropertyKeys = new HashSet();
   private Rule displayRule;
-  private PropertyChangeSupport propertySupport =
+  private final PropertyChangeSupport propertySupport =
     new PropertyChangeSupport(this);
 
   public ChainsawCyclicBufferTableModel(int cyclicBufferSize) {
@@ -92,6 +91,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
 
     unfilteredList = new CyclicBufferList(cyclicBufferSize);
     filteredList = new CyclicBufferList(cyclicBufferSize);
+    idSet = new HashSet(cyclicBufferSize);
   }
 
   /* (non-Javadoc)
@@ -463,6 +463,21 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     }
 
     idSet.add(id);
+    
+    /**
+         * If we're in cyclic mode and over budget on the size, the addition of a new event will
+         * cause the oldest event to fall off the cliff. We need to remove that events ID from the
+         * Set so we are not keeping track of IDs for all events ever received (we'd run out of
+         * memory...)
+         */
+    if (isCyclic()) {
+            CyclicBufferList bufferList = (CyclicBufferList) unfilteredList;
+            if (bufferList.size() == bufferList.getMaxSize()) {
+                LoggingEvent aboutToBeDropped = (LoggingEvent) unfilteredList.get(0);
+                idSet.remove(Integer.valueOf(aboutToBeDropped.getProperty(Constants.LOG4J_ID_KEY)));
+                reachedCapacity = true;
+            }
+    }
     unfilteredList.add(e);
 
     if ((displayRule == null) || (displayRule.evaluate(e))) {
