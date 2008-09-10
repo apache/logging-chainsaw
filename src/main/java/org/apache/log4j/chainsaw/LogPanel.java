@@ -222,7 +222,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
   private final FilterModel filterModel = new FilterModel();
   private final RuleColorizer colorizer = new RuleColorizer();
   private final RuleMediator ruleMediator = new RuleMediator();
-  private EventDetailLayout detailLayout = new EventDetailLayout();
+  private final EventDetailLayout detailLayout = new EventDetailLayout();
   private double lastDetailPanelSplitLocation = DEFAULT_DETAIL_SPLIT_LOCATION;
   private double lastLogTreePanelSplitLocation =
     DEFAULT_LOG_TREE_SPLIT_LOCATION;
@@ -231,7 +231,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
   private Rule findRule;
   private final JPanel findPanel;
   private JTextField findField;
-  private int dividerSize;
+  private final int dividerSize;
   static final String TABLE_COLUMN_ORDER = "table.columns.order";
   static final String TABLE_COLUMN_WIDTHS = "table.columns.widths";
   static final String COLUMNS_EXTENSION = ".columns";
@@ -2107,7 +2107,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
    */
   private void setDetailPaneConversionPattern(String conversionPattern) {
     String oldPattern = getDetailPaneConversionPattern();
-    ((EventDetailLayout) detailLayout).setConversionPattern(conversionPattern);
+    (detailLayout).setConversionPattern(conversionPattern);
     firePropertyChange(
       "detailPaneConversionPattern", oldPattern,
       getDetailPaneConversionPattern());
@@ -2119,7 +2119,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
    * @return conversionPattern layout text
    */
   private String getDetailPaneConversionPattern() {
-    return ((EventDetailLayout) detailLayout).getConversionPattern();
+    return (detailLayout).getConversionPattern();
   }
 
   /**
@@ -2632,10 +2632,12 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
      * Update detail pane
      */
     private void updateDetailPane() {
-      /*
-       * Don't bother doing anything if it's not visible
-       */
-      if (!detail.isVisible()) {
+            /*
+             * Don't bother doing anything if it's not visible. Note: the isVisible() method on
+             * Component is not really accurate here because when the button to toggle display of
+             * the detail pane is triggered it still appears as 'visible' for some reason.
+             */
+      if (!preferenceModel.isDetailPaneVisible()) {
         return;
       }
 
