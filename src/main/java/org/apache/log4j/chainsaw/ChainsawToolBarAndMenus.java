@@ -103,7 +103,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
   private final JMenuBar menuBar;
   private final JCheckBoxMenuItem menuItemClose = new JCheckBoxMenuItem();
   private final JToolBar toolbar;
-  private LogUI logui;
+  private final LogUI logui;
   private final SmallButton clearButton = new SmallButton();
   private final SmallToggleButton detailPaneButton = new SmallToggleButton();
   private final SmallToggleButton logTreePaneButton = new SmallToggleButton();
@@ -410,11 +410,13 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     activeTabMenu.add(menuPrefs);
 
     activeTabMenu.addSeparator();
+    activeTabMenu.add(new CopyEventsToClipboardAction(logui));
     activeTabMenu.add(new JMenuItem(clearAction));
     activeTabMenu.addSeparator();
     activeTabMenu.add(toggleScrollToBottomMenuItem);
     activeTabMenu.add(menuItemUseRightMouse);
 
+    
     viewMenu.add(showToolbarCheck);
     viewMenu.add(toggleStatusBarCheck);
     viewMenu.add(toggleShowReceiversCheck);
