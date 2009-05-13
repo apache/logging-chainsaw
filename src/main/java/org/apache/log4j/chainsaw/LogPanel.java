@@ -114,6 +114,9 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.text.Document;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
+
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
@@ -137,9 +140,6 @@ import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.LoggingEventFieldResolver;
-
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
 
 
 /**
@@ -621,6 +621,15 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
      */
     LogPanelLoggerTreeModel logTreeModel = new LogPanelLoggerTreeModel();
     logTreePanel = new LoggerNameTreePanel(logTreeModel, preferenceModel);
+    logTreePanel.addPropertyChangeListener("searchExpression", new PropertyChangeListener()
+    {
+        public void propertyChange(PropertyChangeEvent evt)
+        {
+            findField.setText(evt.getNewValue().toString());
+            findNext();
+        }
+    });
+      
     tableModel.addLoggerNameListener(logTreeModel);
 
     /**
@@ -1320,24 +1329,80 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     /*
      * Popup definition
      */
-    p.add(clearFocusAction);
     p.add(menuItemFocusOn);
     p.add(menuDefineAddCustomFilter);
+    p.add(clearFocusAction);
+
+    p.add(new JSeparator());
+
+        final JMenuItem menuItemSearch =
+      new JMenuItem("Find next");
+    menuItemSearch.addActionListener(
+      new ActionListener() {
+        public void actionPerformed(ActionEvent evt) {
+          if (currentPoint != null) {
+            String operator = "~=";
+            int column = table.columnAtPoint(currentPoint);
+            int row = table.rowAtPoint(currentPoint);
+            String colName = table.getColumnName(column);
+            String value = "";
+
+            if (colName.equalsIgnoreCase(ChainsawConstants.TIMESTAMP_COL_NAME)) {
+            	value = timestampExpressionFormat.format(new Date(table.getValueAt(row, column).toString()));
+            } else {
+              Object o = table.getValueAt(row, column);
+
+              if (o != null) {
+                if (o instanceof String[]) {
+                  value = ((String[]) o)[0];
+                  operator = "~=";
+                } else {
+                  value = o.toString();
+                }
+              }
+            }
+
+            if (columnNameKeywordMap.containsKey(colName)) {
+              findField.setText(
+                columnNameKeywordMap.get(colName).toString() + " " + operator
+                + " '" + value + "'");
+              findNext();
+            }
+          }
+        }
+      });
+
+      final Action clearSearchAction =
+        new AbstractAction("Clear find next") {
+          public void actionPerformed(ActionEvent e) {
+            findField.setText(null);
+            updateRule(null);
+          }
+        };
+
+    p.add(menuItemSearch);
+    p.add(clearSearchAction);
+      
     p.add(new JSeparator());
 
     p.add(menuItemBestFit);
+
     p.add(new JSeparator());
 
     p.add(menuItemToggleDetails);
     p.add(menuItemLoggerTree);
     p.add(menuItemToggleToolTips);
+
     p.add(new JSeparator());
+
     p.add(menuItemScrollBottom);
 
     p.add(new JSeparator());
+
     p.add(menuItemToggleDock);
 
     p.add(new JSeparator());
+
     p.add(menuItemColorPanel);
     p.add(menuItemLogPanelPreferences);
 

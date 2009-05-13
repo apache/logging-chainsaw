@@ -109,7 +109,11 @@ final class LoggerNameTreePanel extends JPanel implements Rule
   private final Action editLoggerAction;
   private final JButton editLoggerButton = new SmallButton();
   private final Action expandAction;
+  private final Action findNextAction;
+  private final Action clearFindNextAction;
   private final JButton expandButton = new SmallButton();
+  private final JButton findNextButton = new SmallButton();
+  private final JButton clearFindNextButton = new SmallButton();
   private final Action focusOnAction;
   private final SmallToggleButton focusOnLoggerButton =
     new SmallToggleButton();
@@ -136,7 +140,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
   private final JScrollPane scrollTree;
   private final JToolBar toolbar = new JToolBar();
 
-  //~ Constructors ============================================================
+    //~ Constructors ============================================================
 
   /**
    * Creates a new LoggerNameTreePanel object.
@@ -252,6 +256,8 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.X_AXIS));
 
     expandAction = createExpandAction();
+    findNextAction = createFindNextAction();
+    clearFindNextAction = createClearFindNextAction();
     editLoggerAction = createEditLoggerAction();
     closeAction = createCloseAction();
     collapseAction = createCollapseAction();
@@ -590,6 +596,12 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     ignoreLoggerButton.setAction(hideAction);
     ignoreLoggerButton.setText(null);
 
+    findNextButton.setAction(findNextAction);
+    findNextButton.setText(null);
+
+    clearFindNextButton.setAction(clearFindNextAction);
+    clearFindNextButton.setText(null);
+
     expandButton.setFont(expandButton.getFont().deriveFont(Font.BOLD));
     collapseButton.setFont(collapseButton.getFont().deriveFont(Font.BOLD));
 
@@ -732,6 +744,55 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     return action;
   }
 
+    /**
+     * Creates an action that is used to find the next match of the selected node (similar to default selection behavior
+     * except the search field is populated and the next match is selected.
+     * @return an Action
+     */
+    private Action createFindNextAction()
+    {
+      Action action = new AbstractAction()
+        {
+          public void actionPerformed(ActionEvent e)
+          {
+            findNextUsingCurrentlySelectedNode();
+          }
+        };
+
+      action.putValue(Action.NAME, "Find next");
+      action.putValue(
+        Action.SHORT_DESCRIPTION,
+        "Search using the selected node");
+      action.setEnabled(false);
+
+      return action;
+    }
+
+    /**
+     * Creates an action that is used to find the next match of the selected node (similar to default selection behavior
+     * except the search field is populated and the next match is selected.
+     * @return an Action
+     */
+    private Action createClearFindNextAction()
+    {
+      Action action = new AbstractAction()
+        {
+          public void actionPerformed(ActionEvent e)
+          {
+            clearFindNext();
+          }
+        };
+
+      action.putValue(Action.NAME, "Clear find next");
+      action.putValue(
+        Action.SHORT_DESCRIPTION,
+        "Search using the selected node");
+      action.setEnabled(false);
+
+      return action;
+    }
+
+
   /**
    * DOCUMENT ME!
    *
@@ -808,6 +869,23 @@ final class LoggerNameTreePanel extends JPanel implements Rule
           logTree.expandPath(new TreePath(root));
         }
       });
+  }
+
+  private void findNextUsingCurrentlySelectedNode()
+  {
+      String selectedLogger = getCurrentlySelectedLoggerName();
+      TreePath[] paths = logTree.getSelectionPaths();
+
+      if (paths == null)
+      {
+        return;
+      }
+      firePropertyChange("searchExpression", null, "logger ~= " + selectedLogger);
+  }
+
+  private void clearFindNext()
+  {
+      firePropertyChange("searchExpression", null, "");
   }
 
   /**
@@ -918,17 +996,20 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     if ((logger == null) || (logger.length() == 0))
     {
       focusOnAction.putValue(Action.NAME, "Focus On...");
-      hideAction.putValue(Action.NAME, "Ignore ...");
+      hideAction.putValue(Action.NAME, "Ignore...");
+      findNextAction.putValue(Action.NAME, "Find next...");
     }
     else
     {
       focusOnAction.putValue(Action.NAME, "Focus On '" + logger + "'");
       hideAction.putValue(Action.NAME, "Ignore '" + logger + "'");
+      findNextAction.putValue(Action.NAME, "Find next '" + logger + "'");
     }
 
     // need to ensure the button doens't update itself with the text, looks stupid otherwise
     focusOnLoggerButton.setText(null);
     ignoreLoggerButton.setText(null);
+    findNextButton.setText(null);
   }
 
   /**
@@ -972,6 +1053,8 @@ final class LoggerNameTreePanel extends JPanel implements Rule
           }
 
           expandAction.setEnabled(path != null);
+          findNextAction.setEnabled(path != null);
+          clearFindNextAction.setEnabled(true);
 
           if (logger != null)
           {
@@ -1098,7 +1181,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     hideAction.setEnabled(!isFocusOnSelected());
   }
 
-  //~ Inner Classes ===========================================================
+    //~ Inner Classes ===========================================================
 
   /**
    * DOCUMENT ME!
@@ -1235,11 +1318,14 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     */
     private void initMenu()
     {
+      focusOnCheck.setAction(focusOnAction);
+      hideCheck.setAction(hideAction);
       add(expandAction);
       add(collapseAction);
       addSeparator();
-      focusOnCheck.setAction(focusOnAction);
-      hideCheck.setAction(hideAction);
+      add(findNextAction);
+      add(clearFindNextAction);
+      addSeparator();
       add(focusOnCheck);
       add(hideCheck);
 
