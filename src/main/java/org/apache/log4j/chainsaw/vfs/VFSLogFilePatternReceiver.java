@@ -38,6 +38,9 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
+import com.jcraft.jsch.UIKeyboardInteractive;
+import com.jcraft.jsch.UserInfo;
+
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileSystemManager;
@@ -49,9 +52,6 @@ import org.apache.commons.vfs.provider.sftp.SftpFileSystemConfigBuilder;
 import org.apache.commons.vfs.util.RandomAccessMode;
 import org.apache.log4j.chainsaw.receivers.VisualReceiver;
 import org.apache.log4j.varia.LogFilePatternReceiver;
-
-import com.jcraft.jsch.UIKeyboardInteractive;
-import com.jcraft.jsch.UserInfo;
 
 /**
  * A VFS-enabled version of org.apache.log4j.varia.LogFilePatternReceiver.
@@ -174,8 +174,9 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
   private Container container;
   private Object waitForContainerLock = new Object();
   private String password;
-  
-  public VFSLogFilePatternReceiver() {
+  private boolean autoReconnect;
+
+    public VFSLogFilePatternReceiver() {
     super();
   }
 
@@ -204,6 +205,22 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
   public boolean isPromptForUserInfo() {
 	  return promptForUserInfo;
   }
+
+    /**
+     * Accessor
+     * @return
+     */
+    public boolean isAutoReconnect() {
+      return autoReconnect;
+    }
+
+    /**
+     * Mutator
+     * @param autoReconnect
+     */
+    public void setAutoReconnect(boolean autoReconnect) {
+        this.autoReconnect = autoReconnect;
+    }
 
   /**
    * Implementation of VisualReceiver interface - allows this receiver to provide
@@ -334,63 +351,80 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                     getLogger().info("file not available - may be due to incorrect credentials, but will re-attempt to load in 10 seconds", fse);
                     synchronized (this) {
                         try {
-                            wait(10000);
+                            wait(MISSING_FILE_RETRY_MILLIS);
                         } catch (InterruptedException ie) {}
                     }
                 }
             }
             initialize();
 
-            try {
+
+            do {
                 long lastFilePointer = 0;
                 long lastFileSize = 0;
                 BufferedReader bufferedReader;
                 createPattern();
                 getLogger().debug("tailing file: " + isTailing());
-
-                do {
-                    FileSystemManager fileSystemManager = VFS.getManager();
-                    FileSystemOptions opts = new FileSystemOptions();
-                    //if jsch not in classpath, can get NoClassDefFoundError here
-                    try {
-                    	SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
-                    	SftpFileSystemConfigBuilder.getInstance().setUserInfo(opts, new MyUserInfo(password));
-                    } catch (NoClassDefFoundError ncdfe) {
-                    	getLogger().warn("JSch not on classpath!", ncdfe);
-                    }
-
-                    fileObject = fileSystemManager.resolveFile(getFileURL(), opts);
-                    reader = new InputStreamReader(fileObject.getContent().getInputStream());
-
-                    if (fileObject.getContent().getSize() > lastFileSize) {
-                        RandomAccessContent rac = fileObject.getContent().getRandomAccessContent(RandomAccessMode.READ);
-                        rac.seek(lastFilePointer);
-                        reader = new InputStreamReader(rac.getInputStream());
-                        bufferedReader = new BufferedReader(reader);
-                        process(bufferedReader);
-                        lastFilePointer = rac.getFilePointer();
-                        lastFileSize = fileObject.getContent().getSize();
-                        rac.close();
-                    }
-
-                    try {
-                        synchronized (this) {
-                            wait(5000);
+                try {
+                    do {
+                        FileSystemManager fileSystemManager = VFS.getManager();
+                        FileSystemOptions opts = new FileSystemOptions();
+                        //if jsch not in classpath, can get NoClassDefFoundError here
+                        try {
+                            SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
+                            SftpFileSystemConfigBuilder.getInstance().setUserInfo(opts, new MyUserInfo(password));
+                        } catch (NoClassDefFoundError ncdfe) {
+                            getLogger().warn("JSch not on classpath!", ncdfe);
                         }
-                    } catch (InterruptedException ie) {
+
+                        fileObject = fileSystemManager.resolveFile(getFileURL(), opts);
+                        reader = new InputStreamReader(fileObject.getContent().getInputStream());
+                        //could have been truncated or appended to
+                        if (fileObject.getContent().getSize() < lastFileSize) {
+                            lastFileSize = 0; //seek to beginning of file
+                            lastFilePointer = 0; 
+                        }
+                        if (fileObject.getContent().getSize() > lastFileSize) {
+                            RandomAccessContent rac = fileObject.getContent().getRandomAccessContent(RandomAccessMode.READ);
+                            reader = new InputStreamReader(rac.getInputStream());
+                            bufferedReader = new BufferedReader(reader);
+                            rac.seek(lastFilePointer);
+                            process(bufferedReader);
+                            lastFilePointer = rac.getFilePointer();
+                            lastFileSize = fileObject.getContent().getSize();
+                            rac.close();
+                        }
+
+                        try {
+                            synchronized (this) {
+                                wait(getWaitMillis());
+                            }
+                        } catch (InterruptedException ie) {
+                        }
+                        try {
+                            //available in vfs as of 30 Mar 2006 - will load but not tail if not available
+                            fileObject.refresh();
+                        } catch (Error err) {
+                            getLogger().info("Unable to refresh fileobject", err);
+                        }
+
+                    } while (isTailing());
+                } catch (IOException ioe) {
+                    getLogger().info("stream closed", ioe);
+                    try {
+                        if (fileObject != null) {
+                            fileObject.close();
+                        }
+                    } catch (FileSystemException e) {
+                        e.printStackTrace();
                     }
                     try {
-                    	//available in vfs as of 30 Mar 2006 - will load but not tail if not available
-                    	fileObject.refresh();
-                    } catch (Error err) {
-                    	getLogger().info("Unable to refresh fileobject", err);
-                    }
-
-                } while (isTailing());
-
-            } catch (IOException ioe) {
-                getLogger().info("stream closed", ioe);
-            }
+                        synchronized(this) {
+                            wait(getWaitMillis());
+                        }
+                    } catch (InterruptedException ie) {}
+                }
+            } while (isAutoReconnect());
             getLogger().debug("processing complete");
             shutdown();
         }
