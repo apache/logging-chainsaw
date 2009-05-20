@@ -228,37 +228,27 @@ public class ColorPanel extends JPanel {
     vec.add(Color.white);
     vec.add(Color.black);
 
-    vec.add(new Color(0, 153, 0));
-    vec.add(new Color(0, 204, 51));
-    vec.add(new Color(153, 255, 153));
-    vec.add(new Color(51, 255, 0));
-    vec.add(new Color(204, 255, 204));
-    vec.add(new Color(0, 153, 153));
-    vec.add(new Color(0, 204, 204));
-    vec.add(new Color(153, 102, 0));
-    vec.add(new Color(102, 102, 0));
-    vec.add(new Color(153, 153, 0));
-    vec.add(new Color(204, 204, 0));
-    vec.add(new Color(255, 255, 0));
-    vec.add(new Color(255, 255, 204));
-    vec.add(new Color(255, 153, 51));
-    vec.add(new Color(204, 0, 51));
-    vec.add(new Color(255, 51, 51));
+    vec.add(new Color(255, 255, 225));
+    vec.add(new Color(255, 225, 255));
+    vec.add(new Color(225, 255, 255));
+    vec.add(new Color(255, 225, 225));
+    vec.add(new Color(225, 255, 225));
+    vec.add(new Color(225, 225, 255));
+    vec.add(new Color(225, 225, 183));
+    vec.add(new Color(225, 183, 225));
+    vec.add(new Color(183, 225, 225));
+    vec.add(new Color(183, 225, 183));
+    vec.add(new Color(183, 183, 225));
+    vec.add(new Color(232, 201, 169));
+    vec.add(new Color(255, 255, 153));
     vec.add(new Color(255, 153, 153));
-    vec.add(new Color(255, 204, 204));
-    vec.add(new Color(204, 0, 204));
-    vec.add(new Color(255, 51, 255));
-    vec.add(new Color(153, 51, 255));
-    vec.add(new Color(0, 0, 153));
-    vec.add(new Color(0, 0, 255));
-    vec.add(new Color(51, 153, 255));
+    vec.add(new Color(189, 156, 89));
+    vec.add(new Color(255, 102, 102));
+    vec.add(new Color(255, 177, 61));
+    vec.add(new Color(61, 255, 61));
     vec.add(new Color(153, 153, 255));
-    vec.add(new Color(204, 204, 255));
-    vec.add(new Color(102, 255, 255));
-    vec.add(new Color(102, 102, 102));
-    vec.add(new Color(153, 153, 153));
-    vec.add(new Color(204, 204, 204));
-
+    vec.add(new Color(255, 153, 255));
+      
     return vec;
   }
 

@@ -58,12 +58,12 @@ public class RuleColorizer implements Colorizer {
     String expression = "level == FATAL || level == ERROR";
     rulesList.add(
       new ColorRule(
-        expression, ExpressionRule.getRule(expression), new Color(147, 22, 0),
-        Color.white));
+        expression, ExpressionRule.getRule(expression), new Color(255, 153, 153),
+        Color.black));
     expression = "level == WARN";
     rulesList.add(
       new ColorRule(
-        expression, ExpressionRule.getRule(expression), Color.yellow.brighter(),
+        expression, ExpressionRule.getRule(expression), new Color(255, 255, 153),
         Color.black));
     defaultRules.put(DEFAULT_NAME, rulesList);
     setRules(defaultRules);
