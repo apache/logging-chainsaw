@@ -107,10 +107,8 @@ import org.apache.log4j.chainsaw.prefs.SettingsListener;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.chainsaw.receivers.ReceiversPanel;
 import org.apache.log4j.chainsaw.version.VersionManager;
-import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.net.SocketNodeEventListener;
 import org.apache.log4j.plugins.Plugin;
-import org.apache.log4j.xml.DOMConfigurator;
 import org.apache.log4j.plugins.PluginEvent;
 import org.apache.log4j.plugins.PluginListener;
 import org.apache.log4j.plugins.PluginRegistry;
@@ -124,6 +122,7 @@ import org.apache.log4j.spi.LoggerRepository;
 import org.apache.log4j.spi.LoggerRepositoryEx;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.RepositorySelector;
+import org.apache.log4j.xml.DOMConfigurator;
 import org.apache.log4j.xml.XMLDecoder;
 
 
@@ -202,8 +201,10 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
   private static final LoggerRepositoryExImpl repositoryExImpl = new LoggerRepositoryExImpl(LogManager.getLoggerRepository());
   
   private PluginRegistry pluginRegistry;
+  //map of tab names to rulecolorizers
+  private Map allColorizers = new HashMap();
 
-  /**
+    /**
    * Constructor which builds up all the visual elements of the frame including
    * the Menu bar
    */
@@ -1918,7 +1919,8 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
   private void buildLogPanel(
       boolean customExpression, final String ident, final List events)
       throws IllegalArgumentException {
-      final LogPanel thisPanel = new LogPanel(getStatusBar(), ident, cyclicBufferSize);
+      final LogPanel thisPanel = new LogPanel(getStatusBar(), ident, cyclicBufferSize, allColorizers);
+
 
       /**
                * Now add the panel as a batch listener so it can handle it's own

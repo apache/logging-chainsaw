@@ -38,11 +38,12 @@ import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
-import javax.swing.DefaultListModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
@@ -82,8 +83,10 @@ import org.apache.log4j.rule.Rule;
  * @author Scott Deboy <sdeboy@apache.org>
  */
 public class ColorPanel extends JPanel {
+  private static final String DEFAULT_STATUS = "<html>Double click a rule field to edit the rule</html>";
+  private final String currentRuleSet = "Default";
+
   private RuleColorizer colorizer;
-  private JPanel ruleSetsPanel;
   private JPanel rulesPanel;
   private FilterModel filterModel;
   private DefaultTableModel tableModel;
@@ -92,17 +95,20 @@ public class ColorPanel extends JPanel {
   private ActionListener closeListener;
   private JLabel statusBar;
   private Vector columns;
-  private String currentRuleSet = "Default";
-  private DefaultListModel ruleSetListModel;
+  private final String currentTabString = "Current tab";
+  private DefaultComboBoxModel logPanelColorizersModel;
+  private Map allLogPanelColorizers;
+  private RuleColorizer currentLogPanelColorizer;
 
-  public ColorPanel(
-    final RuleColorizer colorizer, final FilterModel filterModel) {
+    public ColorPanel(final RuleColorizer currentLogPanelColorizer, final FilterModel filterModel, final Map allLogPanelColorizers) {
     super(new BorderLayout());
 
-    this.colorizer = colorizer;
+    this.currentLogPanelColorizer = currentLogPanelColorizer;
+    this.colorizer = currentLogPanelColorizer;
     this.filterModel = filterModel;
-    
-    colorizer.addPropertyChangeListener(
+    this.allLogPanelColorizers = allLogPanelColorizers;
+
+    currentLogPanelColorizer.addPropertyChangeListener(
     	      "colorrule",
     	      new PropertyChangeListener() {
     	        public void propertyChange(PropertyChangeEvent evt) {
@@ -113,14 +119,12 @@ public class ColorPanel extends JPanel {
     tableModel = new DefaultTableModel();
     table = new JTable(tableModel);
 
-    ruleSetListModel = new DefaultListModel();
-    
     columns = new Vector();
     columns.add("Expression");
     columns.add("Background");
     columns.add("Foreground");
 
-    table.setPreferredScrollableViewportSize(new Dimension(400, 200));
+    table.setPreferredScrollableViewportSize(new Dimension(525, 200));
     tableScrollPane = new JScrollPane(table);
 
     Vector data = getColorizerVector();    
@@ -134,10 +138,7 @@ public class ColorPanel extends JPanel {
 
     configureTable();
 
-    statusBar = new JLabel("Ruleset support not yet implemented");
-
-    ruleSetsPanel = buildRuleSetsPanel();
-    ruleSetsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+    statusBar = new JLabel(DEFAULT_STATUS);
 
     rulesPanel = buildRulesPanel();
     rulesPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -164,18 +165,87 @@ public class ColorPanel extends JPanel {
     rightPanel.add(southPanel, BorderLayout.SOUTH);
     rightOuterPanel.add(rightPanel);
 
-    add(ruleSetsPanel, BorderLayout.WEST);
+    JPanel topPanel = new JPanel();
+    topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.X_AXIS));
+
+    JLabel selectText = new JLabel("Apply a tab's colors");
+    topPanel.add(selectText);
+    topPanel.add(Box.createHorizontalStrut(5));
+
+    logPanelColorizersModel = new DefaultComboBoxModel();
+    final JComboBox loadPanelColorizersComboBox = new JComboBox(logPanelColorizersModel);
+    loadLogPanelColorizers();
+
+    topPanel.add(loadPanelColorizersComboBox);
+
+    topPanel.add(Box.createHorizontalStrut(5));
+    final Action copyRulesAction = new AbstractAction() {
+        public void actionPerformed(ActionEvent e)
+          {
+              tableModel.getDataVector().clear();
+              RuleColorizer sourceColorizer = (RuleColorizer) allLogPanelColorizers.get(loadPanelColorizersComboBox.getSelectedItem().toString());
+              colorizer.setRules(sourceColorizer.getRules());
+              updateColors();
+          }
+      };
+        
+      loadPanelColorizersComboBox.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent e) {
+              String selectedColorizerName = loadPanelColorizersComboBox.getSelectedItem().toString();
+              copyRulesAction.setEnabled(!(currentTabString.equals(selectedColorizerName)));
+          }
+      });
+
+    copyRulesAction.putValue(Action.NAME, "Copy color rules");
+    copyRulesAction.setEnabled(!(currentTabString.equals(loadPanelColorizersComboBox.getSelectedItem())));
+
+    JButton copyRulesButton = new JButton(copyRulesAction);
+    topPanel.add(copyRulesButton);
+
+    add(topPanel, BorderLayout.NORTH);
     add(rightOuterPanel, BorderLayout.CENTER);
     if (table.getRowCount() > 0) {
         table.getSelectionModel().setSelectionInterval(0, 0);
     }
   }
 
+  public void loadLogPanelColorizers() {
+      if (logPanelColorizersModel.getIndexOf(currentTabString) == -1) {
+        logPanelColorizersModel.addElement(currentTabString);
+      }
+      for (Iterator iter = allLogPanelColorizers.entrySet().iterator();iter.hasNext();) {
+          Map.Entry entry = (Map.Entry)iter.next();
+          if (!entry.getValue().equals(currentLogPanelColorizer)) {
+              if (logPanelColorizersModel.getIndexOf(entry.getKey()) == -1) {
+                logPanelColorizersModel.addElement(entry.getKey());
+              }
+          }
+      }
+  }
+
   public static void main(String[] args) {
     FilterModel filterModel = new FilterModel();
     RuleColorizer colorizer = new RuleColorizer();
 
-    ColorPanel p = new ColorPanel(colorizer, filterModel);
+    Map otherColorizers = new HashMap();
+
+    RuleColorizer panel1Colorizer = new RuleColorizer();
+    HashMap entry1 = new HashMap();
+    List list1 = new ArrayList();
+    list1.add(new ColorRule("logger == test1", ExpressionRule.getRule("logger == test1"), Color.YELLOW, Color.BLACK));
+    entry1.put("Default", list1);
+    panel1Colorizer.setRules(entry1);
+    otherColorizers.put("test1", panel1Colorizer);
+
+    RuleColorizer panel2Colorizer = new RuleColorizer();
+    HashMap entry2 = new HashMap();
+    List list2 = new ArrayList();
+    list2.add(new ColorRule("logger == test2", ExpressionRule.getRule("logger == test2"), Color.YELLOW, Color.BLACK));
+    entry2.put("Default", list2);
+    panel2Colorizer.setRules(entry2);
+    otherColorizers.put("test2", panel2Colorizer);
+
+    ColorPanel p = new ColorPanel(colorizer, filterModel, otherColorizers);
     final JFrame f = new JFrame();
 
     p.setCloseActionListener(
@@ -186,7 +256,7 @@ public class ColorPanel extends JPanel {
       });
 
 //    Following does not compile on JDK 1.3.1
-//    f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+    f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
     f.getContentPane().add(p);
     f.pack();
     f.setVisible(true);
@@ -195,20 +265,19 @@ public class ColorPanel extends JPanel {
   public void updateColors() {
     tableModel.getDataVector().clear();
     tableModel.getDataVector().addAll(getColorizerVector());
+    tableModel.fireTableDataChanged();
   }
   
   private Vector getColorizerVector() {
       Vector data = new Vector();
       Map map = colorizer.getRules();
       Iterator iter = map.entrySet().iterator();
-      ruleSetListModel.removeAllElements();
       while (iter.hasNext()) {
         Map.Entry entry = (Map.Entry)iter.next();
         //update ruleset list
-        ruleSetListModel.addElement(entry.getKey());
         if (entry.getKey().equals(currentRuleSet)) {
             Iterator iter2 = ((List)entry.getValue()).iterator();
-      
+
             while (iter2.hasNext()) {
                 ColorRule rule = (ColorRule)iter2.next();
                 Vector v = new Vector();
@@ -340,7 +409,7 @@ public class ColorPanel extends JPanel {
     if (result.toString().equals("")) {
       ((ExpressionTableCellRenderer) table.getColumnModel().getColumn(0).getCellRenderer())
       .setToolTipText("Double click to edit");
-      statusBar.setText("");
+      statusBar.setText(DEFAULT_STATUS);
 
       //only update rules if there were no errors
       Map map = new HashMap();
@@ -472,52 +541,10 @@ public class ColorPanel extends JPanel {
     return panel;
   }
 
-  JPanel buildRuleSetsPanel() {
-    JPanel panel = new JPanel(new BorderLayout());
-
-    JLabel ruleSetLabel = new JLabel("RuleSets:");
-    panel.add(ruleSetLabel, BorderLayout.NORTH);
-
-    final JList list = new JList(ruleSetListModel);
-    JScrollPane scrollPane = new JScrollPane(list);
-    list.setEnabled(false);
-
-    panel.add(scrollPane, BorderLayout.CENTER);
-
-    JPanel buttonPanel = new JPanel(new GridLayout(0, 2));
-
-    JPanel newPanel = new JPanel();
-    JButton newButton = new JButton("New");
-    newButton.setEnabled(false);
-    newPanel.add(newButton);
-
-    JPanel deletePanel = new JPanel();
-    JButton deleteButton = new JButton("Delete");
-    deleteButton.setEnabled(false);
-    deletePanel.add(deleteButton);
-
-    buttonPanel.add(newPanel);
-    buttonPanel.add(deletePanel);
-
-    panel.add(buttonPanel, BorderLayout.SOUTH);
-
-    return panel;
-  }
-
   JPanel buildRulesPanel() {
     JPanel listPanel = new JPanel(new BorderLayout());
     JPanel panel = new JPanel();
     panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
-    JLabel ruleSetLabel = new JLabel("RuleSet Name:");
-    panel.add(ruleSetLabel);
-
-    JTextField ruleSetTextField = new JTextField(20);
-    ruleSetTextField.setText(currentRuleSet);
-    ruleSetTextField.setAlignmentX(Component.LEFT_ALIGNMENT);
-    ruleSetTextField.setEnabled(false);
-
-    panel.add(ruleSetTextField);
 
     panel.add(Box.createVerticalStrut(10));
 
@@ -607,7 +634,7 @@ public class ColorPanel extends JPanel {
     return listPanel;
   }
 
-  class ColorListCellRenderer extends JLabel implements ListCellRenderer {
+    class ColorListCellRenderer extends JLabel implements ListCellRenderer {
     ColorListCellRenderer() {
       setOpaque(true);
     }

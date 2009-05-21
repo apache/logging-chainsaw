@@ -200,6 +200,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
   private final String identifier;
   private final ChainsawStatusBar statusBar;
   private final JFrame preferencesFrame = new JFrame();
+  private ColorPanel colorPanel;
   private final JFrame colorFrame = new JFrame();
   private final JFrame undockedFrame;
   private final DockablePanel externalPanel;
@@ -243,14 +244,14 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
   private final Vector filterExpressionVector;
   private static final Color INVALID_EXPRESSION_BACKGROUND = new Color(251, 186, 186);
 
-  /**
+    /**
    * Creates a new LogPanel object.  If a LogPanel with this identifier has
    * been loaded previously, reload settings saved on last exit.
    *
    * @param statusBar shared status bar, provided by main application
    * @param identifier used to load and save settings
    */
-  public LogPanel(final ChainsawStatusBar statusBar, final String identifier, int cyclicBufferSize) {
+  public LogPanel(final ChainsawStatusBar statusBar, final String identifier, int cyclicBufferSize, Map allColorizers) {
     this.identifier = identifier;
     this.statusBar = statusBar;
     logger.debug("creating logpanel for " + identifier);
@@ -647,7 +648,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     colorFrame.setIconImage(
       ((ImageIcon) ChainsawIcons.ICON_PREFERENCES).getImage());
 
-    final ColorPanel colorPanel = new ColorPanel(colorizer, filterModel);
+    allColorizers.put(identifier, colorizer);
+    colorPanel = new ColorPanel(colorizer, filterModel, allColorizers);
 
     colorFrame.getContentPane().add(colorPanel);
 
@@ -1678,6 +1680,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
    * Display the color rule frame
    */
   void showColorPreferences() {
+    colorPanel.loadLogPanelColorizers();
     colorFrame.pack();
     colorFrame.setVisible(true);
   }
