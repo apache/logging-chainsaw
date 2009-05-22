@@ -792,7 +792,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
           String inputLine = JOptionPane.showInputDialog(LogUI.this, "Enter the line number to go:", "Goto Line", -1);
           try {
         	  int lineNumber = Integer.parseInt(inputLine);
-              List eventList = getCurrentLogPanel().getFilteredEvents();
+              List eventList = getCurrentLogPanel().getEvents();
 
               if (lineNumber > 0 && lineNumber <= eventList.size()) {
                   getCurrentLogPanel().setSelectedEvent(lineNumber);

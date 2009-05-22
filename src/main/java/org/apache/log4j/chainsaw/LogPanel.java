@@ -1814,8 +1814,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
    *
    * @param eventNumber
    */
-  void setSelectedEvent(int eventNumber){
-      table.scrollTo(eventNumber - 1, 0);
+  void setSelectedEvent(int eventNumber) {
+      int row = tableModel.find(ExpressionRule.getRule("prop.log4jid == " + eventNumber), 0, true);
+      table.scrollTo(row, 0);
   }
 
   /**
