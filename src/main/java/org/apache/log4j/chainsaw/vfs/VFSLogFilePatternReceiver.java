@@ -175,13 +175,30 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
   private Object waitForContainerLock = new Object();
   private String password;
   private boolean autoReconnect;
+  private FileObject fileObject;
 
     public VFSLogFilePatternReceiver() {
     super();
   }
 
   public void shutdown() {
+    getLogger().info("shutdown");
+    active = false;
 	container = null;
+    if (fileObject != null)
+    {
+        try
+        {
+            if (fileObject.exists()) {
+                fileObject.getContent().getInputStream().close();
+            }
+            fileObject.close();
+        }
+        catch (IOException e)
+        {
+            getLogger().warn("Unable to close fileObject", e);
+        }
+    }
     if (reader != null) {
       try {
         reader.close();
@@ -239,6 +256,8 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
    * Read and process the log file.
    */
   public void activateOptions() {
+      //we don't want to call super.activateOptions, but we do want active to be set to true
+      active = true;
       //on receiver restart, only prompt for credentials if we don't already have them
       if (promptForUserInfo && getFileURL().indexOf("@") == -1) {
     	  /*
@@ -312,14 +331,12 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
             setHost(oldURL.substring(0, index + "://".length()));
             setPath(lastPart.substring(passEndIndex + 1));
 		}
-		
    	    new Thread(new VFSReader()).start();
       }
    }
 
   private class VFSReader implements Runnable {
         public void run() {
-        	FileObject fileObject = null;
         	//thread should end when we're no longer active
             while (reader == null && isActive()) {
             	int atIndex = getFileURL().indexOf("@");
@@ -339,16 +356,22 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                     }
 
                     fileObject = fileSystemManager.resolveFile(getFileURL(), opts);
-                    reader = new InputStreamReader(fileObject.getContent().getInputStream());
-                    //now that we have a reader, remove additional portions of the file url (sftp passwords, etc.)
-                    //check to see if the name is a URLFileName..if so, set file name to not include username/pass
-                    if (fileObject.getName() instanceof URLFileName) {
-                        URLFileName urlFileName = (URLFileName) fileObject.getName();
-                        setHost(urlFileName.getHostName());
-                        setPath(urlFileName.getPath());
+                    if (fileObject.exists()) {
+                        reader = new InputStreamReader(fileObject.getContent().getInputStream());
+                        //now that we have a reader, remove additional portions of the file url (sftp passwords, etc.)
+                        //check to see if the name is a URLFileName..if so, set file name to not include username/pass
+                        if (fileObject.getName() instanceof URLFileName) {
+                            URLFileName urlFileName = (URLFileName) fileObject.getName();
+                            setHost(urlFileName.getHostName());
+                            setPath(urlFileName.getPath());
+                        }
+                    } else {
+                        getLogger().info(loggableFileURL + " not available - will re-attempt to load after waiting " + MISSING_FILE_RETRY_MILLIS + " millis");
                     }
                 } catch (FileSystemException fse) {
-                    getLogger().info("file not available - may be due to incorrect credentials, but will re-attempt to load in 10 seconds", fse);
+                    getLogger().info(loggableFileURL + " not available - may be due to incorrect credentials, but will re-attempt to load after waiting " + MISSING_FILE_RETRY_MILLIS + " millis", fse);
+                }
+                if (reader == null) {
                     synchronized (this) {
                         try {
                             wait(MISSING_FILE_RETRY_MILLIS);
@@ -356,15 +379,17 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                     }
                 }
             }
+            if (!isActive()) {
+                //shut down while waiting for a file
+                return;
+            }
             initialize();
-
+            getLogger().debug(getPath() + " exists");
 
             do {
                 long lastFilePointer = 0;
                 long lastFileSize = 0;
-                BufferedReader bufferedReader;
                 createPattern();
-                getLogger().debug("tailing file: " + isTailing());
                 try {
                     do {
                         FileSystemManager fileSystemManager = VFS.getManager();
@@ -377,46 +402,76 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                             getLogger().warn("JSch not on classpath!", ncdfe);
                         }
 
-                        fileObject = fileSystemManager.resolveFile(getFileURL(), opts);
-                        reader = new InputStreamReader(fileObject.getContent().getInputStream());
-                        //could have been truncated or appended to
-                        if (fileObject.getContent().getSize() < lastFileSize) {
-                            lastFileSize = 0; //seek to beginning of file
-                            lastFilePointer = 0; 
+                        //fileobject was created above, release it and construct a new one
+                        if (fileObject != null) {
+                            fileObject.close();
+                            fileObject = null;
                         }
-                        if (fileObject.getContent().getSize() > lastFileSize) {
-                            RandomAccessContent rac = fileObject.getContent().getRandomAccessContent(RandomAccessMode.READ);
-                            reader = new InputStreamReader(rac.getInputStream());
-                            bufferedReader = new BufferedReader(reader);
-                            rac.seek(lastFilePointer);
-                            process(bufferedReader);
-                            lastFilePointer = rac.getFilePointer();
-                            lastFileSize = fileObject.getContent().getSize();
-                            rac.close();
+                        fileObject = fileSystemManager.resolveFile(getFileURL(), opts);
+
+                        //file may not exist..
+                        if (fileObject.exists()) {
+                            try {
+                                //available in vfs as of 30 Mar 2006 - will load but not tail if not available
+                                fileObject.refresh();
+                            } catch (Error err) {
+                                getLogger().info(getPath() + " - unable to refresh fileobject", err);
+                            }
+                            //could have been truncated or appended to (don't do anything if same size)
+                            if (fileObject.getContent().getSize() < lastFileSize) {
+                                reader = new InputStreamReader(fileObject.getContent().getInputStream());
+                                getLogger().debug(getPath() + " was truncated");
+                                lastFileSize = 0; //seek to beginning of file
+                                lastFilePointer = 0;
+                            } else if (fileObject.getContent().getSize() > lastFileSize) {
+                                RandomAccessContent rac = fileObject.getContent().getRandomAccessContent(RandomAccessMode.READ);
+                                rac.seek(lastFilePointer);
+                                reader = new InputStreamReader(rac.getInputStream());
+                                BufferedReader bufferedReader = new BufferedReader(reader);
+                                process(bufferedReader);
+                                lastFilePointer = rac.getFilePointer();
+                                lastFileSize = fileObject.getContent().getSize();
+                                rac.close();
+                            }
+                        } else {
+                            getLogger().info(getPath() + " - not available - will re-attempt to load after waiting " + getWaitMillis() + " millis");
                         }
 
+                        try {
+                            //release file so it can be externally deleted/renamed if necessary
+                            fileObject.close();
+                            fileObject = null;
+                        }
+                        catch (IOException e)
+                        {
+                            getLogger().debug(getPath() + " - unable to close fileobject", e);
+                        }
+                        try {
+                            if (reader != null) {
+                                reader.close();
+                                reader = null;
+                            }
+                        } catch (IOException ioe) {
+                            getLogger().debug(getPath() + " - unable to close reader", ioe);
+                        }
+                        
                         try {
                             synchronized (this) {
                                 wait(getWaitMillis());
                             }
-                        } catch (InterruptedException ie) {
+                        } catch (InterruptedException ie) {}
+                        if (isTailing()) {
+                            getLogger().debug(getPath() + " - tailing file - file size: " + lastFileSize);
                         }
-                        try {
-                            //available in vfs as of 30 Mar 2006 - will load but not tail if not available
-                            fileObject.refresh();
-                        } catch (Error err) {
-                            getLogger().info("Unable to refresh fileobject", err);
-                        }
-
-                    } while (isTailing());
+                    } while (isTailing() && isActive());
                 } catch (IOException ioe) {
-                    getLogger().info("stream closed", ioe);
+                    getLogger().info(getPath() + " - exception processing file", ioe);
                     try {
                         if (fileObject != null) {
                             fileObject.close();
                         }
                     } catch (FileSystemException e) {
-                        e.printStackTrace();
+                        getLogger().info(getPath() + " - exception processing file", e);
                     }
                     try {
                         synchronized(this) {
@@ -424,8 +479,8 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                         }
                     } catch (InterruptedException ie) {}
                 }
-            } while (isAutoReconnect());
-            getLogger().debug("processing complete");
+            } while (isAutoReconnect() && isActive());
+            getLogger().debug(getPath() + " - processing complete");
             shutdown();
         }
     }
