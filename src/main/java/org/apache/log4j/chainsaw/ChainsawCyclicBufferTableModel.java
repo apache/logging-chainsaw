@@ -511,11 +511,6 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
       }
     }
 
-    if (rowAdded) {
-      int lastAdded = getLastAdded();
-      fireTableEvent(lastAdded, lastAdded, 1);
-    }
-
     return rowAdded;
   }
 
@@ -555,7 +550,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   }
 
   /**
-  * @param key
+  * @param e
   */
   private void fireNewKeyColumnAdded(NewKeyEvent e) {
     NewKeyListener[] listeners =

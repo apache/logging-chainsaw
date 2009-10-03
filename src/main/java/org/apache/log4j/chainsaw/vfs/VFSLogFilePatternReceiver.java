@@ -417,6 +417,9 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                             } catch (Error err) {
                                 getLogger().info(getPath() + " - unable to refresh fileobject", err);
                             }
+                            if (lastFileSize == 0) {
+                                getLogger().info(getPath() + " - loading file");
+                            }
                             //could have been truncated or appended to (don't do anything if same size)
                             if (fileObject.getContent().getSize() < lastFileSize) {
                                 reader = new InputStreamReader(fileObject.getContent().getInputStream());

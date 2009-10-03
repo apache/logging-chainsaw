@@ -711,7 +711,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
         public void valueChanged(ListSelectionEvent evt) {
             if (((evt.getFirstIndex() == evt.getLastIndex())
-                && (evt.getFirstIndex() > 0)) || (evt.getValueIsAdjusting())) {
+                && (evt.getFirstIndex() > 0) && previousLastIndex != -1) || (evt.getValueIsAdjusting())) {
               return;
             }
             boolean lastIndexOnLastRow = (evt.getLastIndex() == (table.getRowCount() - 1));
@@ -741,7 +741,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
       new ListSelectionListener() {
         public void valueChanged(ListSelectionEvent evt) {
           if (((evt.getFirstIndex() == evt.getLastIndex())
-              && (evt.getFirstIndex() > 0)) || (evt.getValueIsAdjusting())) {
+              && (evt.getFirstIndex() > 0) && previousLastIndex != -1) || (evt.getValueIsAdjusting())) {
             return;
           }
 
@@ -1475,8 +1475,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
         if (isPaused()) {
           return;
         }
-
         final int selectedRow = table.getSelectedRow();
+        final int startingRow = table.getRowCount();
         final LoggingEvent selectedEvent;
         if (selectedRow >= 0) {
           selectedEvent = tableModel.getRow(selectedRow);
@@ -1486,13 +1486,21 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
 
         boolean rowAdded = false;
 
+        int addedRowCount = 0;
         for (Iterator iter = events.iterator(); iter.hasNext();) {
           LoggingEvent event = (LoggingEvent) iter.next();
 
           updateOtherModels(event);
 
           boolean isCurrentRowAdded = tableModel.isAddRow(event);
+          if (isCurrentRowAdded) {
+              addedRowCount++;
+          }
           rowAdded = rowAdded || isCurrentRowAdded;
+        }
+        //fire after adding all events
+        if (rowAdded) {
+          tableModel.fireTableEvent(startingRow, startingRow + addedRowCount, addedRowCount);
         }
 
         //tell the model to notify the count listeners
@@ -2195,6 +2203,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
    * Reset the LoggingEvent container, detail panel and status bar
    */
   private void clearModel() {
+    previousLastIndex = -1;
     tableModel.clearModel();
 
     synchronized (detail) {
