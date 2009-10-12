@@ -169,43 +169,24 @@ import org.apache.log4j.varia.LogFilePatternReceiver;
  */
 public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements VisualReceiver {
 
-  private Reader reader;
   private boolean promptForUserInfo = false;
   private Container container;
   private Object waitForContainerLock = new Object();
   private String password;
   private boolean autoReconnect;
-  private FileObject fileObject;
+  private VFSReader vfsReader;
 
     public VFSLogFilePatternReceiver() {
     super();
   }
 
   public void shutdown() {
-    getLogger().info("shutdown");
+    getLogger().info("shutdown VFSLogFilePatternReceiver");
     active = false;
 	container = null;
-    if (fileObject != null)
-    {
-        try
-        {
-            if (fileObject.exists()) {
-                fileObject.getContent().getInputStream().close();
-            }
-            fileObject.close();
-        }
-        catch (IOException e)
-        {
-            getLogger().warn("Unable to close fileObject", e);
-        }
-    }
-    if (reader != null) {
-      try {
-        reader.close();
-        reader = null;
-      } catch (IOException ioe) {
-        getLogger().warn("Unable to close reader", ioe);
-      }
+    if (vfsReader != null) {
+      vfsReader.terminate();
+      vfsReader = null;
     }
   }
   
@@ -315,7 +296,8 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
     	  			        setHost(oldURL.substring(0, index + "://".length()));
     	  		            setPath(oldURL.substring(index + "://".length()));
     	  				}
-    	  				new Thread(new VFSReader()).start();
+                        vfsReader = new VFSReader();
+    	  				new Thread(vfsReader).start();
     	  			  }
     	  		  });
     		  }}).start();
@@ -331,14 +313,19 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
             setHost(oldURL.substring(0, index + "://".length()));
             setPath(lastPart.substring(passEndIndex + 1));
 		}
-   	    new Thread(new VFSReader()).start();
+        vfsReader = new VFSReader();
+   	    new Thread(vfsReader).start();
       }
    }
 
   private class VFSReader implements Runnable {
-        public void run() {
+      private boolean terminated = false;
+      private Reader reader;
+      private FileObject fileObject;
+
+      public void run() {
         	//thread should end when we're no longer active
-            while (reader == null && isActive()) {
+            while (reader == null && !terminated) {
             	int atIndex = getFileURL().indexOf("@");
             	int protocolIndex = getFileURL().indexOf("://");
             	
@@ -379,7 +366,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                     }
                 }
             }
-            if (!isActive()) {
+            if (terminated) {
                 //shut down while waiting for a file
                 return;
             }
@@ -410,7 +397,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                         fileObject = fileSystemManager.resolveFile(getFileURL(), opts);
 
                         //file may not exist..
-                        if (fileObject.exists()) {
+                        if (fileObject != null && fileObject.exists()) {
                             try {
                                 //available in vfs as of 30 Mar 2006 - will load but not tail if not available
                                 fileObject.refresh();
@@ -436,37 +423,36 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                                 lastFileSize = fileObject.getContent().getSize();
                                 rac.close();
                             }
+                            try {
+                                //release file so it can be externally deleted/renamed if necessary
+                                fileObject.close();
+                                fileObject = null;
+                            }
+                            catch (IOException e)
+                            {
+                                getLogger().debug(getPath() + " - unable to close fileobject", e);
+                            }
+                            try {
+                                if (reader != null) {
+                                    reader.close();
+                                    reader = null;
+                                }
+                            } catch (IOException ioe) {
+                                getLogger().debug(getPath() + " - unable to close reader", ioe);
+                            }
                         } else {
                             getLogger().info(getPath() + " - not available - will re-attempt to load after waiting " + getWaitMillis() + " millis");
                         }
 
                         try {
-                            //release file so it can be externally deleted/renamed if necessary
-                            fileObject.close();
-                            fileObject = null;
-                        }
-                        catch (IOException e)
-                        {
-                            getLogger().debug(getPath() + " - unable to close fileobject", e);
-                        }
-                        try {
-                            if (reader != null) {
-                                reader.close();
-                                reader = null;
-                            }
-                        } catch (IOException ioe) {
-                            getLogger().debug(getPath() + " - unable to close reader", ioe);
-                        }
-                        
-                        try {
                             synchronized (this) {
                                 wait(getWaitMillis());
                             }
                         } catch (InterruptedException ie) {}
-                        if (isTailing()) {
+                        if (isTailing() && !terminated) {
                             getLogger().debug(getPath() + " - tailing file - file size: " + lastFileSize);
                         }
-                    } while (isTailing() && isActive());
+                    } while (isTailing() && !terminated);
                 } catch (IOException ioe) {
                     getLogger().info(getPath() + " - exception processing file", ioe);
                     try {
@@ -482,11 +468,15 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                         }
                     } catch (InterruptedException ie) {}
                 }
-            } while (isAutoReconnect() && isActive());
+            } while (isAutoReconnect() && !terminated);
             getLogger().debug(getPath() + " - processing complete");
-            shutdown();
         }
-    }
+
+      public void terminate()
+      {
+          terminated = true;
+      }
+  }
   
   public class UserNamePasswordDialog extends JDialog {
 	  private String userName;
