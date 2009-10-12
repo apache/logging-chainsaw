@@ -235,7 +235,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
   private final int dividerSize;
   static final String TABLE_COLUMN_ORDER = "table.columns.order";
   static final String TABLE_COLUMN_WIDTHS = "table.columns.widths";
-  static final String COLUMNS_EXTENSION = ".columns";
   static final String COLORS_EXTENSION = ".colors";
   private static final int LOG_PANEL_SERIALIZATION_VERSION_NUMBER = 1;
   private int previousLastIndex = -1;

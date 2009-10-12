@@ -21,15 +21,11 @@
 */
 package org.apache.log4j.chainsaw;
 
-import org.apache.log4j.chainsaw.prefs.SettingsManager;
-import org.apache.log4j.chainsaw.prefs.SettingsListener;
-import org.apache.log4j.chainsaw.prefs.LoadSettingsEvent;
-import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
-
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.FileReader;
+import java.io.FileWriter;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -37,6 +33,11 @@ import javax.swing.JTabbedPane;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
+
+import org.apache.log4j.chainsaw.prefs.LoadSettingsEvent;
+import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
+import org.apache.log4j.chainsaw.prefs.SettingsListener;
+import org.apache.log4j.chainsaw.prefs.SettingsManager;
 
 
 /**
@@ -97,6 +98,13 @@ class ChainsawTabbedPane extends JTabbedPane implements SettingsListener {
     super.insertTab(name, icon, component, null, getTabCount());
 
     super.fireStateChanged();
+    if (!"chainsaw-log".equals(name)) {
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                setSelectedTab(getTabCount() - 1);
+            }
+        });
+    }
   }
 
   public void setSelectedTab(int index) {

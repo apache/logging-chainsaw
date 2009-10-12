@@ -56,18 +56,18 @@ public class ChainsawConstants {
   static final String SETTINGS_EXTENSION = ".settings";
 
   //COLUMN NAMES
-  static final String LOGGER_COL_NAME = "Logger";
-  static final String TIMESTAMP_COL_NAME = "Timestamp";
-  static final String LEVEL_COL_NAME = "Level";
-  static final String THREAD_COL_NAME = "Thread";
-  static final String MESSAGE_COL_NAME = "Message";
+  static final String LOGGER_COL_NAME = "LOGGER";
+  static final String TIMESTAMP_COL_NAME = "TIMESTAMP";
+  static final String LEVEL_COL_NAME = "LEVEL";
+  static final String THREAD_COL_NAME = "THREAD";
+  static final String MESSAGE_COL_NAME = "MESSAGE";
   static final String NDC_COL_NAME = "NDC";
-  static final String THROWABLE_COL_NAME = "Throwable";
-  static final String CLASS_COL_NAME = "Class";
-  static final String METHOD_COL_NAME = "Method";
-  static final String FILE_COL_NAME = "File";
-  static final String LINE_COL_NAME = "Line";
-  static final String PROPERTIES_COL_NAME = "Properties";
+  static final String THROWABLE_COL_NAME = "THROWABLE";
+  static final String CLASS_COL_NAME = "CLASS";
+  static final String METHOD_COL_NAME = "METHOD";
+  static final String FILE_COL_NAME = "FILE";
+  static final String LINE_COL_NAME = "LINE";
+  static final String PROPERTIES_COL_NAME = "PROPERTIES";
   static final String ID_COL_NAME = "ID";
 
   //none is not a real column name, but is used by filters as a way to apply no filter for colors or display

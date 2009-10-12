@@ -338,7 +338,9 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   }
 
   public String getColumnName(int column) {
-    return columnNames.get(column).toString();
+      //columnNames all upper, make 1st char upper & rest lower
+      String col = (String) columnNames.get(column);
+      return col.substring(0, 1).toUpperCase() + col.substring(1).toLowerCase();
   }
 
   public LoggingEvent getRow(int row) {
@@ -498,15 +500,16 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
        * If so, we should add them as columns and notify listeners.
        */
       for (Iterator iter = e.getPropertyKeySet().iterator(); iter.hasNext();) {
-        Object key = iter.next();
+        String key = iter.next().toString().toUpperCase();
 
-        //add all keys except the 'log4jid' key
-        if (!columnNames.contains(key) && !(Constants.LOG4J_ID_KEY.equalsIgnoreCase(key.toString()))) {
+        //add all keys except the 'log4jid' key (columnNames is all-caps)
+        if (!columnNames.contains(key) && !(Constants.LOG4J_ID_KEY.equalsIgnoreCase(key))) {
           columnNames.add(key);
-          logger.debug("Adding col '" + key + "', columNames=" + columnNames);
+          logger.debug("Adding col '" + key + "', columnNames=" + columnNames);
+          String mixedCaseKey = key.substring(0, 1).toUpperCase() + key.substring(1).toLowerCase();
           fireNewKeyColumnAdded(
             new NewKeyEvent(
-              this, columnNames.indexOf(key), key, e.getProperty(key.toString())));
+              this, columnNames.indexOf(key), mixedCaseKey, e.getProperty(key)));
         }
       }
     }

@@ -47,6 +47,7 @@ public class LogPanelPreferenceModel implements Serializable{
   public static final Collection DATE_FORMATS;
   private static final Logger logger = LogManager.getLogger(LogPanelPreferenceModel.class);
 
+ private static final long serialVersionUID = 7526472295622776147L;
   static {
     Collection list = new ArrayList();
 
