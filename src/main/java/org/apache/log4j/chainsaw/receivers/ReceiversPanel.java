@@ -17,9 +17,7 @@
 
 package org.apache.log4j.chainsaw.receivers;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -375,6 +373,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
 
     receiversTree.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
     receiversTree.setCellRenderer(new ReceiverTreeCellRenderer());
+    receiversTree.setRowHeight(19);
 
     buttonPanel = new ReceiverToolbar();
     receiversTree.addTreeSelectionListener(buttonPanel);
@@ -763,11 +762,15 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
                   panel.getOkPanel().getOkButton().addActionListener(
                     new ActionListener() {
                       public void actionPerformed(ActionEvent e2) {
-                        dialog.dispose();
                         Plugin plugin = panel.getPlugin();
-                        pluginRegistry.addPlugin(plugin);
-                        plugin.activateOptions();
-                        MessageCenter.getInstance().addMessage("Plugin '" + plugin.getName() + "' started");
+                        if (plugin.getName() != null && !plugin.getName().trim().equals("")) {
+                            dialog.dispose();
+                            pluginRegistry.addPlugin(plugin);
+                            plugin.activateOptions();
+                            MessageCenter.getInstance().addMessage("Plugin '" + plugin.getName() + "' started");
+                        } else {
+                            MessageCenter.getInstance().getLogger().error("Name required to create receiver");
+                        }
                       }
                     });
                   dialog.setVisible(true);

@@ -303,18 +303,22 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
     		  }}).start();
       } else {
         String oldURL = getFileURL();
-		int index = oldURL.indexOf("://");
-		String lastPart = oldURL.substring(index + "://".length());
-		int passEndIndex = lastPart.indexOf("@");
-		if (passEndIndex > -1) { //we have a username/password
-		    int passBeginIndex = lastPart.indexOf(":");
-//	        String userName = lastPart.substring(0, passBeginIndex);
-	        password = lastPart.substring(passBeginIndex + 1, passEndIndex);
-            setHost(oldURL.substring(0, index + "://".length()));
-            setPath(lastPart.substring(passEndIndex + 1));
-		}
-        vfsReader = new VFSReader();
-   	    new Thread(vfsReader).start();
+        if (oldURL != null) {
+            int index = oldURL.indexOf("://");
+            String lastPart = oldURL.substring(index + "://".length());
+            int passEndIndex = lastPart.indexOf("@");
+            if (passEndIndex > -1) { //we have a username/password
+                int passBeginIndex = lastPart.indexOf(":");
+    //	        String userName = lastPart.substring(0, passBeginIndex);
+                password = lastPart.substring(passBeginIndex + 1, passEndIndex);
+                setHost(oldURL.substring(0, index + "://".length()));
+                setPath(lastPart.substring(passEndIndex + 1));
+            }
+            vfsReader = new VFSReader();
+            new Thread(vfsReader).start();
+        } else {
+            getLogger().info("null URL - unable to parse file");
+        }
       }
    }
 

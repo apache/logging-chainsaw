@@ -17,14 +17,9 @@
 
 package org.apache.log4j.chainsaw.receivers;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
+import java.awt.*;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTree;
+import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
@@ -48,10 +43,13 @@ public class ReceiverTreeCellRenderer extends DefaultTreeCellRenderer {
 
   public ReceiverTreeCellRenderer() {
     super();
+    BoxLayout layout = new BoxLayout(panel, BoxLayout.X_AXIS);
+    panel.setLayout(layout);
     panel.setOpaque(false);
-    panel.setLayout(new BorderLayout());
-    panel.add(this, BorderLayout.CENTER);
-    panel.add(levelLabel, BorderLayout.EAST);
+    panel.add(levelLabel);
+    //set preferredsize to something wide
+    setPreferredSize(new Dimension(200, 19));
+    panel.add(this);
   }
 
   public Component getTreeCellRendererComponent(

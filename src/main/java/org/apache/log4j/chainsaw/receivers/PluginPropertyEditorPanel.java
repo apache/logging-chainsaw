@@ -84,7 +84,7 @@ public class PluginPropertyEditorPanel extends JPanel {
      *
      */
     private void initComponents() {
-        setPreferredSize(new Dimension(160, 120));
+        propertyTable.setRowHeight(19);
         setLayout(new BorderLayout());
         scrollPane.setViewportView(propertyTable);
 
@@ -348,6 +348,10 @@ public class PluginPropertyEditorPanel extends JPanel {
 
 
             if (columnIndex == 1) {
+                if (descriptors[rowIndex].getName().toLowerCase().equals("name") && aValue == null || aValue.toString().trim().equals("")) {
+                    logger.error("Name required");
+                    return;
+                }
                 aValue = translateValueIfNeeded(rowIndex, aValue);
                 logger.debug(
                     "setValueAt, " + rowIndex + ", " + columnIndex +
@@ -370,7 +374,7 @@ public class PluginPropertyEditorPanel extends JPanel {
         }
 
         /**
-         * @param columnIndex
+         * @param row
          * @param value
          * @return
          */
