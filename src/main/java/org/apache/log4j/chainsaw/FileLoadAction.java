@@ -84,22 +84,22 @@ class FileLoadAction extends AbstractAction {
         if (!remoteURL) {
             if (chooser == null) {
                 chooser = new JFileChooser();
+
+                chooser.setDialogTitle("Load Events from XML file...");
+
+                chooser.setAcceptAllFileFilterUsed(true);
+
+                chooser.setFileFilter(new FileFilter() {
+                    public boolean accept(File f) {
+                        return (f.getName().toLowerCase().endsWith(".xml") || f
+                                .isDirectory());
+                    }
+
+                    public String getDescription() {
+                        return "XML files (*.xml)";
+                    }
+                });
             }
-
-            chooser.setDialogTitle("Load Events from XML file...");
-
-            chooser.setAcceptAllFileFilterUsed(true);
-
-            chooser.setFileFilter(new FileFilter() {
-                public boolean accept(File f) {
-                    return (f.getName().toLowerCase().endsWith(".xml") || f
-                            .isDirectory());
-                }
-
-                public String getDescription() {
-                    return "XML files (*.xml)";
-                }
-            });
 
             int i = chooser.showOpenDialog(parent);
             if (i != JFileChooser.APPROVE_OPTION) {
