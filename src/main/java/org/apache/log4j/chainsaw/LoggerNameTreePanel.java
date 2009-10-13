@@ -159,16 +159,16 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     	public boolean evaluate(LoggingEvent e)
         {
           String currentlySelectedLoggerName = getCurrentlySelectedLoggerName();
+          boolean hidden = e.getLoggerName() != null && isHidden(e.getLoggerName());
           if (currentlySelectedLoggerName == null) {
-          	//if there is no selected logger, all events should pass
-          	return true;
+          	//if there is no selected logger, pass if not hidden
+          	return !hidden;
           }
-          boolean isHidden = getHiddenSet().contains(e.getLoggerName());
-          boolean result = (e.getLoggerName() != null) && (!isHidden);
+          boolean result = (e.getLoggerName() != null) && !hidden;
 
           if (result && isFocusOnSelected())
           {
-            result = result &&  (e.getLoggerName() != null && (e.getLoggerName().startsWith(currentlySelectedLoggerName+".") || e.getLoggerName().endsWith(currentlySelectedLoggerName))) ;
+            result = (e.getLoggerName() != null && (e.getLoggerName().startsWith(currentlySelectedLoggerName+".") || e.getLoggerName().endsWith(currentlySelectedLoggerName)));
           }
 
           return result;
@@ -180,10 +180,10 @@ final class LoggerNameTreePanel extends JPanel implements Rule
         {
           public boolean evaluate(LoggingEvent e)
           {
-            boolean isHidden = getHiddenSet().contains(e.getLoggerName());
+            boolean hidden = e.getLoggerName() != null && isHidden(e.getLoggerName());
             String currentlySelectedLoggerName = getCurrentlySelectedLoggerName();
 
-            if (!isFocusOnSelected() && !isHidden && currentlySelectedLoggerName != null && !"".equals(currentlySelectedLoggerName))
+            if (!isFocusOnSelected() && !hidden && currentlySelectedLoggerName != null && !"".equals(currentlySelectedLoggerName))
             {
             	return (e.getLoggerName().startsWith(currentlySelectedLoggerName+".") || e.getLoggerName().endsWith(currentlySelectedLoggerName)) ;
             }
@@ -401,7 +401,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
 
   /**
    * Ensures the Focus is set to a specific logger name
-   * @param logger
+   * @param
    */
   public void setFocusOn(String newLogger)
   {
@@ -423,6 +423,18 @@ final class LoggerNameTreePanel extends JPanel implements Rule
       logger.error("failed to lookup logger " + newLogger);
     }
   }
+
+  private boolean isHidden(String loggerName) {
+    for (Iterator iter = hiddenSet.iterator();iter.hasNext();) {
+      String hiddenLoggerEntry = iter.next().toString();
+      if (loggerName.startsWith(hiddenLoggerEntry + ".") || loggerName.endsWith(hiddenLoggerEntry)) {
+          return true;
+      }
+    }
+    return false;
+  }
+
+
 
   /**
    * DOCUMENT ME!
@@ -464,15 +476,6 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     TreePath firstPath = paths[0];
 
     return getLoggerName(firstPath);
-  }
-
-  /**
-   * Returns an unmodifiable set of those Loggers marked as hidden.
-   * @return
-   */
-  Set getHiddenSet()
-  {
-    return Collections.unmodifiableSet(hiddenSet);
   }
 
   /**
@@ -1159,7 +1162,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
   private void updateHiddenSetModels() {
       DefaultListModel model = (DefaultListModel) ignoreList.getModel();
       model.clear();
-      List sortedIgnoreList = new ArrayList(getHiddenSet());
+      List sortedIgnoreList = new ArrayList(hiddenSet);
       Collections.sort(sortedIgnoreList);
 
       for (Iterator iter = sortedIgnoreList.iterator(); iter.hasNext();)
@@ -1180,6 +1183,10 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     setFocusOnSelected(!isFocusOnSelected());
     hideAction.setEnabled(!isFocusOnSelected());
   }
+
+    public Collection getHiddenSet() {
+        return Collections.unmodifiableSet(hiddenSet);
+    }
 
     //~ Inner Classes ===========================================================
 
