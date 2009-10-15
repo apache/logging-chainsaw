@@ -1547,7 +1547,19 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
             	in = stream.createObjectInputStream(r);
             	
                 LogPanelPreferenceModel storedPrefs = (LogPanelPreferenceModel)in.readObject();
+                String columnOrder = event.getSetting(TABLE_COLUMN_ORDER);
                 preferenceModel.apply(storedPrefs);
+
+                //update prefModel columns to include defaults
+                int index = 0;
+                StringTokenizer tok = new StringTokenizer(columnOrder, ",");
+                while (tok.hasMoreElements()) {
+                  String element = tok.nextElement().toString().trim();
+                  TableColumn column = new TableColumn(index++);
+                  column.setHeaderValue(element);
+                  preferenceModel.addColumn(column);
+                }
+
                 TableColumnModel columnModel = table.getColumnModel();
                 //remove previous columns
                 while (columnModel.getColumnCount() > 0) {

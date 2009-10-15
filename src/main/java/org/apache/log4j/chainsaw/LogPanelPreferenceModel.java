@@ -134,7 +134,7 @@ public class LogPanelPreferenceModel implements Serializable{
 	  if (findColumnByHeader(allColumns, column.getHeaderValue().toString()) != null) {
 		  return false;
 	  }
-	  
+
       Object oldValue = allColumns;
       allColumns = new ArrayList(allColumns);
       allColumns.add(column);
@@ -276,11 +276,11 @@ public class LogPanelPreferenceModel implements Serializable{
   /**
    * Returns true if the named column should be made visible otherwise
    * false.
-   * @param columnName
+   * @param column
    * @return column visible flag
    */
   public boolean isColumnVisible(TableColumn column) {
-	  return (visibleColumns.contains(column));
+	  return (findColumnByHeader(visibleColumns, column.getHeaderValue().toString()) != null);
   }
 
   private void setVisibleColumns(List visibleColumns) {
@@ -292,20 +292,19 @@ public class LogPanelPreferenceModel implements Serializable{
 
   public void setColumnVisible(String columnName, boolean isVisible) {
     boolean wasVisible = findColumnByHeader(visibleColumns, columnName) != null;
-    boolean newVisible = isVisible;
 
-    //because we're a list and not a set, ensure we keep at most
+      //because we're a list and not a set, ensure we keep at most
     //one entry for a tablecolumn
     Object col = findColumnByHeader(allColumns, columnName);
-    if (newVisible && !wasVisible) {
+    if (isVisible && !wasVisible) {
 		visibleColumns.add(col);
 		visibleColumnOrder.add(col);
-	    propertySupport.firePropertyChange("visibleColumns", new Boolean(newVisible), new Boolean(wasVisible));      
+	    propertySupport.firePropertyChange("visibleColumns", new Boolean(isVisible), new Boolean(wasVisible));
 	}
-    if (!newVisible && wasVisible) {
+    if (!isVisible && wasVisible) {
 		visibleColumns.remove(col);
 		visibleColumnOrder.remove(col);
-	    propertySupport.firePropertyChange("visibleColumns", new Boolean(newVisible), new Boolean(wasVisible));      
+	    propertySupport.firePropertyChange("visibleColumns", new Boolean(isVisible), new Boolean(wasVisible));
 	}
   }
   

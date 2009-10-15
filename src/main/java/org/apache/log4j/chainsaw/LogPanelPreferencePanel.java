@@ -25,6 +25,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
@@ -174,7 +175,18 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
         Iterator iter = preferenceModel.getColumns().iterator();
           iter.hasNext();)
       {
-        columnListModel.addElement(iter.next());
+          TableColumn col = (TableColumn)iter.next();
+          Enumeration enumeration = columnListModel.elements();
+          boolean found = false;
+          while (enumeration.hasMoreElements()) {
+              TableColumn thisCol = (TableColumn) enumeration.nextElement();
+              if (thisCol.getHeaderValue().equals(col.getHeaderValue())) {
+                  found = true;
+              }
+          }
+            if (!found) {
+              columnListModel.addElement(col);
+            }
       }
 
       columnList.setModel(columnListModel);
@@ -643,7 +655,15 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
           	          iter.hasNext();)
           	      {
           	        TableColumn col = (TableColumn) iter.next();
-          	        if (!columnListModel.contains(col)) {
+                    Enumeration enumeration = columnListModel.elements();
+                    boolean found = false;
+                    while (enumeration.hasMoreElements()) {
+                        TableColumn thisCol = (TableColumn) enumeration.nextElement();
+                        if (thisCol.getHeaderValue().equals(col.getHeaderValue())) {
+                            found = true;
+                        }
+                    }
+          	        if (!found) {
           	        	columnListModel.addElement(col);
           	            columnListModel.fireContentsChanged();
           	        }
@@ -658,7 +678,6 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
                     columnListModel.fireContentsChanged();
                   }
                 });
-
     }
   }
 }
