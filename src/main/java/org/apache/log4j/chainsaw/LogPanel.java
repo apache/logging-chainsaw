@@ -1234,7 +1234,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
             String operator = "==";
             int column = table.columnAtPoint(currentPoint);
             int row = table.rowAtPoint(currentPoint);
-            String colName = table.getColumnName(column);
+            String colName = table.getColumnName(column).toUpperCase();
             String value = "";
 
             if (colName.equalsIgnoreCase(ChainsawConstants.TIMESTAMP_COL_NAME)) {
@@ -1270,7 +1270,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
             String operator = "==";
             int column = table.columnAtPoint(currentPoint);
             int row = table.rowAtPoint(currentPoint);
-            String colName = table.getColumnName(column);
+            String colName = table.getColumnName(column).toUpperCase();
             String value = "";
 
             if (colName.equalsIgnoreCase(ChainsawConstants.TIMESTAMP_COL_NAME)) {
@@ -1345,7 +1345,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
             String operator = "~=";
             int column = table.columnAtPoint(currentPoint);
             int row = table.rowAtPoint(currentPoint);
-            String colName = table.getColumnName(column);
+            String colName = table.getColumnName(column).toUpperCase();
             String value = "";
 
             if (colName.equalsIgnoreCase(ChainsawConstants.TIMESTAMP_COL_NAME)) {
@@ -1554,7 +1554,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
                 int index = 0;
                 StringTokenizer tok = new StringTokenizer(columnOrder, ",");
                 while (tok.hasMoreElements()) {
-                  String element = tok.nextElement().toString().trim();
+                  String element = tok.nextElement().toString().trim().toUpperCase();
                   TableColumn column = new TableColumn(index++);
                   column.setHeaderValue(element);
                   preferenceModel.addColumn(column);
@@ -2336,7 +2336,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     Map columnNameMap = new HashMap();
 
     for (int i = 0; i < columnModel.getColumnCount(); i++) {
-      columnNameMap.put(table.getColumnName(i), columnModel.getColumn(i));
+      columnNameMap.put(table.getColumnName(i).toUpperCase(), columnModel.getColumn(i));
     }
 
     int index = 0;
@@ -2349,7 +2349,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
        (may be a subset of possible columns)
      **/
     while (tok.hasMoreElements()) {
-      String element = (String) tok.nextElement();
+      String element = tok.nextElement().toString().trim().toUpperCase();
       TableColumn column = (TableColumn) columnNameMap.get(element);
 
       if (column != null) {

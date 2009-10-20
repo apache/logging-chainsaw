@@ -338,9 +338,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   }
 
   public String getColumnName(int column) {
-      //columnNames all upper, make 1st char upper & rest lower
-      String col = (String) columnNames.get(column);
-      return col.substring(0, 1).toUpperCase() + col.substring(1).toLowerCase();
+      return (String) columnNames.get(column);
   }
 
   public LoggingEvent getRow(int row) {
@@ -506,10 +504,9 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         if (!columnNames.contains(key) && !(Constants.LOG4J_ID_KEY.equalsIgnoreCase(key))) {
           columnNames.add(key);
           logger.debug("Adding col '" + key + "', columnNames=" + columnNames);
-          String mixedCaseKey = key.substring(0, 1).toUpperCase() + key.substring(1).toLowerCase();
           fireNewKeyColumnAdded(
             new NewKeyEvent(
-              this, columnNames.indexOf(key), mixedCaseKey, e.getProperty(key)));
+              this, columnNames.indexOf(key), key, e.getProperty(key)));
         }
       }
     }
