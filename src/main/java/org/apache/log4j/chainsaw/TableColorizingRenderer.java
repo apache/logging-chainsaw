@@ -27,12 +27,14 @@ import java.util.TimeZone;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.apache.log4j.chainsaw.color.Colorizer;
+import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.chainsaw.icons.LevelIconFactory;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.spi.LoggingEvent;
@@ -60,6 +62,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private int loggerPrecision = 0;
   private boolean toolTipsVisible;
   private String dateFormatTZ;
+  private final Icon markerIcon = new ImageIcon(ChainsawIcons.MARKER);
 
   /**
    * Creates a new TableColorizingRenderer object.
@@ -89,6 +92,9 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     JLabel c = (JLabel)super.getTableCellRendererComponent(table, value, 
         isSelected, hasFocus, row, col);
     int colIndex = table.getColumnModel().getColumn(col).getModelIndex() + 1;
+
+    EventContainer container = (EventContainer) table.getModel();
+    LoggingEvent event = container.getRow(row);
 
     switch (colIndex) {
     case ChainsawColumns.INDEX_ID_COL_NAME:
@@ -150,6 +156,12 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     default:
       break;
     }
+    //set the 'info' icon next to the zeroth column if marker is set
+    if (col == 0 && event.getProperty("log4j.marker") != null) {
+        c.setIcon(markerIcon);
+    } else {
+        c.setIcon(null);
+    }
 
     if (isSelected) {
       return c;
@@ -159,8 +171,6 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     Color foreground = null;
 
     if (colorizer != null) {
-      EventContainer container = (EventContainer) table.getModel();
-      LoggingEvent event = container.getRow(row);
 
       if (event == null) {
         //ignore...probably changed displayed cols
@@ -206,7 +216,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
 
   /**
    * Changes the Logger precision.
-   * @param precision
+   * @param loggerPrecisionText
    */
   void setLoggerPrecision(String loggerPrecisionText) {
     try {

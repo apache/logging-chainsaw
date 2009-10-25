@@ -79,7 +79,9 @@ public class ChainsawConstants {
 
   static final String LEVEL_DISPLAY = "level.display";
   static final String LEVEL_DISPLAY_ICONS = "icons";
-  static final String LEVEL_DISPLAY_TEXT = "text";  
+  static final String LEVEL_DISPLAY_TEXT = "text";
+
+  static final String MARKER_PROPERTY_NAME = "log4j.marker";
 
   static final String DATETIME_FORMAT = "EEE MMM dd HH:mm:ss z yyyy";
   

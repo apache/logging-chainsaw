@@ -85,6 +85,9 @@ public class ChainsawIcons {
   public static final URL HELP =
     ChainsawIcons.class.getClassLoader().getResource(
       BASE_ICON_PATH + "Help16.gif");
+  public static final URL MARKER =
+    ChainsawIcons.class.getClassLoader().getResource(
+      BASE_ICON_PATH + "About16.gif");
   public static final Icon ICON_UP = new ImageIcon(UP);
   public static final Icon ICON_DOWN = new ImageIcon(DOWN);
   public static final Icon ICON_HELP = new ImageIcon(HELP);

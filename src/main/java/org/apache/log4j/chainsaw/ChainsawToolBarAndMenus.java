@@ -75,6 +75,10 @@ class ChainsawToolBarAndMenus implements ChangeListener {
   private final Action closeAction;
   private final Action findNextAction;
   private final Action findPreviousAction;
+  private final Action findNextMarkerAction;
+  private final Action findPreviousMarkerAction;
+  private final Action toggleMarkerAction;
+  private final Action clearAllMarkersAction;
   private final Action pauseAction;
   private final Action showPreferencesAction;
   private final Action showColorPanelAction;
@@ -114,7 +118,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
   private final JMenu activeTabMenu = new JMenu("Current tab");
   private final JPanel findPanel;
 
-  ChainsawToolBarAndMenus(final LogUI logui) {
+    ChainsawToolBarAndMenus(final LogUI logui) {
     this.logui = logui;
     toolbar = new JToolBar(SwingConstants.HORIZONTAL);
     menuBar = new JMenuBar();
@@ -124,6 +128,10 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     findField = new JTextField();
     findNextAction = getFindNextAction();
     findPreviousAction = getFindPreviousAction();
+    findNextMarkerAction = createFindNextMarkerAction();
+    findPreviousMarkerAction = createFindPreviousMarkerAction();
+    toggleMarkerAction = createToggleMarkerAction();
+    clearAllMarkersAction = createClearAllMarkersAction();
     customExpressionPanelAction = createCustomExpressionPanelAction();
     showPreferencesAction = createShowPreferencesAction();
     showColorPanelAction = createShowColorPanelAction();
@@ -155,7 +163,8 @@ class ChainsawToolBarAndMenus implements ChangeListener {
 
     logPanelSpecificActions =
       new Action[] {
-        pauseAction, findNextAction, findPreviousAction, clearAction,
+        pauseAction, findNextAction, findPreviousAction, findNextMarkerAction, findPreviousMarkerAction,
+        toggleMarkerAction, clearAllMarkersAction, clearAction,
         fileMenu.getFileSaveAction(), toggleDetailPaneAction,
         showPreferencesAction, showColorPanelAction, undockAction,
         toggleLogTreeAction, toggleScrollToBottomAction, changeModelAction,
@@ -249,6 +258,78 @@ class ChainsawToolBarAndMenus implements ChangeListener {
 
      return action;
    }
+
+     private Action createFindNextMarkerAction() {
+       Action action =
+         new AbstractAction("Find next marker") {
+           public void actionPerformed(ActionEvent e) {
+             if (logui.getCurrentLogPanel() != null) {
+               logui.getCurrentLogPanel().findNextMarker();
+             }
+           }
+         };
+
+       action.putValue(Action.SHORT_DESCRIPTION, "Searches for the next marker from the current location");
+       action.putValue("enabled", Boolean.TRUE);
+       action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_N));
+       action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F2"));
+
+       return action;
+     }
+
+    private Action createFindPreviousMarkerAction() {
+      Action action =
+        new AbstractAction("Find previous marker") {
+          public void actionPerformed(ActionEvent e) {
+            if (logui.getCurrentLogPanel() != null) {
+              logui.getCurrentLogPanel().findPreviousMarker();
+            }
+          }
+        };
+
+      action.putValue(Action.SHORT_DESCRIPTION, "Searches for the previous marker from the current location");
+      action.putValue("enabled", Boolean.TRUE);
+      action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_P));
+      action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F2,  InputEvent.SHIFT_MASK));
+
+      return action;
+    }
+
+    private Action createToggleMarkerAction() {
+      Action action =
+        new AbstractAction("Toggle marker") {
+          public void actionPerformed(ActionEvent e) {
+            if (logui.getCurrentLogPanel() != null) {
+              logui.getCurrentLogPanel().toggleMarker();
+            }
+          }
+        };
+
+      action.putValue(Action.SHORT_DESCRIPTION, "Toggle marker for selected row");
+      action.putValue("enabled", Boolean.TRUE);
+      action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_T));
+      action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F2,  InputEvent.CTRL_MASK));
+
+      return action;
+    }
+
+    private Action createClearAllMarkersAction() {
+      Action action =
+        new AbstractAction("Clear all markers") {
+          public void actionPerformed(ActionEvent e) {
+            if (logui.getCurrentLogPanel() != null) {
+              logui.getCurrentLogPanel().clearAllMarkers();
+            }
+          }
+        };
+
+      action.putValue(Action.SHORT_DESCRIPTION, "Removes all markers");
+      action.putValue("enabled", Boolean.TRUE);
+      action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_R));
+      action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F2,  InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK));
+
+      return action;
+    }
 
    /**
    * DOCUMENT ME!
@@ -412,6 +493,13 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     activeTabMenu.addSeparator();
     activeTabMenu.add(new CopyEventsToClipboardAction(logui));
     activeTabMenu.add(new JMenuItem(clearAction));
+
+    activeTabMenu.addSeparator();
+    activeTabMenu.add(new JMenuItem(toggleMarkerAction));
+    activeTabMenu.add(new JMenuItem(findNextMarkerAction));
+    activeTabMenu.add(new JMenuItem(findPreviousMarkerAction));
+    activeTabMenu.add(new JMenuItem(clearAllMarkersAction));
+
     activeTabMenu.addSeparator();
     activeTabMenu.add(toggleScrollToBottomMenuItem);
     activeTabMenu.add(menuItemUseRightMouse);

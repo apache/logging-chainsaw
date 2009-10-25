@@ -333,7 +333,21 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     }
   }
 
-  public int getColumnCount() {
+    public void removePropertyFromEvents(String propName) {
+        for (Iterator iter = unfilteredList.iterator();iter.hasNext();) {
+            LoggingEvent event = (LoggingEvent)iter.next();
+            event.removeProperty(propName);
+        }
+        for (int i=0;i<filteredList.size();i++) {
+            LoggingEvent event = (LoggingEvent)filteredList.get(i);
+            Object result = event.removeProperty(propName);
+            if (result != null) {
+                fireRowUpdated(i);
+            }
+        }
+    }
+
+    public int getColumnCount() {
     return columnNames.size();
   }
 
@@ -549,7 +563,11 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   }});
   }
 
-  /**
+    public void fireRowUpdated(int row) {
+        fireTableRowsUpdated(row, row);
+    }
+
+    /**
   * @param e
   */
   private void fireNewKeyColumnAdded(NewKeyEvent e) {

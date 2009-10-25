@@ -140,6 +140,11 @@ public interface EventContainer extends SortTableModel, LoggerNameModel {
    */
   void fireTableEvent(int begin, int end, int count);
 
+    /**
+     * A row was updated
+     * @param row
+     */
+  void fireRowUpdated(int row);
   /**
    * Allow a forced notification of the EventCountListeners
    *
@@ -157,4 +162,10 @@ public interface EventContainer extends SortTableModel, LoggerNameModel {
    * @param e
    */
   int getRowIndex(LoggingEvent e);
+
+  /**
+   * Remove property from all events in container
+   * @param propName the property name to remove
+   */
+  void removePropertyFromEvents(String propName);
 }

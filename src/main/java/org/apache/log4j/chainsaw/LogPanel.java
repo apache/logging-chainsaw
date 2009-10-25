@@ -230,6 +230,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
   private Point currentPoint;
   private boolean paused = false;
   private Rule findRule;
+  private Rule findMarkerRule;
   private final JPanel findPanel;
   private JTextField findField;
   private final int dividerSize;
@@ -559,6 +560,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
      */
     tableModel = new ChainsawCyclicBufferTableModel(cyclicBufferSize);
     table = new JSortTable(tableModel);
+
+    //we've mapped f2, shift f2 and ctrl-f2 to marker-related actions, unmap them from the table
+    table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke("F2"), "none");
+    table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.SHIFT_MASK), "none");
+    table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.CTRL_MASK), "none");
+    table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK), "none");
+
     //add a listener to update the 'refine focus'
     tableModel.addNewKeyListener(new NewKeyListener() {
 		public void newKeyAdded(NewKeyEvent e) {
@@ -681,6 +689,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     table.setAutoCreateColumnsFromModel(false);
 
     table.addMouseMotionListener(new TableColumnDetailMouseListener());
+    table.addMouseListener(new TableMarkerListener());
 
     table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
@@ -1022,7 +1031,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
             
         }
     });
-
+    findMarkerRule = ExpressionRule.getRule("prop." + ChainsawConstants.MARKER_PROPERTY_NAME + " exists");
+        
     tableModel.addTableModelListener(new TableModelListener() {
 		public void tableChanged(TableModelEvent e) {
 			detailPaneUpdater.setSelectedRow(table.getSelectedRow());
@@ -1874,7 +1884,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
         "Enter expression - right click or ctrl-space for menu");
       return false;
     } else {
-      //only turn off scroltobottom when finding something (find not empty)
+      //only turn off scrolltobottom when finding something (find not empty)
       preferenceModel.setScrollToBottom(false);
       try {
         findField.setToolTipText(
@@ -2477,7 +2487,41 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     filterModel.processNewLoggingEvent(event);
   }
 
-  /**
+    public void findNextMarker() {
+      final int nextRow = tableModel.find(findMarkerRule, table.getSelectedRow() + 1, true);
+
+      if (nextRow > -1) {
+        table.scrollToRow(nextRow);
+      }
+    }
+
+    public void findPreviousMarker() {
+        final int previousRow = tableModel.find(findMarkerRule, table.getSelectedRow() - 1, false);
+
+        if (previousRow > -1) {
+          table.scrollToRow(previousRow);
+        }
+    }
+
+    public void clearAllMarkers() {
+        tableModel.removePropertyFromEvents(ChainsawConstants.MARKER_PROPERTY_NAME);
+    }
+
+    public void toggleMarker() {
+        int row = table.getSelectedRow();
+        if (row != -1) {
+          LoggingEvent event = tableModel.getRow(row);
+          Object marker = event.getProperty(ChainsawConstants.MARKER_PROPERTY_NAME);
+          if (marker == null) {
+              event.setProperty(ChainsawConstants.MARKER_PROPERTY_NAME, "true");
+          } else {
+              event.removeProperty(ChainsawConstants.MARKER_PROPERTY_NAME);
+          }
+          tableModel.fireRowUpdated(row);
+        }
+    }
+
+    /**
    * This class receives notification when the Refine focus text field is
    * updated, where a backgrounh thread periodically wakes up and checks if
    * they have stopped typing yet. This ensures that the filtering of the
@@ -2593,6 +2637,24 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
         }
       }
     }
+  }
+
+  private final class TableMarkerListener extends MouseAdapter {
+      public void mouseClicked(MouseEvent evt) {
+          if (evt.getClickCount() == 2) {
+              int row = table.rowAtPoint(evt.getPoint());
+              if (row != -1) {
+                LoggingEvent event = tableModel.getRow(row);
+                Object marker = event.getProperty(ChainsawConstants.MARKER_PROPERTY_NAME);
+                if (marker == null) {
+                    event.setProperty(ChainsawConstants.MARKER_PROPERTY_NAME, "true");
+                } else {
+                    event.removeProperty(ChainsawConstants.MARKER_PROPERTY_NAME);
+                }
+                tableModel.fireRowUpdated(row);
+              }
+          }
+      }
   }
 
   /**
