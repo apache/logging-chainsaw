@@ -88,6 +88,7 @@ class FileSaveAction extends AbstractAction {
 
     File selectedFile = chooser.getSelectedFile();
     XMLLayout layout = new XMLLayout();
+    layout.setProperties(true);
     LoggingEvent event = null;
     PrintWriter out = null;
 
