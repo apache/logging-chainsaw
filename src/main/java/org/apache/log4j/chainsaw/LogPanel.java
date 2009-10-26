@@ -2513,11 +2513,12 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
           LoggingEvent event = tableModel.getRow(row);
           Object marker = event.getProperty(ChainsawConstants.MARKER_PROPERTY_NAME);
           if (marker == null) {
-              event.setProperty(ChainsawConstants.MARKER_PROPERTY_NAME, "true");
+              event.setProperty(ChainsawConstants.MARKER_PROPERTY_NAME, "set");
           } else {
               event.removeProperty(ChainsawConstants.MARKER_PROPERTY_NAME);
           }
-          tableModel.fireRowUpdated(row);
+          //if marker -was- null, it no longer is (may need to add the column)
+          tableModel.fireRowUpdated(row, (marker == null));
         }
     }
 
@@ -2647,11 +2648,12 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
                 LoggingEvent event = tableModel.getRow(row);
                 Object marker = event.getProperty(ChainsawConstants.MARKER_PROPERTY_NAME);
                 if (marker == null) {
-                    event.setProperty(ChainsawConstants.MARKER_PROPERTY_NAME, "true");
+                    event.setProperty(ChainsawConstants.MARKER_PROPERTY_NAME, "set");
                 } else {
                     event.removeProperty(ChainsawConstants.MARKER_PROPERTY_NAME);
                 }
-                tableModel.fireRowUpdated(row);
+                //if marker -was- null, it no longer is (may need to add the column)
+                tableModel.fireRowUpdated(row, (marker == null));
               }
           }
       }

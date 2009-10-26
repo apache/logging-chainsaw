@@ -342,7 +342,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
             LoggingEvent event = (LoggingEvent)filteredList.get(i);
             Object result = event.removeProperty(propName);
             if (result != null) {
-                fireRowUpdated(i);
+                fireRowUpdated(i, false);
             }
         }
     }
@@ -501,34 +501,39 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
       }
     }
 
-    /**
-     * Is this a new Property key we haven't seen before?  Remember that now MDC has been merged
-     * into the Properties collection
-     */
-    boolean newColumn = uniquePropertyKeys.addAll(e.getPropertyKeySet());
-
-    if (newColumn) {
-      /**
-       * If so, we should add them as columns and notify listeners.
-       */
-      for (Iterator iter = e.getPropertyKeySet().iterator(); iter.hasNext();) {
-        String key = iter.next().toString().toUpperCase();
-
-        //add all keys except the 'log4jid' key (columnNames is all-caps)
-        if (!columnNames.contains(key) && !(Constants.LOG4J_ID_KEY.equalsIgnoreCase(key))) {
-          columnNames.add(key);
-          logger.debug("Adding col '" + key + "', columnNames=" + columnNames);
-          fireNewKeyColumnAdded(
-            new NewKeyEvent(
-              this, columnNames.indexOf(key), key, e.getProperty(key)));
-        }
-      }
-    }
+    checkForNewColumn(e);
 
     return rowAdded;
   }
 
-  public int getLastAdded() {
+   private void checkForNewColumn(LoggingEvent e)
+   {
+      /**
+       * Is this a new Property key we haven't seen before?  Remember that now MDC has been merged
+       * into the Properties collection
+       */
+      boolean newColumn = uniquePropertyKeys.addAll(e.getPropertyKeySet());
+
+      if (newColumn) {
+        /**
+         * If so, we should add them as columns and notify listeners.
+         */
+        for (Iterator iter = e.getPropertyKeySet().iterator(); iter.hasNext();) {
+          String key = iter.next().toString().toUpperCase();
+
+          //add all keys except the 'log4jid' key (columnNames is all-caps)
+          if (!columnNames.contains(key) && !(Constants.LOG4J_ID_KEY.equalsIgnoreCase(key))) {
+            columnNames.add(key);
+            logger.debug("Adding col '" + key + "', columnNames=" + columnNames);
+            fireNewKeyColumnAdded(
+              new NewKeyEvent(
+                this, columnNames.indexOf(key), key, e.getProperty(key)));
+          }
+        }
+      }
+   }
+
+    public int getLastAdded() {
     int last = 0;
 
     if (cyclic) {
@@ -563,8 +568,12 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   }});
   }
 
-    public void fireRowUpdated(int row) {
+    public void fireRowUpdated(int row, boolean checkForNewColumns) {
         fireTableRowsUpdated(row, row);
+        if (checkForNewColumns) {
+            //row may have had a column added..if so, make sure a column is added
+            checkForNewColumn(getRow(row));
+        }
     }
 
     /**
@@ -617,9 +626,22 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     case ChainsawColumns.INDEX_THROWABLE_COL_NAME:
       return true;
     }
+    String columnName = getColumnName(columnIndex);
+    if (columnName.toLowerCase().equals(ChainsawConstants.MARKER_PROPERTY_NAME)) {
+      return true;
+    }
 
     return super.isCellEditable(rowIndex, columnIndex);
   }
+
+    public void setValueAt(Object value, int rowIndex, int columnIndex)
+    {
+        String columnName = getColumnName(columnIndex);
+        if (columnName.toLowerCase().equals(ChainsawConstants.MARKER_PROPERTY_NAME)) {
+            LoggingEvent event = getRow(rowIndex);
+            event.setProperty(ChainsawConstants.MARKER_PROPERTY_NAME, value.toString());
+        }
+    }
 
   /* (non-Javadoc)
    * @see org.apache.log4j.chainsaw.EventContainer#setCyclic(boolean)

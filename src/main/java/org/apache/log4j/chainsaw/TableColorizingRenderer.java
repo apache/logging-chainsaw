@@ -22,7 +22,9 @@ import java.awt.Component;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 
 import javax.swing.BorderFactory;
@@ -32,6 +34,7 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableColumn;
 
 import org.apache.log4j.chainsaw.color.Colorizer;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
@@ -91,7 +94,9 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
 
     JLabel c = (JLabel)super.getTableCellRendererComponent(table, value, 
         isSelected, hasFocus, row, col);
-    int colIndex = table.getColumnModel().getColumn(col).getModelIndex() + 1;
+
+    TableColumn tableColumn = table.getColumnModel().getColumn(col);
+    int colIndex = tableColumn.getModelIndex() + 1;
 
     EventContainer container = (EventContainer) table.getModel();
     LoggingEvent event = container.getRow(row);
@@ -126,6 +131,16 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
 
     c.setText(logger.substring(startPos + 1));
       break;
+    case ChainsawColumns.INDEX_CLASS_COL_NAME:
+    case ChainsawColumns.INDEX_FILE_COL_NAME:
+    case ChainsawColumns.INDEX_LINE_COL_NAME:
+    case ChainsawColumns.INDEX_MESSAGE_COL_NAME:
+    case ChainsawColumns.INDEX_NDC_COL_NAME:
+    case ChainsawColumns.INDEX_THREAD_COL_NAME:
+    case ChainsawColumns.INDEX_TIMESTAMP_COL_NAME:
+    case ChainsawColumns.INDEX_METHOD_COL_NAME:
+      c.setText(value.toString());
+      break;
 
     case ChainsawColumns.INDEX_LEVEL_COL_NAME:
       if (levelUseIcons) {
@@ -153,11 +168,26 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
       c = levelComponent;
       break;
 
+    //remaining entries are properties
     default:
-      break;
+        Set propertySet = event.getPropertyKeySet();
+        String headerName = tableColumn.getHeaderValue().toString().toLowerCase();
+        String thisProp = null;
+        //find the property in the property set...case-sensitive
+        for (Iterator iter = propertySet.iterator();iter.hasNext();) {
+            String entry = iter.next().toString();
+            if (entry.toLowerCase().equals(headerName)) {
+                thisProp = entry;
+                break;
+            }
+        }
+        if (thisProp != null) {
+            c.setText(event.getProperty(headerName));
+        }
+        break;
     }
-    //set the 'info' icon next to the zeroth column if marker is set
-    if (col == 0 && event.getProperty("log4j.marker") != null) {
+    //set the 'marker' icon next to the zeroth column if marker is set
+    if (col == 0 && event.getProperty(ChainsawConstants.MARKER_PROPERTY_NAME) != null) {
         c.setIcon(markerIcon);
     } else {
         c.setIcon(null);

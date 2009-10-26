@@ -143,8 +143,9 @@ public interface EventContainer extends SortTableModel, LoggerNameModel {
     /**
      * A row was updated
      * @param row
+     * @param checkForNewColumns
      */
-  void fireRowUpdated(int row);
+  void fireRowUpdated(int row, boolean checkForNewColumns);
   /**
    * Allow a forced notification of the EventCountListeners
    *
