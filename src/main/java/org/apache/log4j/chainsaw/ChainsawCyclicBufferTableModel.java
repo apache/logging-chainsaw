@@ -639,7 +639,12 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         String columnName = getColumnName(columnIndex);
         if (columnName.toLowerCase().equals(ChainsawConstants.MARKER_PROPERTY_NAME)) {
             LoggingEvent event = getRow(rowIndex);
-            event.setProperty(ChainsawConstants.MARKER_PROPERTY_NAME, value.toString());
+            //if the entry is cleared, remove the property
+            if (value != null && !value.toString().trim().equals("")) {
+                event.setProperty(ChainsawConstants.MARKER_PROPERTY_NAME, value.toString());
+            } else {
+                event.removeProperty(ChainsawConstants.MARKER_PROPERTY_NAME);
+            }
         }
     }
 
