@@ -61,11 +61,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.EventObject;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -101,6 +103,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
+import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -110,6 +113,7 @@ import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.text.Document;
@@ -243,6 +247,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
   private final Logger logger = LogManager.getLogger(LogPanel.class);
   private final Vector filterExpressionVector;
   private static final Color INVALID_EXPRESSION_BACKGROUND = new Color(251, 186, 186);
+  private TableCellEditor markerCellEditor;
 
     /**
    * Creates a new LogPanel object.  If a LogPanel with this identifier has
@@ -795,6 +800,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
      * Throwable popup
      */
     throwableRenderPanel = new ThrowableRenderPanel();
+    markerCellEditor = new MarkerCellEditor();
 
     final JDialog detailDialog = new JDialog((JFrame) null, true);
     Container container = detailDialog.getContentPane();
@@ -2723,6 +2729,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
           (column.getModelIndex() + 1) == ChainsawColumns.INDEX_THROWABLE_COL_NAME) {
           column.setCellEditor(throwableRenderPanel);
         }
+        if (column.getHeaderValue().toString().toLowerCase().equals(ChainsawConstants.MARKER_PROPERTY_NAME)) {
+          column.setCellEditor(markerCellEditor);
+        }
       }
     }
 
@@ -2846,4 +2855,66 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
         });
     }
   }
+
+    private class MarkerCellEditor implements TableCellEditor {
+        JTextField textField = new JTextField();
+        Set cellEditorListeners = new HashSet();
+        private LoggingEvent currentEvent;
+
+        public Object getCellEditorValue()
+        {
+            return textField.getText();
+        }
+
+        public boolean isCellEditable(EventObject anEvent)
+        {
+            return true;
+        }
+
+        public boolean shouldSelectCell(EventObject anEvent)
+        {
+            textField.selectAll();
+            return true;
+        }
+
+        public boolean stopCellEditing()
+        {
+            if (textField.getText().trim().equals("")) {
+                currentEvent.removeProperty(ChainsawConstants.MARKER_PROPERTY_NAME);
+            } else {
+                currentEvent.setProperty(ChainsawConstants.MARKER_PROPERTY_NAME, textField.getText());
+            }
+            ChangeEvent event = new ChangeEvent(table);
+            for (Iterator iter = cellEditorListeners.iterator();iter.hasNext();) {
+                ((CellEditorListener)iter.next()).editingStopped(event);
+            }
+            return true;
+        }
+
+        public void cancelCellEditing()
+        {
+           ChangeEvent event = new ChangeEvent(table);
+           for (Iterator iter = cellEditorListeners.iterator();iter.hasNext();) {
+               ((CellEditorListener)iter.next()).editingCanceled(event);
+           }
+        }
+
+        public void addCellEditorListener(CellEditorListener l)
+        {
+            cellEditorListeners.add(l);
+        }
+
+        public void removeCellEditorListener(CellEditorListener l)
+        {
+            cellEditorListeners.remove(l);
+        }
+
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column)
+        {
+            currentEvent = tableModel.getRow(row);
+            textField.setText(currentEvent.getProperty(ChainsawConstants.MARKER_PROPERTY_NAME));
+            textField.selectAll();
+            return textField;
+        }
+    }
 }

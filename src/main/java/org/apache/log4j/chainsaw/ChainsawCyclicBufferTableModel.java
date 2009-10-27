@@ -634,20 +634,6 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     return super.isCellEditable(rowIndex, columnIndex);
   }
 
-    public void setValueAt(Object value, int rowIndex, int columnIndex)
-    {
-        String columnName = getColumnName(columnIndex);
-        if (columnName.toLowerCase().equals(ChainsawConstants.MARKER_PROPERTY_NAME)) {
-            LoggingEvent event = getRow(rowIndex);
-            //if the entry is cleared, remove the property
-            if (value != null && !value.toString().trim().equals("")) {
-                event.setProperty(ChainsawConstants.MARKER_PROPERTY_NAME, value.toString());
-            } else {
-                event.removeProperty(ChainsawConstants.MARKER_PROPERTY_NAME);
-            }
-        }
-    }
-
   /* (non-Javadoc)
    * @see org.apache.log4j.chainsaw.EventContainer#setCyclic(boolean)
    */
