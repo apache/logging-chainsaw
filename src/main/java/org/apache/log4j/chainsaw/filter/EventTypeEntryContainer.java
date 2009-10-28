@@ -53,7 +53,6 @@ public class EventTypeEntryContainer {
   private DefaultListModel loggerListModel = new DefaultListModel();
   private DefaultListModel threadListModel = new DefaultListModel();
   private DefaultListModel fileNameListModel = new DefaultListModel();
-  private Map propertiesListModelMap = new HashMap();
   private Map modelMap = new HashMap();
   private static final String LOGGER_FIELD = "LOGGER";
   private static final String LEVEL_FIELD = "LEVEL";
@@ -77,7 +76,7 @@ public class EventTypeEntryContainer {
   
   public boolean modelExists(String fieldName) {
       if (fieldName != null) {
-        return (fieldName.toUpperCase().startsWith(PROP_FIELD) || modelMap.keySet().contains(fieldName.toUpperCase()));
+        return modelMap.keySet().contains(fieldName.toUpperCase());
       }
       return false;
   }
@@ -88,14 +87,6 @@ public class EventTypeEntryContainer {
           if (model != null) {
               return model;
           }
-          //drop prop field and optional ticks around field name
-          if (fieldName.startsWith(PROP_FIELD)) {
-              fieldName = fieldName.substring(PROP_FIELD.length());
-              if ((fieldName.startsWith("'")) && (fieldName.endsWith("'"))) {
-                  fieldName = fieldName.substring(1, fieldName.length() - 1);
-              }
-          }
-          return (ListModel)propertiesListModelMap.get(fieldName);
       }
       return null;
   } 
@@ -156,14 +147,6 @@ public class EventTypeEntryContainer {
             Map.Entry entry = (Map.Entry)iter.next();
             if (!(propListModel.contains(entry.getKey()))) {
                 propListModel.addElement(entry.getKey());
-            }
-            DefaultListModel model = (DefaultListModel)propertiesListModelMap.get(entry.getKey());
-            if (model == null) {
-                model = new DefaultListModel();
-                propertiesListModelMap.put(entry.getKey(), model);
-            }
-            if (!(model.contains(entry.getValue()))) {
-                model.addElement(entry.getValue());
             }
         }
     }
