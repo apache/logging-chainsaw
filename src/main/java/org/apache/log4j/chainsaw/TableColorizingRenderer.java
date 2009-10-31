@@ -195,7 +195,10 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
       if (event.getProperty(ChainsawConstants.MARKER_PROPERTY_NAME) != null) {
         c.setIcon(markerIcon);
       } else {
-        c.setIcon(null);
+        //only null out the column if it's not the level field
+        if (colIndex != ChainsawColumns.INDEX_LEVEL_COL_NAME) {
+            c.setIcon(null);
+        }
       }
     }
 
