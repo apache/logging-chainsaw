@@ -613,6 +613,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
   private Action createCustomExpressionPanelAction() {
     final JDialog dialog = new JDialog(logui, "Define tab", true);
     dialog.getContentPane().add(getCustomExpressionPanel());
+    dialog.setLocationRelativeTo(null);
     dialog.pack();
 
     Action createExpressionPanel =
@@ -623,7 +624,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
       };
 
     createExpressionPanel.putValue(
-      Action.SHORT_DESCRIPTION, "Create custom expression LogPanel...");
+      Action.SHORT_DESCRIPTION, "Create custom expression LogPanel...   ");
 
     // TODO think of good mnemonics and HotKey for this action
     return createExpressionPanel;

@@ -318,7 +318,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
 
     externalPanel = new DockablePanel();
     externalPanel.setLayout(new BorderLayout());
-    undockedFrame.getContentPane().add(externalPanel);
 
     undockedFrame.addWindowListener(
       new WindowAdapter() {
@@ -329,6 +328,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
 
     undockedToolbar = createDockwindowToolbar();
     externalPanel.add(undockedToolbar, BorderLayout.NORTH);
+    undockedFrame.getContentPane().add(externalPanel);
+    undockedFrame.setSize(new Dimension(1024, 768));
     undockedFrame.pack();
 
     /*
@@ -1593,8 +1594,14 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
                 nameTreeAndMainPanelSplit.setDividerLocation(in.readInt());
                 detailLayout.setConversionPattern(in.readObject().toString());
                 Point p = (Point)in.readObject();
-                undockedFrame.setLocation(p.x, p.y);
-                undockedFrame.setSize(((Dimension)in.readObject()));
+                Dimension d = (Dimension)in.readObject();
+                if (p.x != 0 && p.y != 0) {
+                    undockedFrame.setLocation(p.x, p.y);
+                    undockedFrame.setSize(d);
+                } else {
+                    undockedFrame.setLocation(0, 0);
+                    undockedFrame.setSize(new Dimension(1024, 768));
+                }
 
                 int versionNumber = 0;
                 Vector savedVector;
@@ -1806,6 +1813,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     externalPanel.add(undockedToolbar, BorderLayout.NORTH);
     externalPanel.add(nameTreeAndMainPanelSplit, BorderLayout.CENTER);
     externalPanel.setDocked(false);
+    undockedFrame.pack();
 
     undockedFrame.setVisible(true);
     dockingAction.putValue(Action.NAME, "Dock");

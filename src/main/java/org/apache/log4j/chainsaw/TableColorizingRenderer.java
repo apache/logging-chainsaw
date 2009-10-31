@@ -100,6 +100,10 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
 
     EventContainer container = (EventContainer) table.getModel();
     LoggingEvent event = container.getRow(row);
+    //no event, use default renderer
+    if (event == null) {
+        return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+    }
 
     switch (colIndex) {
     case ChainsawColumns.INDEX_ID_COL_NAME:
@@ -187,10 +191,12 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         break;
     }
     //set the 'marker' icon next to the zeroth column if marker is set
-    if (col == 0 && event.getProperty(ChainsawConstants.MARKER_PROPERTY_NAME) != null) {
+    if (col == 0) {
+      if (event.getProperty(ChainsawConstants.MARKER_PROPERTY_NAME) != null) {
         c.setIcon(markerIcon);
-    } else {
+      } else {
         c.setIcon(null);
+      }
     }
 
     if (isSelected) {

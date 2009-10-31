@@ -17,6 +17,8 @@
 
 package org.apache.log4j.chainsaw;
 
+import java.awt.Dimension;
+
 import javax.swing.JPanel;
 
 
@@ -38,4 +40,8 @@ public class DockablePanel extends JPanel {
     return isDocked;
   }
 
+    public Dimension getPreferredSize()
+    {
+        return new Dimension(1024, 768);
+    }
 }
