@@ -373,6 +373,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     
     Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
 		public void uncaughtException(Thread t, Throwable e) {
+            e.printStackTrace();
 			logger.error("Uncaught exception in thread " + t, e);
 		}
     });
@@ -405,7 +406,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             }
         }});
 
-    if (config == null) {
+    if (config == null || config.trim().equals("")) {
       logger.info("No auto-configuration file found within the ApplicationPreferenceModel");
     } else {
       logger.info("Using '" + config + "' for auto-configuration");

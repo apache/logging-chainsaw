@@ -17,11 +17,14 @@
 
 package org.apache.log4j.chainsaw;
 
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Dictionary;
 import java.util.Enumeration;
@@ -31,9 +34,13 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.InputVerifier;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -67,7 +74,7 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
   private JTextField identifierExpression;
   private JTextField toolTipDisplayMillis;
   private JTextField cyclicBufferSize;    
-  private final JTextField configurationURL = new JTextField(35);
+  private JComboBox configurationURL;
   private final Logger logger;
 
   ApplicationPreferenceModelPanel(ApplicationPreferenceModel model) {
@@ -77,7 +84,7 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
     getOkButton().addActionListener(
       new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          uncommittedPreferenceModel.setConfigurationURL(configurationURL.getText());
+          uncommittedPreferenceModel.setConfigurationURL((String)configurationURL.getSelectedItem());
           uncommittedPreferenceModel.setIdentifierExpression(
             identifierExpression.getText());
             try {
@@ -409,6 +416,11 @@ public static void main(String[] args) {
     private void initComponents() {
       setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
+      configurationURL = new JComboBox(new DefaultComboBoxModel(committedPreferenceModel.getConfigurationURLs()));
+      configurationURL.setEditable(true);
+      configurationURL.setPrototypeDisplayValue("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+      configurationURL.setPreferredSize(new Dimension(375, 25));
+
       identifierExpression = new JTextField(20);
       toolTipDisplayMillis = new JTextField(8);
       cyclicBufferSize = new JTextField(8);
@@ -470,11 +482,50 @@ public static void main(String[] args) {
       p6.add(configurationURL);
       add(p6);
 
-      JPanel p7 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-      p7.add(
+      JButton browseButton = new JButton("Browse");
+      browseButton.addActionListener(new ActionListener()
+      {
+          public void actionPerformed(ActionEvent e)
+          {
+
+              String defaultPath = ".";
+              if (configurationURL.getItemCount() > 0) {
+                File currentConfigurationPath = new File(configurationURL.getSelectedItem().toString()).getParentFile();
+                  defaultPath = currentConfigurationPath.getPath();
+                  //JFileChooser constructor will not navigate to this location unless we remove the prefixing protocol and slash
+                  //at least on winxp
+                  if (defaultPath.toLowerCase().startsWith("file:\\")) {
+                      defaultPath = defaultPath.substring("file:\\".length());
+                  }
+              }
+
+              JFileChooser chooser = new JFileChooser(defaultPath);
+              int result = chooser.showOpenDialog(ApplicationPreferenceModelPanel.this);
+              if (JFileChooser.APPROVE_OPTION == result) {
+                  File f = chooser.getSelectedFile();
+                  try
+                  {
+                      String newConfigurationFile = f.toURI().toURL().toExternalForm();
+                      configurationURL.addItem(newConfigurationFile);
+                      configurationURL.setSelectedItem(newConfigurationFile);
+                  }
+                  catch (MalformedURLException e1)
+                  {
+                      e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                  }
+              }
+          }
+      });
+
+      JPanel p7 = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+      p7.add(browseButton);
+      add(p7);
+
+      JPanel p8 = new JPanel(new FlowLayout(FlowLayout.LEFT));
+      p8.add(
         new JLabel(
           "Cyclic buffer size change will apply the next time you start Chainsaw"));
-      add(p7);
+      add(p8);
 
       add(Box.createVerticalGlue());
       
@@ -484,12 +535,13 @@ public static void main(String[] args) {
         public boolean verify(JComponent input)
         {
             try {
-                new URL(configurationURL.getText());
+                new URL((String)configurationURL.getSelectedItem());
             } catch (Exception e) {
                 return false;
             }
             return true;
         }});
+        configurationURL.setSelectedItem(committedPreferenceModel.getConfigurationURL());
     }
 
     private void initSliderComponent() {
@@ -643,7 +695,7 @@ public static void main(String[] args) {
 
           public void propertyChange(PropertyChangeEvent evt) {
             String value = evt.getNewValue().toString();
-            configurationURL.setText(value);
+            configurationURL.setSelectedItem(value);
           }});
       confirmExit.addActionListener(
         new ActionListener() {
@@ -673,7 +725,7 @@ public static void main(String[] args) {
       identifierExpression.setText(uncommittedPreferenceModel.getIdentifierExpression());
       toolTipDisplayMillis.setText(uncommittedPreferenceModel.getToolTipDisplayMillis()+"");
       cyclicBufferSize.setText(uncommittedPreferenceModel.getCyclicBufferSize() + "");
-      configurationURL.setText(uncommittedPreferenceModel.getConfigurationURL());
+      configurationURL.setSelectedItem(uncommittedPreferenceModel.getConfigurationURL());
     }
   }
 }

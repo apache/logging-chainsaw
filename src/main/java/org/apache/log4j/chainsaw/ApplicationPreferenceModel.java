@@ -18,6 +18,7 @@ package org.apache.log4j.chainsaw;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Vector;
 
 
 /**
@@ -50,13 +51,15 @@ public class ApplicationPreferenceModel {
     /**
      * If not 'empty', this property will be used as the URL to load log4j configuration at startup
      */
-    private String configurationURL="";
-	  
+    private Vector configurationURLs=new Vector();
+
+    private String configurationURL = "";
     /**
      *    this means for Receivers that require optional jars that can't be delivered
      *    by the Web start classloader, we need to be able to remove the SecurityManager in place
      */
     private boolean okToRemoveSecurityManager = false;
+    private static final int CONFIGURATION_URL_ENTRY_COUNT = 10;
 
     /**
      * @param listener
@@ -185,6 +188,7 @@ public class ApplicationPreferenceModel {
       setShowSplash(model.isShowSplash());
       setToolTipDisplayMillis(model.getToolTipDisplayMillis());
       setCyclicBufferSize(model.getCyclicBufferSize());
+      setConfigurationURLs(model.getConfigurationURLs());
       setConfigurationURL(model.getConfigurationURL());
       setLastUsedVersion(model.getLastUsedVersion());
       setOkToRemoveSecurityManager(model.isOkToRemoveSecurityManager());
@@ -232,6 +236,14 @@ public class ApplicationPreferenceModel {
      */
     public final boolean isStatusBar() {
       return statusBar;
+    }
+
+    public Vector getConfigurationURLs() {
+        return configurationURLs;
+    }
+
+    public void setConfigurationURLs(Vector urls) {
+        configurationURLs = urls;
     }
 
     /**
@@ -333,9 +345,20 @@ public class ApplicationPreferenceModel {
      */
     public final void setConfigurationURL(String configurationURL)
     {
+        //don't add empty entries
+        if (configurationURL == null || configurationURL.trim().equals("")) {
+            return;
+        }
         Object oldValue = this.configurationURL;
-        this.configurationURL = configurationURL;
-        firePropertyChange("configurationURL", oldValue, this.configurationURL);
+        //add entry to MRU list
+        if (!configurationURLs.contains(configurationURL)) {
+          if (configurationURLs.size() == CONFIGURATION_URL_ENTRY_COUNT) {
+              configurationURLs.remove(CONFIGURATION_URL_ENTRY_COUNT - 1);
+          }
+          configurationURLs.add(0, configurationURL);
+        }
+      this.configurationURL = configurationURL;
+      firePropertyChange("configurationURL", oldValue, this.configurationURL);
     }
     /**
      * @return Returns the lastUsedVersion.
