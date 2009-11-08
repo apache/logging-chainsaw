@@ -354,6 +354,20 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     Logger.getLogger("org.apache").removeAllAppenders();
     Logger.getLogger("org.apache").addAppender(rewriteAppender);
     Logger.getLogger("org.apache").setAdditivity(false);
+
+    //commons-vfs uses httpclient for http filesystem support, route this to the chainsaw-log tab as well
+    appenders = Logger.getLogger("httpclient").getAllAppenders();
+    if (!appenders.hasMoreElements()) {
+        appenders = Logger.getRootLogger().getAllAppenders();
+    }
+    while (appenders.hasMoreElements()) {
+        Appender nextAppender = (Appender)appenders.nextElement();
+        rewriteAppender.addAppender(nextAppender);
+    }
+    Logger.getLogger("httpclient").removeAllAppenders();
+    Logger.getLogger("httpclient").addAppender(rewriteAppender);
+    Logger.getLogger("httpclient").setAdditivity(false);
+
     //set the commons.vfs.cache logger to info, since it can contain password information
     Logger.getLogger("org.apache.commons.vfs.cache").setLevel(Level.INFO);
     
