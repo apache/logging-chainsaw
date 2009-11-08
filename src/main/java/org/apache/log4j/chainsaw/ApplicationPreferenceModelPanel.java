@@ -506,7 +506,9 @@ public static void main(String[] args) {
                   try
                   {
                       String newConfigurationFile = f.toURI().toURL().toExternalForm();
-                      configurationURL.addItem(newConfigurationFile);
+                      if (!committedPreferenceModel.getConfigurationURLs().contains(newConfigurationFile)) {
+                        configurationURL.addItem(newConfigurationFile);
+                      }
                       configurationURL.setSelectedItem(newConfigurationFile);
                   }
                   catch (MalformedURLException e1)
