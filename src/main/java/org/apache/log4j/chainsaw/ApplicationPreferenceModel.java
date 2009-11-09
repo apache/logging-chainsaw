@@ -188,7 +188,10 @@ public class ApplicationPreferenceModel {
       setShowSplash(model.isShowSplash());
       setToolTipDisplayMillis(model.getToolTipDisplayMillis());
       setCyclicBufferSize(model.getCyclicBufferSize());
-      setConfigurationURLs(model.getConfigurationURLs());
+      Vector configurationURLs = model.getConfigurationURLs();
+      if (configurationURLs != null) {
+        setConfigurationURLs(model.getConfigurationURLs());
+      }
       setConfigurationURL(model.getConfigurationURL());
       setLastUsedVersion(model.getLastUsedVersion());
       setOkToRemoveSecurityManager(model.isOkToRemoveSecurityManager());
