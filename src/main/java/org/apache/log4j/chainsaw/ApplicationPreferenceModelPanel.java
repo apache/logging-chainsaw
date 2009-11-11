@@ -419,13 +419,13 @@ public static void main(String[] args) {
       configurationURL = new JComboBox(new DefaultComboBoxModel(committedPreferenceModel.getConfigurationURLs()));
       configurationURL.setEditable(true);
       configurationURL.setPrototypeDisplayValue("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-      configurationURL.setPreferredSize(new Dimension(375, 25));
+      configurationURL.setPreferredSize(new Dimension(375, 15));
 
-      identifierExpression = new JTextField(20);
+      identifierExpression = new JTextField(30);
       toolTipDisplayMillis = new JTextField(8);
       cyclicBufferSize = new JTextField(8);
       Box p = new Box(BoxLayout.X_AXIS);
-
+                                                           
       p.add(showNoReceiverWarning);
       p.add(Box.createHorizontalGlue());
 
@@ -460,7 +460,7 @@ public static void main(String[] args) {
       add(p2);
       add(p3);
       add(ok4);
-      
+
       JPanel p4 = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
       p4.add(new JLabel("ToolTip Display (millis)"));
@@ -473,14 +473,21 @@ public static void main(String[] args) {
       p5.add(new JLabel("Cyclic buffer size"));
       p5.add(Box.createHorizontalStrut(5));
       p5.add(cyclicBufferSize);
+      p5.add(Box.createHorizontalStrut(5));
+      p5.add(new JLabel("Cyclic buffer size change will take effect on Chainsaw restart"));
       add(p5);
 
-      JPanel p6 = new JPanel(new FlowLayout(FlowLayout.LEFT));
+      Box p6 = new Box(BoxLayout.Y_AXIS);
 
-      p6.add(new JLabel("Automatic Configuration URL"));
-      p6.add(Box.createHorizontalStrut(5));
-      p6.add(configurationURL);
-      add(p6);
+      Box configURLPanel = new Box(BoxLayout.X_AXIS);
+      JLabel configLabel = new JLabel("Automatic Configuration URL");
+      configURLPanel.add(configLabel);
+      configURLPanel.add(Box.createHorizontalStrut(5));
+
+      configURLPanel.add(configurationURL);
+      configURLPanel.add(Box.createHorizontalGlue());
+
+      p6.add(configURLPanel);
 
       JButton browseButton = new JButton("Browse");
       browseButton.addActionListener(new ActionListener()
@@ -518,19 +525,14 @@ public static void main(String[] args) {
               }
           }
       });
+      Box browsePanel = new Box(BoxLayout.X_AXIS);
+      browsePanel.add(Box.createHorizontalGlue());
+      browsePanel.add(browseButton);
+      p6.add(Box.createVerticalStrut(5));
+      p6.add(browsePanel);
+      p6.add(Box.createVerticalGlue());
+      add(p6);
 
-      JPanel p7 = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-      p7.add(browseButton);
-      add(p7);
-
-      JPanel p8 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-      p8.add(
-        new JLabel(
-          "Cyclic buffer size change will apply the next time you start Chainsaw"));
-      add(p8);
-
-      add(Box.createVerticalGlue());
-      
       configurationURL.setToolTipText("A complete and valid URL identifying the location of a valid log4 xml configuration file to auto-configure Receivers and other Plugins");
       configurationURL.setInputVerifier(new InputVerifier() {
 
