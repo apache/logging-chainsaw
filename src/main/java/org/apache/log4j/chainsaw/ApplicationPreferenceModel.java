@@ -190,7 +190,7 @@ public class ApplicationPreferenceModel {
       setCyclicBufferSize(model.getCyclicBufferSize());
       Vector configurationURLs = model.getConfigurationURLs();
       if (configurationURLs != null) {
-        setConfigurationURLs(model.getConfigurationURLs());
+        setConfigurationURLs(configurationURLs);
       }
       setConfigurationURL(model.getConfigurationURL());
       setLastUsedVersion(model.getLastUsedVersion());
@@ -246,7 +246,9 @@ public class ApplicationPreferenceModel {
     }
 
     public void setConfigurationURLs(Vector urls) {
-        configurationURLs = urls;
+        if (urls != null) {
+            configurationURLs = urls;
+        }
     }
 
     /**
