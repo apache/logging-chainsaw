@@ -37,7 +37,7 @@ public class ApplicationPreferenceModel {
     private boolean showSplash = true;
     private String lookAndFeelClassName = "";
     private int toolTipDisplayMillis = 4000;
-    private int cyclicBufferSize = 5000;
+    private int cyclicBufferSize = 50000;
     private String lastUsedVersion = "";
     private int responsiveness = 3;
     
