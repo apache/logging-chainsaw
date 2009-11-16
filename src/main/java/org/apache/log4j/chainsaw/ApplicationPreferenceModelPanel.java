@@ -419,7 +419,7 @@ public static void main(String[] args) {
       configurationURL = new JComboBox(new DefaultComboBoxModel(committedPreferenceModel.getConfigurationURLs()));
       configurationURL.setEditable(true);
       configurationURL.setPrototypeDisplayValue("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-      configurationURL.setPreferredSize(new Dimension(375, 15));
+      configurationURL.setPreferredSize(new Dimension(375, 13));
 
       identifierExpression = new JTextField(30);
       toolTipDisplayMillis = new JTextField(8);
@@ -480,7 +480,7 @@ public static void main(String[] args) {
       Box p6 = new Box(BoxLayout.Y_AXIS);
 
       Box configURLPanel = new Box(BoxLayout.X_AXIS);
-      JLabel configLabel = new JLabel("Automatic Configuration URL");
+      JLabel configLabel = new JLabel("Auto Config URL");
       configURLPanel.add(configLabel);
       configURLPanel.add(Box.createHorizontalStrut(5));
 

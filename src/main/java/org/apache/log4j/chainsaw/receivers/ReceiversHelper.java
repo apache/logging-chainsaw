@@ -52,7 +52,10 @@ public class ReceiversHelper {
 
         URL url = this.getClass().getClassLoader().getResource(
             this.getClass().getPackage().getName().replace('.','/') + "/known.receivers");
-
+        if (url == null) {
+            logger.warn("Failed to locate known.receivers file");
+            return;
+        }
         LineNumberReader stream = null;
         try {
 

@@ -626,6 +626,10 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     case ChainsawColumns.INDEX_THROWABLE_COL_NAME:
       return true;
     }
+
+    if (columnIndex >= columnNames.size()) {
+        return false;
+    }
     String columnName = getColumnName(columnIndex);
     if (columnName.toLowerCase().equals(ChainsawConstants.MARKER_PROPERTY_NAME)) {
       return true;
