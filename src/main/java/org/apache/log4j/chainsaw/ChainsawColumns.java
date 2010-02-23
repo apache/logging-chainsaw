@@ -37,6 +37,7 @@ public class ChainsawColumns {
 
   static {
     columnNames.add(ChainsawConstants.LOGGER_COL_NAME);
+    columnNames.add(ChainsawConstants.LOG4J_MARKER_COL_NAME);
     columnNames.add(ChainsawConstants.TIMESTAMP_COL_NAME);
     columnNames.add(ChainsawConstants.LEVEL_COL_NAME);
     columnNames.add(ChainsawConstants.THREAD_COL_NAME);
@@ -53,17 +54,18 @@ public class ChainsawColumns {
   }
 
   public static final int INDEX_LOGGER_COL_NAME = 1;
-  public static final int INDEX_TIMESTAMP_COL_NAME = 2;
-  public static final int INDEX_LEVEL_COL_NAME = 3;
-  public static final int INDEX_THREAD_COL_NAME = 4;
-  public static final int INDEX_MESSAGE_COL_NAME = 5;
-  public static final int INDEX_NDC_COL_NAME = 6;
-  public static final int INDEX_THROWABLE_COL_NAME = 7;
-  public static final int INDEX_CLASS_COL_NAME = 8;
-  public static final int INDEX_METHOD_COL_NAME = 9;
-  public static final int INDEX_FILE_COL_NAME = 10;
-  public static final int INDEX_LINE_COL_NAME = 11;
-  public static final int INDEX_ID_COL_NAME = 12;
+  public static final int INDEX_LOG4J_MARKER_COL_NAME = 2;
+  public static final int INDEX_TIMESTAMP_COL_NAME = 3;
+  public static final int INDEX_LEVEL_COL_NAME = 4;
+  public static final int INDEX_THREAD_COL_NAME = 5;
+  public static final int INDEX_MESSAGE_COL_NAME = 6;
+  public static final int INDEX_NDC_COL_NAME = 7;
+  public static final int INDEX_THROWABLE_COL_NAME = 8;
+  public static final int INDEX_CLASS_COL_NAME = 9;
+  public static final int INDEX_METHOD_COL_NAME = 10;
+  public static final int INDEX_FILE_COL_NAME = 11;
+  public static final int INDEX_LINE_COL_NAME = 12;
+  public static final int INDEX_ID_COL_NAME = 13;
 
  public static final Cursor CURSOR_FOCUS_ON;
  static{

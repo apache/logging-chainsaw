@@ -417,8 +417,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
     logger.info("SecurityManager is now: " + System.getSecurityManager());
 
-    logUI.checkForNewerVersion();
-    
     if (newShutdownAction != null) {
       logUI.setShutdownAction(newShutdownAction);
     } else {
@@ -1155,34 +1153,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     }
     tbms.stateChange();
 
-  }
-
-  /**
-   * Checks the last run version number against this compiled version number and prompts the user
-   * to view the release notes if the 2 strings are different.
-   */
-  private void checkForNewerVersion()
-  {
-      /**
-       * Now check if the version they last used (if any) is
-       * different than the version that is currently running
-       */
-      
-      String lastUsedVersion = getApplicationPreferenceModel().getLastUsedVersion();
-      String currentVersionNumber = VersionManager.getInstance().getVersionNumber();
-      if(lastUsedVersion==null || !lastUsedVersion.equals(currentVersionNumber)) {
-          if(JOptionPane.showConfirmDialog(this, "This version looks like it is different than the version you last ran. (" + lastUsedVersion + " vs " + currentVersionNumber+")\n\nWould you like to view the Release Notes?", "Newer Version?", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-              SwingUtilities.invokeLater(new Runnable() {
-                  
-                  public void run()
-                  {
-                      HelpManager.getInstance().setHelpURL(ChainsawConstants.RELEASE_NOTES_URL);
-                      
-                  }});
-          }
-      }
-      // Lets set this new version as the current version so we don't get nagged all the time...
-      getApplicationPreferenceModel().setLastUsedVersion(currentVersionNumber);
   }
 
 /**

@@ -135,6 +135,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
 
     c.setText(logger.substring(startPos + 1));
       break;
+    case ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME:
     case ChainsawColumns.INDEX_CLASS_COL_NAME:
     case ChainsawColumns.INDEX_FILE_COL_NAME:
     case ChainsawColumns.INDEX_LINE_COL_NAME:
@@ -192,7 +193,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     }
     //set the 'marker' icon next to the zeroth column if marker is set
     if (col == 0) {
-      if (event.getProperty(ChainsawConstants.MARKER_PROPERTY_NAME) != null) {
+      if (event.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME) != null) {
         c.setIcon(markerIcon);
       } else {
         //only null out the column if it's not the level field

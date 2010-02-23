@@ -1038,7 +1038,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
             
         }
     });
-    findMarkerRule = ExpressionRule.getRule("prop." + ChainsawConstants.MARKER_PROPERTY_NAME + " exists");
+    findMarkerRule = ExpressionRule.getRule("prop." + ChainsawConstants.LOG4J_MARKER_COL_NAME + " exists");
         
     tableModel.addTableModelListener(new TableModelListener() {
 		public void tableChanged(TableModelEvent e) {
@@ -2518,18 +2518,18 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     }
 
     public void clearAllMarkers() {
-        tableModel.removePropertyFromEvents(ChainsawConstants.MARKER_PROPERTY_NAME);
+        tableModel.removePropertyFromEvents(ChainsawConstants.LOG4J_MARKER_COL_NAME);
     }
 
     public void toggleMarker() {
         int row = table.getSelectedRow();
         if (row != -1) {
           LoggingEvent event = tableModel.getRow(row);
-          Object marker = event.getProperty(ChainsawConstants.MARKER_PROPERTY_NAME);
+          Object marker = event.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME);
           if (marker == null) {
-              event.setProperty(ChainsawConstants.MARKER_PROPERTY_NAME, "set");
+              event.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME, "set");
           } else {
-              event.removeProperty(ChainsawConstants.MARKER_PROPERTY_NAME);
+              event.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME);
           }
           //if marker -was- null, it no longer is (may need to add the column)
           tableModel.fireRowUpdated(row, (marker == null));
@@ -2660,11 +2660,11 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
               int row = table.rowAtPoint(evt.getPoint());
               if (row != -1) {
                 LoggingEvent event = tableModel.getRow(row);
-                Object marker = event.getProperty(ChainsawConstants.MARKER_PROPERTY_NAME);
+                Object marker = event.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME);
                 if (marker == null) {
-                    event.setProperty(ChainsawConstants.MARKER_PROPERTY_NAME, "set");
+                    event.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME, "set");
                 } else {
-                    event.removeProperty(ChainsawConstants.MARKER_PROPERTY_NAME);
+                    event.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME);
                 }
                 //if marker -was- null, it no longer is (may need to add the column)
                 tableModel.fireRowUpdated(row, (marker == null));
@@ -2737,7 +2737,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
           (column.getModelIndex() + 1) == ChainsawColumns.INDEX_THROWABLE_COL_NAME) {
           column.setCellEditor(throwableRenderPanel);
         }
-        if (column.getHeaderValue().toString().toLowerCase().equals(ChainsawConstants.MARKER_PROPERTY_NAME)) {
+        if (column.getHeaderValue().toString().equals(ChainsawConstants.LOG4J_MARKER_COL_NAME)) {
           column.setCellEditor(markerCellEditor);
         }
       }
@@ -2888,9 +2888,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
         public boolean stopCellEditing()
         {
             if (textField.getText().trim().equals("")) {
-                currentEvent.removeProperty(ChainsawConstants.MARKER_PROPERTY_NAME);
+                currentEvent.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME);
             } else {
-                currentEvent.setProperty(ChainsawConstants.MARKER_PROPERTY_NAME, textField.getText());
+                currentEvent.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME, textField.getText());
             }
             ChangeEvent event = new ChangeEvent(table);
             for (Iterator iter = cellEditorListeners.iterator();iter.hasNext();) {
@@ -2920,7 +2920,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column)
         {
             currentEvent = tableModel.getRow(row);
-            textField.setText(currentEvent.getProperty(ChainsawConstants.MARKER_PROPERTY_NAME));
+            textField.setText(currentEvent.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME));
             textField.selectAll();
             return textField;
         }

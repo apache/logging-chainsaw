@@ -57,6 +57,7 @@ public class ChainsawConstants {
 
   //COLUMN NAMES
   static final String LOGGER_COL_NAME = "LOGGER";
+  static final String LOG4J_MARKER_COL_NAME = "LOG4J.MARKER";
   static final String TIMESTAMP_COL_NAME = "TIMESTAMP";
   static final String LEVEL_COL_NAME = "LEVEL";
   static final String THREAD_COL_NAME = "THREAD";
@@ -81,7 +82,6 @@ public class ChainsawConstants {
   static final String LEVEL_DISPLAY_ICONS = "icons";
   static final String LEVEL_DISPLAY_TEXT = "text";
 
-  static final String MARKER_PROPERTY_NAME = "log4j.marker";
 
   static final String DATETIME_FORMAT = "EEE MMM dd HH:mm:ss z yyyy";
   

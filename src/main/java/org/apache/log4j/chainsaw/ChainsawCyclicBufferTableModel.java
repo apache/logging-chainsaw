@@ -409,6 +409,9 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     case ChainsawColumns.INDEX_LEVEL_COL_NAME:
       return event.getLevel();
 
+    case ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME:
+      return event.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME);
+
     case ChainsawColumns.INDEX_LOGGER_COL_NAME:
       return event.getLoggerName();
 
@@ -627,12 +630,12 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
       return true;
     }
 
+    if (getColumnName(columnIndex).equals(ChainsawConstants.LOG4J_MARKER_COL_NAME)) {
+      return true;
+    }
+
     if (columnIndex >= columnNames.size()) {
         return false;
-    }
-    String columnName = getColumnName(columnIndex);
-    if (columnName.toLowerCase().equals(ChainsawConstants.MARKER_PROPERTY_NAME)) {
-      return true;
     }
 
     return super.isCellEditable(rowIndex, columnIndex);

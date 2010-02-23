@@ -7,9 +7,24 @@
 <BODY>
 <h1>Release Notes</h1>
 <br>
-<b>NOTE:</b> The mechanism and format used to persist settings in Chainsaw is subject to change during this alpha phase.  If you are experiencing problems displaying events in Chainsaw, please delete everything in the $user.dir/.chainsaw directory.
+<b>NOTE:</b> The mechanism and format used to persist settings in Chainsaw is subject to change.  If you are experiencing problems displaying events in Chainsaw, please delete everything in the $user.dir/.chainsaw directory and restart Chainsaw.
 <br>
 <h1>1.99.99</h2>
+<h2>22 Feb 2010</h2>
+<ul>
+<li>Implemented marker support (ability to add notes to rows).  Double click a row to toggle on or off a default note, or click in a row to define a custom note.  Navigate between markers with F2/Shift F2.
+    If you want to use these markers to colorize or build custom search expressions, use the column key PROP.log4j.marker.
+    Markers are saved and reloaded through the file-save as and file-load log4j file menus.
+</li>
+<li>Auto-configuration URL field now remembers the 10 most recent configuration files and provides a 'browse' button to load a configuration file without typing the URL.
+</li>
+<li>Tab color rules can now be copied to another tab.
+</li>
+<li>Updated default colors to lighter shades and default colors for WARN and FATAL/ERROR rows. 
+</li>
+<li>Added 'find next' and 'clear find next' menu items to logger tree and log panel popup. 
+</li>
+</ul>
 <h2>02 March 2006</h2>
 <ul>
 <li>Fixed distribution mechanism so that DB and JMS receiver stuff can also be supported in Webstart mode.</li>
