@@ -54,13 +54,13 @@ import org.apache.log4j.spi.LoggingEvent;
  */
 public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private static final DateFormat DATE_FORMATTER =
-    new SimpleDateFormat(Constants.ISO8601_PATTERN);
+    new SimpleDateFormat(Constants.SIMPLE_TIME_PATTERN);
   private static final Map iconMap =
     LevelIconFactory.getInstance().getLevelToIconMap();
   private Colorizer colorizer;
   private final JLabel idComponent = new JLabel();
   private final JLabel levelComponent = new JLabel();
-  private boolean levelUseIcons = true;
+  private boolean levelUseIcons = false;
   private DateFormat dateFormatInUse = DATE_FORMATTER;
   private int loggerPrecision = 0;
   private boolean toolTipsVisible;

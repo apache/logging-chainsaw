@@ -36,6 +36,7 @@ import javax.swing.table.TableColumn;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
+import org.apache.log4j.helpers.Constants;
 
 
 /**
@@ -66,7 +67,7 @@ public class LogPanelPreferenceModel implements Serializable{
 
   private transient final PropertyChangeSupport propertySupport =
     new PropertyChangeSupport(this);
-  private String dateFormatPattern = ISO8601;
+  private String dateFormatPattern = Constants.SIMPLE_TIME_PATTERN;
   private boolean levelIcons;
   private List allColumns = new ArrayList();
   private List visibleColumns = new ArrayList();
@@ -159,7 +160,7 @@ public class LogPanelPreferenceModel implements Serializable{
 
   public final void setDefaultDatePatternFormat() {
 	    String oldVal = this.dateFormatPattern;
-	    this.dateFormatPattern = ISO8601;
+	    this.dateFormatPattern = Constants.SIMPLE_TIME_PATTERN;
 	    propertySupport.firePropertyChange(
 	    	      "dateFormatPattern", oldVal, this.dateFormatPattern);
   }

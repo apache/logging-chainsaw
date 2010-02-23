@@ -199,8 +199,8 @@ import org.apache.log4j.spi.LoggingEventFieldResolver;
  */
 public class LogPanel extends DockablePanel implements EventBatchListener,
   Profileable {
-  private static final double DEFAULT_DETAIL_SPLIT_LOCATION = .5;
-  private static final double DEFAULT_LOG_TREE_SPLIT_LOCATION = .25;
+  private static final double DEFAULT_DETAIL_SPLIT_LOCATION = 0.56d;
+  private static final double DEFAULT_LOG_TREE_SPLIT_LOCATION = 0.2d;
   private final String identifier;
   private final ChainsawStatusBar statusBar;
   private final JFrame preferencesFrame = new JFrame();
@@ -359,7 +359,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     ButtonGroup dfBG = new ButtonGroup();
     dfBG.add(isoButton);
     dfBG.add(simpleTimeButton);
-    isoButton.setSelected(true);
+    simpleTimeButton.setSelected(true);
     dateFormatChangePopup.add(isoButton);
     dateFormatChangePopup.add(simpleTimeButton);
 
