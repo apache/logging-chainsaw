@@ -153,6 +153,10 @@ public interface EventContainer extends SortTableModel, LoggerNameModel {
   void notifyCountListeners();
 
   /**
+   * Force a re-processing of the table layout
+   */
+  void reFilter();
+  /**
    * Sets the DisplayFilter in operation
    * @param displayRule
    */

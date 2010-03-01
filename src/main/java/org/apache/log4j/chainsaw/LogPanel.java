@@ -1407,6 +1407,41 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
 
     p.add(new JSeparator());
 
+    final JMenuItem menuItemDisplayNormalTimes =
+      new JMenuItem("Hide relative times");
+    menuItemDisplayNormalTimes.addActionListener(
+      new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          if (currentPoint != null) {
+            int row = table.rowAtPoint(currentPoint);
+            LoggingEvent event = tableModel.getRow(row);
+            renderer.setUseNormalTimes();
+            tableModel.reFilter();
+            menuItemDisplayNormalTimes.setEnabled(false);
+          }
+        }
+    });
+
+    final JMenuItem menuItemDisplayRelativeTimesToRowUnderCursor =
+      new JMenuItem("Show times relative to this row");
+    menuItemDisplayRelativeTimesToRowUnderCursor.addActionListener(
+      new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+            if (currentPoint != null) {
+              int row = table.rowAtPoint(currentPoint);
+              LoggingEvent event = tableModel.getRow(row);
+              renderer.setUseRelativeTimes(event.getTimeStamp());
+              tableModel.reFilter();
+              menuItemDisplayNormalTimes.setEnabled(true);
+            }
+        }
+      });
+
+    menuItemDisplayNormalTimes.setEnabled(false);
+    p.add(menuItemDisplayRelativeTimesToRowUnderCursor);
+    p.add(menuItemDisplayNormalTimes);
+    p.add(new JSeparator());
+
     p.add(menuItemToggleDetails);
     p.add(menuItemLoggerTree);
     p.add(menuItemToggleToolTips);

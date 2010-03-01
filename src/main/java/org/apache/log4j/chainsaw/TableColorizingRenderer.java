@@ -66,8 +66,10 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private boolean toolTipsVisible;
   private String dateFormatTZ;
   private final Icon markerIcon = new ImageIcon(ChainsawIcons.MARKER);
+  private boolean useRelativeTimes = false;
+  private long relativeTimestampBase;
 
-  /**
+    /**
    * Creates a new TableColorizingRenderer object.
    */
   public TableColorizingRenderer(Colorizer colorizer) {
@@ -277,7 +279,13 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     if (!(o instanceof Date)) {
       return (o == null ? "" : o);
     }
-    
+
+    //handle date field
+    if (useRelativeTimes)
+    {
+        return "" + (((Date)o).getTime() - relativeTimestampBase);
+    }
+
     return dateFormatInUse.format((Date) o);
   }
 
@@ -305,5 +313,14 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     } else {
       dateFormatInUse.setTimeZone(TimeZone.getDefault());
     }
+  }
+
+  public void setUseRelativeTimes(long timeStamp) {
+    useRelativeTimes = true;
+    relativeTimestampBase = timeStamp;
+  }
+
+  public void setUseNormalTimes() {
+    useRelativeTimes = false;
   }
 }

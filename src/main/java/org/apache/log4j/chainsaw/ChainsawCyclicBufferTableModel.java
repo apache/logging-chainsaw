@@ -121,7 +121,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     return list;
   }
 
-  private void reFilter() {
+  public void reFilter() {
     synchronized (unfilteredList) {
       final int previousSize = filteredList.size();
       try {
