@@ -410,7 +410,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
       return event.getLevel();
 
     case ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME:
-      return event.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME);
+      return event.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
 
     case ChainsawColumns.INDEX_LOGGER_COL_NAME:
       return event.getLoggerName();
@@ -630,7 +630,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
       return true;
     }
 
-    if (getColumnName(columnIndex).equals(ChainsawConstants.LOG4J_MARKER_COL_NAME)) {
+    if (getColumnName(columnIndex).toLowerCase().equals(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE)) {
       return true;
     }
 

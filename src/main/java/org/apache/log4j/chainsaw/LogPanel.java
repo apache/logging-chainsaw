@@ -241,7 +241,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
   static final String TABLE_COLUMN_ORDER = "table.columns.order";
   static final String TABLE_COLUMN_WIDTHS = "table.columns.widths";
   static final String COLORS_EXTENSION = ".colors";
-  private static final int LOG_PANEL_SERIALIZATION_VERSION_NUMBER = 1;
+  private static final int LOG_PANEL_SERIALIZATION_VERSION_NUMBER = 2; //increment when format changes
   private int previousLastIndex = -1;
   private final DateFormat timestampExpressionFormat = new SimpleDateFormat(Constants.TIMESTAMP_RULE_FORMAT);
   private final Logger logger = LogManager.getLogger(LogPanel.class);
@@ -1038,7 +1038,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
             
         }
     });
-    findMarkerRule = ExpressionRule.getRule("prop." + ChainsawConstants.LOG4J_MARKER_COL_NAME + " exists");
+    findMarkerRule = ExpressionRule.getRule("prop." + ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE + " exists");
         
     tableModel.addTableModelListener(new TableModelListener() {
 		public void tableChanged(TableModelEvent e) {
@@ -1591,45 +1591,66 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     File xmlFile = new File(SettingsManager.getInstance()
                 .getSettingsDirectory(), URLEncoder.encode(identifier) + ".xml");
 
-        if (xmlFile.exists()) {
-            XStream stream = buildXStreamForLogPanelPreference();
-            ObjectInputStream in = null;
+    if (xmlFile.exists()) {
+        XStream stream = buildXStreamForLogPanelPreference();
+        ObjectInputStream in = null;
+        try {
+            FileReader r = new FileReader(xmlFile);
+            in = stream.createObjectInputStream(r);
+            LogPanelPreferenceModel storedPrefs = (LogPanelPreferenceModel)in.readObject();
+            int lowerPanelDividerLocation = in.readInt();
+            int treeDividerLocation = in.readInt();
+            String conversionPattern = in.readObject().toString();
+            Point p = (Point)in.readObject();
+            Dimension d = (Dimension)in.readObject();
+            //this version number is checked to identify whether there is a Vector comming next
+            int versionNumber = 0;
             try {
-            	FileReader r = new FileReader(xmlFile);
-            	in = stream.createObjectInputStream(r);
-            	
-                LogPanelPreferenceModel storedPrefs = (LogPanelPreferenceModel)in.readObject();
-                String columnOrder = event.getSetting(TABLE_COLUMN_ORDER);
-                preferenceModel.apply(storedPrefs);
+                versionNumber = in.readInt();
+            } catch (EOFException eof){
+            }
 
-                //update prefModel columns to include defaults
-                int index = 0;
-                StringTokenizer tok = new StringTokenizer(columnOrder, ",");
-                while (tok.hasMoreElements()) {
-                  String element = tok.nextElement().toString().trim().toUpperCase();
-                  TableColumn column = new TableColumn(index++);
-                  column.setHeaderValue(element);
-                  preferenceModel.addColumn(column);
+            Vector savedVector;
+            //read the vector only if the version number is greater than 0. higher version numbers can be
+            //used in the future to save more data structures
+            if (versionNumber > 0) {
+                savedVector = (Vector) in.readObject();
+                for(int i = 0 ; i < savedVector.size() ; i++){
+                    Object item = savedVector.get(i);
+                    if(!filterExpressionVector.contains(item)){
+                        filterExpressionVector.add(item);
+                    }
                 }
+                if (versionNumber > 1) {
+                    //update prefModel columns to include defaults
+                    int index = 0;
+                    String columnOrder = event.getSetting(TABLE_COLUMN_ORDER);
+                    StringTokenizer tok = new StringTokenizer(columnOrder, ",");
+                    while (tok.hasMoreElements()) {
+                      String element = tok.nextElement().toString().trim().toUpperCase();
+                      TableColumn column = new TableColumn(index++);
+                      column.setHeaderValue(element);
+                      preferenceModel.addColumn(column);
+                    }
 
-                TableColumnModel columnModel = table.getColumnModel();
-                //remove previous columns
-                while (columnModel.getColumnCount() > 0) {
-                	columnModel.removeColumn(columnModel.getColumn(0));
+                    TableColumnModel columnModel = table.getColumnModel();
+                    //remove previous columns
+                    while (columnModel.getColumnCount() > 0) {
+                        columnModel.removeColumn(columnModel.getColumn(0));
+                    }
+                    //add visible column order columns
+                    for (Iterator iter = preferenceModel.getVisibleColumnOrder().iterator();iter.hasNext();) {
+                        TableColumn col = (TableColumn)iter.next();
+                        columnModel.addColumn(col);
+                    }
+                    preferenceModel.apply(storedPrefs);
+                } else {
+                    loadDefaultColumnSettings(event);
                 }
-                //add visible column order columns
-                for (Iterator iter = preferenceModel.getVisibleColumnOrder().iterator();iter.hasNext();) {
-                	TableColumn col = (TableColumn)iter.next();
-                	columnModel.addColumn(col);
-                }
-
-                try {
-                	//may be panel configs that don't have these values
-                lowerPanel.setDividerLocation(in.readInt());
-                nameTreeAndMainPanelSplit.setDividerLocation(in.readInt());
-                detailLayout.setConversionPattern(in.readObject().toString());
-                Point p = (Point)in.readObject();
-                Dimension d = (Dimension)in.readObject();
+                //may be panel configs that don't have these values
+                lowerPanel.setDividerLocation(lowerPanelDividerLocation);
+                nameTreeAndMainPanelSplit.setDividerLocation(treeDividerLocation);
+                detailLayout.setConversionPattern(conversionPattern);
                 if (p.x != 0 && p.y != 0) {
                     undockedFrame.setLocation(p.x, p.y);
                     undockedFrame.setSize(d);
@@ -1637,44 +1658,24 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
                     undockedFrame.setLocation(0, 0);
                     undockedFrame.setSize(new Dimension(1024, 768));
                 }
-
-                int versionNumber = 0;
-                Vector savedVector;
-
-                //this version number is checked to identify whether there is a Vector comming next
-                try {
-                    versionNumber = in.readInt();
-                } catch (EOFException eof){
-                }
-
-                //read the vector only if the version number is greater than 0. higher version numbers can be
-                //used in the future to save more data structures
-                if (versionNumber > 0){
-                    savedVector = (Vector) in.readObject();
-                    for(int i = 0 ; i < savedVector.size() ; i++){
-                        Object item = savedVector.get(i);
-                        if(!filterExpressionVector.contains(item)){
-                            filterExpressionVector.add(item);
-                        }
-                    }
-                }
-
-                } catch (EOFException eof){
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                // TODO need to log this..
-            } finally {
-            	if (in != null) {
-            		try {
-            			in.close();
-            		} catch (IOException ioe) {}
-            	}
+            } else {
+                loadDefaultColumnSettings(event);
             }
-        } else {
+        } catch (Exception e) {
+            e.printStackTrace();
             loadDefaultColumnSettings(event);
-		}
-        
+            // TODO need to log this..
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException ioe) {}
+            }
+        }
+    } else {
+        loadDefaultColumnSettings(event);
+    }
+
     logTreePanel.ignore(preferenceModel.getHiddenLoggers());
 
     //first attempt to load encoded file
@@ -2553,18 +2554,18 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     }
 
     public void clearAllMarkers() {
-        tableModel.removePropertyFromEvents(ChainsawConstants.LOG4J_MARKER_COL_NAME);
+        tableModel.removePropertyFromEvents(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
     }
 
     public void toggleMarker() {
         int row = table.getSelectedRow();
         if (row != -1) {
           LoggingEvent event = tableModel.getRow(row);
-          Object marker = event.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME);
+          Object marker = event.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
           if (marker == null) {
-              event.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME, "set");
+              event.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE, "set");
           } else {
-              event.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME);
+              event.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
           }
           //if marker -was- null, it no longer is (may need to add the column)
           tableModel.fireRowUpdated(row, (marker == null));
@@ -2695,11 +2696,11 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
               int row = table.rowAtPoint(evt.getPoint());
               if (row != -1) {
                 LoggingEvent event = tableModel.getRow(row);
-                Object marker = event.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME);
+                Object marker = event.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
                 if (marker == null) {
-                    event.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME, "set");
+                    event.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE, "set");
                 } else {
-                    event.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME);
+                    event.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
                 }
                 //if marker -was- null, it no longer is (may need to add the column)
                 tableModel.fireRowUpdated(row, (marker == null));
@@ -2772,7 +2773,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
           (column.getModelIndex() + 1) == ChainsawColumns.INDEX_THROWABLE_COL_NAME) {
           column.setCellEditor(throwableRenderPanel);
         }
-        if (column.getHeaderValue().toString().equals(ChainsawConstants.LOG4J_MARKER_COL_NAME)) {
+        if (column.getHeaderValue().toString().toLowerCase().equals(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE)) {
           column.setCellEditor(markerCellEditor);
         }
       }
@@ -2923,9 +2924,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
         public boolean stopCellEditing()
         {
             if (textField.getText().trim().equals("")) {
-                currentEvent.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME);
+                currentEvent.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
             } else {
-                currentEvent.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME, textField.getText());
+                currentEvent.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE, textField.getText());
             }
             ChangeEvent event = new ChangeEvent(table);
             for (Iterator iter = cellEditorListeners.iterator();iter.hasNext();) {
@@ -2955,7 +2956,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column)
         {
             currentEvent = tableModel.getRow(row);
-            textField.setText(currentEvent.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME));
+            textField.setText(currentEvent.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE));
             textField.selectAll();
             return textField;
         }

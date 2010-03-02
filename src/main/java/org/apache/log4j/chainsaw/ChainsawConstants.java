@@ -57,7 +57,7 @@ public class ChainsawConstants {
 
   //COLUMN NAMES
   static final String LOGGER_COL_NAME = "LOGGER";
-  static final String LOG4J_MARKER_COL_NAME = "LOG4J.MARKER";
+  static final String LOG4J_MARKER_COL_NAME_LOWERCASE = "log4j.marker"; //properties are case-sensitive-using lowercase for easier entry
   static final String TIMESTAMP_COL_NAME = "TIMESTAMP";
   static final String LEVEL_COL_NAME = "LEVEL";
   static final String THREAD_COL_NAME = "THREAD";

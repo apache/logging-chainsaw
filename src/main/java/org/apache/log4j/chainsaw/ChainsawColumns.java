@@ -37,7 +37,7 @@ public class ChainsawColumns {
 
   static {
     columnNames.add(ChainsawConstants.LOGGER_COL_NAME);
-    columnNames.add(ChainsawConstants.LOG4J_MARKER_COL_NAME);
+    columnNames.add(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE.toUpperCase()); //add uppercase col name
     columnNames.add(ChainsawConstants.TIMESTAMP_COL_NAME);
     columnNames.add(ChainsawConstants.LEVEL_COL_NAME);
     columnNames.add(ChainsawConstants.THREAD_COL_NAME);

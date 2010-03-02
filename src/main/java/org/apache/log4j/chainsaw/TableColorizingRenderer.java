@@ -195,7 +195,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     }
     //set the 'marker' icon next to the zeroth column if marker is set
     if (col == 0) {
-      if (event.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME) != null) {
+      if (event.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE) != null) {
         c.setIcon(markerIcon);
       } else {
         //only null out the column if it's not the level field
