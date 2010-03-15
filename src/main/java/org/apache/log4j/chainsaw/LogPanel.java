@@ -384,6 +384,14 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
       });
     menuItemLoggerTree.setIcon(new ImageIcon(ChainsawIcons.WINDOW_ICON));
 
+    final JMenuItem menuItemScrollToTop = new JMenuItem("Scroll to top");
+    menuItemScrollToTop.addActionListener(
+      new ActionListener() {
+          public void actionPerformed(ActionEvent evt)
+          {
+              scrollToTop();
+          }
+      });
     final JCheckBoxMenuItem menuItemScrollBottom =
       new JCheckBoxMenuItem("Scroll to bottom");
     menuItemScrollBottom.addActionListener(
@@ -573,6 +581,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.CTRL_MASK), "none");
     table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK), "none");
 
+    //we're also mapping ctrl-a to scroll-to-top, unmap from the table
+    table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK), "none");
+        
     //add a listener to update the 'refine focus'
     tableModel.addNewKeyListener(new NewKeyListener() {
 		public void newKeyAdded(NewKeyEvent e) {
@@ -1448,8 +1459,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
 
     p.add(new JSeparator());
 
+    p.add(menuItemScrollToTop);
     p.add(menuItemScrollBottom);
-
     p.add(new JSeparator());
 
     p.add(menuItemToggleDock);
@@ -1485,6 +1496,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
   
   private void scrollToBottom() {
     table.scrollToRow(tableModel.getRowCount() - 1);
+  }
+
+  public void scrollToTop()
+  {
+    if (tableModel.getRowCount() > 1) {
+        table.scrollToRow(0);
+    }
   }
 
   /**

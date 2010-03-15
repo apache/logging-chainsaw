@@ -85,6 +85,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
   private final Action showReceiversAction;
   private final Action toggleLogTreeAction;
   private final Action toggleScrollToBottomAction;
+  private final Action scrollToTopAction;
   private final Action toggleDetailPaneAction;
   private final Action toggleToolbarAction;
   private final Action undockAction;
@@ -138,6 +139,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     toggleToolbarAction = createToggleToolbarAction();
     toggleLogTreeAction = createToggleLogTreeAction();
     toggleScrollToBottomAction = createScrollToBottomAction();
+    scrollToTopAction = createScrollToTopAction();
     pauseAction = createPauseAction();
     clearAction = createClearAction();
     undockAction = createUndockAction();
@@ -164,7 +166,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     logPanelSpecificActions =
       new Action[] {
         pauseAction, findNextAction, findPreviousAction, findNextMarkerAction, findPreviousMarkerAction,
-        toggleMarkerAction, clearAllMarkersAction, clearAction,
+        toggleMarkerAction, clearAllMarkersAction, scrollToTopAction, clearAction,
         fileMenu.getFileSaveAction(), toggleDetailPaneAction,
         showPreferencesAction, showColorPanelAction, undockAction,
         toggleLogTreeAction, toggleScrollToBottomAction, changeModelAction,
@@ -258,6 +260,24 @@ class ChainsawToolBarAndMenus implements ChangeListener {
 
      return action;
    }
+
+    private Action createScrollToTopAction() {
+      Action action =
+        new AbstractAction("Scroll to top") {
+          public void actionPerformed(ActionEvent e) {
+            if (logui.getCurrentLogPanel() != null) {
+              logui.getCurrentLogPanel().scrollToTop();;
+            }
+          }
+        };
+
+      action.putValue(Action.SHORT_DESCRIPTION, "Scroll to top");
+      action.putValue("enabled", Boolean.TRUE);
+      action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_T));
+      action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_A,  InputEvent.CTRL_MASK));
+
+      return action;
+    }
 
      private Action createFindNextMarkerAction() {
        Action action =
@@ -501,6 +521,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     activeTabMenu.add(new JMenuItem(clearAllMarkersAction));
 
     activeTabMenu.addSeparator();
+    activeTabMenu.add(new JMenuItem(scrollToTopAction));
     activeTabMenu.add(toggleScrollToBottomMenuItem);
     activeTabMenu.add(menuItemUseRightMouse);
 
