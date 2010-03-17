@@ -10,8 +10,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceEvent;
@@ -41,12 +43,17 @@ import org.apache.log4j.chainsaw.help.HelpManager;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.chainsaw.plugins.GUIPluginSkeleton;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
+import org.apache.log4j.helpers.LogLog;
+import org.apache.log4j.net.MulticastReceiver;
 import org.apache.log4j.net.SocketHubReceiver;
-import org.apache.log4j.net.ZeroConfSocketHubAppender;
-import org.apache.log4j.net.Zeroconf4log4j;
+import org.apache.log4j.net.SocketReceiver;
+import org.apache.log4j.net.UDPReceiver;
+import org.apache.log4j.net.XMLSocketReceiver;
+import org.apache.log4j.net.ZeroConfSupport;
 import org.apache.log4j.plugins.Plugin;
 import org.apache.log4j.plugins.PluginEvent;
 import org.apache.log4j.plugins.PluginListener;
+import org.apache.log4j.plugins.Receiver;
 import org.apache.log4j.spi.LoggerRepositoryEx;
 
 import com.thoughtworks.xstream.XStream;
@@ -61,9 +68,6 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
  * NON-log4j devices that may be broadcast in the interested zones 
  * TODO add the
  * default Zone, and the list of user-specified zones to a preferenceModel
- * 
- * To run this in trial mode, first run {@link ZeroConfSocketHubAppenderTestBed}, then
- * run this class' main(..) method.
  * 
  * @author psmith
  * 
@@ -80,8 +84,6 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
     
     private final JScrollPane scrollPane = new JScrollPane(deviceTable);
 
-    private JmDNS jmDNS;
-
     private ZeroConfPreferenceModel preferenceModel;
     
     private Map serviceInfoToReceiveMap = new HashMap();
@@ -97,13 +99,19 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
     });  
     
     private JMenuItem nothingToConnectTo = new JMenuItem("No devices discovered");
-    
+    private static final String MULTICAST_APPENDER_SERVICE_NAME = "_log4j_xml_mcast_appender.local.";
+    private static final String UDP_APPENDER_SERVICE_NAME = "_log4j_xml_udp_appender.local.";
+    private static final String XML_SOCKET_APPENDER_SERVICE_NAME = "_log4j_xml_tcpconnect_appender.local.";
+    private static final String SOCKET_APPENDER_SERVICE_NAME = "_log4j_obj_tcpconnect_appender.local.";
+    private static final String SOCKETHUB_APPENDER_SERVICE_NAME = "_log4j_obj_tcpaccept_appender.local.";
+    private JmDNS jmDNS;
+
     public ZeroConfPlugin() {
         setName("Zeroconf");
     }
 
     public void shutdown() {
-        Zeroconf4log4j.shutdown();
+        jmDNS.close();
         save();
     }
 
@@ -123,14 +131,10 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
 
     public void activateOptions() {
         setLayout(new BorderLayout());
-        jmDNS = Zeroconf4log4j.getInstance();
+        jmDNS = (JmDNS) ZeroConfSupport.getJMDNSInstance();
 
-        jmDNS.addServiceListener(
-                ZeroConfSocketHubAppender.DEFAULT_ZEROCONF_ZONE,
-                new ZeroConfServiceListener());
+        registerServiceListenersForAppenders();
 
-        jmDNS.addServiceListener(ZeroConfSocketHubAppender.DEFAULT_ZEROCONF_ZONE, discoveredDevices);
-        
         deviceTable.addMouseListener(new ConnectorMouseListener());
 
         
@@ -179,7 +183,28 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         discoveredDevices.setZeroConfPreferenceModel(preferenceModel);
         discoveredDevices.setZeroConfPluginParent(this);
     }
-    
+
+    private void registerServiceListenersForAppenders()
+    {
+        Set serviceNames = new HashSet();
+        serviceNames.add(MULTICAST_APPENDER_SERVICE_NAME);
+        serviceNames.add(SOCKET_APPENDER_SERVICE_NAME);
+        serviceNames.add(SOCKETHUB_APPENDER_SERVICE_NAME);
+        serviceNames.add(UDP_APPENDER_SERVICE_NAME);
+        serviceNames.add(XML_SOCKET_APPENDER_SERVICE_NAME);
+
+        for (Iterator iter = serviceNames.iterator(); iter.hasNext();) {
+            String serviceName = iter.next().toString();
+            jmDNS.addServiceListener(
+                    serviceName,
+                    new ZeroConfServiceListener());
+
+            jmDNS.addServiceListener(serviceName, discoveredDevices);
+        }
+
+        //now add each appender constant
+    }
+
     /**
      * Sets the icon of this parent container (a JTabbedPane, we hope
      *
@@ -286,7 +311,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
             connectToMenu.insert(connectToDeviceMenuItem,0);
         }
 //         if the device name is one of the autoconnect devices, then connect immediately
-        if (preferenceModel.getAutoConnectDevices().contains(name)) {
+        if (preferenceModel != null && preferenceModel.getAutoConnectDevices() != null && preferenceModel.getAutoConnectDevices().contains(name)) {
             new Thread(new Runnable() {
 
                 public void run() {
@@ -432,15 +457,12 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
      */
     private void connectTo(ServiceInfo info) {
         LOG.info("Connection request for " + info);
-        int port = info.getPort();
-        String hostAddress = info.getHostAddress();
-       
-//        TODO handle different receivers than just SocketHubReceiver
-        SocketHubReceiver receiver = new SocketHubReceiver();
-        receiver.setHost(hostAddress);
-        receiver.setPort(port);
-        receiver.setName(info.getName());
-        
+        //Chainsaw can construct receivers from discovered appenders
+        Receiver receiver = getReceiver(info);
+        //if null, unable to resolve the service name..no-op
+        if (receiver == null) {
+            return;
+        }
         ((LoggerRepositoryEx)LogManager.getLoggerRepository()).getPluginRegistry().addPlugin(receiver);
         receiver.activateOptions();
         LOG.info("Receiver '" + receiver.getName() + "' has been started");
@@ -458,6 +480,69 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         }
 //        // now notify the list model has changed, it needs redrawing of the receiver icon now it's connected
 //        discoveredDevices.fireContentsChanged();
+    }
+
+    private Receiver getReceiver(ServiceInfo info) {
+        String zone = info.getType();
+        int port = info.getPort();
+        String hostAddress = info.getHostAddress();
+        String name = info.getName();
+        String decoderClass = info.getPropertyString("decoder");
+
+        //MulticastAppender
+        if (MULTICAST_APPENDER_SERVICE_NAME.equals(zone)) {
+            MulticastReceiver receiver = new MulticastReceiver();
+            //this needs to be a multicast address, not the host address, so we need to use a property
+            receiver.setAddress(info.getPropertyString("multicastAddress"));
+            receiver.setPort(port);
+            receiver.setName(name + "-receiver");
+            if (decoderClass != null && !decoderClass.equals("")) {
+                receiver.setDecoder(decoderClass);
+            }
+
+            return receiver;
+        }
+        //UDPAppender
+        if (UDP_APPENDER_SERVICE_NAME.equals(zone)) {
+            UDPReceiver receiver = new UDPReceiver();
+            receiver.setPort(port);
+            receiver.setName(name + "-receiver");
+            if (decoderClass != null && !decoderClass.equals("")) {
+                receiver.setDecoder(decoderClass);
+            }
+            return receiver;
+        }
+
+        //non-log4j XML-based socketappender
+        if (XML_SOCKET_APPENDER_SERVICE_NAME.equals(zone)) {
+            XMLSocketReceiver receiver = new XMLSocketReceiver();
+            receiver.setPort(port);
+            receiver.setName(name + "-receiver");
+            if (decoderClass != null && !decoderClass.equals("")) {
+                receiver.setDecoder(decoderClass);
+            }
+            return receiver;
+        }
+
+        //SocketAppender
+        if (SOCKET_APPENDER_SERVICE_NAME.equals(zone)) {
+            SocketReceiver receiver = new SocketReceiver();
+            receiver.setPort(port);
+            receiver.setName(name + "-receiver");
+            return receiver;
+        }
+
+        //SocketHubAppender
+        if (SOCKETHUB_APPENDER_SERVICE_NAME.equals(zone)) {
+            SocketHubReceiver receiver = new SocketHubReceiver();
+            receiver.setHost(hostAddress);
+            receiver.setPort(port);
+            receiver.setName(name + "-receiver");
+            return receiver;
+        }
+        //not recognized
+        LogLog.debug("Unable to find receiver for appender with service name: " + zone);
+        return null;
     }
 
     /**

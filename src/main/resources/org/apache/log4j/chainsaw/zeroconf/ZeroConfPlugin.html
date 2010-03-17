@@ -20,7 +20,7 @@ devices on your local network such as printers that are automatically discovered
 Zeroconf is an open-standard that many vendors are using to reduce cost of configuration.  The <b>JmDNS</b> project
 is an Apache 2.0 licensed library that implements the ZeroConf protocol.  Chainsaw and log4j use
 JmDNS to broadcast Appender information so that a matching Receiver can be easily created to connect to each other
-to stream logging messages into Chainsaw.  
+to stream logging messages into Chainsaw.
 </p>
 <p>
 <ul>
@@ -30,19 +30,16 @@ to stream logging messages into Chainsaw.
 </p>
 <h2>Interesting... So what do I need to use ZeroConf with Chainsaw & log4j?</h2>
 <p>
-The log4j team has created an additional JAR file that can be added to your existing
-application to enable ZeroConf configuration. You just need to download the <code>log4j-zeroconf.jar</code> and the JmDNS package (you must use
-at least version 1.0 of JmDNS) and add 
-both JARs to your application's classpath. </p>
-<p> Then change your references from <code>SocketHubAppender</code>
-to <code><b>ZeroConf</b>SocketHubAppender</code>. (We recommend you change the 'name' propety from it's default to make it easy for you to use, other
-wise it's name will appear as the default 'SocketHubAppender').
-</p>
+Most of the network-based appenders are ZeroConf-capable - all you have to do to use ZeroConf is to
+download the JmDNS package (at least version 1.0), add the JmDNS jar to your application's classpath, and set the "advertiseViaMulticastDNS"
+parameter to 'true' for any of the appenders or receivers you want to advertise (most of the time you will want to advertise appenders, so they can be
+automatically detected by Chainsaw).</p>
 <p>You're log4j.xml configuration file could be as simple as this:</p>
 <pre>
 &lt;log4j:configuration debug="false" threshold="debug"  xmlns:log4j="http://jakarta.apache.org/log4j/&gt;
-    &lt;appender name="zeroconf" class="org.apache.log4j.net.ZeroConfSocketHubAppender"&gt;
+    &lt;appender name="zeroconf" class="org.apache.log4j.net.SocketHubAppender"&gt;
         &lt;param name="Name" value="MyZeroConfSockeHubAppender" /&gt;
+        &lt;param name="advertiseViaMulticastDNS" value="true" /&gt;
     &lt;/appender&gt;
     &lt;!--ROOT Logger--&gt;
     &lt;root&gt;
@@ -52,12 +49,16 @@ wise it's name will appear as the default 'SocketHubAppender').
 &lt;/log4j:configuration&gt;
 </pre>
 <p>
-Once you have started your application using this new appender, then from within Chainsaw, the ZeroConf tab will show detected
-applications.  You can simply double click on the detected app, and Chainsaw will connect a Receiver to it.  You can even tick the "Auto-Connect"
+Once you have started your application using this configuration, from within Chainsaw, the ZeroConf tab will show detected
+applications.  You can simply double click on the detected appender and Chainsaw will connect a Receiver to it.  You can even tick the "Auto-Connect"
 check box, and next time Chainsaw see's this application, it will automatically connect to it.
 </p>
+<p>Most of the network-based Receivers are also ZeroConf capable, giving ZeroConf-aware appenders or applications
+the ability to discover the receivers and configure appenders to connect to those Receivers.
+</p>
 <h2>Cool... But I have some applications that use log4j 1.2.x.  Will it still work?</h2>
-<p>Yes.  We have designed a backward compatible mechanism to expose log4j 1.2.x SocketHubAppender so that Chainsaw can detect it automatically.  
+<p>Yes.  We have designed a backward compatible mechanism to expose prior versions of log4j's SocketHubAppender (ZeroConfSocketHubAppender)
+so that Chainsaw can detect it automatically.
 </p>
 
 <h2>But... Surely there's a catch?</h2>
