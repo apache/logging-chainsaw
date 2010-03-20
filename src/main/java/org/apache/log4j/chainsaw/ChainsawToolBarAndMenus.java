@@ -20,6 +20,7 @@ package org.apache.log4j.chainsaw;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -35,6 +36,7 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -147,18 +149,20 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     showReceiversButton = new SmallToggleButton(showReceiversAction);
 
     findPanel = new JPanel();
+    findPanel.setLayout(new BoxLayout(findPanel, BoxLayout.X_AXIS));
 
-    Dimension findSize = new Dimension(170, 22);
-    Dimension findPanelSize = new Dimension(175, 30);
+    Dimension findSize = new Dimension(260, 22);
+    Dimension findPanelSize = new Dimension(310, 30);
     findPanel.setPreferredSize(findPanelSize);
     findPanel.setMaximumSize(findPanelSize);
     findPanel.setMinimumSize(findPanelSize);
+
     findField.setPreferredSize(findSize);
     findField.setMaximumSize(findSize);
     findField.setMinimumSize(findSize);
     findPanel.setAlignmentY(Component.CENTER_ALIGNMENT);
     findField.setAlignmentY(Component.CENTER_ALIGNMENT);
-    
+
     toggleDetailPaneAction = createToggleDetailPaneAction();
     createMenuBar();
     createToolbar();
@@ -822,9 +826,18 @@ class ChainsawToolBarAndMenus implements ChangeListener {
       (KeyStroke) findPreviousAction.getValue(Action.ACCELERATOR_KEY),
       findPreviousAction.getValue(Action.NAME));
 
+    JLabel searchLabel = new JLabel("Search:");
+    searchLabel.setDisplayedMnemonic('j');
+    searchLabel.setFont(searchLabel.getFont().deriveFont(Font.BOLD));
+    findPanel.add(searchLabel);
+    findPanel.add(Box.createHorizontalStrut(3));
     findPanel.add(findField);
+    findPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+    searchLabel.setLabelFor(findField);
+
 
     toolbar.add(findPanel);
+    toolbar.addSeparator(new Dimension(7, 5));
     toolbar.add(findNextButton);
     toolbar.add(findPreviousButton);
 
@@ -887,7 +900,15 @@ class ChainsawToolBarAndMenus implements ChangeListener {
       activateLogPanelActions = false;
       findField.setEnabled(false);
       findPanel.removeAll();
+      JLabel searchLabel = new JLabel("Search:");
+      searchLabel.setDisplayedMnemonic('j');
+      searchLabel.setFont(searchLabel.getFont().deriveFont(Font.BOLD));
+      findPanel.add(searchLabel);
+      findPanel.add(Box.createHorizontalStrut(3));
+
       findPanel.add(findField);
+      findPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+      searchLabel.setLabelFor(findField);
       activeTabMenu.setEnabled(false);
       closeAction.setEnabled(true);
       detailPaneButton.setSelected(false);
@@ -896,7 +917,15 @@ class ChainsawToolBarAndMenus implements ChangeListener {
       activeTabMenu.setEnabled(true);
       fileMenu.getFileSaveAction().setEnabled(true);
       findPanel.removeAll();
+      JLabel searchLabel = new JLabel("Search:");
+      searchLabel.setDisplayedMnemonic('j');
+
+      searchLabel.setFont(searchLabel.getFont().deriveFont(Font.BOLD));
+      findPanel.add(searchLabel);
+      findPanel.add(Box.createHorizontalStrut(3));
       findPanel.add(logPanel.getFindTextField());
+      findPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+      searchLabel.setLabelFor(logPanel.getFindTextField());
 
       pauseButton.getModel().setSelected(logPanel.isPaused());
       toggleCyclicButton.setSelected(logPanel.isCyclic());

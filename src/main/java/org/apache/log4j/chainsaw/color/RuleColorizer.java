@@ -65,6 +65,13 @@ public class RuleColorizer implements Colorizer {
       new ColorRule(
         expression, ExpressionRule.getRule(expression), new Color(255, 255, 153),
         Color.black));
+
+      expression = "prop.log4j.marker exists";
+      rulesList.add(
+        new ColorRule(
+          expression, ExpressionRule.getRule(expression), new Color(153, 255, 153),
+          Color.black));
+
     defaultRules.put(DEFAULT_NAME, rulesList);
     setRules(defaultRules);
   }

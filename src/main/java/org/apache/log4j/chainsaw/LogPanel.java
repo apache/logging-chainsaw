@@ -263,6 +263,11 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
 
     setLayout(new BorderLayout());
     findPanel = new JPanel();
+    findPanel.setLayout(new BoxLayout(findPanel, BoxLayout.X_AXIS));
+    Dimension findPanelSize = new Dimension(310, 30);
+    findPanel.setPreferredSize(findPanelSize);
+    findPanel.setMaximumSize(findPanelSize);
+    findPanel.setMinimumSize(findPanelSize);
 
     final Map columnNameKeywordMap = new HashMap();
     columnNameKeywordMap.put(
@@ -939,9 +944,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
 
     final JLabel filterLabel = new JLabel("Refine focus on: ");
     filterLabel.setFont(filterLabel.getFont().deriveFont(Font.BOLD));
+    filterLabel.setDisplayedMnemonic('k');
 
-    JPanel upperLeftPanel =
-      new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 0));
+    JPanel upperLeftPanel = new JPanel();
+    upperLeftPanel.setLayout(new BoxLayout(upperLeftPanel, BoxLayout.X_AXIS));
+    upperLeftPanel.setAlignmentY(Component.CENTER_ALIGNMENT);
+    upperLeftPanel.setAlignmentY(Component.CENTER_ALIGNMENT);
+
     upperLeftPanel.add(filterLabel);
 
     //hold a reference to the combobox model so that we can check to prevent duplicates
@@ -993,6 +1002,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
           }
         });
       upperPanel.add(filterCombo, BorderLayout.CENTER);
+      filterLabel.setLabelFor(filterCombo);
     } else {
       filterText = new JTextField();
       filterText.setToolTipText("Enter an expression");
@@ -1862,7 +1872,17 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     setDocked(false);
     externalPanel.removeAll();
     findPanel.removeAll();
+
+    JLabel searchLabel = new JLabel("Search:");
+    searchLabel.setDisplayedMnemonic('j');
+
+    searchLabel.setFont(searchLabel.getFont().deriveFont(Font.BOLD));
+    findPanel.add(searchLabel);
+    findPanel.add(Box.createHorizontalStrut(3));
+
     findPanel.add(findField);
+    findPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+    searchLabel.setLabelFor(findField);
 
     externalPanel.add(undockedToolbar, BorderLayout.NORTH);
     externalPanel.add(nameTreeAndMainPanelSplit, BorderLayout.CENTER);
@@ -2163,6 +2183,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
       toolbar.addSeparator();
     
     findField = new JTextField();
+    Dimension findSize = new Dimension(260, 22);
+    findField.setPreferredSize(findSize);
+    findField.setMaximumSize(findSize);
+    findField.setMinimumSize(findSize);
+    findPanel.setAlignmentY(Component.CENTER_ALIGNMENT);
+    findField.setAlignmentY(Component.CENTER_ALIGNMENT);
+
     findField.addKeyListener(
       new ExpressionRuleContext(filterModel, findField));
 
@@ -2218,8 +2245,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
       KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_MASK),
       undockedFindPreviousAction.getValue(Action.NAME));
 
-    Dimension findSize = new Dimension(170, 22);
-    Dimension findPanelSize = new Dimension(175, 30);
+    Dimension findPanelSize = new Dimension(310, 30);
     findPanel.setPreferredSize(findPanelSize);
     findPanel.setMaximumSize(findPanelSize);
     findPanel.setMinimumSize(findPanelSize);
@@ -2230,6 +2256,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     findField.setAlignmentY(Component.CENTER_ALIGNMENT);
     
     toolbar.add(findPanel);
+    toolbar.addSeparator(new Dimension(7, 5));
+      
     toolbar.add(undockedFindNextButton);
     toolbar.add(undockedFindPreviousButton);
 
