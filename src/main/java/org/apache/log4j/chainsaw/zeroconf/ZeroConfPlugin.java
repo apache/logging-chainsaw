@@ -111,7 +111,9 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
     }
 
     public void shutdown() {
-        jmDNS.close();
+        if (jmDNS != null) {
+            jmDNS.close();
+        }
         save();
     }
 

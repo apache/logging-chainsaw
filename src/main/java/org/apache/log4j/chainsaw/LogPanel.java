@@ -59,6 +59,7 @@ import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.EventObject;
@@ -72,11 +73,13 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import javax.swing.AbstractAction;
+import javax.swing.AbstractListModel;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.ComboBoxEditor;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -99,6 +102,7 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.MutableComboBoxModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -109,6 +113,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.event.TableModelEvent;
@@ -117,9 +123,6 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.text.Document;
-
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -144,6 +147,9 @@ import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.LoggingEventFieldResolver;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
 
 
 /**
@@ -245,9 +251,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
   private int previousLastIndex = -1;
   private final DateFormat timestampExpressionFormat = new SimpleDateFormat(Constants.TIMESTAMP_RULE_FORMAT);
   private final Logger logger = LogManager.getLogger(LogPanel.class);
-  private final Vector filterExpressionVector;
   private static final Color INVALID_EXPRESSION_BACKGROUND = new Color(251, 186, 186);
   private TableCellEditor markerCellEditor;
+  private AutoFilterComboBox filterCombo;
 
     /**
    * Creates a new LogPanel object.  If a LogPanel with this identifier has
@@ -953,10 +959,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
 
     upperLeftPanel.add(filterLabel);
 
-    //hold a reference to the combobox model so that we can check to prevent duplicates
-    //final Vector filterExpressionVector = new Vector();
-    filterExpressionVector = new Vector();
     //add (hopefully useful) default filters
+    Vector filterExpressionVector = new Vector();
     filterExpressionVector.add("LEVEL == TRACE");
     filterExpressionVector.add("LEVEL >= DEBUG");
     filterExpressionVector.add("LEVEL >= INFO");
@@ -964,20 +968,14 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     filterExpressionVector.add("LEVEL >= ERROR");
     filterExpressionVector.add("LEVEL == FATAL");
     
-    final JComboBox filterCombo = new JComboBox(filterExpressionVector);
+    filterCombo = new AutoFilterComboBox(filterExpressionVector);
     filterCombo.setSelectedIndex(-1);
-    final JTextField filterText;
+    final JTextField filterText =(JTextField) filterCombo.getEditor().getEditorComponent();
+    filterText.getDocument().addDocumentListener(new DelayedFilterTextDocumentListener(filterText));
+    filterText.setToolTipText("Enter an expression, press enter to add to list");
+    filterText.addKeyListener(new ExpressionRuleContext(filterModel, filterText));
 
     if (filterCombo.getEditor().getEditorComponent() instanceof JTextField) {
-      String comboToolTipText =
-        "Enter an expression, press enter to add to list";
-      filterText = (JTextField) filterCombo.getEditor().getEditorComponent();
-      filterText.setToolTipText(comboToolTipText);
-      filterText.addKeyListener(
-        new ExpressionRuleContext(filterModel, filterText));
-      filterText.getDocument().addDocumentListener(
-        new DelayedFilterTextDocumentListener(filterText));
-      filterCombo.setEditable(true);
       filterCombo.addActionListener(
         new AbstractAction() {
           public void actionPerformed(ActionEvent e) {
@@ -993,25 +991,14 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
                   filterText.setBackground(INVALID_EXPRESSION_BACKGROUND);
                 return;
               }
-
-              //should be 'valid expression' check
-              if (!(filterExpressionVector.contains(filterCombo.getSelectedItem()))) {
-                filterCombo.addItem(filterCombo.getSelectedItem());
-              }
+            //add to the combo box
+            filterCombo.addItem(filterCombo.getSelectedItem());
             }
           }
         });
+    }
       upperPanel.add(filterCombo, BorderLayout.CENTER);
       filterLabel.setLabelFor(filterCombo);
-    } else {
-      filterText = new JTextField();
-      filterText.setToolTipText("Enter an expression");
-      filterText.addKeyListener(
-        new ExpressionRuleContext(filterModel, filterText));
-      filterText.getDocument().addDocumentListener(
-        new DelayedFilterTextDocumentListener(filterText));
-      upperPanel.add(filterText, BorderLayout.CENTER);
-    }
 
     upperPanel.add(upperLeftPanel, BorderLayout.WEST);
 
@@ -1026,13 +1013,12 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
                 public void actionPerformed(ActionEvent e){
                 	Object selectedItem = filterCombo.getSelectedItem();
                     if (e.getSource() == clearButton && selectedItem != null && !selectedItem.toString().equals("")){
-                        if (filterExpressionVector.contains(selectedItem.toString())){
-                            filterExpressionVector.remove(selectedItem.toString());
-                        }
+                        //don't just remove the entry from the store, clear the refine focus field
+                        filterText.setText(null);
+                        int index = filterCombo.getSelectedIndex();
                         filterCombo.setSelectedIndex(-1);
+                        filterCombo.removeItemAt(index);
                     }
-                    //don't just remove the entry from the store, clear the refine focus field
-                    filterText.setText(null);
                 }
             }
     );
@@ -1645,9 +1631,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
                 savedVector = (Vector) in.readObject();
                 for(int i = 0 ; i < savedVector.size() ; i++){
                     Object item = savedVector.get(i);
-                    if(!filterExpressionVector.contains(item)){
-                        filterExpressionVector.add(item);
-                    }
+                    filterCombo.addItem(item);
                 }
                 if (versionNumber > 1) {
                     //update prefModel columns to include defaults
@@ -1753,7 +1737,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     	s.writeObject(undockedFrame.getSize());
         //this is a version number written to the file to identify that there is a Vector serialized after this
         s.writeInt(LOG_PANEL_SERIALIZATION_VERSION_NUMBER);
-        s.writeObject(filterExpressionVector);
+        //don't write filterexpressionvector, write the combobox's model's backing vector
+        s.writeObject(filterCombo.getModelData());
     } catch (Exception ex) {
         ex.printStackTrace();
         // TODO need to log this..
@@ -3005,6 +2990,224 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
             textField.setText(currentEvent.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE));
             textField.selectAll();
             return textField;
+        }
+    }
+
+    static class AutoFilterComboBox extends JComboBox {
+        private boolean bypassFiltering;
+        private List allEntries = new ArrayList();
+        private List displayedEntries = new ArrayList();
+        private AutoFilterComboBoxModel model = new AutoFilterComboBoxModel();
+        //editor component
+        private final JTextField textField = new JTextField();
+
+        public AutoFilterComboBox(Collection entries) {
+            if (entries != null) {
+                for (Iterator iter=entries.iterator();iter.hasNext();) {
+                    Object nextObject = iter.next();
+                    model.addElement(nextObject);
+                }
+            }
+            setModel(model);
+            setEditor(new AutoFilterEditor());
+            ((JTextField)getEditor().getEditorComponent()).getDocument().addDocumentListener(new AutoFilterDocumentListener());
+            setEditable(true);
+            addPopupMenuListener(new PopupMenuListenerImpl());
+        }
+
+        public Vector getModelData() {
+            return new Vector(allEntries);
+        }
+
+        private void refilter() {
+            //only refilter if we're not bypassing filtering
+            if (bypassFiltering) {
+                return;
+            }
+            displayedEntries.clear();
+            bypassFiltering = true;
+            String textToMatch = getEditor().getItem().toString();
+                model.removeAllElements();
+                List entriesCopy = new ArrayList(allEntries);
+                for (Iterator iter = entriesCopy.iterator();iter.hasNext();) {
+                    String thisEntry = iter.next().toString();
+                    if (thisEntry.toLowerCase().contains(textToMatch.toLowerCase())) {
+                        displayedEntries.add(thisEntry);
+                        model.addElement(thisEntry);
+                    }
+                }
+                bypassFiltering = false;
+                //TODO: on no-match, don't filter at all (show the popup?)
+                if (displayedEntries.size() > 0 && !textToMatch.equals("")) {
+                    showPopup();
+                } else {
+                    hidePopup();
+                }
+        }
+
+        class AutoFilterEditor implements ComboBoxEditor {
+            public Component getEditorComponent() {
+                return textField;
+            }
+
+            public void setItem(Object item) {
+                if (bypassFiltering) {
+                    return;
+                }
+                bypassFiltering = true;
+                if (item == null) {
+                    textField.setText("");
+                } else {
+                    textField.setText(item.toString());
+                }
+                bypassFiltering = false;
+            }
+
+            public Object getItem() {
+                return textField.getText();
+            }
+
+            public void selectAll() {
+                textField.selectAll();
+            }
+
+            public void addActionListener(ActionListener listener) {
+                textField.addActionListener(listener);
+            }
+
+            public void removeActionListener(ActionListener listener) {
+                textField.removeActionListener(listener);
+            }
+        }
+
+        class AutoFilterDocumentListener implements DocumentListener {
+            public void insertUpdate(DocumentEvent e) {
+                refilter();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                refilter();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                refilter();
+            }
+        }
+
+        class AutoFilterComboBoxModel extends AbstractListModel implements MutableComboBoxModel {
+            private Object selectedItem;
+
+            public void addElement(Object obj) {
+                //assuming add is to displayed list...add to full list (only if not a dup)
+                if (allEntries.contains(obj)) {
+                    return;
+                }
+                bypassFiltering = true;
+                allEntries.add(obj);
+                displayedEntries.add(obj);
+                fireIntervalAdded(this, displayedEntries.size() - 1, displayedEntries.size() -1);
+                bypassFiltering = false;
+                refilter();
+            }
+
+            public void removeElement(Object obj) {
+                int index = displayedEntries.indexOf(obj);
+                if (index != -1) {
+                    removeElementAt(index);
+                }
+            }
+
+            public void insertElementAt(Object obj, int index) {
+                //assuming add is to displayed list...add to full list (only if not a dup)
+                if (allEntries.contains(obj)) {
+                    return;
+                }
+                bypassFiltering = true;
+                displayedEntries.add(index, obj);
+                allEntries.add(obj);
+                fireIntervalAdded(this, index, index);
+                bypassFiltering = false;
+                refilter();
+            }
+
+            public void removeElementAt(int index) {
+                bypassFiltering = true;
+                //assuming removal is from displayed list..remove from full list
+                Object obj = displayedEntries.get(index);
+                allEntries.remove(obj);
+                fireContentsChanged(this, 0, displayedEntries.size());
+                bypassFiltering = false;
+                refilter();
+            }
+
+            public void setSelectedItem(Object item) {
+                if ((selectedItem != null && !selectedItem.equals(item)) || selectedItem == null && item != null) {
+                    selectedItem = item;
+                    fireContentsChanged(this, -1, -1);
+                }
+            }
+
+            public Object getSelectedItem() {
+                return selectedItem;
+            }
+
+            public int getSize() {
+                return displayedEntries.size();
+            }
+
+            public Object getElementAt(int index) {
+                if (index >= 0 && index < displayedEntries.size()) {
+                    return displayedEntries.get(index);
+                }
+                return null;
+            }
+
+
+            public void removeAllElements() {
+                bypassFiltering = true;
+                displayedEntries.clear();
+                fireContentsChanged(this, 0, displayedEntries.size());
+                bypassFiltering = false;
+            }
+
+            public void showAllElements() {
+                bypassFiltering = true;
+                displayedEntries.clear();
+                displayedEntries.addAll(allEntries);
+                fireContentsChanged(this, 0, displayedEntries.size());
+                bypassFiltering = false;
+            }
+        }
+
+        private class PopupMenuListenerImpl implements PopupMenuListener {
+            private boolean willBecomeVisible = false;
+
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                if (!willBecomeVisible) {
+                    //we already have a match but we're showing the popup - unfilter
+                    if (displayedEntries.contains(textField.getText())) {
+                        model.showAllElements();
+                    }
+
+                    //workaround for bug http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4743225
+                    //the height of the popup after updating entries in this listener was not updated..
+                    JComboBox list = (JComboBox) e.getSource();
+                    willBecomeVisible = true; // the flag is needed to prevent a loop
+                    try {
+                        list.getUI().setPopupVisible(list, true);
+                    } finally {
+                        willBecomeVisible = false;
+                    }
+                }
+            }
+
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                //no-op
+            }
+
+            public void popupMenuCanceled(PopupMenuEvent e) {
+                //no-op
+            }
         }
     }
 }
