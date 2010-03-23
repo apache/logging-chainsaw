@@ -982,17 +982,21 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
             if (e.getActionCommand().equals("comboBoxEdited")) {
               try {
                 //verify the expression is valid
-                ExpressionRule.getRule(filterCombo.getSelectedItem().toString());
+                  Object item = filterCombo.getSelectedItem();
+                  if (item != null && !item.toString().trim().equals("")) {
+                    ExpressionRule.getRule(item.toString());
+                    //add to the combo box
+                    filterCombo.addItem(item);
+                  }
                 //valid expression, reset background color in case we were previously an invalid expression
                 filterText.setBackground(UIManager.getColor("TextField.background"));
               } catch (IllegalArgumentException iae) {
                   //don't add expressions that aren't valid
                   //invalid expression, change background of the field
+                  filterText.setToolTipText(iae.getMessage());
                   filterText.setBackground(INVALID_EXPRESSION_BACKGROUND);
                 return;
               }
-            //add to the combo box
-            filterCombo.addItem(filterCombo.getSelectedItem());
             }
           }
         });
@@ -1012,7 +1016,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
             new AbstractAction() {
                 public void actionPerformed(ActionEvent e){
                 	Object selectedItem = filterCombo.getSelectedItem();
-                    if (e.getSource() == clearButton && selectedItem != null && !selectedItem.toString().equals("")){
+                    if (e.getSource() == clearButton && selectedItem != null && !selectedItem.toString().trim().equals("")){
                         //don't just remove the entry from the store, clear the refine focus field
                         filterText.setText(null);
                         int index = filterCombo.getSelectedIndex();
@@ -1969,7 +1973,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
         return true;
       } catch (IllegalArgumentException re) {
         findField.setToolTipText(re.getMessage());
-        //invalid expression, change background of the field
         findField.setBackground(INVALID_EXPRESSION_BACKGROUND);
         colorizer.setFindRule(null);
 
@@ -2714,8 +2717,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
           filterText.setBackground(UIManager.getColor("TextField.background"));
         } catch (IllegalArgumentException iae) {
           //invalid expression, change background of the field
-          filterText.setBackground(INVALID_EXPRESSION_BACKGROUND);
           filterText.setToolTipText(iae.getMessage());
+          filterText.setBackground(INVALID_EXPRESSION_BACKGROUND);
         }
       }
     }
