@@ -858,7 +858,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
 
             detailArea.setText(buf.toString());
           } else {
-            detailArea.setText((o == null) ? "" : o.toString());
+            detailArea.setText(o.toString());
           }
 
           detailDialog.setLocation(lowerPanel.getLocationOnScreen());
@@ -1039,6 +1039,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
 
     detailPaneUpdater = new DetailPaneUpdater();
 
+    //if the panel gets focus, update the detail pane
     addFocusListener(new FocusListener() {
 
         public void focusGained(FocusEvent e) {
@@ -1123,6 +1124,29 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
         }
       });
 
+    Action copyToRefineFocusAction = new AbstractAction("Set 'refine focus' field") {
+        public void actionPerformed(ActionEvent e) {
+            String selectedText = detail.getSelectedText();
+            if (selectedText == null || selectedText.equals("")) {
+                //no-op empty searches
+                return;
+            }
+            filterText.setText("msg ~= '" + selectedText + "'");
+        }
+    };
+
+    Action copyToSearchAction = new AbstractAction("Find next") {
+        public void actionPerformed(ActionEvent e) {
+            String selectedText = detail.getSelectedText();
+            if (selectedText == null || selectedText.equals("")) {
+                //no-op empty searches
+                return;
+            }
+            findField.setText("msg ~= '" + selectedText + "'");
+            findNext();
+        }
+    };
+
     Action editDetailAction =
       new AbstractAction(
         "Edit...", new ImageIcon(ChainsawIcons.ICON_EDIT_RECEIVER)) {
@@ -1170,6 +1194,11 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     detailPanel.add(detailToolbar, BorderLayout.NORTH);
 
     JPopupMenu editDetailPopupMenu = new JPopupMenu();
+
+    editDetailPopupMenu.add(copyToRefineFocusAction);
+    editDetailPopupMenu.add(copyToSearchAction);
+    editDetailPopupMenu.addSeparator();
+
     editDetailPopupMenu.add(editDetailAction);
     editDetailPopupMenu.addSeparator();
 
@@ -2854,7 +2883,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
    */
   private class DetailPaneUpdater implements PropertyChangeListener {
     private int selectedRow = -1;
-
+    int lastRow = -1;
     private DetailPaneUpdater() {
     }
 
@@ -2882,7 +2911,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
       }
 
 	      LoggingEvent event = null;
-	      if (selectedRow != -1) {
+	      if (selectedRow != -1 && (lastRow != selectedRow)) {
 	        event = tableModel.getRow(selectedRow);
 	
 	        if (event != null) {
@@ -2898,6 +2927,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
 				      		public void run() {
 				      			detail.setDocument(doc);
 				      			detail.setCaretPosition(0);
+                                lastRow = selectedRow;
 				      		}
 				      	});
 		          	} catch (Exception e) {}
@@ -2905,7 +2935,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
 	        }
 	      }
 	
-	      if (event == null) {
+	      if (event == null && (lastRow != selectedRow)) {
           	try {
           		final Document doc = detail.getEditorKit().createDefaultDocument();
           		detail.getEditorKit().read(new StringReader("<html>Nothing selected</html>"), doc, 0);
@@ -2913,6 +2943,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
 		      		public void run() {
 		      			detail.setDocument(doc);
 		      			detail.setCaretPosition(0);
+                        lastRow = selectedRow;
 		      		}
 		      	});
           	} catch (Exception e) {}
