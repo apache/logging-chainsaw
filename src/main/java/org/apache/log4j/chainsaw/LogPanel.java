@@ -1212,8 +1212,21 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
               DefaultLayoutFactory.getDefaultPatternLayout());
           }
         });
+
+        JRadioButtonMenuItem fullLayoutRadio =
+          new JRadioButtonMenuItem(
+            new AbstractAction("Set to Full Layout") {
+              public void actionPerformed(ActionEvent e) {
+                setDetailPaneConversionPattern(
+                  DefaultLayoutFactory.getFullPatternLayout());
+              }
+            });
+
     editDetailPopupMenu.add(defaultLayoutRadio);
+    editDetailPopupMenu.add(fullLayoutRadio);
+
     layoutGroup.add(defaultLayoutRadio);
+    layoutGroup.add(fullLayoutRadio);
     defaultLayoutRadio.setSelected(true);
 
     JRadioButtonMenuItem tccLayoutRadio =

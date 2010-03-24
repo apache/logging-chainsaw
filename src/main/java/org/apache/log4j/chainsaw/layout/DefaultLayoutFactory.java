@@ -37,11 +37,16 @@ public class DefaultLayoutFactory {
   }
 
   public static String getDefaultPatternLayout() {
-    if (defaultPatternLayout == null) {
+      return getPatternLayout("org/apache/log4j/chainsaw/layout/DefaultDetailLayout.html");
+  }
+  public static String getFullPatternLayout() {
+      return getPatternLayout("org/apache/log4j/chainsaw/layout/FullDetailLayout.html");
+  }
+
+  private static String getPatternLayout(String fileNamePath) {
       StringBuffer content = new StringBuffer();
       URL defaultLayoutURL =
-        DefaultLayoutFactory.class.getClassLoader().getResource(
-          "org/apache/log4j/chainsaw/layout/DefaultDetailLayout.html");
+        DefaultLayoutFactory.class.getClassLoader().getResource(fileNamePath);
 
       if (defaultLayoutURL == null) {
         LogManager.getLogger(DefaultLayoutFactory.class).warn(
@@ -71,7 +76,6 @@ public class DefaultLayoutFactory {
 
         defaultPatternLayout = content.toString();
       }
-    }
 
     return defaultPatternLayout;
   }
