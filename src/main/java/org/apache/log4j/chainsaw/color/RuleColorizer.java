@@ -48,9 +48,9 @@ public class RuleColorizer implements Colorizer {
   private Rule findRule;
   private Rule loggerRule;
   private final Color FIND_FOREGROUND = Color.white;
-  private final Color FIND_BACKGROUND = Color.black;
+  private final Color FIND_BACKGROUND = new Color(40, 40, 40);
   private final Color LOGGER_FOREGROUND = Color.white;
-  private final Color LOGGER_BACKGROUND = Color.black;
+  private final Color LOGGER_BACKGROUND = new Color(40, 40, 40);
   
   public RuleColorizer() {
     List rulesList = new ArrayList();
