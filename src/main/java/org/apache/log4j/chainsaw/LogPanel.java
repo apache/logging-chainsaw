@@ -3110,7 +3110,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
                 displayedEntries.add(obj);
                 fireIntervalAdded(this, displayedEntries.size() - 1, displayedEntries.size() -1);
                 bypassFiltering = false;
-                refilter();
             }
 
             public void removeElement(Object obj) {
