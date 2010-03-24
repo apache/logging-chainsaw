@@ -205,7 +205,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
           public void mouseClicked(MouseEvent e)
           {
             if (
-              (e.getClickCount() > 1)
+              (e.getClickCount() == 1)
                 && ((e.getModifiers() & InputEvent.BUTTON1_MASK) > 0))
             {
               int i = columnList.locationToIndex(e.getPoint());
