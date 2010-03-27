@@ -64,7 +64,6 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   private int cyclicBufferSize = DEFAULT_CAPACITY;
   List unfilteredList;
   List filteredList;
-  Set idSet = new HashSet(cyclicBufferSize);
   private boolean currentSortAscending;
   private int currentSortColumn;
   private final EventListenerList eventListenerList = new EventListenerList();
@@ -91,7 +90,6 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
 
     unfilteredList = new CyclicBufferList(cyclicBufferSize);
     filteredList = new CyclicBufferList(cyclicBufferSize);
-    idSet = new HashSet(cyclicBufferSize);
   }
 
   /* (non-Javadoc)
@@ -293,7 +291,6 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     synchronized (unfilteredList) {
       unfilteredList.clear();
       filteredList.clear();
-      idSet.clear();
       uniqueRow = 0;
     }
 
@@ -474,13 +471,6 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
       e.setProperty(Constants.LOG4J_ID_KEY, id.toString());
     }
 
-    //prevent duplicate rows
-    if (idSet.contains(id)) {
-      return false;
-    }
-
-    idSet.add(id);
-    
     /**
          * If we're in cyclic mode and over budget on the size, the addition of a new event will
          * cause the oldest event to fall off the cliff. We need to remove that events ID from the
@@ -491,7 +481,6 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
             CyclicBufferList bufferList = (CyclicBufferList) unfilteredList;
             if (bufferList.size() == bufferList.getMaxSize()) {
                 LoggingEvent aboutToBeDropped = (LoggingEvent) unfilteredList.get(0);
-                idSet.remove(Integer.valueOf(aboutToBeDropped.getProperty(Constants.LOG4J_ID_KEY)));
                 reachedCapacity = true;
             }
     }
@@ -703,9 +692,6 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
 
                   List newUnfilteredList = null;
                   List newFilteredList = null;
-                  HashSet newIDSet = null;
-
-                  newIDSet = new HashSet(cyclicBufferSize);
 
                   if (isCyclic()) {
                     newUnfilteredList = new CyclicBufferList(cyclicBufferSize);
@@ -726,18 +712,11 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
                       e.getProperty(
                         e.getProperty(Constants.LOG4J_ID_KEY));
 
-                    if (o != null) {
-                      newIDSet.add(o);
-                    } else {
-                      newIDSet.add(new Integer(increment++));
-                    }
-
                     monitor.setProgress(index++);
                   }
 
                   unfilteredList = newUnfilteredList;
                   filteredList = newFilteredList;
-                  idSet = newIDSet;
                 }
 
                 monitor.setNote("Refiltering...");
