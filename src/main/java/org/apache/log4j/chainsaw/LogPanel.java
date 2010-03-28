@@ -3078,7 +3078,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
                     int rowToSelect = (int)(rowCount * ratio);
                     EventWrapper event = getClosestRow(rowToSelect);
                     if (event != null) {
-                        setSelectedEvent(event.rowNum + 1);
+                        int id = new Integer(event.loggingEvent.getProperty("log4jid")).intValue();
+                        setSelectedEvent(id);
                     }
                 }
             });
