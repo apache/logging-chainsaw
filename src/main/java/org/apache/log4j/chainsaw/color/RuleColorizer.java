@@ -39,7 +39,7 @@ import org.apache.log4j.spi.LoggingEvent;
  * @author Scott Deboy <sdeboy@apache.org>
  */
 public class RuleColorizer implements Colorizer {
-  private static final String DEFAULT_NAME = "Default";
+  public static final String DEFAULT_NAME = "Default";
   private Map rules;
   private final PropertyChangeSupport colorChangeSupport =
     new PropertyChangeSupport(this);
@@ -51,19 +51,23 @@ public class RuleColorizer implements Colorizer {
   private final Color FIND_BACKGROUND = new Color(40, 40, 40);
   private final Color LOGGER_FOREGROUND = Color.white;
   private final Color LOGGER_BACKGROUND = new Color(40, 40, 40);
-  
+  private final Color WARN_DEFAULT_COLOR = new Color(255, 255, 153);
+  private final Color ERROR_OR_FATAL_DEFAULT_COLOR = new Color(255, 153, 153);
+  private final String DEFAULT_ERROR_FATAL_EXPRESSION = "level == FATAL || level == ERROR";
+  private final String DEFAULT_WARN_EXPRESSION = "level == WARN";
+
   public RuleColorizer() {
     List rulesList = new ArrayList();
 
-    String expression = "level == FATAL || level == ERROR";
-    rulesList.add(
+      String expression = DEFAULT_ERROR_FATAL_EXPRESSION;
+      rulesList.add(
       new ColorRule(
-        expression, ExpressionRule.getRule(expression), new Color(255, 153, 153),
+        expression, ExpressionRule.getRule(expression), ERROR_OR_FATAL_DEFAULT_COLOR,
         Color.black));
-    expression = "level == WARN";
-    rulesList.add(
+      expression = DEFAULT_WARN_EXPRESSION;
+      rulesList.add(
       new ColorRule(
-        expression, ExpressionRule.getRule(expression), new Color(255, 255, 153),
+        expression, ExpressionRule.getRule(expression), WARN_DEFAULT_COLOR,
         Color.black));
 
       expression = "prop.log4j.marker exists";
@@ -74,6 +78,22 @@ public class RuleColorizer implements Colorizer {
 
     defaultRules.put(DEFAULT_NAME, rulesList);
     setRules(defaultRules);
+  }
+
+  public String getDefaultWarnExpression() {
+      return DEFAULT_WARN_EXPRESSION;
+  }
+
+  public String getDefaultErrorOrFatalExpression() {
+      return DEFAULT_ERROR_FATAL_EXPRESSION;
+  }
+    
+  public Color getDefaultWarnColor() {
+      return WARN_DEFAULT_COLOR;
+  }
+
+  public Color getDefaultErrorOrFatalColor() {
+      return ERROR_OR_FATAL_DEFAULT_COLOR;
   }
   
   public void setLoggerRule(Rule loggerRule) {
@@ -93,6 +113,10 @@ public class RuleColorizer implements Colorizer {
   
   public Map getRules() {
     return rules;
+  }
+
+  public List getCurrentRules() {
+    return (List) rules.get(currentRuleSet);
   }
 
   public void addRules(Map newRules) {

@@ -25,6 +25,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -124,6 +125,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.text.Document;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
@@ -143,6 +145,7 @@ import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.chainsaw.xstream.TableColumnConverter;
 import org.apache.log4j.helpers.Constants;
+import org.apache.log4j.rule.ColorRule;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.LoggingEvent;
@@ -1072,6 +1075,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     final JScrollPane eventsPane = new JScrollPane(table);
 
     eventsAndStatusPanel.add(eventsPane, BorderLayout.CENTER);
+    JPanel rightPanel = new JPanel();
+    rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
+    rightPanel.add(Box.createVerticalStrut(table.getTableHeader().getMinimumSize().height));
+    JPanel thumbNailPanel = new EventMatchThumbnail();
+    thumbNailPanel.setPreferredSize(new Dimension(10, -1));
+    rightPanel.add(thumbNailPanel);
+    eventsAndStatusPanel.add(rightPanel, BorderLayout.EAST);
 
     final JPanel statusLabelPanel = new JPanel();
     statusLabelPanel.setLayout(new BorderLayout());
@@ -3037,6 +3047,253 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
             textField.setText(currentEvent.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE));
             textField.selectAll();
             return textField;
+        }
+    }
+
+    private class EventMatchThumbnail extends JPanel {
+        private List errors= new ArrayList();
+        private List warnings = new ArrayList();
+
+        private Color WARNING_COLOR = colorizer.getDefaultWarnColor();
+        private Color ERROR_OR_FATAL_COLOR = colorizer.getDefaultErrorOrFatalColor();
+
+        private final int eventHeight = 8;
+
+        public EventMatchThumbnail() {
+            configureColors();
+            colorizer.addPropertyChangeListener(new PropertyChangeListener()
+            {
+                public void propertyChange(PropertyChangeEvent evt)
+                {
+                    configureColors();
+                }
+            });
+            addMouseListener(new MouseAdapter(){
+                public void mouseClicked(MouseEvent e)
+                {
+                    int rowCount = table.getRowCount();
+                    int height = getHeight();
+                    int clickLocationY = e.getPoint().y;
+                    float ratio = (float)clickLocationY / height;
+                    int rowToSelect = (int)(rowCount * ratio);
+                    EventWrapper event = getClosestRow(rowToSelect);
+                    if (event != null) {
+                        setSelectedEvent(event.rowNum + 1);
+                    }
+                }
+            });
+
+            tableModel.addTableModelListener(new TableModelListener(){
+                public void tableChanged(TableModelEvent e) {
+                    int firstRow = e.getFirstRow();
+                    int lastRow = e.getLastRow();
+                    if (lastRow == Integer.MAX_VALUE) {
+                        lastRow = table.getRowCount() -1; //zero-indexed rows
+                    }
+                    if (firstRow < 0 || lastRow < 0) {
+                        return;
+                    }
+                    List displayedEvents = tableModel.getFilteredEvents();
+                    if (e.getType() == TableModelEvent.INSERT) {
+//                        System.out.println("insert - current warnings: " + warnings.size() + ", errors: " + errors.size() + ", first row: " + firstRow + ", last row: " + lastRow);
+                        for (int i=firstRow;i<lastRow;i++) {
+                            LoggingEvent event = (LoggingEvent)displayedEvents.get(i);
+                            if (isWarningEvent(event)) {
+                                warnings.add(new EventWrapper(i, event));
+//                                System.out.println("added warning: " + i + " - " + event.getLevel());
+                            }
+                            if (isErrorOrFatalEvent(event)) {
+                                errors.add(new EventWrapper(i, event));
+//                                System.out.println("added error: " + i + " - " + event.getLevel());
+                            }
+                        }
+//                        System.out.println("insert- new warnings: " + warnings + ", errors: " + errors);
+
+                        //run evaluation on rows & add to list
+                    } else if (e.getType() == TableModelEvent.DELETE) {
+                        //find each eventwrapper with an id in the deleted range and remove it...
+//                        System.out.println("delete- current warnings: " + warnings.size() + ", errors: " + errors.size() + ", first row: " + firstRow + ", last row: " + lastRow + ", displayed event count: " + displayedEvents.size() );
+                        for (Iterator iter = warnings.iterator();iter.hasNext();) {
+                            EventWrapper wrapper = (EventWrapper)iter.next();
+                            if ((wrapper.rowNum >= firstRow) && (wrapper.rowNum <= lastRow)) {
+//                                System.out.println("deleting warning: " + wrapper);
+                                iter.remove();
+                            }
+                        }
+                        for (Iterator iter = errors.iterator();iter.hasNext();) {
+                            EventWrapper wrapper = (EventWrapper)iter.next();
+                            if ((wrapper.rowNum >= firstRow) && (wrapper.rowNum <= lastRow)) {
+//                                System.out.println("deleting error: " + wrapper);
+                                iter.remove();
+                            }
+                        }
+//                        System.out.println("delete- new warnings: " + warnings.size() + ", errors: " + errors.size());
+
+                        //remove any matching rows
+                    } else if (e.getType() == TableModelEvent.UPDATE) {
+//                        System.out.println("update - about to delete old warnings in range: " + firstRow + " to " + lastRow + ", current warnings: " + warnings.size() + ", errors: " + errors.size());
+                        //find each eventwrapper with an id in the deleted range and remove it...
+                        for (Iterator iter = warnings.iterator();iter.hasNext();) {
+                            EventWrapper wrapper = (EventWrapper)iter.next();
+                            if ((wrapper.rowNum >= firstRow) && (wrapper.rowNum <= lastRow)) {
+//                                System.out.println("update - deleting warning: " + wrapper);
+                                iter.remove();
+                            }
+                        }
+                        for (Iterator iter = errors.iterator();iter.hasNext();) {
+                            EventWrapper wrapper = (EventWrapper)iter.next();
+                            if ((wrapper.rowNum >= firstRow) && (wrapper.rowNum <= lastRow)) {
+//                                System.out.println("update - deleting error: " + wrapper);
+                                iter.remove();
+                            }
+                        }
+//                        System.out.println("update - after deleting old warnings in range: " + firstRow + " to " + lastRow + ", new warnings: " + warnings.size() + ", errors: " + errors.size());
+                        //NOTE: for update, we need to do i<= lastRow
+                        for (int i=firstRow;i<=lastRow;i++) {
+                            LoggingEvent event = (LoggingEvent)displayedEvents.get(i);
+                            if (isWarningEvent(event)) {
+//                                System.out.println("update - adding warning: " + i + ", event: " + event.getMessage());
+                                warnings.add(new EventWrapper(i, event));
+                            }
+                            if (isErrorOrFatalEvent(event)) {
+//                                System.out.println("update - adding error: " + i + ", event: " + event.getMessage());
+                                errors.add(new EventWrapper(i, event));
+                            }
+                        }
+//                        System.out.println("update - new warnings: " + warningRows.size() + ", errors: " + errorRows.size());
+                    }
+                    repaint();
+                }
+
+                private boolean isWarningEvent(LoggingEvent e) {
+                    return e.getLevel().equals(Level.WARN);
+                }
+
+                private boolean isErrorOrFatalEvent(LoggingEvent e) {
+                    return e.getLevel().equals(Level.ERROR) || e.getLevel().equals(Level.FATAL);
+                }
+            });
+        }
+
+        private EventWrapper getClosestRow(int rowToSelect)
+        {
+            //now we need to find the closest row
+            EventWrapper closestRow = null;
+            for (Iterator iter = errors.iterator();iter.hasNext();) {
+                EventWrapper event = (EventWrapper) iter.next();
+                int backDelta = rowToSelect - event.rowNum;
+                int forwardDelta = event.rowNum - rowToSelect;
+//                        System.out.println("errors - rowToSelect: " + rowToSelect + ", rowNum: " + event.rowNum + ", backDelta: " + backDelta + ", forwardDelta: " + forwardDelta);
+                if ((closestRow == null) || ((backDelta * -1) <= (rowToSelect - closestRow.rowNum)) || (forwardDelta <= (closestRow.rowNum - rowToSelect))) {
+//                            System.out.println("errors - setting closestRow to : " + event.rowNum);
+                    closestRow = event;
+                }
+            }
+            for (Iterator iter = warnings.iterator();iter.hasNext();) {
+                EventWrapper event = (EventWrapper) iter.next();
+                int backDelta = rowToSelect - event.rowNum;
+                int forwardDelta = event.rowNum - rowToSelect;
+//                        System.out.println("warnings - rowToSelect: " + rowToSelect + ", rowNum: " + event.rowNum + ", backDelta: " + backDelta + ", forwardDelta: " + forwardDelta);
+                if ((closestRow == null) || ((backDelta * -1) <= (rowToSelect - closestRow.rowNum)) || (forwardDelta <= (closestRow.rowNum - rowToSelect))) {
+//                            System.out.println("warnings - setting closestRow to : " + event.rowNum);
+                    closestRow = event;
+                }
+            }
+            return closestRow;
+        }
+
+        private void configureColors() {
+            List colorRules = colorizer.getCurrentRules();
+            for (Iterator iter = colorRules.iterator();iter.hasNext();) {
+                ColorRule rule = (ColorRule)iter.next();
+                String expression = rule.getExpression().toLowerCase().trim();
+                if (expression.equalsIgnoreCase(colorizer.getDefaultWarnExpression())) {
+                    WARNING_COLOR = rule.getBackgroundColor();
+                }
+                if (expression.equalsIgnoreCase(colorizer.getDefaultErrorOrFatalExpression())) {
+                    ERROR_OR_FATAL_COLOR = rule.getBackgroundColor();
+                }
+            }
+            repaint();
+        }
+
+        public void paintComponent(Graphics g)
+        {
+            super.paintComponent(g);
+
+            int rowCount = table.getRowCount();
+            if (rowCount == 0) {
+                return;
+            }
+            int componentHeight = getHeight();
+
+            for (Iterator iter = warnings.iterator();iter.hasNext();) {
+                EventWrapper wrapper = (EventWrapper)iter.next();
+                float ratio = (wrapper.rowNum / (float)rowCount);
+//                System.out.println("warning - ratio: " + ratio + ", component height: " + componentHeight);
+                int verticalLocation = (int) (componentHeight * ratio);
+                drawEvent(WARNING_COLOR, verticalLocation, eventHeight, g);
+//                System.out.println("painting warning - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
+            }
+
+            for (Iterator iter = errors.iterator();iter.hasNext();) {
+                EventWrapper wrapper = (EventWrapper)iter.next();
+                float ratio = (wrapper.rowNum / (float)rowCount);
+//                System.out.println("error - ratio: " + ratio + ", component height: " + componentHeight);
+                int verticalLocation = (int) (componentHeight * ratio);
+                drawEvent(ERROR_OR_FATAL_COLOR, verticalLocation, eventHeight, g);
+//                System.out.println("painting error - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
+            }
+        }
+
+        private void drawEvent(Color newColor, int verticalLocation, int eventHeight, Graphics g) {
+//            System.out.println("painting: - color: " + newColor + ", verticalLocation: " + verticalLocation + ", eventHeight: " + eventHeight);
+            Color oldColor = g.getColor();
+            g.setColor(newColor);
+            g.fillRect(0, verticalLocation, getWidth(), eventHeight);
+            g.setColor(newColor.darker());
+            g.drawRect(0, verticalLocation, getWidth(), eventHeight);
+            g.setColor(oldColor);
+        }
+
+        class EventWrapper {
+            int rowNum;
+            LoggingEvent loggingEvent;
+            public EventWrapper(int rowNum, LoggingEvent loggingEvent) {
+                this.rowNum = rowNum;
+                this.loggingEvent = loggingEvent;
+            }
+
+            public String toString()
+            {
+                return "event - rownum: " + rowNum + ", level: " + loggingEvent.getLevel();
+            }
+
+            public boolean equals(Object o)
+            {
+                if (this == o)
+                {
+                    return true;
+                }
+                if (o == null || getClass() != o.getClass())
+                {
+                    return false;
+                }
+
+                EventWrapper that = (EventWrapper) o;
+
+                if (loggingEvent != null ? !loggingEvent.equals(that.loggingEvent) : that.loggingEvent != null)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+
+            public int hashCode()
+            {
+                return loggingEvent != null ? loggingEvent.hashCode() : 0;
+            }
         }
     }
 
