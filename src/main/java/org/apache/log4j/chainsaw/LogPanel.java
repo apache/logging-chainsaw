@@ -257,6 +257,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
   private static final Color INVALID_EXPRESSION_BACKGROUND = new Color(251, 186, 186);
   private TableCellEditor markerCellEditor;
   private AutoFilterComboBox filterCombo;
+  private JScrollPane eventsPane;
 
     /**
    * Creates a new LogPanel object.  If a LogPanel with this identifier has
@@ -1072,13 +1073,11 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
 
     JPanel eventsAndStatusPanel = new JPanel(new BorderLayout());
 
-    final JScrollPane eventsPane = new JScrollPane(table);
+    eventsPane = new JScrollPane(table);
 
     eventsAndStatusPanel.add(eventsPane, BorderLayout.CENTER);
     JPanel rightPanel = new JPanel();
     rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-    //assuming 'thumb' height & width are same as scrollbar width, so we can offset vertically to make indicators line up with table contents        
-    rightPanel.add(Box.createVerticalStrut(table.getTableHeader().getMinimumSize().height + ((Integer)UIManager.get("ScrollBar.width")).intValue()));
     JPanel thumbNailPanel = new EventMatchThumbnail();
     thumbNailPanel.setPreferredSize(new Dimension(10, -1));
     rightPanel.add(thumbNailPanel);
@@ -3073,11 +3072,30 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
                 public void mouseClicked(MouseEvent e)
                 {
                     int rowCount = table.getRowCount();
-                    int height = getHeight();
-                    int clickLocationY = e.getPoint().y;
-                    float ratio = (float)clickLocationY / height;
-                    int rowToSelect = (int)(rowCount * ratio);
+
+                    Point offsets = getScrollBarOffsets();
+                    int topOffset = offsets.x;
+                    int bottomOffset = offsets.y;
+
+                    //'effective' height of this component is scrollpane height - top/bottom offsets
+                    int height = eventsPane.getHeight() - topOffset - bottomOffset;
+
+                    int clickLocation = e.getPoint().y;
+
+                    //remove top offset from click location but avoid going negative
+                    clickLocation = Math.max(clickLocation - topOffset, 0);
+
+                    //don't let clicklocation exceed height
+                    if (clickLocation >= height) {
+                        clickLocation = height;
+                    }
+
+//                    System.out.println("clicked y pos: " + e.getPoint().y + ", relative: " + clickLocation);
+                    float ratio = (float)clickLocation / height;
+                    int rowToSelect = Math.round(rowCount * ratio);
+//                    System.out.println("rowCount: " + rowCount + ", height: " + height + ", clickLocation: " + clickLocation + ", ratio: " + ratio + ", rowToSelect: " + rowToSelect);
                     EventWrapper event = getClosestRow(rowToSelect);
+//                    System.out.println("rowToSelect: " + rowToSelect + ", closestRow: " + event.loggingEvent.getProperty("log4jid"));
                     if (event != null) {
                         int id = new Integer(event.loggingEvent.getProperty("log4jid")).intValue();
                         setSelectedEvent(id);
@@ -3177,28 +3195,24 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
             });
         }
 
-        private EventWrapper getClosestRow(int rowToSelect)
-        {
+        private EventWrapper getClosestRow(int rowToSelect) {
             //now we need to find the closest row
             EventWrapper closestRow = null;
+            int rowDelta = Integer.MAX_VALUE;
             for (Iterator iter = errors.iterator();iter.hasNext();) {
                 EventWrapper event = (EventWrapper) iter.next();
-                int backDelta = rowToSelect - event.rowNum;
-                int forwardDelta = event.rowNum - rowToSelect;
-//                        System.out.println("errors - rowToSelect: " + rowToSelect + ", rowNum: " + event.rowNum + ", backDelta: " + backDelta + ", forwardDelta: " + forwardDelta);
-                if ((closestRow == null) || ((backDelta * -1) <= (rowToSelect - closestRow.rowNum)) || (forwardDelta <= (closestRow.rowNum - rowToSelect))) {
-//                            System.out.println("errors - setting closestRow to : " + event.rowNum);
+                int newRowDelta = Math.abs(rowToSelect - event.rowNum);
+                if (newRowDelta < rowDelta) {
                     closestRow = event;
+                    rowDelta = newRowDelta;
                 }
             }
             for (Iterator iter = warnings.iterator();iter.hasNext();) {
                 EventWrapper event = (EventWrapper) iter.next();
-                int backDelta = rowToSelect - event.rowNum;
-                int forwardDelta = event.rowNum - rowToSelect;
-//                        System.out.println("warnings - rowToSelect: " + rowToSelect + ", rowNum: " + event.rowNum + ", backDelta: " + backDelta + ", forwardDelta: " + forwardDelta);
-                if ((closestRow == null) || ((backDelta * -1) <= (rowToSelect - closestRow.rowNum)) || (forwardDelta <= (closestRow.rowNum - rowToSelect))) {
-//                            System.out.println("warnings - setting closestRow to : " + event.rowNum);
+                int newRowDelta = Math.abs(rowToSelect - event.rowNum);
+                if (newRowDelta < rowDelta) {
                     closestRow = event;
+                    rowDelta = newRowDelta;
                 }
             }
             return closestRow;
@@ -3219,21 +3233,48 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
             repaint();
         }
 
+        /**
+         * Return a point representing top and bottom offsets
+         * Top offset is held by Point.x, bottom offset is held by Point.y
+         *
+         * @return point representing top and bottom offsets (x and y values of Point)
+         */
+        public Point getScrollBarOffsets() {
+            int scrollBarOffset = ((Integer)UIManager.get("ScrollBar.width")).intValue();
+            //calculate topOffset and bottomOffset (topOffset is tableheader size + optional vertical scrollbar thumb height
+            //bottom offset is optional vertical scrollbar thumb height + optional horizontal scrollbar thumb height
+            int topOffset = table.getTableHeader().getMinimumSize().height;
+            int bottomOffset = 0;
+            if (eventsPane.getVerticalScrollBar().isVisible()) {
+                topOffset += scrollBarOffset;
+                bottomOffset += scrollBarOffset;
+            }
+            if (eventsPane.getHorizontalScrollBar().isVisible()) {
+                bottomOffset += scrollBarOffset;
+            }
+            return new Point(topOffset, bottomOffset);
+        }
+
         public void paintComponent(Graphics g)
         {
             super.paintComponent(g);
+            Point topAndBottomOffset = getScrollBarOffsets();
+            int topOffset = topAndBottomOffset.x;
+            int bottomOffset = topAndBottomOffset.y;
 
             int rowCount = table.getRowCount();
             if (rowCount == 0) {
                 return;
             }
-            int componentHeight = getHeight();
+            //use event pane height as reference height - max component height will be extended by event height if
+            // last row is rendered, so subtract here
+            int componentHeight = eventsPane.getHeight() - topOffset - bottomOffset - eventHeight;
 
             for (Iterator iter = warnings.iterator();iter.hasNext();) {
                 EventWrapper wrapper = (EventWrapper)iter.next();
                 float ratio = (wrapper.rowNum / (float)rowCount);
 //                System.out.println("warning - ratio: " + ratio + ", component height: " + componentHeight);
-                int verticalLocation = (int) (componentHeight * ratio);
+                int verticalLocation = (int) (componentHeight * ratio) + topOffset;
                 drawEvent(WARNING_COLOR, verticalLocation, eventHeight, g);
 //                System.out.println("painting warning - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
             }
@@ -3242,7 +3283,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
                 EventWrapper wrapper = (EventWrapper)iter.next();
                 float ratio = (wrapper.rowNum / (float)rowCount);
 //                System.out.println("error - ratio: " + ratio + ", component height: " + componentHeight);
-                int verticalLocation = (int) (componentHeight * ratio);
+                int verticalLocation = (int) (componentHeight * ratio) + topOffset;
                 drawEvent(ERROR_OR_FATAL_COLOR, verticalLocation, eventHeight, g);
 //                System.out.println("painting error - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
             }

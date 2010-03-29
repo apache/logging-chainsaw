@@ -22,6 +22,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Event;
+import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -269,13 +270,18 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             return repositoryExImpl;
         }}, repositorySelectorGuard);
     
-    ApplicationPreferenceModel model = new ApplicationPreferenceModel();
+    final ApplicationPreferenceModel model = new ApplicationPreferenceModel();
 
     SettingsManager.getInstance().configure(new ApplicationPreferenceModelSaver(model));
 
     applyLookAndFeel(model.getLookAndFeelClassName());
-
-    createChainsawGUI(model, null);
+    EventQueue.invokeLater(new Runnable()
+    {
+        public void run()
+        {
+            createChainsawGUI(model, null);
+        }
+    });
   }
 
   /**
@@ -450,7 +456,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     //if Chainsaw is launched as an appender, ensure the root logger level is TRACE
     LogManager.getRootLogger().setLevel(Level.TRACE);
 
-    ApplicationPreferenceModel model = new ApplicationPreferenceModel();
+    final ApplicationPreferenceModel model = new ApplicationPreferenceModel();
     SettingsManager.getInstance().configure(new ApplicationPreferenceModelSaver(model));
 
     cyclicBufferSize = model.getCyclicBufferSize();
@@ -473,11 +479,15 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
     applyLookAndFeel(model.getLookAndFeelClassName());
 
-    createChainsawGUI(model, null);
-
-    getApplicationPreferenceModel().apply(model);
-
-    activateViewer();
+    EventQueue.invokeLater(new Runnable()
+    {
+        public void run()
+        {
+            createChainsawGUI(model, null);
+            getApplicationPreferenceModel().apply(model);
+            activateViewer();
+        }
+    });
   }
 
   /**
