@@ -1077,7 +1077,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     eventsAndStatusPanel.add(eventsPane, BorderLayout.CENTER);
     JPanel rightPanel = new JPanel();
     rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-    rightPanel.add(Box.createVerticalStrut(table.getTableHeader().getMinimumSize().height));
+    //assuming 'thumb' height & width are same as scrollbar width, so we can offset vertically to make indicators line up with table contents        
+    rightPanel.add(Box.createVerticalStrut(table.getTableHeader().getMinimumSize().height + ((Integer)UIManager.get("ScrollBar.width")).intValue()));
     JPanel thumbNailPanel = new EventMatchThumbnail();
     thumbNailPanel.setPreferredSize(new Dimension(10, -1));
     rightPanel.add(thumbNailPanel);
