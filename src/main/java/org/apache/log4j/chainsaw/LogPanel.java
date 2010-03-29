@@ -3110,9 +3110,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
                     if (lastRow == Integer.MAX_VALUE) {
                         lastRow = table.getRowCount() -1; //zero-indexed rows
                     }
-                    if (firstRow < 0 || lastRow < 0) {
-                        return;
-                    }
+
                     List displayedEvents = tableModel.getFilteredEvents();
                     if (e.getType() == TableModelEvent.INSERT) {
 //                        System.out.println("insert - current warnings: " + warnings.size() + ", errors: " + errors.size() + ", first row: " + firstRow + ", last row: " + lastRow);
@@ -3180,7 +3178,12 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
                                 errors.add(new EventWrapper(i, event));
                             }
                         }
-//                        System.out.println("update - new warnings: " + warningRows.size() + ", errors: " + errorRows.size());
+                        //clear everything if we got an event w/-1
+                        if (firstRow < 0 || lastRow < 0) {
+                            errors.clear();
+                            warnings.clear();
+                        }
+//                        System.out.println("update - new warnings: " + warnings.size() + ", errors: " + errors.size());
                     }
                     repaint();
                 }
