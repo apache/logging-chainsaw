@@ -47,14 +47,14 @@ public class RuleColorizer implements Colorizer {
   private String currentRuleSet = DEFAULT_NAME;
   private Rule findRule;
   private Rule loggerRule;
-  private final Color FIND_FOREGROUND = Color.white;
-  private final Color FIND_BACKGROUND = new Color(40, 40, 40);
-  private final Color LOGGER_FOREGROUND = Color.white;
-  private final Color LOGGER_BACKGROUND = new Color(40, 40, 40);
+
   private final Color WARN_DEFAULT_COLOR = new Color(255, 255, 153);
   private final Color ERROR_OR_FATAL_DEFAULT_COLOR = new Color(255, 153, 153);
-  private final String DEFAULT_ERROR_FATAL_EXPRESSION = "level == FATAL || level == ERROR";
+  private final Color MARKER_DEFAULT_COLOR = new Color(153, 255, 153);
+
   private final String DEFAULT_WARN_EXPRESSION = "level == WARN";
+  private final String DEFAULT_ERROR_FATAL_EXPRESSION = "level == FATAL || level == ERROR";
+  private final String DEFAULT_MARKER_EXPRESSION = "prop.log4j.marker exists";
 
   public RuleColorizer() {
     List rulesList = new ArrayList();
@@ -70,40 +70,32 @@ public class RuleColorizer implements Colorizer {
         expression, ExpressionRule.getRule(expression), WARN_DEFAULT_COLOR,
         Color.black));
 
-      expression = "prop.log4j.marker exists";
+      expression = DEFAULT_MARKER_EXPRESSION;
       rulesList.add(
         new ColorRule(
-          expression, ExpressionRule.getRule(expression), new Color(153, 255, 153),
+          expression, ExpressionRule.getRule(expression), MARKER_DEFAULT_COLOR,
           Color.black));
 
     defaultRules.put(DEFAULT_NAME, rulesList);
     setRules(defaultRules);
   }
 
-  public String getDefaultWarnExpression() {
-      return DEFAULT_WARN_EXPRESSION;
-  }
-
-  public String getDefaultErrorOrFatalExpression() {
-      return DEFAULT_ERROR_FATAL_EXPRESSION;
-  }
-    
-  public Color getDefaultWarnColor() {
-      return WARN_DEFAULT_COLOR;
-  }
-
-  public Color getDefaultErrorOrFatalColor() {
-      return ERROR_OR_FATAL_DEFAULT_COLOR;
-  }
-  
   public void setLoggerRule(Rule loggerRule) {
     this.loggerRule = loggerRule;
     colorChangeSupport.firePropertyChange("colorrule", false, true);
   }
-  
+
   public void setFindRule(Rule findRule) {
     this.findRule = findRule;
     colorChangeSupport.firePropertyChange("colorrule", false, true);
+  }
+
+  public Rule getFindRule() {
+    return findRule;
+  }
+
+  public Rule getLoggerRule() {
+    return loggerRule;
   }
 
   public void setRules(Map rules) {
@@ -168,14 +160,6 @@ public class RuleColorizer implements Colorizer {
   }
 
   public Color getBackgroundColor(LoggingEvent event) {
-    if ((findRule != null) && findRule.evaluate(event)) {
-      return FIND_BACKGROUND;
-    }
-
-    if ((loggerRule != null) && loggerRule.evaluate(event)) {
-        return LOGGER_BACKGROUND;
-    }
-
     if (rules.containsKey(currentRuleSet)) {
       List list = (List) rules.get(currentRuleSet);
       Iterator iter = list.iterator();
@@ -193,14 +177,6 @@ public class RuleColorizer implements Colorizer {
   }
 
   public Color getForegroundColor(LoggingEvent event) {
-    if ((findRule != null) && findRule.evaluate(event)) {
-      return FIND_FOREGROUND;
-    }
-
-    if ((loggerRule != null) && loggerRule.evaluate(event)) {
-      return LOGGER_FOREGROUND;
-    }
-
     if (rules.containsKey(currentRuleSet)) {
       List list = (List) rules.get(currentRuleSet);
       Iterator iter = list.iterator();

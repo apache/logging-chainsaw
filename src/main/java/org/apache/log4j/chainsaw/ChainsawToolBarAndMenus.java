@@ -77,6 +77,8 @@ class ChainsawToolBarAndMenus implements ChangeListener {
   private final Action closeAction;
   private final Action findNextAction;
   private final Action findPreviousAction;
+  private final Action findPreviousColorizedEventAction;
+  private final Action findNextColorizedEventAction;
   private final Action findNextMarkerAction;
   private final Action findPreviousMarkerAction;
   private final Action toggleMarkerAction;
@@ -132,6 +134,8 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     findNextAction = getFindNextAction();
     findPreviousAction = getFindPreviousAction();
     findNextMarkerAction = createFindNextMarkerAction();
+    findPreviousColorizedEventAction = getFindPreviousColorizedEventAction();
+    findNextColorizedEventAction = getFindNextColorizedEventAction();
     findPreviousMarkerAction = createFindPreviousMarkerAction();
     toggleMarkerAction = createToggleMarkerAction();
     clearAllMarkersAction = createClearAllMarkersAction();
@@ -169,7 +173,8 @@ class ChainsawToolBarAndMenus implements ChangeListener {
 
     logPanelSpecificActions =
       new Action[] {
-        pauseAction, findNextAction, findPreviousAction, findNextMarkerAction, findPreviousMarkerAction,
+        pauseAction, findNextAction, findPreviousAction, findNextColorizedEventAction, findPreviousColorizedEventAction,
+        findNextMarkerAction, findPreviousMarkerAction,
         toggleMarkerAction, clearAllMarkersAction, scrollToTopAction, clearAction,
         fileMenu.getFileSaveAction(), toggleDetailPaneAction,
         showPreferencesAction, showColorPanelAction, undockAction,
@@ -524,11 +529,13 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     activeTabMenu.add(new JMenuItem(findPreviousMarkerAction));
     activeTabMenu.add(new JMenuItem(clearAllMarkersAction));
 
+    activeTabMenu.add(new JMenuItem(findNextColorizedEventAction));
+    activeTabMenu.add(new JMenuItem(findPreviousColorizedEventAction));
+
     activeTabMenu.addSeparator();
     activeTabMenu.add(new JMenuItem(scrollToTopAction));
     activeTabMenu.add(toggleScrollToBottomMenuItem);
     activeTabMenu.add(menuItemUseRightMouse);
-
     
     viewMenu.add(showToolbarCheck);
     viewMenu.add(toggleStatusBarCheck);
@@ -771,14 +778,14 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     detailPaneButton.setText(null);
     detailPaneButton.getActionMap().put(
       toggleDetailPaneAction.getValue(Action.NAME), toggleDetailPaneAction);
-    detailPaneButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+    detailPaneButton.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
       KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.ALT_MASK),
       toggleDetailPaneAction.getValue(Action.NAME));
 
     logTreePaneButton.setAction(toggleLogTreeAction);
     logTreePaneButton.getActionMap().put(
       toggleLogTreeAction.getValue(Action.NAME), toggleLogTreeAction);
-    logTreePaneButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+    logTreePaneButton.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
       KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.ALT_MASK),
       toggleLogTreeAction.getValue(Action.NAME));
     logTreePaneButton.setText(null);
@@ -786,7 +793,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     scrollToBottomButton.setAction(toggleScrollToBottomAction);
     scrollToBottomButton.getActionMap().put(
       toggleScrollToBottomAction.getValue(Action.NAME), toggleScrollToBottomAction);
-    scrollToBottomButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+    scrollToBottomButton.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
       KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.CTRL_MASK),
       toggleScrollToBottomAction.getValue(Action.NAME));
     scrollToBottomButton.setText(null);
@@ -1002,6 +1009,43 @@ class ChainsawToolBarAndMenus implements ChangeListener {
 
     return action;
   }
+
+    private Action getFindNextColorizedEventAction() {
+      final Action action =
+        new AbstractAction("Find next colorized event") {
+          public void actionPerformed(ActionEvent e) {
+            LogPanel p = logui.getCurrentLogPanel();
+            if (p != null) {
+              p.findNextColorizedEvent();
+            }
+          }
+        };
+        action.putValue(Action.SHORT_DESCRIPTION, "Searches for the next colorized event from the current location");
+        action.putValue("enabled", Boolean.TRUE);
+        action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_N));
+        action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK));
+
+      return action;
+    }
+
+    private Action getFindPreviousColorizedEventAction() {
+      final Action action =
+        new AbstractAction("Find previous colorized event") {
+          public void actionPerformed(ActionEvent e) {
+            LogPanel p = logui.getCurrentLogPanel();
+
+            if (p != null) {
+              p.findPreviousColorizedEvent();
+            }
+          }
+        };
+        action.putValue(Action.SHORT_DESCRIPTION, "Searches for the next colorized event from the current location");
+        action.putValue("enabled", Boolean.TRUE);
+        action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_P));
+        action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK));
+
+      return action;
+    }
 
   private JPanel getCustomExpressionPanel() {
     final JPanel panel = new JPanel(new BorderLayout());

@@ -121,7 +121,7 @@ public interface EventContainer extends SortTableModel, LoggerNameModel {
   /**
    * Returns the vector representing the row.
    */
-  LoggingEvent getRow(int row);
+  ExtendedLoggingEvent getRow(int row);
 
   /**
    * Return the last added row.
@@ -133,7 +133,7 @@ public interface EventContainer extends SortTableModel, LoggerNameModel {
    * @param e event
    * @return flag representing whether or not the row is being displayed (not filtered)
    */
-  boolean isAddRow(LoggingEvent e);
+  boolean isAddRow(ExtendedLoggingEvent e);
 
   /**
    * Fire appropriate table update events for the range.
@@ -173,4 +173,18 @@ public interface EventContainer extends SortTableModel, LoggerNameModel {
    * @param propName the property name to remove
    */
   void removePropertyFromEvents(String propName);
+
+  /**
+   * Evaluate all events against the find rule
+   * @param findRule
+   */
+  void updateEventsWithFindRule(Rule findRule);
+
+  /**
+   * Determine next row with a non-default color 
+   * @param currentRow
+   * @param forward
+   * @return
+   */
+  int findColoredRow(int currentRow, boolean forward);
 }

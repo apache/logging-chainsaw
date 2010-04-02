@@ -145,7 +145,6 @@ import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.chainsaw.xstream.TableColumnConverter;
 import org.apache.log4j.helpers.Constants;
-import org.apache.log4j.rule.ColorRule;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.LoggingEvent;
@@ -229,20 +228,18 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
   private final JPanel detailPanel = new JPanel(new BorderLayout());
   private final JSplitPane nameTreeAndMainPanelSplit;
   private final LoggerNameTreePanel logTreePanel;
-  private final LogPanelPreferenceModel preferenceModel =
-    new LogPanelPreferenceModel();
-  private final LogPanelPreferencePanel preferencesPanel =
-    new LogPanelPreferencePanel(preferenceModel);
+  private final LogPanelPreferenceModel preferenceModel = new LogPanelPreferenceModel();
+  private final LogPanelPreferencePanel preferencesPanel = new LogPanelPreferencePanel(preferenceModel);
   private final FilterModel filterModel = new FilterModel();
   private final RuleColorizer colorizer = new RuleColorizer();
   private final RuleMediator ruleMediator = new RuleMediator();
   private final EventDetailLayout detailLayout = new EventDetailLayout();
   private double lastDetailPanelSplitLocation = DEFAULT_DETAIL_SPLIT_LOCATION;
-  private double lastLogTreePanelSplitLocation =
-    DEFAULT_LOG_TREE_SPLIT_LOCATION;
+  private double lastLogTreePanelSplitLocation = DEFAULT_LOG_TREE_SPLIT_LOCATION;
   private Point currentPoint;
   private boolean paused = false;
   private Rule findRule;
+  private String currentFindRuleText;
   private Rule findMarkerRule;
   private final JPanel findPanel;
   private JTextField findField;
@@ -587,7 +584,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     /*
      *End of preferenceModel listeners
      */
-    tableModel = new ChainsawCyclicBufferTableModel(cyclicBufferSize);
+    tableModel = new ChainsawCyclicBufferTableModel(cyclicBufferSize, colorizer);
     table = new JSortTable(tableModel);
 
     //we've mapped f2, shift f2 and ctrl-f2 to marker-related actions, unmap them from the table
@@ -1079,7 +1076,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     JPanel rightPanel = new JPanel();
     rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
     JPanel thumbNailPanel = new EventMatchThumbnail();
-    thumbNailPanel.setPreferredSize(new Dimension(10, -1));
+
+    //set thumbnail width to be a bit narrower than scrollbar width
+    thumbNailPanel.setPreferredSize(new Dimension(((Integer)UIManager.get("ScrollBar.width")).intValue() -4, -1));
     rightPanel.add(thumbNailPanel);
     eventsAndStatusPanel.add(rightPanel, BorderLayout.EAST);
 
@@ -1476,8 +1475,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
       new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           if (currentPoint != null) {
-            int row = table.rowAtPoint(currentPoint);
-            LoggingEvent event = tableModel.getRow(row);
             renderer.setUseNormalTimes();
             tableModel.reFilter();
             menuItemDisplayNormalTimes.setEnabled(false);
@@ -1598,7 +1595,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
         }
         final int selectedRow = table.getSelectedRow();
         final int startingRow = table.getRowCount();
-        final LoggingEvent selectedEvent;
+        final ExtendedLoggingEvent selectedEvent;
         if (selectedRow >= 0) {
           selectedEvent = tableModel.getRow(selectedRow);
         } else {
@@ -1609,7 +1606,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
 
         int addedRowCount = 0;
         for (Iterator iter = events.iterator(); iter.hasNext();) {
-          LoggingEvent event = (LoggingEvent) iter.next();
+          ExtendedLoggingEvent event = new ExtendedLoggingEvent((LoggingEvent) iter.next());
 
           updateOtherModels(event);
 
@@ -2003,32 +2000,36 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     return tableModel.isCyclic();
   }
 
-  public boolean updateRule(String ruleText) {
+  public void updateRule(String ruleText) {
     if ((ruleText == null) || (ruleText.trim().equals(""))) {
       findRule = null;
+      tableModel.updateEventsWithFindRule(null);
       colorizer.setFindRule(null);
       //reset background color in case we were previously an invalid expression
       findField.setBackground(UIManager.getColor("TextField.background"));
       findField.setToolTipText(
         "Enter expression - right click or ctrl-space for menu");
-      return false;
     } else {
       //only turn off scrolltobottom when finding something (find not empty)
       preferenceModel.setScrollToBottom(false);
+      if(ruleText.equals(currentFindRuleText)) {
+          //don't update events if rule hasn't changed (we're finding next/previous)
+          return;
+      }
+      currentFindRuleText = ruleText;
       try {
         findField.setToolTipText(
           "Enter expression - right click or ctrl-space for menu");
         findRule = ExpressionRule.getRule(ruleText);
+        tableModel.updateEventsWithFindRule(findRule);
         colorizer.setFindRule(findRule);
         //valid expression, reset background color in case we were previously an invalid expression
         findField.setBackground(UIManager.getColor("TextField.background"));
-        return true;
       } catch (IllegalArgumentException re) {
         findField.setToolTipText(re.getMessage());
         findField.setBackground(INVALID_EXPRESSION_BACKGROUND);
         colorizer.setFindRule(null);
-
-        return false;
+        tableModel.updateEventsWithFindRule(null);
       }
     }
   }
@@ -2181,7 +2182,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
       Action.SHORT_DESCRIPTION, "Removes all the events from the current view");
 
     final SmallButton dockClearButton = new SmallButton(undockedClearAction);
-    dockClearButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+    dockClearButton.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
       KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, InputEvent.CTRL_MASK),
       undockedClearAction.getValue(Action.NAME));
     dockClearButton.getActionMap().put(
@@ -2211,7 +2212,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
       	}
       });
 
-      toggleScrollToBottomButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+      toggleScrollToBottomButton.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
   	      KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.CTRL_MASK),
   	      dockToggleScrollToBottomAction.getValue(Action.NAME));
   	    toggleScrollToBottomButton.getActionMap().put(
@@ -2280,9 +2281,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     undockedFindPreviousButton.getActionMap().put(
       undockedFindPreviousAction.getValue(Action.NAME),
       undockedFindPreviousAction);
-    undockedFindPreviousButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
-                              .put(
-      KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_MASK),
+    undockedFindPreviousButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_MASK),
       undockedFindPreviousAction.getValue(Action.NAME));
 
     Dimension findPanelSize = new Dimension(310, 30);
@@ -2371,6 +2371,20 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     statusBar.setNothingSelected();
   }
 
+  public void findNextColorizedEvent() {
+    int nextRow = tableModel.findColoredRow(table.getSelectedRow() + 1, true);        
+    if (nextRow > -1) {
+      table.scrollToRow(nextRow);
+    }
+  }
+
+  public void findPreviousColorizedEvent() {
+    int previousRow = tableModel.findColoredRow(table.getSelectedRow() - 1, false);
+    if (previousRow > -1) {
+      table.scrollToRow(previousRow);
+    }
+  }
+
   /**
    * Finds the next row matching the current find rule, and ensures it is made
    * visible
@@ -2381,8 +2395,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
 
     if (findRule != null) {
       try {
-        final int nextRow =
-          tableModel.find(findRule, table.getSelectedRow() + 1, true);
+        int nextRow = tableModel.find(findRule, table.getSelectedRow() + 1, true);
 
         if (nextRow > -1) {
           table.scrollToRow(nextRow);
@@ -2781,7 +2794,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
           if (evt.getClickCount() == 2) {
               int row = table.rowAtPoint(evt.getPoint());
               if (row != -1) {
-                LoggingEvent event = tableModel.getRow(row);
+                ExtendedLoggingEvent event = tableModel.getRow(row);
                 Object marker = event.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
                 if (marker == null) {
                     event.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE, "set");
@@ -2821,7 +2834,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
 
         currentRow = row;
 
-        LoggingEvent event = tableModel.getRow(currentRow);
+        ExtendedLoggingEvent event = tableModel.getRow(currentRow);
 
         if (event != null) {
           StringBuffer buf = new StringBuffer();
@@ -2933,7 +2946,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
         return;
       }
 
-	      LoggingEvent event = null;
+	      ExtendedLoggingEvent event = null;
 	      if (selectedRow != -1 && (lastRow != selectedRow)) {
 	        event = tableModel.getRow(selectedRow);
 	
@@ -2991,7 +3004,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     private class MarkerCellEditor implements TableCellEditor {
         JTextField textField = new JTextField();
         Set cellEditorListeners = new HashSet();
-        private LoggingEvent currentEvent;
+        private ExtendedLoggingEvent currentEvent;
 
         public Object getCellEditorValue()
         {
@@ -3051,13 +3064,10 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     }
 
     private class EventMatchThumbnail extends JPanel {
-        private List errors= new ArrayList();
-        private List warnings = new ArrayList();
+        private List all = new ArrayList();
+        private List findMatches = new ArrayList();
 
-        private Color WARNING_COLOR = colorizer.getDefaultWarnColor();
-        private Color ERROR_OR_FATAL_COLOR = colorizer.getDefaultErrorOrFatalColor();
-
-        private final int eventHeight = 8;
+        private final int maxEventHeight = 6;
 
         public EventMatchThumbnail() {
             configureColors();
@@ -3115,15 +3125,17 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
                     if (e.getType() == TableModelEvent.INSERT) {
 //                        System.out.println("insert - current warnings: " + warnings.size() + ", errors: " + errors.size() + ", first row: " + firstRow + ", last row: " + lastRow);
                         for (int i=firstRow;i<lastRow;i++) {
-                            LoggingEvent event = (LoggingEvent)displayedEvents.get(i);
-                            if (isWarningEvent(event)) {
-                                warnings.add(new EventWrapper(i, event));
+                            ExtendedLoggingEvent event = (ExtendedLoggingEvent)displayedEvents.get(i);
+                            EventWrapper wrapper = new EventWrapper(i, event);
+                            if (event.isSearchMatch()) {
+                                findMatches.add(wrapper);
 //                                System.out.println("added warning: " + i + " - " + event.getLevel());
                             }
-                            if (isErrorOrFatalEvent(event)) {
-                                errors.add(new EventWrapper(i, event));
-//                                System.out.println("added error: " + i + " - " + event.getLevel());
+                            if (!wrapper.loggingEvent.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
+                                //add to this one
+                                all.add(wrapper);
                             }
+//                                System.out.println("added error: " + i + " - " + event.getLevel());
                         }
 //                        System.out.println("insert- new warnings: " + warnings + ", errors: " + errors);
 
@@ -3131,14 +3143,14 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
                     } else if (e.getType() == TableModelEvent.DELETE) {
                         //find each eventwrapper with an id in the deleted range and remove it...
 //                        System.out.println("delete- current warnings: " + warnings.size() + ", errors: " + errors.size() + ", first row: " + firstRow + ", last row: " + lastRow + ", displayed event count: " + displayedEvents.size() );
-                        for (Iterator iter = warnings.iterator();iter.hasNext();) {
+                        for (Iterator iter = findMatches.iterator();iter.hasNext();) {
                             EventWrapper wrapper = (EventWrapper)iter.next();
                             if ((wrapper.rowNum >= firstRow) && (wrapper.rowNum <= lastRow)) {
-//                                System.out.println("deleting warning: " + wrapper);
+//                                System.out.println("deleting find: " + wrapper);
                                 iter.remove();
                             }
                         }
-                        for (Iterator iter = errors.iterator();iter.hasNext();) {
+                        for (Iterator iter = all.iterator();iter.hasNext();) {
                             EventWrapper wrapper = (EventWrapper)iter.next();
                             if ((wrapper.rowNum >= firstRow) && (wrapper.rowNum <= lastRow)) {
 //                                System.out.println("deleting error: " + wrapper);
@@ -3151,14 +3163,14 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
                     } else if (e.getType() == TableModelEvent.UPDATE) {
 //                        System.out.println("update - about to delete old warnings in range: " + firstRow + " to " + lastRow + ", current warnings: " + warnings.size() + ", errors: " + errors.size());
                         //find each eventwrapper with an id in the deleted range and remove it...
-                        for (Iterator iter = warnings.iterator();iter.hasNext();) {
+                        for (Iterator iter = findMatches.iterator();iter.hasNext();) {
                             EventWrapper wrapper = (EventWrapper)iter.next();
                             if ((wrapper.rowNum >= firstRow) && (wrapper.rowNum <= lastRow)) {
 //                                System.out.println("update - deleting warning: " + wrapper);
                                 iter.remove();
                             }
                         }
-                        for (Iterator iter = errors.iterator();iter.hasNext();) {
+                        for (Iterator iter = all.iterator();iter.hasNext();) {
                             EventWrapper wrapper = (EventWrapper)iter.next();
                             if ((wrapper.rowNum >= firstRow) && (wrapper.rowNum <= lastRow)) {
 //                                System.out.println("update - deleting error: " + wrapper);
@@ -3168,41 +3180,35 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
 //                        System.out.println("update - after deleting old warnings in range: " + firstRow + " to " + lastRow + ", new warnings: " + warnings.size() + ", errors: " + errors.size());
                         //NOTE: for update, we need to do i<= lastRow
                         for (int i=firstRow;i<=lastRow;i++) {
-                            LoggingEvent event = (LoggingEvent)displayedEvents.get(i);
-                            if (isWarningEvent(event)) {
-//                                System.out.println("update - adding warning: " + i + ", event: " + event.getMessage());
-                                warnings.add(new EventWrapper(i, event));
-                            }
-                            if (isErrorOrFatalEvent(event)) {
+                            ExtendedLoggingEvent event = (ExtendedLoggingEvent)displayedEvents.get(i);
+                            EventWrapper wrapper = new EventWrapper(i, event);
 //                                System.out.println("update - adding error: " + i + ", event: " + event.getMessage());
-                                errors.add(new EventWrapper(i, event));
+                            //only add event to thumbnail if there is a color
+                            if (!wrapper.loggingEvent.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
+                                all.add(wrapper);
+                            }
+
+                            if (event.isSearchMatch()) {
+//                                System.out.println("update - adding marker: " + i + ", event: " + event.getMessage());
+                                findMatches.add(wrapper);
                             }
                         }
                         //clear everything if we got an event w/-1
                         if (firstRow < 0 || lastRow < 0) {
-                            errors.clear();
-                            warnings.clear();
+                            all.clear();
+                            findMatches.clear();
                         }
 //                        System.out.println("update - new warnings: " + warnings.size() + ", errors: " + errors.size());
                     }
                     repaint();
                 }
-
-                private boolean isWarningEvent(LoggingEvent e) {
-                    return e.getLevel().equals(Level.WARN);
-                }
-
-                private boolean isErrorOrFatalEvent(LoggingEvent e) {
-                    return e.getLevel().equals(Level.ERROR) || e.getLevel().equals(Level.FATAL);
-                }
             });
         }
 
         private EventWrapper getClosestRow(int rowToSelect) {
-            //now we need to find the closest row
             EventWrapper closestRow = null;
             int rowDelta = Integer.MAX_VALUE;
-            for (Iterator iter = errors.iterator();iter.hasNext();) {
+            for (Iterator iter = findMatches.iterator();iter.hasNext();) {
                 EventWrapper event = (EventWrapper) iter.next();
                 int newRowDelta = Math.abs(rowToSelect - event.rowNum);
                 if (newRowDelta < rowDelta) {
@@ -3210,7 +3216,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
                     rowDelta = newRowDelta;
                 }
             }
-            for (Iterator iter = warnings.iterator();iter.hasNext();) {
+            for (Iterator iter = all.iterator();iter.hasNext();) {
                 EventWrapper event = (EventWrapper) iter.next();
                 int newRowDelta = Math.abs(rowToSelect - event.rowNum);
                 if (newRowDelta < rowDelta) {
@@ -3222,15 +3228,21 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
         }
 
         private void configureColors() {
-            List colorRules = colorizer.getCurrentRules();
-            for (Iterator iter = colorRules.iterator();iter.hasNext();) {
-                ColorRule rule = (ColorRule)iter.next();
-                String expression = rule.getExpression().toLowerCase().trim();
-                if (expression.equalsIgnoreCase(colorizer.getDefaultWarnExpression())) {
-                    WARNING_COLOR = rule.getBackgroundColor();
+            findMatches.clear();
+            all.clear();
+
+            int i=0;
+            for (Iterator iter = tableModel.getFilteredEvents().iterator();iter.hasNext();) {
+                ExtendedLoggingEvent extendedLoggingEvent = (ExtendedLoggingEvent) iter.next();
+                extendedLoggingEvent.updateColorRuleColors(colorizer.getBackgroundColor(extendedLoggingEvent), colorizer.getForegroundColor(extendedLoggingEvent));
+                EventWrapper wrapper = new EventWrapper(i, extendedLoggingEvent);
+                if (extendedLoggingEvent.isSearchMatch()) {
+                    findMatches.add(wrapper);
                 }
-                if (expression.equalsIgnoreCase(colorizer.getDefaultErrorOrFatalExpression())) {
-                    ERROR_OR_FATAL_COLOR = rule.getBackgroundColor();
+                i++;
+                //only add if there is a color defined
+                if (!wrapper.loggingEvent.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
+                    all.add(wrapper);
                 }
             }
             repaint();
@@ -3261,6 +3273,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
         public void paintComponent(Graphics g)
         {
             super.paintComponent(g);
+
             Point topAndBottomOffset = getScrollBarOffsets();
             int topOffset = topAndBottomOffset.x;
             int bottomOffset = topAndBottomOffset.y;
@@ -3271,41 +3284,56 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
             }
             //use event pane height as reference height - max component height will be extended by event height if
             // last row is rendered, so subtract here
-            int componentHeight = eventsPane.getHeight() - topOffset - bottomOffset - eventHeight;
+            int height = eventsPane.getHeight() - topOffset - bottomOffset;
+            int maxHeight = Math.min(maxEventHeight, (height / rowCount));
+            int minHeight = Math.max(1, maxHeight);
+            int componentHeight = height - minHeight;
+            int eventHeight = minHeight;
 
-            for (Iterator iter = warnings.iterator();iter.hasNext();) {
+            for (Iterator iter = all.iterator();iter.hasNext();) {
+                EventWrapper wrapper = (EventWrapper)iter.next();
+                if (!wrapper.loggingEvent.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
+                    float ratio = (wrapper.rowNum / (float)rowCount);
+    //                System.out.println("error - ratio: " + ratio + ", component height: " + componentHeight);
+                    int verticalLocation = (int) (componentHeight * ratio) + topOffset;
+                    drawEvent(wrapper.loggingEvent.getColorRuleBackground(), verticalLocation, eventHeight, g, false);
+    //                System.out.println("painting error - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
+                }
+            }
+
+            for (Iterator iter = findMatches.iterator();iter.hasNext();) {
                 EventWrapper wrapper = (EventWrapper)iter.next();
                 float ratio = (wrapper.rowNum / (float)rowCount);
 //                System.out.println("warning - ratio: " + ratio + ", component height: " + componentHeight);
                 int verticalLocation = (int) (componentHeight * ratio) + topOffset;
-                drawEvent(WARNING_COLOR, verticalLocation, eventHeight, g);
+                drawEvent(wrapper.loggingEvent.getBackground(), verticalLocation, eventHeight, g, true);
 //                System.out.println("painting warning - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
-            }
-
-            for (Iterator iter = errors.iterator();iter.hasNext();) {
-                EventWrapper wrapper = (EventWrapper)iter.next();
-                float ratio = (wrapper.rowNum / (float)rowCount);
-//                System.out.println("error - ratio: " + ratio + ", component height: " + componentHeight);
-                int verticalLocation = (int) (componentHeight * ratio) + topOffset;
-                drawEvent(ERROR_OR_FATAL_COLOR, verticalLocation, eventHeight, g);
-//                System.out.println("painting error - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
             }
         }
 
-        private void drawEvent(Color newColor, int verticalLocation, int eventHeight, Graphics g) {
+        private void drawEvent(Color newColor, int verticalLocation, int eventHeight, Graphics g, boolean drawHalfWidth) {
 //            System.out.println("painting: - color: " + newColor + ", verticalLocation: " + verticalLocation + ", eventHeight: " + eventHeight);
+            int x = 1;
+            int width = getWidth() - (x * 2);
+            if (drawHalfWidth) {
+                width = (width/2);
+            }
+            //center drawing at vertical location 
+            int y = verticalLocation + (eventHeight / 2);
             Color oldColor = g.getColor();
             g.setColor(newColor);
-            g.fillRect(0, verticalLocation, getWidth(), eventHeight);
-            g.setColor(newColor.darker());
-            g.drawRect(0, verticalLocation, getWidth(), eventHeight);
+            g.fillRect(x, y, width, eventHeight);
+            if (eventHeight >= 3) {
+                g.setColor(newColor.darker());
+                g.drawRect(x, y, width, eventHeight);
+            }
             g.setColor(oldColor);
         }
 
         class EventWrapper {
             int rowNum;
-            LoggingEvent loggingEvent;
-            public EventWrapper(int rowNum, LoggingEvent loggingEvent) {
+            ExtendedLoggingEvent loggingEvent;
+            public EventWrapper(int rowNum, ExtendedLoggingEvent loggingEvent) {
                 this.rowNum = rowNum;
                 this.loggingEvent = loggingEvent;
             }

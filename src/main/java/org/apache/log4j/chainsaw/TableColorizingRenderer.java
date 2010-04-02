@@ -29,18 +29,16 @@ import java.util.TimeZone;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 
-import org.apache.log4j.chainsaw.color.Colorizer;
-import org.apache.log4j.chainsaw.icons.ChainsawIcons;
+import org.apache.log4j.chainsaw.color.RuleColorizer;
 import org.apache.log4j.chainsaw.icons.LevelIconFactory;
 import org.apache.log4j.helpers.Constants;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.log4j.rule.Rule;
 
 
 /**
@@ -53,11 +51,9 @@ import org.apache.log4j.spi.LoggingEvent;
  *
  */
 public class TableColorizingRenderer extends DefaultTableCellRenderer {
-  private static final DateFormat DATE_FORMATTER =
-    new SimpleDateFormat(Constants.SIMPLE_TIME_PATTERN);
-  private static final Map iconMap =
-    LevelIconFactory.getInstance().getLevelToIconMap();
-  private Colorizer colorizer;
+  private static final DateFormat DATE_FORMATTER = new SimpleDateFormat(Constants.SIMPLE_TIME_PATTERN);
+  private static final Map iconMap = LevelIconFactory.getInstance().getLevelToIconMap();
+  private RuleColorizer colorizer;
   private final JLabel idComponent = new JLabel();
   private final JLabel levelComponent = new JLabel();
   private boolean levelUseIcons = false;
@@ -65,14 +61,13 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private int loggerPrecision = 0;
   private boolean toolTipsVisible;
   private String dateFormatTZ;
-  private final Icon markerIcon = new ImageIcon(ChainsawIcons.MARKER);
   private boolean useRelativeTimes = false;
   private long relativeTimestampBase;
 
     /**
    * Creates a new TableColorizingRenderer object.
    */
-  public TableColorizingRenderer(Colorizer colorizer) {
+  public TableColorizingRenderer(RuleColorizer colorizer) {
     this.colorizer = colorizer;
     idComponent.setBorder(BorderFactory.createRaisedBevelBorder());
     idComponent.setBackground(Color.gray);
@@ -101,7 +96,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     int colIndex = tableColumn.getModelIndex() + 1;
 
     EventContainer container = (EventContainer) table.getModel();
-    LoggingEvent event = container.getRow(row);
+    ExtendedLoggingEvent event = container.getRow(row);
     //no event, use default renderer
     if (event == null) {
         return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
@@ -193,39 +188,26 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         }
         break;
     }
-    //set the 'marker' icon next to the zeroth column if marker is set
-    if (col == 0) {
-      if (event.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE) != null) {
-        c.setIcon(markerIcon);
-      } else {
-        //only null out the column if it's not the level field
-        if (colIndex != ChainsawColumns.INDEX_LEVEL_COL_NAME) {
-            c.setIcon(null);
-        }
-      }
-    }
-
     if (isSelected) {
       return c;
     }
 
-    Color background = null;
-    Color foreground = null;
-
-    if (colorizer != null) {
-
-      if (event == null) {
-        //ignore...probably changed displayed cols
-        return c;
-      }
-      background = colorizer.getBackgroundColor(event);
-      foreground = colorizer.getForegroundColor(event);
+    Color background;
+    Color foreground;
+    Rule loggerRule = colorizer.getLoggerRule();
+    //use logger colors in table instead of event colors if event passes logger rule
+    if (loggerRule != null && loggerRule.evaluate(event)) {
+        background = ChainsawConstants.FIND_LOGGER_BACKGROUND;
+        foreground = ChainsawConstants.FIND_LOGGER_FOREGROUND;
+    } else {
+        background = event.getBackground();
+        foreground = event.getForeground();
     }
 
     /**
-     * Colourize based on row striping
+     * Colourize background based on row striping if the event still has a background color
      */
-    if (background == null) {
+    if (background.equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
       if ((row % 2) != 0) {
         background = ChainsawConstants.COLOR_ODD_ROW;
       } else {
@@ -233,13 +215,9 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
       }
     }
 
-    if (foreground == null) {
-      foreground = Color.black;
-    }
-    
     c.setBackground(background);
     c.setForeground(foreground);
-    
+
     return c;
   }
 
@@ -287,13 +265,6 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     }
 
     return dateFormatInUse.format((Date) o);
-  }
-
-  /**
-   * @param colorizer
-   */
-  public void setColorizer(Colorizer colorizer) {
-    this.colorizer = colorizer;
   }
 
    /**

@@ -35,6 +35,7 @@ import javax.swing.table.AbstractTableModel;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.log4j.chainsaw.color.RuleColorizer;
 import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.rule.Rule;
@@ -73,20 +74,20 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   private final Logger logger = LogManager.getLogger(ChainsawCyclicBufferTableModel.class);
 
   //  protected final Object syncLock = new Object();
-  private final LoggerNameModel loggerNameModelDelegate =
-    new LoggerNameModelSupport();
+  private final LoggerNameModel loggerNameModelDelegate = new LoggerNameModelSupport();
 
   //because we may be using a cyclic buffer, if an ID is not provided in the property, 
   //use and increment this row counter as the ID for each received row
   int uniqueRow;
   private final Set uniquePropertyKeys = new HashSet();
   private Rule displayRule;
-  private final PropertyChangeSupport propertySupport =
-    new PropertyChangeSupport(this);
+  private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
+  private RuleColorizer colorizer;
 
-  public ChainsawCyclicBufferTableModel(int cyclicBufferSize) {
+    public ChainsawCyclicBufferTableModel(int cyclicBufferSize, RuleColorizer colorizer) {
     propertySupport.addPropertyChangeListener("cyclic", new ModelChanger());
     this.cyclicBufferSize = cyclicBufferSize;
+    this.colorizer = colorizer;
 
     unfilteredList = new CyclicBufferList(cyclicBufferSize);
     filteredList = new CyclicBufferList(cyclicBufferSize);
@@ -344,6 +345,36 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         }
     }
 
+    public void updateEventsWithFindRule(Rule findRule) {
+        for (Iterator iter = unfilteredList.iterator();iter.hasNext();) {
+            ((ExtendedLoggingEvent)iter.next()).evaluateSearchRule(findRule);
+        }
+    }
+
+    public int findColoredRow(int startLocation, boolean searchForward) {
+        synchronized (filteredList) {
+        if (searchForward) {
+          for (int i = startLocation; i < filteredList.size(); i++) {
+            ExtendedLoggingEvent event = (ExtendedLoggingEvent)filteredList.get(i);
+            if (!event.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND) ||
+                    !event.getColorRuleForeground().equals(ChainsawConstants.COLOR_DEFAULT_FOREGROUND)) {
+                return i;
+            }
+          }
+        } else {
+          for (int i = startLocation; i > -1; i--) {
+              ExtendedLoggingEvent event = (ExtendedLoggingEvent)filteredList.get(i);
+              if (!event.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND) ||
+                      !event.getColorRuleForeground().equals(ChainsawConstants.COLOR_DEFAULT_FOREGROUND)) {
+                  return i;
+            }
+          }
+        }
+      }
+
+      return -1;
+    }
+
     public int getColumnCount() {
     return columnNames.size();
   }
@@ -352,10 +383,10 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
       return (String) columnNames.get(column);
   }
 
-  public LoggingEvent getRow(int row) {
+  public ExtendedLoggingEvent getRow(int row) {
     synchronized (filteredList) {
       if (row < filteredList.size()) {
-        return (LoggingEvent) filteredList.get(row);
+        return (ExtendedLoggingEvent) filteredList.get(row);
       }
     }
 
@@ -461,7 +492,13 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     return "";
   }
 
-  public boolean isAddRow(LoggingEvent e) {
+  public boolean isAddRow(ExtendedLoggingEvent e) {
+    e.updateColorRuleColors(colorizer.getBackgroundColor(e), colorizer.getForegroundColor(e));
+    Rule findRule = colorizer.getFindRule();
+    if (findRule != null) {
+      e.evaluateSearchRule(colorizer.getFindRule());
+    }
+
     boolean rowAdded = false;
 
     Object id = e.getProperty(Constants.LOG4J_ID_KEY);
@@ -480,7 +517,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     if (isCyclic()) {
             CyclicBufferList bufferList = (CyclicBufferList) unfilteredList;
             if (bufferList.size() == bufferList.getMaxSize()) {
-                LoggingEvent aboutToBeDropped = (LoggingEvent) unfilteredList.get(0);
+                ExtendedLoggingEvent aboutToBeDropped = (ExtendedLoggingEvent) unfilteredList.get(0);
                 reachedCapacity = true;
             }
     }
@@ -498,7 +535,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     return rowAdded;
   }
 
-   private void checkForNewColumn(LoggingEvent e)
+   private void checkForNewColumn(ExtendedLoggingEvent e)
    {
       /**
        * Is this a new Property key we haven't seen before?  Remember that now MDC has been merged
@@ -561,6 +598,13 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   }
 
     public void fireRowUpdated(int row, boolean checkForNewColumns) {
+        ExtendedLoggingEvent event = getRow(row);
+        event.updateColorRuleColors(colorizer.getBackgroundColor(event), colorizer.getForegroundColor(event));
+        Rule findRule = colorizer.getFindRule();
+        if (findRule != null) {
+          event.evaluateSearchRule(colorizer.getFindRule());
+        }
+
         fireTableRowsUpdated(row, row);
         if (checkForNewColumns) {
             //row may have had a column added..if so, make sure a column is added

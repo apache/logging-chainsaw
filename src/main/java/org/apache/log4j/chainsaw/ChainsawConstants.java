@@ -31,9 +31,15 @@ import java.net.URL;
 public class ChainsawConstants {
   private ChainsawConstants(){}
   
+  public static final Color COLOR_DEFAULT_BACKGROUND = new Color(255,255,255);
+  public static final Color COLOR_DEFAULT_FOREGROUND = Color.BLACK;
+
+  public static final Color FIND_LOGGER_BACKGROUND = new Color(40, 40, 40);
+  public static final Color FIND_LOGGER_FOREGROUND = Color.WHITE;
+
   public static final Color COLOR_ODD_ROW = new Color(215, 215, 215);
-  public static final Color COLOR_EVEN_ROW = new Color(255,255,255);
-  
+  public static final Color COLOR_EVEN_ROW = COLOR_DEFAULT_BACKGROUND;
+
   public static final URL WELCOME_URL = ChainsawConstants.class.getClassLoader().getResource(
   "org/apache/log4j/chainsaw/WelcomePanel.html");
   
