@@ -986,8 +986,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
                   Object item = filterCombo.getSelectedItem();
                   if (item != null && !item.toString().trim().equals("")) {
                     ExpressionRule.getRule(item.toString());
-                    //add to the combo box
-                    filterCombo.addItem(item);
+                    //add entry as first row of the combo box
+                    filterCombo.insertItemAt(item, 0);
                   }
                 //valid expression, reset background color in case we were previously an invalid expression
                 filterText.setBackground(UIManager.getColor("TextField.background"));
@@ -1684,7 +1684,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
                 savedVector = (Vector) in.readObject();
                 for(int i = 0 ; i < savedVector.size() ; i++){
                     Object item = savedVector.get(i);
-                    filterCombo.addItem(item);
+                    //insert each row at index zero (so last row in vector will be row zero)
+                    filterCombo.insertItemAt(item, 0);
                 }
                 if (versionNumber > 1) {
                     //update prefModel columns to include defaults
@@ -3378,6 +3379,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
         private AutoFilterComboBoxModel model = new AutoFilterComboBoxModel();
         //editor component
         private final JTextField textField = new JTextField();
+        private String lastTextToMatch;
 
         public AutoFilterComboBox(Collection entries) {
             if (entries != null) {
@@ -3394,17 +3396,23 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
         }
 
         public Vector getModelData() {
-            return new Vector(allEntries);
+            //reverse the model order, because it will be un-reversed when we reload it from saved settings
+            Vector vector = new Vector();
+            for (Iterator iter = allEntries.iterator();iter.hasNext();) {
+                vector.insertElementAt(iter.next(), 0);
+            }
+            return vector;
         }
 
         private void refilter() {
-            //only refilter if we're not bypassing filtering
-            if (bypassFiltering) {
+            //only refilter if we're not bypassing filtering AND the text has changed since the last call to refilter
+            String textToMatch = getEditor().getItem().toString();
+            if (bypassFiltering || (lastTextToMatch != null && lastTextToMatch.equals(textToMatch))) {
                 return;
             }
+            lastTextToMatch = textToMatch;
             displayedEntries.clear();
             bypassFiltering = true;
-            String textToMatch = getEditor().getItem().toString();
                 model.removeAllElements();
                 List entriesCopy = new ArrayList(allEntries);
                 for (Iterator iter = entriesCopy.iterator();iter.hasNext();) {
@@ -3501,7 +3509,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
                 }
                 bypassFiltering = true;
                 displayedEntries.add(index, obj);
-                allEntries.add(obj);
+                allEntries.add(index, obj);
                 fireIntervalAdded(this, index, index);
                 bypassFiltering = false;
                 refilter();
