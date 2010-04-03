@@ -20,13 +20,18 @@ package org.apache.log4j.chainsaw;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.Iterator;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -35,6 +40,7 @@ import javax.swing.JFileChooser;
 import javax.swing.KeyStroke;
 
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
+import org.apache.log4j.helpers.LogLog;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.xml.XMLLayout;
 
@@ -87,38 +93,47 @@ class FileSaveAction extends AbstractAction {
     chooser.showSaveDialog(parent);
 
     File selectedFile = chooser.getSelectedFile();
-    XMLLayout layout = new XMLLayout();
-    layout.setProperties(true);
-    LoggingEvent event = null;
-    PrintWriter out = null;
 
     if (selectedFile != null) {
-      try {
-        List v = parent.getCurrentLogPanel().getFilteredEvents();
+    List v = parent.getCurrentLogPanel().getFilteredEvents();
 
-        if (((v != null) && (v.size() == 0)) || (v == null)) {
-          //no events to save
-          return;
-        }
+    if (((v != null) && (v.size() == 0)) || (v == null)) {
+      //no events to save
+      return;
+    }
 
-        Iterator iter = v.iterator();
-
-        out =
-          new PrintWriter(new BufferedWriter(new FileWriter(selectedFile)));
-
-        while (iter.hasNext()) {
-          event = (LoggingEvent) iter.next();
-          layout.setLocationInfo(event.getThrowableInformation() != null);
-          out.write(layout.format(event));
-        }
-      } catch (IOException ioe) {
-        ioe.printStackTrace();
-      } finally {
-        if (out != null) {
-          out.flush();
-          out.close();
-        }
+    XMLLayout layout = new XMLLayout();
+    layout.setProperties(true);
+    boolean saveAsZip = selectedFile.getName().toLowerCase().endsWith(".zip");
+    Writer writer = null;
+    try {
+      if (saveAsZip) {
+          ZipOutputStream zipOutput = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(selectedFile)));
+          ZipEntry entry = new ZipEntry(selectedFile.getName().substring(0, selectedFile.getName().length() - ".zip".length()) + ".xml");
+          zipOutput.putNextEntry(entry);
+          writer = new OutputStreamWriter(zipOutput);
+      } else {
+          writer = new BufferedWriter(new FileWriter(selectedFile));
+      }
+      Iterator iter = v.iterator();
+      while (iter.hasNext()) {
+        LoggingEvent event = (LoggingEvent) iter.next();
+        layout.setLocationInfo(event.getThrowableInformation() != null);
+        writer.write(layout.format(event));
+      }
+    } catch (IOException ioe) {
+      LogLog.warn("Unable to save file", ioe);
+    } finally {
+      if (writer != null) {
+          try {
+              writer.flush();
+              writer.close();
+          }
+          catch (IOException e1) {
+              //ignore
+          }
       }
     }
+  }
   }
 }

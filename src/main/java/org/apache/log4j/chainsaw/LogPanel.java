@@ -205,8 +205,7 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
  *@author Isuru Suriarachchi
  *
  */
-public class LogPanel extends DockablePanel implements EventBatchListener,
-  Profileable {
+public class LogPanel extends DockablePanel implements EventBatchListener, Profileable {
   private static final double DEFAULT_DETAIL_SPLIT_LOCATION = 0.56d;
   private static final double DEFAULT_LOG_TREE_SPLIT_LOCATION = 0.2d;
   private final String identifier;
@@ -277,28 +276,16 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
     findPanel.setMinimumSize(findPanelSize);
 
     final Map columnNameKeywordMap = new HashMap();
-    columnNameKeywordMap.put(
-      ChainsawConstants.CLASS_COL_NAME, LoggingEventFieldResolver.CLASS_FIELD);
-    columnNameKeywordMap.put(
-      ChainsawConstants.FILE_COL_NAME, LoggingEventFieldResolver.FILE_FIELD);
-    columnNameKeywordMap.put(
-      ChainsawConstants.LEVEL_COL_NAME, LoggingEventFieldResolver.LEVEL_FIELD);
-    columnNameKeywordMap.put(
-      ChainsawConstants.LINE_COL_NAME, LoggingEventFieldResolver.LINE_FIELD);
-    columnNameKeywordMap.put(
-      ChainsawConstants.LOGGER_COL_NAME, LoggingEventFieldResolver.LOGGER_FIELD);
-    columnNameKeywordMap.put(
-      ChainsawConstants.NDC_COL_NAME, LoggingEventFieldResolver.NDC_FIELD);
-    columnNameKeywordMap.put(
-      ChainsawConstants.MESSAGE_COL_NAME, LoggingEventFieldResolver.MSG_FIELD);
-    columnNameKeywordMap.put(
-      ChainsawConstants.THREAD_COL_NAME, LoggingEventFieldResolver.THREAD_FIELD);
-    columnNameKeywordMap.put(
-      ChainsawConstants.THROWABLE_COL_NAME,
-      LoggingEventFieldResolver.EXCEPTION_FIELD);
-    columnNameKeywordMap.put(
-      ChainsawConstants.TIMESTAMP_COL_NAME,
-      LoggingEventFieldResolver.TIMESTAMP_FIELD);
+    columnNameKeywordMap.put(ChainsawConstants.CLASS_COL_NAME, LoggingEventFieldResolver.CLASS_FIELD);
+    columnNameKeywordMap.put(ChainsawConstants.FILE_COL_NAME, LoggingEventFieldResolver.FILE_FIELD);
+    columnNameKeywordMap.put(ChainsawConstants.LEVEL_COL_NAME, LoggingEventFieldResolver.LEVEL_FIELD);
+    columnNameKeywordMap.put(ChainsawConstants.LINE_COL_NAME, LoggingEventFieldResolver.LINE_FIELD);
+    columnNameKeywordMap.put(ChainsawConstants.LOGGER_COL_NAME, LoggingEventFieldResolver.LOGGER_FIELD);
+    columnNameKeywordMap.put(ChainsawConstants.NDC_COL_NAME, LoggingEventFieldResolver.NDC_FIELD);
+    columnNameKeywordMap.put(ChainsawConstants.MESSAGE_COL_NAME, LoggingEventFieldResolver.MSG_FIELD);
+    columnNameKeywordMap.put(ChainsawConstants.THREAD_COL_NAME, LoggingEventFieldResolver.THREAD_FIELD);
+    columnNameKeywordMap.put(ChainsawConstants.THROWABLE_COL_NAME, LoggingEventFieldResolver.EXCEPTION_FIELD);
+    columnNameKeywordMap.put(ChainsawConstants.TIMESTAMP_COL_NAME, LoggingEventFieldResolver.TIMESTAMP_FIELD);
 
     preferencesFrame.setTitle("'" + identifier + "' Log Panel Preferences");
     preferencesFrame.setIconImage(
@@ -1969,10 +1956,14 @@ public class LogPanel extends DockablePanel implements EventBatchListener,
    * Change the selected event on the log panel
    *
    * @param eventNumber
+   * @return row number or -1 if row with log4jid property with that number was not found
    */
-  void setSelectedEvent(int eventNumber) {
+  int setSelectedEvent(int eventNumber) {
       int row = tableModel.find(ExpressionRule.getRule("prop.log4jid == " + eventNumber), 0, true);
-      table.scrollTo(row, 0);
+      if (row > -1) {
+        table.scrollTo(row, 0);
+      }
+      return row;
   }
 
   /**

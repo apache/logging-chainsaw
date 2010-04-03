@@ -817,9 +817,8 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         	  int lineNumber = Integer.parseInt(inputLine);
               List eventList = getCurrentLogPanel().getEvents();
 
-              if (lineNumber > 0 && lineNumber <= eventList.size()) {
-                  getCurrentLogPanel().setSelectedEvent(lineNumber);
-              } else {
+              int row = getCurrentLogPanel().setSelectedEvent(lineNumber);
+              if (row == -1) {
                   JOptionPane.showMessageDialog(LogUI.this, "You have entered an invalid line number", "Error", 0);
               }
           } catch (NumberFormatException nfe) {
