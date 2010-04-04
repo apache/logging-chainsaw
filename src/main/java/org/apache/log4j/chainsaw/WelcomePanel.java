@@ -22,6 +22,7 @@ import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 
 import java.io.IOException;
@@ -40,8 +41,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.text.html.HTMLDocument;
 
 
 /**
@@ -65,8 +68,7 @@ public class WelcomePanel extends JPanel {
 
     if (helpURL != null) {
       textInfo.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
-      textInfo.setEditable(false);
-      textInfo.setPreferredSize(new Dimension(320, 240));
+      Font font = UIManager.getFont("Label.font");
 
       JScrollPane pane = new JScrollPane(textInfo);
       pane.setBorder(null);
@@ -74,6 +76,10 @@ public class WelcomePanel extends JPanel {
 
       try {
         textInfo.setPage(helpURL);
+        String bodyRule = "body { font-family: " + font.getFamily() + "; font-size: " + (font.getSize() + 1) + "pt; }";
+        ((HTMLDocument)textInfo.getDocument()).getStyleSheet().addRule(bodyRule);
+        textInfo.setEditable(false);
+        textInfo.setPreferredSize(new Dimension(320, 240));
         textInfo.addHyperlinkListener(
           new HyperlinkListener() {
             public void hyperlinkUpdate(HyperlinkEvent e) {
@@ -102,6 +108,9 @@ public class WelcomePanel extends JPanel {
           try {
             urlStack.push(textInfo.getPage());
             textInfo.setPage(url);
+            Font font = UIManager.getFont("Label.font");
+            String bodyRule = "body { font-family: " + font.getFamily() + "; font-size: " + (font.getSize() + 1) + "pt; }";
+            ((HTMLDocument)textInfo.getDocument()).getStyleSheet().addRule(bodyRule);
             urlToolbar.updateToolbar();
           } catch (IOException e) {
             e.printStackTrace();

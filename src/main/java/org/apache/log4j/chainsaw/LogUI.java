@@ -23,6 +23,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Event;
 import java.awt.EventQueue;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -85,6 +86,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.text.html.HTMLDocument;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.AppenderSkeleton;
@@ -168,8 +170,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
   private final SettingsManager sm = SettingsManager.getInstance();
   private final JFrame tutorialFrame = new JFrame("Chainsaw Tutorial");
   private JSplitPane mainReceiverSplitPane;
-  private double lastMainReceiverSplitLocation =
-    DEFAULT_MAIN_RECEIVER_SPLIT_LOCATION;
+  private double lastMainReceiverSplitLocation = DEFAULT_MAIN_RECEIVER_SPLIT_LOCATION;
   private final List identifierPanels = new ArrayList();
   private int dividerSize;
   private int cyclicBufferSize;
@@ -1030,6 +1031,10 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
     try {
       tutorialArea.setPage(ChainsawConstants.TUTORIAL_URL);
+      Font font = UIManager.getFont("Label.font");
+      String bodyRule = "body { font-family: " + font.getFamily() + "; font-size: " + (font.getSize() + 1) + "pt; }";
+      ((HTMLDocument)tutorialArea.getDocument()).getStyleSheet().addRule(bodyRule);
+
       container.add(new JScrollPane(tutorialArea), BorderLayout.CENTER);
     } catch (Exception e) {
       MessageCenter.getInstance().getLogger().error(

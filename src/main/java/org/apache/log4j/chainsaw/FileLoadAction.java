@@ -91,12 +91,12 @@ class FileLoadAction extends AbstractAction {
 
                 chooser.setFileFilter(new FileFilter() {
                     public boolean accept(File f) {
-                        return (f.getName().toLowerCase().endsWith(".xml") || f
-                                .isDirectory());
+                        return (f.getName().toLowerCase().endsWith(".xml") || f.getName().toLowerCase().endsWith(".zip")
+                                || f.isDirectory());
                     }
 
                     public String getDescription() {
-                        return "XML files (*.xml)";
+                        return "XML files (*.xml), ZIP files (*.zip)";
                     }
                 });
             }

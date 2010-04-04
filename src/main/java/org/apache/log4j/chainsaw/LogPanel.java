@@ -124,6 +124,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.text.Document;
+import javax.swing.text.html.HTMLDocument;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -206,7 +207,7 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
  *
  */
 public class LogPanel extends DockablePanel implements EventBatchListener, Profileable {
-  private static final double DEFAULT_DETAIL_SPLIT_LOCATION = 0.56d;
+  private static final double DEFAULT_DETAIL_SPLIT_LOCATION = 0.71d;
   private static final double DEFAULT_LOG_TREE_SPLIT_LOCATION = 0.2d;
   private final String identifier;
   private final ChainsawStatusBar statusBar;
@@ -2951,9 +2952,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 		          	try {
 		          		final Document doc = detail.getEditorKit().createDefaultDocument();
 		          		detail.getEditorKit().read(new StringReader(buf.toString()), doc, 0);
+
 				      	SwingHelper.invokeOnEDT(new Runnable() {
 				      		public void run() {
 				      			detail.setDocument(doc);
+                                Font font = UIManager.getFont("Label.font");
+                                String bodyRule = "body { font-family: " + font.getFamily() + "; font-size: " + (font.getSize() + 1) + "pt; }";
+                                ((HTMLDocument)detail.getDocument()).getStyleSheet().addRule(bodyRule);
 				      			detail.setCaretPosition(0);
                                 lastRow = selectedRow;
 				      		}
@@ -2970,6 +2975,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 		      	SwingHelper.invokeOnEDT(new Runnable() {
 		      		public void run() {
 		      			detail.setDocument(doc);
+                        Font font = UIManager.getFont("Label.font");
+                        String bodyRule = "body { font-family: " + font.getFamily() + "; font-size: " + (font.getSize() + 1) + "pt; }";
+                        ((HTMLDocument)detail.getDocument()).getStyleSheet().addRule(bodyRule);
 		      			detail.setCaretPosition(0);
                         lastRow = selectedRow;
 		      		}

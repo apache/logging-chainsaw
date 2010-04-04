@@ -32,7 +32,7 @@ public class ApplicationPreferenceModel {
     private boolean showNoReceiverWarning = true ;
     private boolean statusBar = true;
     private boolean toolbar = true;
-    private boolean receivers = true;
+    private boolean receivers = false; //setting this to true will cause the receivers panel to be displayed by default
     private boolean confirmExit = true;
     private boolean showSplash = true;
     private String lookAndFeelClassName = "";

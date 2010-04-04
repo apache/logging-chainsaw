@@ -23,6 +23,7 @@ package org.apache.log4j.chainsaw;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -34,8 +35,10 @@ import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.text.html.HTMLDocument;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.help.HelpManager;
@@ -83,6 +86,10 @@ class ChainsawAbout extends JDialog {
         }
         getContentPane().add(scrollPane, BorderLayout.CENTER);
         getContentPane().add(closeButton, BorderLayout.SOUTH);
+
+        Font font = UIManager.getFont("Label.font");
+        String bodyRule = "body { font-family: " + font.getFamily() + "; font-size: " + (font.getSize() + 1) + "pt; }";
+        ((HTMLDocument)editPane.getDocument()).getStyleSheet().addRule(bodyRule);
 
         editPane.setEditable(false);
         editPane.addHyperlinkListener(
