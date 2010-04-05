@@ -17,18 +17,13 @@
 
 package org.apache.log4j.chainsaw;
 
-import org.apache.log4j.chainsaw.icons.ChainsawIcons;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
-
 import java.io.IOException;
-
 import java.net.URL;
-
 import java.util.Stack;
 
 import javax.swing.AbstractAction;
@@ -44,7 +39,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
-import javax.swing.text.html.HTMLDocument;
+
+import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 
 
 /**
@@ -75,11 +71,10 @@ public class WelcomePanel extends JPanel {
       add(pane, BorderLayout.CENTER);
 
       try {
-        textInfo.setPage(helpURL);
-        String bodyRule = "body { font-family: " + font.getFamily() + "; font-size: " + (font.getSize() + 1) + "pt; }";
-        ((HTMLDocument)textInfo.getDocument()).getStyleSheet().addRule(bodyRule);
         textInfo.setEditable(false);
         textInfo.setPreferredSize(new Dimension(320, 240));
+        textInfo.setPage(helpURL);
+        JEditorPaneFormatter.applySystemFontAndSize(textInfo);
         textInfo.addHyperlinkListener(
           new HyperlinkListener() {
             public void hyperlinkUpdate(HyperlinkEvent e) {
@@ -108,9 +103,8 @@ public class WelcomePanel extends JPanel {
           try {
             urlStack.push(textInfo.getPage());
             textInfo.setPage(url);
-            Font font = UIManager.getFont("Label.font");
-            String bodyRule = "body { font-family: " + font.getFamily() + "; font-size: " + (font.getSize() + 1) + "pt; }";
-            ((HTMLDocument)textInfo.getDocument()).getStyleSheet().addRule(bodyRule);
+            //not all pages displayed in the Welcome Panel are html-based (example receiver config is an xml file)..
+            JEditorPaneFormatter.applySystemFontAndSize(textInfo);
             urlToolbar.updateToolbar();
           } catch (IOException e) {
             e.printStackTrace();

@@ -23,7 +23,6 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Event;
 import java.awt.EventQueue;
-import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -86,7 +85,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
-import javax.swing.text.html.HTMLDocument;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.AppenderSkeleton;
@@ -109,7 +107,6 @@ import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SettingsListener;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.chainsaw.receivers.ReceiversPanel;
-import org.apache.log4j.chainsaw.version.VersionManager;
 import org.apache.log4j.net.SocketNodeEventListener;
 import org.apache.log4j.plugins.Plugin;
 import org.apache.log4j.plugins.PluginEvent;
@@ -816,8 +813,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
           String inputLine = JOptionPane.showInputDialog(LogUI.this, "Enter the line number to go:", "Goto Line", -1);
           try {
         	  int lineNumber = Integer.parseInt(inputLine);
-              List eventList = getCurrentLogPanel().getEvents();
-
               int row = getCurrentLogPanel().setSelectedEvent(lineNumber);
               if (row == -1) {
                   JOptionPane.showMessageDialog(LogUI.this, "You have entered an invalid line number", "Error", 0);
@@ -1031,9 +1026,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
     try {
       tutorialArea.setPage(ChainsawConstants.TUTORIAL_URL);
-      Font font = UIManager.getFont("Label.font");
-      String bodyRule = "body { font-family: " + font.getFamily() + "; font-size: " + (font.getSize() + 1) + "pt; }";
-      ((HTMLDocument)tutorialArea.getDocument()).getStyleSheet().addRule(bodyRule);
+      JEditorPaneFormatter.applySystemFontAndSize(tutorialArea);
 
       container.add(new JScrollPane(tutorialArea), BorderLayout.CENTER);
     } catch (Exception e) {

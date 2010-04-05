@@ -86,10 +86,7 @@ class ChainsawAbout extends JDialog {
         }
         getContentPane().add(scrollPane, BorderLayout.CENTER);
         getContentPane().add(closeButton, BorderLayout.SOUTH);
-
-        Font font = UIManager.getFont("Label.font");
-        String bodyRule = "body { font-family: " + font.getFamily() + "; font-size: " + (font.getSize() + 1) + "pt; }";
-        ((HTMLDocument)editPane.getDocument()).getStyleSheet().addRule(bodyRule);
+        JEditorPaneFormatter.applySystemFontAndSize(editPane);
 
         editPane.setEditable(false);
         editPane.addHyperlinkListener(

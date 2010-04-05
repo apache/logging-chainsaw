@@ -6,7 +6,7 @@
 
 <BODY BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#FF0000" VLINK="#800000" ALINK="#FF00FF" BACKGROUND="?">
 <h2>ZeroConf (Zero Configuration)</h2>
-<p>One of the hardest parts of any network-based application is configuring which bits connect to what, and how 
+<p>One of the hardest parts of any network-based application is configuring which bits connect to what, and how
 do they connect to each other.  Each device that can be connected <emphasis>to</emphasis> already knows
 the configuration details required to connect to it, but every other device that may wish to connect to it
 will need to be provided with this information so the connection can be established.
@@ -34,7 +34,7 @@ Most of the network-based appenders are ZeroConf-capable - all you have to do to
 download the JmDNS package (at least version 1.0), add the JmDNS jar to your application's classpath, and set the "advertiseViaMulticastDNS"
 parameter to 'true' for any of the appenders or receivers you want to advertise (most of the time you will want to advertise appenders, so they can be
 automatically detected by Chainsaw).</p>
-<p>You're log4j.xml configuration file could be as simple as this:</p>
+<p>Your log4j.xml configuration file could be as simple as this:</p>
 <pre>
 &lt;log4j:configuration debug="false" threshold="debug"  xmlns:log4j="http://jakarta.apache.org/log4j/&gt;
     &lt;appender name="zeroconf" class="org.apache.log4j.net.SocketHubAppender"&gt;

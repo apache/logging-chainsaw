@@ -18,7 +18,6 @@
 package org.apache.log4j.chainsaw.layout;
 
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -37,20 +36,19 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.html.HTMLDocument;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.ChainsawConstants;
+import org.apache.log4j.chainsaw.JEditorPaneFormatter;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
+import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
-import org.apache.log4j.spi.LocationInfo;
 
 
 /**
@@ -207,9 +205,7 @@ public final class LayoutEditorPane extends JPanel {
     okButton.setToolTipText("Accepts the current Pattern layout and will apply it to the Log Panel");
     cancelButton.setToolTipText("Closes this dialog and discards your changes");
 
-    Font font = UIManager.getFont("Label.font");
-    String bodyRule = "body { font-family: " + font.getFamily() + "; font-size: " + (font.getSize() + 1) + "pt; }";
-    ((HTMLDocument)previewer.getDocument()).getStyleSheet().addRule(bodyRule);
+    JEditorPaneFormatter.applySystemFontAndSize(previewer);
       
     previewer.setEditable(false);
     patternEditor.setPreferredSize(new Dimension(240, 240));

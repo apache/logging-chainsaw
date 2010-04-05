@@ -124,9 +124,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.text.Document;
-import javax.swing.text.html.HTMLDocument;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
@@ -1954,7 +1952,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   }
 
   /**
-   * Change the selected event on the log panel
+   * Change the selected event on the log panel.  Will cause scrollToBottom to be turned off.
    *
    * @param eventNumber
    * @return row number or -1 if row with log4jid property with that number was not found
@@ -1962,6 +1960,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   int setSelectedEvent(int eventNumber) {
       int row = tableModel.find(ExpressionRule.getRule("prop.log4jid == " + eventNumber), 0, true);
       if (row > -1) {
+        preferenceModel.setScrollToBottom(false);
+
         table.scrollTo(row, 0);
       }
       return row;
@@ -2956,9 +2956,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 				      	SwingHelper.invokeOnEDT(new Runnable() {
 				      		public void run() {
 				      			detail.setDocument(doc);
-                                Font font = UIManager.getFont("Label.font");
-                                String bodyRule = "body { font-family: " + font.getFamily() + "; font-size: " + (font.getSize() + 1) + "pt; }";
-                                ((HTMLDocument)detail.getDocument()).getStyleSheet().addRule(bodyRule);
+                                JEditorPaneFormatter.applySystemFontAndSize(detail);
 				      			detail.setCaretPosition(0);
                                 lastRow = selectedRow;
 				      		}
@@ -2975,9 +2973,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 		      	SwingHelper.invokeOnEDT(new Runnable() {
 		      		public void run() {
 		      			detail.setDocument(doc);
-                        Font font = UIManager.getFont("Label.font");
-                        String bodyRule = "body { font-family: " + font.getFamily() + "; font-size: " + (font.getSize() + 1) + "pt; }";
-                        ((HTMLDocument)detail.getDocument()).getStyleSheet().addRule(bodyRule);
+                        JEditorPaneFormatter.applySystemFontAndSize(detail);
 		      			detail.setCaretPosition(0);
                         lastRow = selectedRow;
 		      		}
