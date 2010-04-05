@@ -332,16 +332,18 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   }
 
     public void removePropertyFromEvents(String propName) {
-        for (Iterator iter = unfilteredList.iterator();iter.hasNext();) {
-            LoggingEvent event = (LoggingEvent)iter.next();
-            event.removeProperty(propName);
-        }
+        //first remove the event from any displayed events, so we can fire row updated event
         for (int i=0;i<filteredList.size();i++) {
             LoggingEvent event = (LoggingEvent)filteredList.get(i);
             Object result = event.removeProperty(propName);
             if (result != null) {
                 fireRowUpdated(i, false);
             }
+        }
+        //now remove the event from all events
+        for (Iterator iter = unfilteredList.iterator();iter.hasNext();) {
+            LoggingEvent event = (LoggingEvent)iter.next();
+            event.removeProperty(propName);
         }
     }
 

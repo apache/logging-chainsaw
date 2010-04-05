@@ -1041,10 +1041,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         
     tableModel.addTableModelListener(new TableModelListener() {
 		public void tableChanged(TableModelEvent e) {
-			detailPaneUpdater.setSelectedRow(table.getSelectedRow());
+            int currentRow = table.getSelectedRow();
+            if (e.getFirstRow() <= currentRow && e.getLastRow() >= currentRow) {
+                //current row has changed - update
+                detailPaneUpdater.setAndUpdateSelectedRow(table.getSelectedRow());
+            }
 		}
     });
-    
     addPropertyChangeListener(
       "detailPaneConversionPattern", detailPaneUpdater);
 
@@ -2926,10 +2929,18 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       updateDetailPane();
     }
 
+    private void setAndUpdateSelectedRow(int row) {
+        selectedRow = row;
+        updateDetailPane(true);
+    }
+
+    private void updateDetailPane() {
+        updateDetailPane(false);
+    }
     /**
      * Update detail pane
      */
-    private void updateDetailPane() {
+    private void updateDetailPane(boolean force) {
             /*
              * Don't bother doing anything if it's not visible. Note: the isVisible() method on
              * Component is not really accurate here because when the button to toggle display of
@@ -2940,7 +2951,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       }
 
 	      ExtendedLoggingEvent event = null;
-	      if (selectedRow != -1 && (lastRow != selectedRow)) {
+	      if (force || (selectedRow != -1 && (lastRow != selectedRow))) {
 	        event = tableModel.getRow(selectedRow);
 	
 	        if (event != null) {
@@ -2991,7 +3002,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       SwingUtilities.invokeLater(
         new Runnable() {
           public void run() {
-            updateDetailPane();
+            updateDetailPane(true);
           }
         });
     }
@@ -3025,6 +3036,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             } else {
                 currentEvent.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE, textField.getText());
             }
+            tableModel.fireRowUpdated(table.getSelectedRow(), true);
             ChangeEvent event = new ChangeEvent(table);
             for (Iterator iter = cellEditorListeners.iterator();iter.hasNext();) {
                 ((CellEditorListener)iter.next()).editingStopped(event);
