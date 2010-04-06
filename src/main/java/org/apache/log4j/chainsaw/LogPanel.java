@@ -125,6 +125,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.text.Document;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
@@ -2226,7 +2227,11 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     findField.setMinimumSize(findSize);
     findPanel.setAlignmentY(Component.CENTER_ALIGNMENT);
     findField.setAlignmentY(Component.CENTER_ALIGNMENT);
-
+    findField.addActionListener(new ActionListener(){
+        public void actionPerformed(ActionEvent e) {
+            findNext();
+        }
+    });
     findField.addKeyListener(
       new ExpressionRuleContext(filterModel, findField));
 
@@ -3208,6 +3213,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                         }
 //                        System.out.println("update - new warnings: " + warnings.size() + ", errors: " + errors.size());
                     }
+                    invalidate();
                     repaint();
                 }
             });
@@ -3253,6 +3259,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                     all.add(wrapper);
                 }
             }
+            invalidate();
             repaint();
         }
 
@@ -3298,14 +3305,44 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             int componentHeight = height - minHeight;
             int eventHeight = minHeight;
 
+            //draw all non error/warning/marker events
             for (Iterator iter = all.iterator();iter.hasNext();) {
                 EventWrapper wrapper = (EventWrapper)iter.next();
                 if (!wrapper.loggingEvent.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
-                    float ratio = (wrapper.rowNum / (float)rowCount);
-    //                System.out.println("error - ratio: " + ratio + ", component height: " + componentHeight);
-                    int verticalLocation = (int) (componentHeight * ratio) + topOffset;
-                    drawEvent(wrapper.loggingEvent.getColorRuleBackground(), verticalLocation, eventHeight, g, false);
+                    if (wrapper.loggingEvent.getLevel().toInt() < Level.WARN.toInt() && wrapper.loggingEvent.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE) == null) {
+                        float ratio = (wrapper.rowNum / (float)rowCount);
+        //                System.out.println("error - ratio: " + ratio + ", component height: " + componentHeight);
+                        int verticalLocation = (int) (componentHeight * ratio) + topOffset;
+
+                        int startX = 1;
+                        int width = getWidth() - (startX * 2);
+
+                        drawEvent(wrapper.loggingEvent.getColorRuleBackground(), verticalLocation, eventHeight, g, startX, width);
+        //                System.out.println("painting error - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
+                    }
+                }
+            }
+
+            //draw warnings, error, fatal & markers last (full width)
+            for (Iterator iter = all.iterator();iter.hasNext();) {
+                EventWrapper wrapper = (EventWrapper)iter.next();
+                if (!wrapper.loggingEvent.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
+                    if (wrapper.loggingEvent.getLevel().toInt() >= Level.WARN.toInt() || wrapper.loggingEvent.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE) != null) {
+                        float ratio = (wrapper.rowNum / (float)rowCount);
+        //                System.out.println("error - ratio: " + ratio + ", component height: " + componentHeight);
+                        int verticalLocation = (int) (componentHeight * ratio) + topOffset;
+
+                        int startX = 1;
+                        int width = getWidth() - (startX * 2);
+                        //narrow the color a bit if level is less than warn
+                            //make warnings, errors a little taller
+
+                        eventHeight = Math.min(maxEventHeight, eventHeight + 3);
+//                            eventHeight = maxEventHeight;
+
+                        drawEvent(wrapper.loggingEvent.getColorRuleBackground(), (verticalLocation - eventHeight + 1), eventHeight, g, startX, width);
     //                System.out.println("painting error - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
+                    }
                 }
             }
 
@@ -3314,19 +3351,19 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                 float ratio = (wrapper.rowNum / (float)rowCount);
 //                System.out.println("warning - ratio: " + ratio + ", component height: " + componentHeight);
                 int verticalLocation = (int) (componentHeight * ratio) + topOffset;
-                drawEvent(wrapper.loggingEvent.getBackground(), verticalLocation, eventHeight, g, true);
+
+                int startX = 1;
+                int width = getWidth() - (startX * 2);
+                width = (width / 2);
+
+                drawEvent(wrapper.loggingEvent.getBackground(), verticalLocation, eventHeight, g, startX, width);
 //                System.out.println("painting warning - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
             }
         }
 
-        private void drawEvent(Color newColor, int verticalLocation, int eventHeight, Graphics g, boolean drawHalfWidth) {
+        private void drawEvent(Color newColor, int verticalLocation, int eventHeight, Graphics g, int x, int width) {
 //            System.out.println("painting: - color: " + newColor + ", verticalLocation: " + verticalLocation + ", eventHeight: " + eventHeight);
-            int x = 1;
-            int width = getWidth() - (x * 2);
-            if (drawHalfWidth) {
-                width = (width/2);
-            }
-            //center drawing at vertical location 
+            //center drawing at vertical location
             int y = verticalLocation + (eventHeight / 2);
             Color oldColor = g.getColor();
             g.setColor(newColor);
