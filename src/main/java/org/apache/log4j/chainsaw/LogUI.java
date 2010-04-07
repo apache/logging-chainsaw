@@ -92,6 +92,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.LoggerRepositoryExImpl;
+import org.apache.log4j.chainsaw.color.RuleColorizer;
 import org.apache.log4j.chainsaw.dnd.FileDnDTarget;
 import org.apache.log4j.chainsaw.help.HelpManager;
 import org.apache.log4j.chainsaw.help.Tutorial;
@@ -695,6 +696,9 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       event.asInt(LogUI.MAIN_WINDOW_HEIGHT));
 
     getToolBarAndMenus().stateChange();
+    RuleColorizer colorizer = new RuleColorizer();
+    colorizer.loadColorSettings(ChainsawConstants.DEFAULT_COLOR_RULE_NAME);
+    allColorizers.put(ChainsawConstants.DEFAULT_COLOR_RULE_NAME, colorizer);
   }
 
   /**
@@ -709,7 +713,8 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
     event.saveSetting(LogUI.MAIN_WINDOW_WIDTH, getWidth());
     event.saveSetting(LogUI.MAIN_WINDOW_HEIGHT, getHeight());
-
+    RuleColorizer colorizer = (RuleColorizer) allColorizers.get(ChainsawConstants.DEFAULT_COLOR_RULE_NAME);
+    colorizer.saveColorSettings(ChainsawConstants.DEFAULT_COLOR_RULE_NAME);
   }
 
   /**

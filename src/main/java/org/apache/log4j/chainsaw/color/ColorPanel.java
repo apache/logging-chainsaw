@@ -66,6 +66,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
+import org.apache.log4j.chainsaw.ChainsawConstants;
 import org.apache.log4j.chainsaw.ExpressionRuleContext;
 import org.apache.log4j.chainsaw.filter.FilterModel;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
@@ -95,7 +96,7 @@ public class ColorPanel extends JPanel {
   private ActionListener closeListener;
   private JLabel statusBar;
   private Vector columns;
-  private final String currentTabString = "Current tab";
+  private final String noTab = "None";
   private DefaultComboBoxModel logPanelColorizersModel;
   private Map allLogPanelColorizers;
   private RuleColorizer currentLogPanelColorizer;
@@ -192,12 +193,12 @@ public class ColorPanel extends JPanel {
       loadPanelColorizersComboBox.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent e) {
               String selectedColorizerName = loadPanelColorizersComboBox.getSelectedItem().toString();
-              copyRulesAction.setEnabled(!(currentTabString.equals(selectedColorizerName)));
+              copyRulesAction.setEnabled(!(noTab.equals(selectedColorizerName)));
           }
       });
 
     copyRulesAction.putValue(Action.NAME, "Copy color rules");
-    copyRulesAction.setEnabled(!(currentTabString.equals(loadPanelColorizersComboBox.getSelectedItem())));
+    copyRulesAction.setEnabled(!(noTab.equals(loadPanelColorizersComboBox.getSelectedItem())));
 
     JButton copyRulesButton = new JButton(copyRulesAction);
     topPanel.add(copyRulesButton);
@@ -210,8 +211,8 @@ public class ColorPanel extends JPanel {
   }
 
   public void loadLogPanelColorizers() {
-      if (logPanelColorizersModel.getIndexOf(currentTabString) == -1) {
-        logPanelColorizersModel.addElement(currentTabString);
+      if (logPanelColorizersModel.getIndexOf(noTab) == -1) {
+        logPanelColorizersModel.addElement(noTab);
       }
       for (Iterator iter = allLogPanelColorizers.entrySet().iterator();iter.hasNext();) {
           Map.Entry entry = (Map.Entry)iter.next();
@@ -371,7 +372,7 @@ public class ColorPanel extends JPanel {
     }
   }
 
-  void applyRules(String ruleSet) {
+  void applyRules(String ruleSet, RuleColorizer applyingColorizer) {
     table.getColumnModel().getColumn(0).getCellEditor().stopCellEditing();
 
     List list = new ArrayList();
@@ -414,7 +415,7 @@ public class ColorPanel extends JPanel {
       //only update rules if there were no errors
       Map map = new HashMap();
       map.put(ruleSet, list);
-      colorizer.setRules(map);
+      applyingColorizer.setRules(map);
 
     } else {
       statusBar.setText("Errors - see expression tooltip (color filters won't be active until errors are resolved)");
@@ -428,15 +429,28 @@ public class ColorPanel extends JPanel {
     panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
     panel.add(Box.createHorizontalGlue());
 
+    JButton saveAsDefaultButton = new JButton("Save as default");
+
+    saveAsDefaultButton.addActionListener(
+      new AbstractAction() {
+        public void actionPerformed(ActionEvent evt) {
+          RuleColorizer defaultColorizer = (RuleColorizer) allLogPanelColorizers.get(ChainsawConstants.DEFAULT_COLOR_RULE_NAME);
+          applyRules(currentRuleSet, defaultColorizer);
+        }
+    });
+
+    panel.add(saveAsDefaultButton);
+
     JButton applyButton = new JButton("Apply");
 
     applyButton.addActionListener(
       new AbstractAction() {
         public void actionPerformed(ActionEvent evt) {
-          applyRules(currentRuleSet);
+          applyRules(currentRuleSet, colorizer);
         }
       });
 
+    panel.add(Box.createHorizontalStrut(10));
     panel.add(applyButton);
 
     JButton closeButton = new JButton("Close");

@@ -12,6 +12,7 @@
 <h1>1.99.99</h1>
 <h2>6 Apr 2010</h2>
 <ul>
+<li>Added default color rule support (ability to assign a tab's color rules as the default color rules for new tabs).  Default color rules can be applied to pre-existing tabs via the 'apply a tabs colors' drop down box in the color rule dialog.</li>
 <li>Pressing enter in the search box now initiates a search.</li>
 <li>Updated thumbnail rendering logic to display warnings, errors, fatal events and events with markers more prominently than other events.</li>
 </ul>
@@ -41,7 +42,6 @@ just creates a text file containing the xml events.
 <li>New clickable thumbnail bar next to logpanel scroll bar provides a visual indicator of events with warning level as well as error/fatal.</li>
 <li>Clicking in the bar will jump to the closest event.</li>
 <li>Colors in the thumbnail bar will sync with the default warning and error/fatal color rules (LEVEL == WARNING) and (level == FATAL || level == ERROR) respectively.</li>
-</li>
 </ul>
 <h2>23 Mar 2010</h2>
 <ul>
@@ -351,7 +351,7 @@ not to provide this, be on the look out for a Mac OS X bundle version soon - Pau
  <li>Fixed a bug in the Receivers tree panel where restarting a set of receivers would duplicate them visually.  The plugins where stopped and started, but duplicate tree nodes where being added.  Thanks to Stephen Pain for
  pointing it out. (we 'knew' about it, but we had forgotten...)</li>
  <li>Added a "Restart" action to restart an individual Receiver.</li>
- </li>Tweaked the action buttons available within the Receive toolbar to the more commonly used ones, Play/Pause still available
+ <li>Tweaked the action buttons available within the Receive toolbar to the more commonly used ones, Play/Pause still available
  from popup menu</li>
 </ul>
 
@@ -392,7 +392,7 @@ not to provide this, be on the look out for a Mac OS X bundle version soon - Pau
 
 <h2>13 May 2004</h2>
 <ul>
- <li>The first version we decided we needed to have some release notes in... :)
- <li>Fix for LoggingEvent class - connecting Chainsaw v2 to a remote log4j1.2.x  caused a NullPointerException
+ <li>The first version we decided we needed to have some release notes in... :)</li>
+ <li>Fix for LoggingEvent class - connecting Chainsaw v2 to a remote log4j1.2.x  caused a NullPointerException</li>
 </ul>
 </body></html>

@@ -63,7 +63,7 @@ class FileSaveAction extends AbstractAction {
    *
    */
   public FileSaveAction(LogUI parent) {
-    super("Save as...");
+    super("Save displayed events as...");
 
     putValue(
       Action.ACCELERATOR_KEY,
@@ -89,7 +89,7 @@ class FileSaveAction extends AbstractAction {
     }
     
     chooser.setAcceptAllFileFilterUsed(true);
-    chooser.setDialogTitle("Save Events to XML file...");
+    chooser.setDialogTitle("Save displayed events to XML file...");
     chooser.showSaveDialog(parent);
 
     File selectedFile = chooser.getSelectedFile();

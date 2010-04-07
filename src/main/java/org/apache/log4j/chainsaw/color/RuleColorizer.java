@@ -20,12 +20,25 @@ package org.apache.log4j.chainsaw.color;
 import java.awt.Color;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.chainsaw.ChainsawConstants;
+import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.rule.ColorRule;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
@@ -47,6 +60,8 @@ public class RuleColorizer implements Colorizer {
   private String currentRuleSet = DEFAULT_NAME;
   private Rule findRule;
   private Rule loggerRule;
+
+  private static final String COLORS_EXTENSION = ".colors";
 
   private final Color WARN_DEFAULT_COLOR = new Color(255, 255, 153);
   private final Color ERROR_OR_FATAL_DEFAULT_COLOR = new Color(255, 153, 153);
@@ -208,5 +223,75 @@ public class RuleColorizer implements Colorizer {
   public void addPropertyChangeListener(
     String propertyName, PropertyChangeListener listener) {
     colorChangeSupport.addPropertyChangeListener(propertyName, listener);
+  }
+
+
+    /**
+     * Save panel color settings
+     */
+    public void saveColorSettings(String name) {
+      ObjectOutputStream o = null;
+      try {
+        File f = new File(SettingsManager.getInstance().getSettingsDirectory(), URLEncoder.encode(name + COLORS_EXTENSION));
+
+        o = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(f)));
+
+        o.writeObject(getRules());
+        o.flush();
+      } catch (FileNotFoundException fnfe) {
+        fnfe.printStackTrace();
+      } catch (IOException ioe) {
+        ioe.printStackTrace();
+      } finally {
+        try {
+          if (o != null) {
+            o.close();
+          }
+        } catch (IOException ioe) {
+          ioe.printStackTrace();
+        }
+      }
+    }
+
+  /**
+   * Load panel color settings if they exist - otherwise, load default color settings
+   */
+  public void loadColorSettings(String name) {
+    if (!doLoadColorSettings(name)) {
+      doLoadColorSettings(ChainsawConstants.DEFAULT_COLOR_RULE_NAME);
+    }
+  }
+
+  private boolean doLoadColorSettings(String name) {
+    //first attempt to load encoded file
+    File f = new File(SettingsManager.getInstance().getSettingsDirectory(), URLEncoder.encode(name) + COLORS_EXTENSION);
+
+    if (f.exists()) {
+      ObjectInputStream s = null;
+
+      try {
+        s = new ObjectInputStream(
+            new BufferedInputStream(new FileInputStream(f)));
+
+        Map map = (Map) s.readObject();
+        setRules(map);
+      } catch (EOFException eof) { //end of file - ignore..
+      }catch (IOException ioe) {
+        ioe.printStackTrace();
+        //unable to load file - delete it
+        f.delete();
+      } catch (ClassNotFoundException cnfe) {
+        cnfe.printStackTrace();
+      } finally {
+        if (s != null) {
+          try {
+            s.close();
+          } catch (IOException ioe) {
+            ioe.printStackTrace();
+          }
+        }
+      }
+    }
+    return f.exists();
   }
 }

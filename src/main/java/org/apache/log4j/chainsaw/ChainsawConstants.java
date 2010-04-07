@@ -31,6 +31,7 @@ import java.net.URL;
 public class ChainsawConstants {
   private ChainsawConstants(){}
   
+  public static final String DEFAULT_COLOR_RULE_NAME = "Default";
   public static final Color COLOR_DEFAULT_BACKGROUND = new Color(255,255,255);
   public static final Color COLOR_DEFAULT_FOREGROUND = Color.BLACK;
 

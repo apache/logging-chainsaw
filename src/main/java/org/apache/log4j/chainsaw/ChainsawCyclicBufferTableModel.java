@@ -586,12 +586,13 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
           fireTableRowsInserted(begin, end);
         } else {
           //we did loop - insert and then update rows
-          fireTableRowsInserted(begin, cyclicBufferSize);
-          fireTableRowsUpdated(0, cyclicBufferSize);
+          //rows are zero-indexed, subtract 1 from cyclicbuffersize for the event notification
+          fireTableRowsInserted(begin, cyclicBufferSize - 1);
+          fireTableRowsUpdated(0, cyclicBufferSize - 1);
           reachedCapacity = true;
         }
       } else {
-        fireTableRowsUpdated(0, cyclicBufferSize);
+        fireTableRowsUpdated(0, cyclicBufferSize - 1);
       }
     } else {
       fireTableRowsInserted(begin, end);

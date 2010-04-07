@@ -1734,18 +1734,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
     logTreePanel.ignore(preferenceModel.getHiddenLoggers());
 
-    //first attempt to load encoded file
-    File f2 =
-      new File(
-        SettingsManager.getInstance().getSettingsDirectory(), URLEncoder.encode(identifier) + COLORS_EXTENSION);
-
-    if (f2.exists()) {
-        loadColorSettings(f2);
-    } else {
-        f2 =
-            new File(
-              SettingsManager.getInstance().getSettingsDirectory(), identifier + COLORS_EXTENSION);
-    }
+    //attempt to load color settings - no need to URL encode the identifier
+    colorizer.loadColorSettings(identifier);
   }
 
   /**
@@ -1794,8 +1784,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     	}
     }
 
-//    TODO colour settings need to be saved
-    saveColorSettings();
+    //no need to URL encode the identifier
+    colorizer.saveColorSettings(identifier);
   }
 
     private XStream buildXStreamForLogPanelPreference() {
@@ -2453,37 +2443,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   }
 
   /**
-   * Save panel color settings
-   */
-  private void saveColorSettings() {
-    ObjectOutputStream o = null;
-
-    try {
-      File f = new File(SettingsManager.getInstance().getSettingsDirectory(), 
-      		URLEncoder.encode(getIdentifier() + COLORS_EXTENSION));
-      logger.debug("writing colors to file: " + f);
-      
-      o = new ObjectOutputStream(
-          new BufferedOutputStream(new FileOutputStream(f)));
-
-      o.writeObject(colorizer.getRules());
-      o.flush();
-    } catch (FileNotFoundException fnfe) {
-      fnfe.printStackTrace();
-    } catch (IOException ioe) {
-      ioe.printStackTrace();
-    } finally {
-      try {
-        if (o != null) {
-          o.close();
-        }
-      } catch (IOException ioe) {
-        ioe.printStackTrace();
-      }
-    }
-  }
-
-  /**
    * Load default column settings if no settings exist for this identifier
    *
    * @param event
@@ -2560,38 +2519,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
   public JTextField getFindTextField() {
     return findField;
-  }
-
-  /**
-   * Load panel color settings
-   */
-  private void loadColorSettings(File f) {
-    if (f.exists()) {
-      ObjectInputStream s = null;
-
-      try {
-        s = new ObjectInputStream(
-            new BufferedInputStream(new FileInputStream(f)));
-
-        Map map = (Map) s.readObject();
-        colorizer.setRules(map);
-      } catch (EOFException eof) { //end of file - ignore..
-      }catch (IOException ioe) {
-        ioe.printStackTrace();
-        //unable to load file - delete it
-        f.delete();
-      } catch (ClassNotFoundException cnfe) {
-        cnfe.printStackTrace();
-      } finally {
-        if (s != null) {
-          try {
-            s.close();
-          } catch (IOException ioe) {
-            ioe.printStackTrace();
-          }
-        }
-      }
-    }
   }
 
   /**
@@ -3129,10 +3056,15 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             tableModel.addTableModelListener(new TableModelListener(){
                 public void tableChanged(TableModelEvent e) {
                     int firstRow = e.getFirstRow();
-                    int lastRow = e.getLastRow();
-                    if (lastRow == Integer.MAX_VALUE) {
-                        lastRow = table.getRowCount() -1; //zero-indexed rows
+                    //lastRow may be Integer.MAX_VALUE..if so, set lastRow to rowcount - 1 (so rowcount may be negative here, which will bypass for loops below)
+                    int lastRow = Math.min(e.getLastRow(), table.getRowCount() - 1);
+                    //clear everything if we got an event w/-1 for first or last row
+                    if (firstRow < 0 || lastRow < 0) {
+                        all.clear();
+                        findMatches.clear();
                     }
+
+//                    System.out.println("lastRow: " + lastRow + ", first row: " + firstRow + ", original last row: " + e.getLastRow() + ", type: " + e.getType());
 
                     List displayedEvents = tableModel.getFilteredEvents();
                     if (e.getType() == TableModelEvent.INSERT) {
@@ -3205,11 +3137,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 //                                System.out.println("update - adding marker: " + i + ", event: " + event.getMessage());
                                 findMatches.add(wrapper);
                             }
-                        }
-                        //clear everything if we got an event w/-1
-                        if (firstRow < 0 || lastRow < 0) {
-                            all.clear();
-                            findMatches.clear();
                         }
 //                        System.out.println("update - new warnings: " + warnings.size() + ", errors: " + errors.size());
                     }
