@@ -79,8 +79,8 @@ class ThrowableRenderPanel extends AbstractCellEditor
    */
   public Component getTableCellEditorComponent(
     JTable table, Object value, boolean isSelected, int row, int column) {
-    if(value!=null){
-	    lbl.setText(((String[]) value)[0]);
+    if (value instanceof String[] && ((String[])value).length > 0) {
+        lbl.setText(((String[]) value)[0]);
     }else {
     	lbl.setText("");
     }

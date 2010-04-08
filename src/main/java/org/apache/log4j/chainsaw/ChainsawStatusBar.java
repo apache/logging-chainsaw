@@ -48,6 +48,7 @@ public class ChainsawStatusBar extends JPanel {
   private static final int DELAY_PERIOD = 5000;
   private static final String DEFAULT_MSG = "Welcome to Chainsaw v2!";
   private final JLabel statusMsg = new JLabel(DEFAULT_MSG);
+  private final JLabel searchMatchLabel = new JLabel("", SwingConstants.CENTER);
   private final JLabel pausedLabel = new JLabel("", SwingConstants.CENTER);
   private final JLabel lineSelectionLabel = new JLabel("", SwingConstants.CENTER);
   private final JLabel eventCountLabel = new JLabel("", SwingConstants.CENTER);
@@ -95,9 +96,16 @@ public class ChainsawStatusBar extends JPanel {
 	eventCountLabel.setMinimumSize(
 	new Dimension(
 	eventCountLabel.getFontMetrics(eventCountLabel.getFont())
-						.stringWidth("99999:99999") + 5,
+						.stringWidth("Filtered/Total: 999999999999:999999999999") + 5,
 	  (int) eventCountLabel.getPreferredSize().getHeight()));
 	  
+    searchMatchLabel.setBorder(statusBarComponentBorder);
+    searchMatchLabel.setToolTipText("<# viewable events>:<# total events>");
+    searchMatchLabel.setMinimumSize(
+    new Dimension(
+    searchMatchLabel.getFontMetrics(eventCountLabel.getFont()).stringWidth("Search matches: 999999999999") + 5,
+            (int) searchMatchLabel.getPreferredSize().getHeight()));
+
     receivedConnectionlabel.setBorder(statusBarComponentBorder);
     receivedConnectionlabel.setToolTipText(
       "Indicates whether Chainsaw has received a remote connection");
@@ -110,14 +118,14 @@ public class ChainsawStatusBar extends JPanel {
     lineSelectionLabel.setMinimumSize(
       new Dimension(
         lineSelectionLabel.getFontMetrics(lineSelectionLabel.getFont())
-                          .stringWidth("999999"),
+                          .stringWidth("999999999"),
         (int) lineSelectionLabel.getPreferredSize().getHeight()));
     lineSelectionLabel.setToolTipText(
       "The current line # selected");
 
     JComponent[] toFix =
       new JComponent[] {
-		eventCountLabel,
+        searchMatchLabel, eventCountLabel,
         receivedConnectionlabel, lineSelectionLabel, receivedEventLabel,
         pausedLabel
       };
@@ -153,19 +161,24 @@ public class ChainsawStatusBar extends JPanel {
 	c.gridx = 2;
 	add(lineSelectionLabel, c);
 	
+    c.weightx = 0.0;
+    c.weighty = 0.0;
+    c.gridx = 3;
+    add(searchMatchLabel, c);
+
 	c.weightx = 0.0;
 	c.weighty = 0.0;
-	c.gridx = 3;
+	c.gridx = 4;
 	add(eventCountLabel, c);
 
     c.weightx = 0.0;
     c.weighty = 0.0;
-    c.gridx = 4;
+    c.gridx = 5;
     add(receivedEventLabel, c);
 
     c.weightx = 0.0;
     c.weighty = 0.0;
-    c.gridx = 5;
+    c.gridx = 6;
 
     add(pausedLabel, c);
 
@@ -244,11 +257,18 @@ public class ChainsawStatusBar extends JPanel {
     SwingUtilities.invokeLater(
       new Runnable() {
         public void run() {
-          lineSelectionLabel.setText(
-            selectedLine+"");
-			eventCountLabel.setText(lineCount + ":" + total);
+          lineSelectionLabel.setText(selectedLine+"");
+	      eventCountLabel.setText("Filtered/Total: " + lineCount + ":" + total);
         }
       });
+  }
+
+  void setSearchMatchCount(int searchMatchCount) {
+      if (searchMatchCount == 0) {
+        searchMatchLabel.setText("");
+      } else {
+        searchMatchLabel.setText("Search matches: " + searchMatchCount);
+      }
   }
 
   void setNothingSelected() {

@@ -599,7 +599,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         Plugin plugin = (Plugin) pluginClass.newInstance();
         pluginRegistry.addPlugin(plugin);
         plugin.activateOptions();
-        MessageCenter.getInstance().getLogger().info("Looks like ZeroConf stuff is available... WooHoo!");
+        MessageCenter.getInstance().getLogger().info("Looks like ZeroConf is available... WooHoo!");
     } catch (Throwable e) {
         MessageCenter.getInstance().getLogger().error("Doesn't look like ZeroConf is available", e);
     }

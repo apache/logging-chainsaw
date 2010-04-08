@@ -42,13 +42,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.EOFException;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -1312,7 +1307,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
               Object o = table.getValueAt(row, column);
 
               if (o != null) {
-                if (o instanceof String[]) {
+                if (o instanceof String[] && ((String[])o).length > 0) {
                   value = ((String[]) o)[0];
                   operator = "~=";
                 } else {
@@ -1352,7 +1347,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             } else {
               Object o = table.getValueAt(row, column).toString();
 
-              if (o instanceof String[]) {
+              if (o instanceof String[] && ((String[])o).length > 0) {
                 value = ((String[]) o)[0];
                 operator = "~=";
               } else {
@@ -1423,7 +1418,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
               Object o = table.getValueAt(row, column);
 
               if (o != null) {
-                if (o instanceof String[]) {
+                if (o instanceof String[] && ((String[])o).length > 0) {
                   value = ((String[]) o)[0];
                   operator = "~=";
                 } else {
@@ -1446,7 +1441,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         new AbstractAction("Clear find next") {
           public void actionPerformed(ActionEvent e) {
             findField.setText(null);
-            updateRule(null);
+            updateFindRule(null);
           }
         };
 
@@ -1480,8 +1475,11 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             if (currentPoint != null) {
               int row = table.rowAtPoint(currentPoint);
               LoggingEvent event = tableModel.getRow(row);
-              renderer.setUseRelativeTimes(event.getTimeStamp());
-              tableModel.reFilter();
+              if (event != null)
+              {
+                  renderer.setUseRelativeTimes(event.getTimeStamp());
+                  tableModel.reFilter();
+              }
               menuItemDisplayNormalTimes.setEnabled(true);
             }
         }
@@ -1987,7 +1985,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     return tableModel.isCyclic();
   }
 
-  public void updateRule(String ruleText) {
+  public void updateFindRule(String ruleText) {
     if ((ruleText == null) || (ruleText.trim().equals(""))) {
       findRule = null;
       tableModel.updateEventsWithFindRule(null);
@@ -1996,6 +1994,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       findField.setBackground(UIManager.getColor("TextField.background"));
       findField.setToolTipText(
         "Enter expression - right click or ctrl-space for menu");
+      statusBar.setSearchMatchCount(0);
     } else {
       //only turn off scrolltobottom when finding something (find not empty)
       preferenceModel.setScrollToBottom(false);
@@ -2008,15 +2007,17 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         findField.setToolTipText(
           "Enter expression - right click or ctrl-space for menu");
         findRule = ExpressionRule.getRule(ruleText);
-        tableModel.updateEventsWithFindRule(findRule);
+        int matchCount = tableModel.updateEventsWithFindRule(findRule);
         colorizer.setFindRule(findRule);
         //valid expression, reset background color in case we were previously an invalid expression
         findField.setBackground(UIManager.getColor("TextField.background"));
+        statusBar.setSearchMatchCount(matchCount);
       } catch (IllegalArgumentException re) {
         findField.setToolTipText(re.getMessage());
         findField.setBackground(INVALID_EXPRESSION_BACKGROUND);
         colorizer.setFindRule(null);
         tableModel.updateEventsWithFindRule(null);
+        statusBar.setSearchMatchCount(0);
       }
     }
   }
@@ -2382,7 +2383,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
    *
    */
   public void findNext() {
-    updateRule(findField.getText());
+    updateFindRule(findField.getText());
 
     if (findRule != null) {
       try {
@@ -2405,7 +2406,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
    *
    */
   public void findPrevious() {
-    updateRule(findField.getText());
+    updateFindRule(findField.getText());
 
     if (findRule != null) {
       try {
@@ -2588,14 +2589,16 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         int row = table.getSelectedRow();
         if (row != -1) {
           LoggingEvent event = tableModel.getRow(row);
-          Object marker = event.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
-          if (marker == null) {
-              event.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE, "set");
-          } else {
-              event.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
+          if (event != null) {
+              Object marker = event.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
+              if (marker == null) {
+                  event.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE, "set");
+              } else {
+                  event.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
+              }
+              //if marker -was- null, it no longer is (may need to add the column)
+              tableModel.fireRowUpdated(row, (marker == null));
           }
-          //if marker -was- null, it no longer is (may need to add the column)
-          tableModel.fireRowUpdated(row, (marker == null));
         }
     }
 
@@ -2723,14 +2726,16 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
               int row = table.rowAtPoint(evt.getPoint());
               if (row != -1) {
                 ExtendedLoggingEvent event = tableModel.getRow(row);
-                Object marker = event.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
-                if (marker == null) {
-                    event.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE, "set");
-                } else {
-                    event.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
+                if (event != null) {
+                    Object marker = event.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
+                    if (marker == null) {
+                        event.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE, "set");
+                    } else {
+                        event.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
+                    }
+                    //if marker -was- null, it no longer is (may need to add the column)
+                    tableModel.fireRowUpdated(row, (marker == null));
                 }
-                //if marker -was- null, it no longer is (may need to add the column)
-                tableModel.fireRowUpdated(row, (marker == null));
               }
           }
       }
@@ -2997,8 +3002,10 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column)
         {
             currentEvent = tableModel.getRow(row);
-            textField.setText(currentEvent.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE));
-            textField.selectAll();
+            if (currentEvent != null) {
+                textField.setText(currentEvent.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE));
+                textField.selectAll();
+            }
             return textField;
         }
     }

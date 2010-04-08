@@ -178,7 +178,7 @@ public interface EventContainer extends SortTableModel, LoggerNameModel {
    * Evaluate all events against the find rule
    * @param findRule
    */
-  void updateEventsWithFindRule(Rule findRule);
+  int updateEventsWithFindRule(Rule findRule);
 
   /**
    * Determine next row with a non-default color 

@@ -169,8 +169,20 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
             return i;
           }
         }
+        //if there was no match, start at row zero and go to startLocation
+        for (int i = 0; i < startLocation; i++) {
+          if (rule.evaluate((LoggingEvent) filteredList.get(i))) {
+            return i;
+          }
+        }
       } else {
         for (int i = startLocation; i > -1; i--) {
+          if (rule.evaluate((LoggingEvent) filteredList.get(i))) {
+            return i;
+          }
+        }
+        //if there was no match, start at row list.size() - 1 and go to startLocation
+        for (int i = filteredList.size() - 1; i > startLocation; i--) {
           if (rule.evaluate((LoggingEvent) filteredList.get(i))) {
             return i;
           }
@@ -347,10 +359,16 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         }
     }
 
-    public void updateEventsWithFindRule(Rule findRule) {
+    public int updateEventsWithFindRule(Rule findRule) {
+        int count = 0;
         for (Iterator iter = unfilteredList.iterator();iter.hasNext();) {
-            ((ExtendedLoggingEvent)iter.next()).evaluateSearchRule(findRule);
+            ExtendedLoggingEvent extendedLoggingEvent = (ExtendedLoggingEvent) iter.next();
+            extendedLoggingEvent.evaluateSearchRule(findRule);
+            if (extendedLoggingEvent.isSearchMatch()) {
+                count++;
+            }
         }
+        return count;
     }
 
     public int findColoredRow(int startLocation, boolean searchForward) {
@@ -363,8 +381,24 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
                 return i;
             }
           }
+          //searching forward, no colorized event was found - now start at row zero and go to startLocation
+          for (int i = 0; i < startLocation; i++) {
+            ExtendedLoggingEvent event = (ExtendedLoggingEvent)filteredList.get(i);
+            if (!event.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND) ||
+                    !event.getColorRuleForeground().equals(ChainsawConstants.COLOR_DEFAULT_FOREGROUND)) {
+                return i;
+            }
+          }
         } else {
           for (int i = startLocation; i > -1; i--) {
+              ExtendedLoggingEvent event = (ExtendedLoggingEvent)filteredList.get(i);
+              if (!event.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND) ||
+                      !event.getColorRuleForeground().equals(ChainsawConstants.COLOR_DEFAULT_FOREGROUND)) {
+                  return i;
+            }
+          }
+          //searching backward, no colorized event was found - now start at list.size() - 1 and go to startLocation
+          for (int i = filteredList.size() - 1; i > startLocation; i--) {
               ExtendedLoggingEvent event = (ExtendedLoggingEvent)filteredList.get(i);
               if (!event.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND) ||
                       !event.getColorRuleForeground().equals(ChainsawConstants.COLOR_DEFAULT_FOREGROUND)) {
@@ -602,16 +636,19 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
 
     public void fireRowUpdated(int row, boolean checkForNewColumns) {
         ExtendedLoggingEvent event = getRow(row);
-        event.updateColorRuleColors(colorizer.getBackgroundColor(event), colorizer.getForegroundColor(event));
-        Rule findRule = colorizer.getFindRule();
-        if (findRule != null) {
-          event.evaluateSearchRule(colorizer.getFindRule());
-        }
+        if (event != null)
+        {
+            event.updateColorRuleColors(colorizer.getBackgroundColor(event), colorizer.getForegroundColor(event));
+            Rule findRule = colorizer.getFindRule();
+            if (findRule != null) {
+              event.evaluateSearchRule(colorizer.getFindRule());
+            }
 
-        fireTableRowsUpdated(row, row);
-        if (checkForNewColumns) {
-            //row may have had a column added..if so, make sure a column is added
-            checkForNewColumn(getRow(row));
+            fireTableRowsUpdated(row, row);
+            if (checkForNewColumns) {
+                //row may have had a column added..if so, make sure a column is added
+                checkForNewColumn(event);
+            }
         }
     }
 

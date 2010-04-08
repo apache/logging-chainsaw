@@ -111,7 +111,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
       break;
 
     case ChainsawColumns.INDEX_THROWABLE_COL_NAME:
-      if (value instanceof String[]) {
+      if (value instanceof String[] && ((String[])value).length > 0){
         c.setText(((String[]) value)[0]);
       }
       break;
