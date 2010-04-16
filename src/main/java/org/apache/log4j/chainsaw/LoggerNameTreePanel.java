@@ -139,6 +139,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
   private Rule colorRuleDelegate; 
   private final JScrollPane scrollTree;
   private final JToolBar toolbar = new JToolBar();
+  private final LogPanel logPanel;
 
     //~ Constructors ============================================================
 
@@ -147,11 +148,12 @@ final class LoggerNameTreePanel extends JPanel implements Rule
    *
    * @param logTreeModel
    */
-  LoggerNameTreePanel(LogPanelLoggerTreeModel logTreeModel, LogPanelPreferenceModel preferenceModel)
+  LoggerNameTreePanel(LogPanelLoggerTreeModel logTreeModel, LogPanelPreferenceModel preferenceModel, LogPanel logPanel)
   {
     super();
     this.logTreeModel = logTreeModel;
     this.preferenceModel = preferenceModel;
+    this.logPanel = logPanel;
 
     setLayout(new BorderLayout());
 
@@ -1037,7 +1039,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
           {
             node = (TreeNode) path.getLastPathComponent();
           }
-
+          boolean focusOnSelected = isFocusOnSelected();
           //          editLoggerAction.setEnabled(path != null);
           String logger = getCurrentlySelectedLoggerName();
           focusOnAction.setEnabled(
@@ -1069,6 +1071,15 @@ final class LoggerNameTreePanel extends JPanel implements Rule
           collapseAction.setEnabled(path != null);
 
           reconfigureMenuText();
+          if (isFocusOnSelected()) {
+              fireChangeEvent();
+          }
+          //fire change event if we toggled focus off
+          if (focusOnSelected && !isFocusOnSelected()) {
+              fireChangeEvent();
+          }
+          //trigger a table repaint
+          logPanel.repaint();
         }
       });
 
@@ -1091,8 +1102,6 @@ final class LoggerNameTreePanel extends JPanel implements Rule
             logTreeModel.nodeChanged(
               (TreeNode) logTree.getSelectionPath().getLastPathComponent());
           }
-
-          fireChangeEvent();
         }
       });
 
@@ -1105,8 +1114,6 @@ final class LoggerNameTreePanel extends JPanel implements Rule
             logTreeModel.nodeChanged(
               (TreeNode) logTree.getSelectionPath().getLastPathComponent());
           }
-
-          fireChangeEvent();
         }
       });
 
@@ -1182,6 +1189,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
   {
     setFocusOnSelected(!isFocusOnSelected());
     hideAction.setEnabled(!isFocusOnSelected());
+    fireChangeEvent();
   }
 
     public Collection getHiddenSet() {
@@ -1420,6 +1428,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
       if (logger != null)
       {
         toggleHiddenLogger(logger);
+        fireChangeEvent();
       }
     }
   }

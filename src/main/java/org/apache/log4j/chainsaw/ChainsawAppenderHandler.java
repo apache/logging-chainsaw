@@ -122,7 +122,7 @@ public class ChainsawAppenderHandler extends AppenderSkeleton {
    * Determines an appropriate title for the Tab for the Tab Pane by locating a
    * the hostname property
    * 
-   * @param event
+   * @param e
    * @return identifier
    */
   String getTabIdentifier(LoggingEvent e) {

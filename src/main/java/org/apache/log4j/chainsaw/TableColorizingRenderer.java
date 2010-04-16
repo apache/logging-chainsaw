@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,6 +32,8 @@ import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 
@@ -54,7 +56,6 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private static final DateFormat DATE_FORMATTER = new SimpleDateFormat(Constants.SIMPLE_TIME_PATTERN);
   private static final Map iconMap = LevelIconFactory.getInstance().getLevelToIconMap();
   private RuleColorizer colorizer;
-  private final JLabel idComponent = new JLabel();
   private final JLabel levelComponent = new JLabel();
   private boolean levelUseIcons = false;
   private DateFormat dateFormatInUse = DATE_FORMATTER;
@@ -63,23 +64,25 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private String dateFormatTZ;
   private boolean useRelativeTimes = false;
   private long relativeTimestampBase;
+  private static int borderWidth = 2;
+  private static Color borderColor = (Color)UIManager.get("Table.selectionBackground");
+  private static final Border LEFT_BORDER = BorderFactory.createMatteBorder(borderWidth, borderWidth, borderWidth, 0, borderColor);
+  private static final Border MIDDLE_BORDER = BorderFactory.createMatteBorder(borderWidth, 0, borderWidth, 0, borderColor);
+  private static final Border RIGHT_BORDER = BorderFactory.createMatteBorder(borderWidth, 0, borderWidth, borderWidth, borderColor);
+  private static final Border EMPTY_BORDER = BorderFactory.createEmptyBorder(borderWidth, borderWidth, borderWidth, borderWidth);
 
     /**
    * Creates a new TableColorizingRenderer object.
    */
   public TableColorizingRenderer(RuleColorizer colorizer) {
     this.colorizer = colorizer;
-    idComponent.setBorder(BorderFactory.createRaisedBevelBorder());
-    idComponent.setBackground(Color.gray);
-    idComponent.setHorizontalAlignment(SwingConstants.CENTER);
-    idComponent.setOpaque(true);
 
     levelComponent.setOpaque(true);
     levelComponent.setHorizontalAlignment(SwingConstants.CENTER);
 
     levelComponent.setText("");
   }
-  
+
   public void setToolTipsVisible(boolean toolTipsVisible) {
       this.toolTipsVisible = toolTipsVisible;
   }
@@ -89,25 +92,22 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     int row, int col) {
     value = formatField(value);
 
-    JLabel c = (JLabel)super.getTableCellRendererComponent(table, value, 
+    JLabel c = (JLabel)super.getTableCellRendererComponent(table, value,
         isSelected, hasFocus, row, col);
 
     TableColumn tableColumn = table.getColumnModel().getColumn(col);
     int colIndex = tableColumn.getModelIndex() + 1;
 
     EventContainer container = (EventContainer) table.getModel();
-    ExtendedLoggingEvent event = container.getRow(row);
+    ExtendedLoggingEvent loggingEvent = container.getRow(row);
     //no event, use default renderer
-    if (event == null) {
+    if (loggingEvent == null) {
         return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
     }
 
     switch (colIndex) {
     case ChainsawColumns.INDEX_ID_COL_NAME:
-      idComponent.setText(value.toString());
-      idComponent.setForeground(c.getForeground());
-      idComponent.setBackground(c.getBackground());
-      c = idComponent;
+      c.setText(value.toString());
       break;
 
     case ChainsawColumns.INDEX_THROWABLE_COL_NAME:
@@ -172,7 +172,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
 
     //remaining entries are properties
     default:
-        Set propertySet = event.getPropertyKeySet();
+        Set propertySet = loggingEvent.getPropertyKeySet();
         String headerName = tableColumn.getHeaderValue().toString().toLowerCase();
         String thisProp = null;
         //find the property in the property set...case-sensitive
@@ -184,24 +184,21 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
             }
         }
         if (thisProp != null) {
-            c.setText(event.getProperty(headerName));
+            c.setText(loggingEvent.getProperty(headerName));
         }
         break;
-    }
-    if (isSelected) {
-      return c;
     }
 
     Color background;
     Color foreground;
     Rule loggerRule = colorizer.getLoggerRule();
     //use logger colors in table instead of event colors if event passes logger rule
-    if (loggerRule != null && loggerRule.evaluate(event)) {
+    if (loggerRule != null && loggerRule.evaluate(loggingEvent)) {
         background = ChainsawConstants.FIND_LOGGER_BACKGROUND;
         foreground = ChainsawConstants.FIND_LOGGER_FOREGROUND;
     } else {
-        background = event.getBackground();
-        foreground = event.getForeground();
+        background = loggingEvent.getBackground();
+        foreground = loggingEvent.getForeground();
     }
 
     /**
@@ -218,6 +215,17 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     c.setBackground(background);
     c.setForeground(foreground);
 
+    if (isSelected) {
+      if (col == 0) {
+        c.setBorder(LEFT_BORDER);
+      } else if (col == table.getColumnCount() - 1) {
+        c.setBorder(RIGHT_BORDER);
+      } else {
+        c.setBorder(MIDDLE_BORDER);
+      }
+    } else {
+      c.setBorder(EMPTY_BORDER);
+    }
     return c;
   }
 

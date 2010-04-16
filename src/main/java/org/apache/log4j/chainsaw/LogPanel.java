@@ -639,7 +639,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
      *
      */
     LogPanelLoggerTreeModel logTreeModel = new LogPanelLoggerTreeModel();
-    logTreePanel = new LoggerNameTreePanel(logTreeModel, preferenceModel);
+    logTreePanel = new LoggerNameTreePanel(logTreeModel, preferenceModel, this);
     logTreePanel.addPropertyChangeListener("searchExpression", new PropertyChangeListener()
     {
         public void propertyChange(PropertyChangeEvent evt)
@@ -692,6 +692,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
      * Table definition.  Actual construction is above (next to tablemodel)
      */
     table.setRowHeight(20);
+    table.setRowMargin(0);
+    table.getColumnModel().setColumnMargin(0);
     table.setShowGrid(false);
 
     table.getColumnModel().addColumnModelListener(

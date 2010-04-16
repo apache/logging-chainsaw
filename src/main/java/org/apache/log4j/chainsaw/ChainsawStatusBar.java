@@ -52,7 +52,7 @@ public class ChainsawStatusBar extends JPanel {
   private final JLabel pausedLabel = new JLabel("", SwingConstants.CENTER);
   private final JLabel lineSelectionLabel = new JLabel("", SwingConstants.CENTER);
   private final JLabel eventCountLabel = new JLabel("", SwingConstants.CENTER);
-  private final JLabel receivedEventLabel = new JLabel("0.0", SwingConstants.CENTER);
+  private final JLabel receivedEventLabel = new JLabel("", SwingConstants.CENTER);
   private final JLabel receivedConnectionlabel = new JLabel("", SwingConstants.CENTER);
   private volatile long lastReceivedConnection = System.currentTimeMillis();
   private final Thread connectionThread;
@@ -66,8 +66,8 @@ public class ChainsawStatusBar extends JPanel {
   public ChainsawStatusBar() {
     setLayout(new GridBagLayout());
 
-    nf.setMaximumFractionDigits(1);
-    nf.setMinimumFractionDigits(1);
+    nf.setMaximumFractionDigits(0);
+    nf.setMinimumFractionDigits(0);
     nf.setGroupingUsed(false);
 
     JPanel statusMsgPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
@@ -88,7 +88,7 @@ public class ChainsawStatusBar extends JPanel {
     receivedEventLabel.setMinimumSize(
       new Dimension(
         receivedEventLabel.getFontMetrics(receivedEventLabel.getFont())
-                          .stringWidth("9999.9/s") + 5,
+                          .stringWidth("99999999999.9/s") + 5,
         (int) receivedEventLabel.getPreferredSize().getHeight()));
 
 	eventCountLabel.setBorder(statusBarComponentBorder);
