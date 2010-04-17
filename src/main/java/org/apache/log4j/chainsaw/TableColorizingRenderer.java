@@ -174,15 +174,9 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         if (wrapMsg) {
             int preferredHeight = (int) msgRenderer.getPreferredSize().getHeight();
             int tableRowHeight;
-            //row zero doesn't report its row height correctly..use default for row zero
-            if (row == 0) {
-                tableRowHeight = table.getRowHeight();
-            } else {
-                tableRowHeight = table.getRowHeight(row);
-            }
-            if(preferredHeight != tableRowHeight) {
-                int rowHeight = Math.max(preferredHeight, tableRowHeight);
-                table.setRowHeight(row, rowHeight);
+            tableRowHeight = table.getRowHeight(row);
+            if(preferredHeight != tableRowHeight && preferredHeight != ChainsawConstants.DEFAULT_ROW_HEIGHT) {
+                table.setRowHeight(row, preferredHeight);
             }
         }
     break;

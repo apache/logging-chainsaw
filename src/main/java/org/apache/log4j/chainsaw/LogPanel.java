@@ -704,7 +704,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     /*
      * Table definition.  Actual construction is above (next to tablemodel)
      */
-    table.setRowHeight(20);
+    table.setRowHeight(ChainsawConstants.DEFAULT_ROW_HEIGHT);
     table.setRowMargin(0);
     table.getColumnModel().setColumnMargin(0);
     table.setShowGrid(false);

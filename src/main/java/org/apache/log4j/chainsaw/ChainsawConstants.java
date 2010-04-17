@@ -35,6 +35,7 @@ public class ChainsawConstants {
   public static final Color COLOR_DEFAULT_BACKGROUND = new Color(255,255,255);
   public static final Color COLOR_DEFAULT_FOREGROUND = Color.BLACK;
 
+  public static final int DEFAULT_ROW_HEIGHT = 20;
   public static final Color FIND_LOGGER_BACKGROUND = new Color(40, 40, 40);
   public static final Color FIND_LOGGER_FOREGROUND = Color.WHITE;
 
