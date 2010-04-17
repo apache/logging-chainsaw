@@ -17,6 +17,7 @@ public class LogPanelPreferenceModelTest extends TestCase {
          */
         
         model.setLevelIcons(!model.isLevelIcons());
+        model.setWrapMessage(!model.isWrapMessage());
         model.setDateFormatPattern("yyyyDDmm");
         model.setLoggerPrecision("FATAL");
         model.setLogTreePanelVisible(!model.isLogTreePanelVisible());

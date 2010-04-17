@@ -80,8 +80,9 @@ public class LogPanelPreferenceModel implements Serializable{
 
   private Collection hiddenLoggers = new HashSet();
   private String timeZone;
-  
-  /**
+  private boolean wrapMsg;
+
+    /**
    * Returns an <b>unmodifiable</b> list of the columns.
    * 
    * The reason it is unmodifiable is to enforce the requirement that
@@ -218,6 +219,7 @@ public class LogPanelPreferenceModel implements Serializable{
     setLoggerPrecision(model.getLoggerPrecision());
     setDateFormatPattern(model.getDateFormatPattern());
     setLevelIcons(model.isLevelIcons());
+    setWrapMessage(model.isWrapMessage());
     setTimeZone(model.getTimeZone());
     setToolTips(model.isToolTips());
     setScrollToBottom(model.isScrollToBottom());
@@ -248,6 +250,10 @@ public class LogPanelPreferenceModel implements Serializable{
     return levelIcons;
   }
 
+  public boolean isWrapMessage() {
+    return wrapMsg;
+  }
+
   /**
    * @param levelIcons
    */
@@ -256,6 +262,13 @@ public class LogPanelPreferenceModel implements Serializable{
     propertySupport.firePropertyChange("levelIcons", !levelIcons, levelIcons);
   }
 
+  /**
+   * @param wrapMsg
+   */
+  public void setWrapMessage(boolean wrapMsg) {
+    this.wrapMsg = wrapMsg;
+    propertySupport.firePropertyChange("wrapMessage", !wrapMsg, wrapMsg);
+  }
   /**
    * @param loggerPrecision - an integer representing the number of packages to display, 
    * or an empty string representing 'display all packages' 

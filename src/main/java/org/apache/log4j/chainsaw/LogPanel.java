@@ -424,6 +424,19 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         }
       });
 
+    /*
+     * add preferencemodel listeners
+     */
+    preferenceModel.addPropertyChangeListener(
+      "wrapMessage",
+      new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+          renderer.setWrapMessage(
+            ((Boolean) evt.getNewValue()).booleanValue());
+          table.tableChanged(new TableModelEvent(tableModel));
+        }
+      });
+
     preferenceModel.addPropertyChangeListener(
       "detailPaneVisible",
       new PropertyChangeListener() {

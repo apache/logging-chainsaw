@@ -29,8 +29,10 @@ import java.util.TimeZone;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
@@ -58,6 +60,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private RuleColorizer colorizer;
   private final JLabel levelComponent = new JLabel();
   private boolean levelUseIcons = false;
+  private boolean wrapMsg = false;
   private DateFormat dateFormatInUse = DATE_FORMATTER;
   private int loggerPrecision = 0;
   private boolean toolTipsVisible;
@@ -69,7 +72,11 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private static final Border LEFT_BORDER = BorderFactory.createMatteBorder(borderWidth, borderWidth, borderWidth, 0, borderColor);
   private static final Border MIDDLE_BORDER = BorderFactory.createMatteBorder(borderWidth, 0, borderWidth, 0, borderColor);
   private static final Border RIGHT_BORDER = BorderFactory.createMatteBorder(borderWidth, 0, borderWidth, borderWidth, borderColor);
-  private static final Border EMPTY_BORDER = BorderFactory.createEmptyBorder(borderWidth, borderWidth, borderWidth, borderWidth);
+
+  private static final Border LEFT_EMPTY_BORDER = BorderFactory.createEmptyBorder(borderWidth, borderWidth, borderWidth, 0);
+  private static final Border MIDDLE_EMPTY_BORDER = BorderFactory.createEmptyBorder(borderWidth, 0, borderWidth, 0);
+  private static final Border RIGHT_EMPTY_BORDER = BorderFactory.createEmptyBorder(borderWidth, 0, borderWidth, borderWidth);
+  private JTextArea msgRenderer = new JTextArea();
 
     /**
    * Creates a new TableColorizingRenderer object.
@@ -78,9 +85,11 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     this.colorizer = colorizer;
 
     levelComponent.setOpaque(true);
-    levelComponent.setHorizontalAlignment(SwingConstants.CENTER);
+    levelComponent.setVerticalAlignment(SwingConstants.TOP);
 
     levelComponent.setText("");
+    levelComponent.setVerticalAlignment(SwingConstants.TOP);
+    msgRenderer.setSize(1000, 2);
   }
 
   public void setToolTipsVisible(boolean toolTipsVisible) {
@@ -92,11 +101,21 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     int row, int col) {
     value = formatField(value);
 
-    JLabel c = (JLabel)super.getTableCellRendererComponent(table, value,
+    JLabel labelRenderer = (JLabel)super.getTableCellRendererComponent(table, value,
         isSelected, hasFocus, row, col);
-
+    labelRenderer.setVerticalAlignment(SwingConstants.TOP);
+    JComponent component;
     TableColumn tableColumn = table.getColumnModel().getColumn(col);
     int colIndex = tableColumn.getModelIndex() + 1;
+
+    if(colIndex == ChainsawColumns.INDEX_MESSAGE_COL_NAME) {
+        component = msgRenderer;
+        msgRenderer.setFont(labelRenderer.getFont());
+    } else if (colIndex == ChainsawColumns.INDEX_LEVEL_COL_NAME) {
+        component = levelComponent;
+    } else {
+        component = labelRenderer;
+    }
 
     EventContainer container = (EventContainer) table.getModel();
     ExtendedLoggingEvent loggingEvent = container.getRow(row);
@@ -107,12 +126,12 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
 
     switch (colIndex) {
     case ChainsawColumns.INDEX_ID_COL_NAME:
-      c.setText(value.toString());
+      labelRenderer.setText(value.toString());
       break;
 
     case ChainsawColumns.INDEX_THROWABLE_COL_NAME:
       if (value instanceof String[] && ((String[])value).length > 0){
-        c.setText(((String[]) value)[0]);
+        labelRenderer.setText(((String[]) value)[0]);
       }
       break;
 
@@ -130,20 +149,37 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         }
       }
 
-    c.setText(logger.substring(startPos + 1));
+    labelRenderer.setText(logger.substring(startPos + 1));
       break;
     case ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME:
     case ChainsawColumns.INDEX_CLASS_COL_NAME:
     case ChainsawColumns.INDEX_FILE_COL_NAME:
     case ChainsawColumns.INDEX_LINE_COL_NAME:
-    case ChainsawColumns.INDEX_MESSAGE_COL_NAME:
     case ChainsawColumns.INDEX_NDC_COL_NAME:
     case ChainsawColumns.INDEX_THREAD_COL_NAME:
     case ChainsawColumns.INDEX_TIMESTAMP_COL_NAME:
     case ChainsawColumns.INDEX_METHOD_COL_NAME:
-      c.setText(value.toString());
+      labelRenderer.setText(value.toString());
       break;
 
+    case ChainsawColumns.INDEX_MESSAGE_COL_NAME:
+        msgRenderer.setLineWrap(wrapMsg);
+        msgRenderer.setWrapStyleWord(wrapMsg);
+
+        if (wrapMsg) {
+            int width = table.getColumnModel().getColumn(ChainsawColumns.INDEX_MESSAGE_COL_NAME).getWidth();
+            msgRenderer.setSize(width, 2);
+        }
+        msgRenderer.setText(value.toString());
+        if (wrapMsg) {
+            int preferredHeight = (int) msgRenderer.getPreferredSize().getHeight();
+            int tableRowHeight = table.getRowHeight();
+            if(preferredHeight != tableRowHeight) {
+                int rowHeight = Math.max(preferredHeight, tableRowHeight);
+                table.setRowHeight(row, rowHeight);
+            }
+        }
+    break;
     case ChainsawColumns.INDEX_LEVEL_COL_NAME:
       if (levelUseIcons) {
         levelComponent.setIcon((Icon) iconMap.get(value.toString()));
@@ -162,12 +198,10 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         }
       }
       if (toolTipsVisible) {
-          levelComponent.setToolTipText(c.getToolTipText());
+          levelComponent.setToolTipText(labelRenderer.getToolTipText());
       }
-      levelComponent.setForeground(c.getForeground());
-      levelComponent.setBackground(c.getBackground());
-
-      c = levelComponent;
+      levelComponent.setForeground(labelRenderer.getForeground());
+      levelComponent.setBackground(labelRenderer.getBackground());
       break;
 
     //remaining entries are properties
@@ -184,7 +218,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
             }
         }
         if (thisProp != null) {
-            c.setText(loggingEvent.getProperty(headerName));
+            labelRenderer.setText(loggingEvent.getProperty(headerName));
         }
         break;
     }
@@ -212,21 +246,28 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
       }
     }
 
-    c.setBackground(background);
-    c.setForeground(foreground);
+    component.setBackground(background);
+    component.setForeground(foreground);
 
     if (isSelected) {
       if (col == 0) {
-        c.setBorder(LEFT_BORDER);
+        component.setBorder(LEFT_BORDER);
       } else if (col == table.getColumnCount() - 1) {
-        c.setBorder(RIGHT_BORDER);
+        component.setBorder(RIGHT_BORDER);
       } else {
-        c.setBorder(MIDDLE_BORDER);
+        component.setBorder(MIDDLE_BORDER);
       }
     } else {
-      c.setBorder(EMPTY_BORDER);
+      if (col == 0) {
+        component.setBorder(LEFT_EMPTY_BORDER);
+      } else if (col == table.getColumnCount() - 1) {
+        component.setBorder(RIGHT_EMPTY_BORDER);
+      } else {
+        component.setBorder(MIDDLE_EMPTY_BORDER);
+      }
     }
-    return c;
+
+    return component;
   }
 
   /**
@@ -274,6 +315,14 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
 
     return dateFormatInUse.format((Date) o);
   }
+
+    /**
+    * Sets the property which determines whether to wrap the message
+    * @param wrapMsg
+    */
+   public void setWrapMessage(boolean wrapMsg) {
+     this.wrapMsg = wrapMsg;
+   }
 
    /**
    * Sets the property which determines whether to use Icons or text

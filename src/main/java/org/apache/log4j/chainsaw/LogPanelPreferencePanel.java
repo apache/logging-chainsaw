@@ -243,6 +243,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
     private final JTextField timeZone = new JTextField(10);
     private final JRadioButton rdLevelIcons = new JRadioButton("Icons");
     private final JRadioButton rdLevelText = new JRadioButton("Text");
+    private final JCheckBox wrapMessage = new JCheckBox("Display entire message field in the table (multi-line rows)");
     private JRadioButton rdLast;
 
     //~ Constructors ==========================================================
@@ -362,6 +363,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
       levelFormatPanel.add(rdLevelText);
 
       add(levelFormatPanel);
+      add(wrapMessage);
 
       JPanel loggerFormatPanel = new JPanel();
       loggerFormatPanel.setLayout(
@@ -501,6 +503,15 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
           }
         };
 
+      ActionListener wrapMessageListener = new ActionListener()
+      {
+          public void actionPerformed(ActionEvent e)
+          {
+              preferenceModel.setWrapMessage(wrapMessage.isSelected());
+          }
+      };
+
+      wrapMessage.addActionListener(wrapMessageListener);
       rdLevelIcons.addActionListener(levelIconListener);
       rdLevelText.addActionListener(levelIconListener);
 
@@ -514,6 +525,16 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
             rdLevelText.setSelected(!value);
           }
         });
+        
+        preferenceModel.addPropertyChangeListener(
+          "wrapMessage", new PropertyChangeListener()
+          {
+            public void propertyChange(PropertyChangeEvent evt)
+            {
+              boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+              wrapMessage.setSelected(value);
+            }
+          });
     }
   }
 
