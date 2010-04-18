@@ -183,7 +183,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
             paramMap.put(TextAttribute.FONT, msgRenderer.getFont());
             int preferredHeight = calculateHeight(table.getGraphics(), string, width, paramMap);
             if(preferredHeight != tableRowHeight) {
-                table.setRowHeight(row, Math.max(preferredHeight, ChainsawConstants.DEFAULT_ROW_HEIGHT));
+                table.setRowHeight(row, preferredHeight);
             }
             msgRenderer.setText(string);
         } else {
@@ -374,7 +374,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
          float layoutHeight = layout.getAscent() + layout.getDescent() + layout.getLeading() + 1;
          height += layoutHeight;
      }
-     //pad total by 4
-     return (int) height + 4;
+     //pad total by 4 or default row height
+     return Math.max(ChainsawConstants.DEFAULT_ROW_HEIGHT, (int) height + 4);
     }
 }
