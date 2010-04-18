@@ -19,9 +19,17 @@ package org.apache.log4j.chainsaw;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.font.LineBreakMeasurer;
+import java.awt.font.TextAttribute;
+import java.awt.font.TextLayout;
+import java.text.AttributedCharacterIterator;
+import java.text.AttributedString;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -68,6 +76,8 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private boolean useRelativeTimes = false;
   private long relativeTimestampBase;
   private static int borderWidth = 2;
+  private JTextArea msgRenderer = new JTextArea();
+
   private static Color borderColor = (Color)UIManager.get("Table.selectionBackground");
   private static final Border LEFT_BORDER = BorderFactory.createMatteBorder(borderWidth, borderWidth, borderWidth, 0, borderColor);
   private static final Border MIDDLE_BORDER = BorderFactory.createMatteBorder(borderWidth, 0, borderWidth, 0, borderColor);
@@ -76,7 +86,6 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private static final Border LEFT_EMPTY_BORDER = BorderFactory.createEmptyBorder(borderWidth, borderWidth, borderWidth, 0);
   private static final Border MIDDLE_EMPTY_BORDER = BorderFactory.createEmptyBorder(borderWidth, 0, borderWidth, 0);
   private static final Border RIGHT_EMPTY_BORDER = BorderFactory.createEmptyBorder(borderWidth, 0, borderWidth, borderWidth);
-  private JTextArea msgRenderer = new JTextArea();
 
     /**
    * Creates a new TableColorizingRenderer object.
@@ -89,7 +98,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
 
     levelComponent.setText("");
     levelComponent.setVerticalAlignment(SwingConstants.TOP);
-    msgRenderer.setSize(1000, 2);
+    msgRenderer.setEditable(false);
   }
 
   public void setToolTipsVisible(boolean toolTipsVisible) {
@@ -106,11 +115,12 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     labelRenderer.setVerticalAlignment(SwingConstants.TOP);
     JComponent component;
     TableColumn tableColumn = table.getColumnModel().getColumn(col);
+    //chainsawcolumns uses one-based indexing
     int colIndex = tableColumn.getModelIndex() + 1;
 
     if(colIndex == ChainsawColumns.INDEX_MESSAGE_COL_NAME) {
-        component = msgRenderer;
         msgRenderer.setFont(labelRenderer.getFont());
+        component = msgRenderer;
     } else if (colIndex == ChainsawColumns.INDEX_LEVEL_COL_NAME) {
         component = levelComponent;
     } else {
@@ -163,21 +173,21 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
       break;
 
     case ChainsawColumns.INDEX_MESSAGE_COL_NAME:
+        String string = value.toString().trim();
         msgRenderer.setLineWrap(wrapMsg);
         msgRenderer.setWrapStyleWord(wrapMsg);
-
-        if (wrapMsg) {
-            int width = table.getColumnModel().getColumn(ChainsawColumns.INDEX_MESSAGE_COL_NAME).getWidth();
-            msgRenderer.setSize(width, 2);
-        }
-        msgRenderer.setText(value.toString());
-        if (wrapMsg) {
-            int preferredHeight = (int) msgRenderer.getPreferredSize().getHeight();
-            int tableRowHeight;
-            tableRowHeight = table.getRowHeight(row);
-            if(preferredHeight != tableRowHeight && preferredHeight != ChainsawConstants.DEFAULT_ROW_HEIGHT) {
-                table.setRowHeight(row, preferredHeight);
+        if (wrapMsg && string.length() > 0) {
+            int width = tableColumn.getWidth();
+            int tableRowHeight = table.getRowHeight(row);
+            Map paramMap = new HashMap();
+            paramMap.put(TextAttribute.FONT, msgRenderer.getFont());
+            int preferredHeight = calculateHeight(table.getGraphics(), string, width, paramMap);
+            if(preferredHeight != tableRowHeight) {
+                table.setRowHeight(row, Math.max(preferredHeight, ChainsawConstants.DEFAULT_ROW_HEIGHT));
             }
+            msgRenderer.setText(string);
+        } else {
+            msgRenderer.setText(string);
         }
     break;
     case ChainsawColumns.INDEX_LEVEL_COL_NAME:
@@ -351,4 +361,20 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   public void setUseNormalTimes() {
     useRelativeTimes = false;
   }
+
+   private int calculateHeight(Graphics g, String string, int width, Map paramMap) {
+     AttributedCharacterIterator paragraph = new AttributedString(string, paramMap).getIterator();
+     LineBreakMeasurer lineMeasurer = new LineBreakMeasurer(paragraph, ((Graphics2D)g).getFontRenderContext());
+     float height = 0;
+     lineMeasurer.setPosition(paragraph.getBeginIndex());
+     TextLayout layout;
+     while (lineMeasurer.getPosition() < paragraph.getEndIndex()) {
+       layout = lineMeasurer.nextLayout(width);
+         //add 1 pixel padding per row
+         float layoutHeight = layout.getAscent() + layout.getDescent() + layout.getLeading() + 1;
+         height += layoutHeight;
+     }
+     //pad total by 4
+     return (int) height + 4;
+    }
 }
