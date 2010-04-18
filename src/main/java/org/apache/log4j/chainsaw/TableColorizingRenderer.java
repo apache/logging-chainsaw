@@ -180,7 +180,11 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
             int width = tableColumn.getWidth();
             int tableRowHeight = table.getRowHeight(row);
             Map paramMap = new HashMap();
-            paramMap.put(TextAttribute.FONT, msgRenderer.getFont());
+            //using font here causes text to be truncated (height is too small)..using family & a larger size (to ensure all text is displayed) instead
+            paramMap.put(TextAttribute.FAMILY, labelRenderer.getFont().getFamily());
+            //set size to size + 1.5 (will make sure long entries aren't truncated)
+            paramMap.put(TextAttribute.SIZE, new Float(labelRenderer.getFont().getSize() + 1.5));
+
             int preferredHeight = calculateHeight(table.getGraphics(), string, width, paramMap);
             if(preferredHeight != tableRowHeight) {
                 table.setRowHeight(row, preferredHeight);
@@ -370,8 +374,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
      TextLayout layout;
      while (lineMeasurer.getPosition() < paragraph.getEndIndex()) {
        layout = lineMeasurer.nextLayout(width);
-         //add 1 pixel padding per row
-         float layoutHeight = layout.getAscent() + layout.getDescent() + layout.getLeading() + 1;
+         float layoutHeight = layout.getAscent() + layout.getDescent() + layout.getLeading();
          height += layoutHeight;
      }
      //pad total by 4 or default row height
