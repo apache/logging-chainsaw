@@ -19,8 +19,8 @@ package org.apache.log4j.chainsaw;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
+import java.awt.Dimension;
+import java.awt.font.FontRenderContext;
 import java.awt.font.LineBreakMeasurer;
 import java.awt.font.TextAttribute;
 import java.awt.font.TextLayout;
@@ -36,9 +36,11 @@ import java.util.Set;
 import java.util.TimeZone;
 
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
@@ -66,7 +68,6 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private static final DateFormat DATE_FORMATTER = new SimpleDateFormat(Constants.SIMPLE_TIME_PATTERN);
   private static final Map iconMap = LevelIconFactory.getInstance().getLevelToIconMap();
   private RuleColorizer colorizer;
-  private final JLabel levelComponent = new JLabel();
   private boolean levelUseIcons = false;
   private boolean wrapMsg = false;
   private DateFormat dateFormatInUse = DATE_FORMATTER;
@@ -75,8 +76,8 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private String dateFormatTZ;
   private boolean useRelativeTimes = false;
   private long relativeTimestampBase;
+
   private static int borderWidth = 2;
-  private JTextArea msgRenderer = new JTextArea();
 
   private static Color borderColor = (Color)UIManager.get("Table.selectionBackground");
   private static final Border LEFT_BORDER = BorderFactory.createMatteBorder(borderWidth, borderWidth, borderWidth, 0, borderColor);
@@ -87,18 +88,38 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private static final Border MIDDLE_EMPTY_BORDER = BorderFactory.createEmptyBorder(borderWidth, 0, borderWidth, 0);
   private static final Border RIGHT_EMPTY_BORDER = BorderFactory.createEmptyBorder(borderWidth, 0, borderWidth, borderWidth);
 
+  private final JTextArea msgTextArea = new JTextArea();
+  private final JLabel levelLabel = new JLabel();
+  private final JLabel generalLabel = new JLabel();
+
+  private final JPanel msgPanel = new JPanel();
+  private final JPanel generalPanel = new JPanel();
+  private final JPanel levelPanel = new JPanel();
     /**
    * Creates a new TableColorizingRenderer object.
    */
   public TableColorizingRenderer(RuleColorizer colorizer) {
+    msgPanel.setLayout(new BoxLayout(msgPanel, BoxLayout.Y_AXIS));
+    generalPanel.setLayout(new BoxLayout(generalPanel, BoxLayout.Y_AXIS));
+    levelPanel.setLayout(new BoxLayout(levelPanel, BoxLayout.Y_AXIS));
+
+    msgPanel.setAlignmentX(TOP_ALIGNMENT);
+    generalPanel.setAlignmentX(TOP_ALIGNMENT);
+    levelPanel.setAlignmentX(TOP_ALIGNMENT);
+
+    generalLabel.setVerticalAlignment(SwingConstants.TOP);
+    levelLabel.setVerticalAlignment(SwingConstants.TOP);
+    levelLabel.setOpaque(true);
+    levelLabel.setText("");
+
+    msgTextArea.setMargin(null);
+    msgTextArea.setEditable(false);
+
+    msgPanel.add(msgTextArea);
+    generalPanel.add(generalLabel);
+    levelPanel.add(levelLabel);
+
     this.colorizer = colorizer;
-
-    levelComponent.setOpaque(true);
-    levelComponent.setVerticalAlignment(SwingConstants.TOP);
-
-    levelComponent.setText("");
-    levelComponent.setVerticalAlignment(SwingConstants.TOP);
-    msgRenderer.setEditable(false);
   }
 
   public void setToolTipsVisible(boolean toolTipsVisible) {
@@ -110,22 +131,11 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     int row, int col) {
     value = formatField(value);
 
-    JLabel labelRenderer = (JLabel)super.getTableCellRendererComponent(table, value,
+    JLabel label = (JLabel)super.getTableCellRendererComponent(table, value,
         isSelected, hasFocus, row, col);
-    labelRenderer.setVerticalAlignment(SwingConstants.TOP);
-    JComponent component;
     TableColumn tableColumn = table.getColumnModel().getColumn(col);
     //chainsawcolumns uses one-based indexing
     int colIndex = tableColumn.getModelIndex() + 1;
-
-    if(colIndex == ChainsawColumns.INDEX_MESSAGE_COL_NAME) {
-        msgRenderer.setFont(labelRenderer.getFont());
-        component = msgRenderer;
-    } else if (colIndex == ChainsawColumns.INDEX_LEVEL_COL_NAME) {
-        component = levelComponent;
-    } else {
-        component = labelRenderer;
-    }
 
     EventContainer container = (EventContainer) table.getModel();
     ExtendedLoggingEvent loggingEvent = container.getRow(row);
@@ -134,21 +144,17 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
     }
 
+    JComponent component = null;
     switch (colIndex) {
-    case ChainsawColumns.INDEX_ID_COL_NAME:
-      labelRenderer.setText(value.toString());
-      break;
-
     case ChainsawColumns.INDEX_THROWABLE_COL_NAME:
       if (value instanceof String[] && ((String[])value).length > 0){
-        labelRenderer.setText(((String[]) value)[0]);
+        generalLabel.setText(((String[]) value)[0]);
+      } else {
+        generalLabel.setText("");
       }
+      component = generalPanel;
       break;
-
     case ChainsawColumns.INDEX_LOGGER_COL_NAME:
-      if (loggerPrecision == 0) {
-        break;
-      }
       String logger = value.toString();
       int startPos = -1;
 
@@ -158,9 +164,10 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
           break;
         }
       }
-
-    labelRenderer.setText(logger.substring(startPos + 1));
+      generalLabel.setText(logger.substring(startPos + 1));
+      component = generalPanel;
       break;
+    case ChainsawColumns.INDEX_ID_COL_NAME:
     case ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME:
     case ChainsawColumns.INDEX_CLASS_COL_NAME:
     case ChainsawColumns.INDEX_FILE_COL_NAME:
@@ -169,53 +176,57 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     case ChainsawColumns.INDEX_THREAD_COL_NAME:
     case ChainsawColumns.INDEX_TIMESTAMP_COL_NAME:
     case ChainsawColumns.INDEX_METHOD_COL_NAME:
-      labelRenderer.setText(value.toString());
+      generalLabel.setText(value.toString());
+      component = generalPanel;
       break;
 
     case ChainsawColumns.INDEX_MESSAGE_COL_NAME:
         String string = value.toString().trim();
-        msgRenderer.setLineWrap(wrapMsg);
-        msgRenderer.setWrapStyleWord(wrapMsg);
-        if (wrapMsg && string.length() > 0) {
-            int width = tableColumn.getWidth();
-            int tableRowHeight = table.getRowHeight(row);
+        int width = tableColumn.getWidth();
+        msgTextArea.setLineWrap(wrapMsg);
+        msgTextArea.setWrapStyleWord(wrapMsg);
+        msgTextArea.setFont(label.getFont());
+        msgTextArea.setText(string);
+        int tableRowHeight = table.getRowHeight(row);
+        if (wrapMsg) {
             Map paramMap = new HashMap();
-            //using font here causes text to be truncated (height is too small)..using family & a larger size (to ensure all text is displayed) instead
-            paramMap.put(TextAttribute.FAMILY, labelRenderer.getFont().getFamily());
-            //set size to size + 1.5 (will make sure long entries aren't truncated)
-            paramMap.put(TextAttribute.SIZE, new Float(labelRenderer.getFont().getSize() + 1.5));
-
-            int preferredHeight = calculateHeight(table.getGraphics(), string, width, paramMap);
-            if(preferredHeight != tableRowHeight) {
-                table.setRowHeight(row, preferredHeight);
+            paramMap.put(TextAttribute.FONT, msgTextArea.getFont());
+            int calculatedHeight = calculateHeight(string, width, paramMap);
+            msgTextArea.setSize(new Dimension(width, calculatedHeight));
+            int msgPanelPrefHeight = msgPanel.getPreferredSize().height;
+            if(tableRowHeight < msgPanelPrefHeight/* && calculatedHeight > tableRowHeight*/) {
+                table.setRowHeight(row, Math.max(ChainsawConstants.DEFAULT_ROW_HEIGHT, msgPanelPrefHeight));
             }
-            msgRenderer.setText(string);
         } else {
-            msgRenderer.setText(string);
+            msgTextArea.setSize(new Dimension(width, ChainsawConstants.DEFAULT_ROW_HEIGHT));
+            int msgPanelPrefHeight = msgPanel.getPreferredSize().height;
+            table.setRowHeight(Math.max(ChainsawConstants.DEFAULT_ROW_HEIGHT, msgPanelPrefHeight));
         }
-    break;
+        component = msgPanel;
+        break;
     case ChainsawColumns.INDEX_LEVEL_COL_NAME:
       if (levelUseIcons) {
-        levelComponent.setIcon((Icon) iconMap.get(value.toString()));
+        levelLabel.setIcon((Icon) iconMap.get(value.toString()));
 
-        if (levelComponent.getIcon() != null) {
-          levelComponent.setText("");
+        if (levelLabel.getIcon() != null) {
+          levelLabel.setText("");
         }
         if (!toolTipsVisible) {
-          levelComponent.setToolTipText(value.toString());
+          levelLabel.setToolTipText(value.toString());
         }
       } else {
-        levelComponent.setIcon(null);
-        levelComponent.setText(value.toString());
+        levelLabel.setIcon(null);
+        levelLabel.setText(value.toString());
         if (!toolTipsVisible) {
-            levelComponent.setToolTipText(null);
+            levelLabel.setToolTipText(null);
         }
       }
       if (toolTipsVisible) {
-          levelComponent.setToolTipText(labelRenderer.getToolTipText());
+          levelLabel.setToolTipText(label.getToolTipText());
       }
-      levelComponent.setForeground(labelRenderer.getForeground());
-      levelComponent.setBackground(labelRenderer.getBackground());
+      levelLabel.setForeground(label.getForeground());
+      levelLabel.setBackground(label.getBackground());
+      component = levelPanel;
       break;
 
     //remaining entries are properties
@@ -232,8 +243,11 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
             }
         }
         if (thisProp != null) {
-            labelRenderer.setText(loggingEvent.getProperty(headerName));
+            generalLabel.setText(loggingEvent.getProperty(headerName));
+        } else {
+            generalLabel.setText("");
         }
+        component = generalPanel;
         break;
     }
 
@@ -263,6 +277,14 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     component.setBackground(background);
     component.setForeground(foreground);
 
+    //set the colors of the components inside 'component'
+    msgTextArea.setBackground(background);
+    msgTextArea.setForeground(foreground);
+    levelLabel.setBackground(background);
+    levelLabel.setForeground(foreground);
+    generalLabel.setBackground(background);
+    generalLabel.setForeground(foreground);
+
     if (isSelected) {
       if (col == 0) {
         component.setBorder(LEFT_BORDER);
@@ -280,7 +302,6 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         component.setBorder(MIDDLE_EMPTY_BORDER);
       }
     }
-
     return component;
   }
 
@@ -366,9 +387,12 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     useRelativeTimes = false;
   }
 
-   private int calculateHeight(Graphics g, String string, int width, Map paramMap) {
+   private int calculateHeight(String string, int width, Map paramMap) {
+     if (string.trim().length() == 0) {
+         return ChainsawConstants.DEFAULT_ROW_HEIGHT;
+     }
      AttributedCharacterIterator paragraph = new AttributedString(string, paramMap).getIterator();
-     LineBreakMeasurer lineMeasurer = new LineBreakMeasurer(paragraph, ((Graphics2D)g).getFontRenderContext());
+     LineBreakMeasurer lineMeasurer = new LineBreakMeasurer(paragraph, new FontRenderContext(null, true, true));
      float height = 0;
      lineMeasurer.setPosition(paragraph.getBeginIndex());
      TextLayout layout;
@@ -377,7 +401,6 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
          float layoutHeight = layout.getAscent() + layout.getDescent() + layout.getLeading();
          height += layoutHeight;
      }
-     //pad total by 4 or default row height
-     return Math.max(ChainsawConstants.DEFAULT_ROW_HEIGHT, (int) height + 4);
+     return Math.max(ChainsawConstants.DEFAULT_ROW_HEIGHT, (int) height);
     }
 }
