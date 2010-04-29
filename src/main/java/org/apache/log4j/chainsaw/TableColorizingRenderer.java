@@ -144,7 +144,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
     }
 
-    JComponent component = null;
+    JComponent component;
     switch (colIndex) {
     case ChainsawColumns.INDEX_THROWABLE_COL_NAME:
       if (value instanceof String[] && ((String[])value).length > 0){
@@ -197,10 +197,6 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
             if(tableRowHeight < msgPanelPrefHeight/* && calculatedHeight > tableRowHeight*/) {
                 table.setRowHeight(row, Math.max(ChainsawConstants.DEFAULT_ROW_HEIGHT, msgPanelPrefHeight));
             }
-        } else {
-            msgTextArea.setSize(new Dimension(width, ChainsawConstants.DEFAULT_ROW_HEIGHT));
-            int msgPanelPrefHeight = msgPanel.getPreferredSize().height;
-            table.setRowHeight(Math.max(ChainsawConstants.DEFAULT_ROW_HEIGHT, msgPanelPrefHeight));
         }
         component = msgPanel;
         break;
