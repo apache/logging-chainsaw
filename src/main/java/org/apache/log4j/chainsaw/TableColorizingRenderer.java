@@ -239,7 +239,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
             }
         }
         if (thisProp != null) {
-            generalLabel.setText(loggingEvent.getProperty(headerName));
+            generalLabel.setText(loggingEvent.getProperty(thisProp));
         } else {
             generalLabel.setText("");
         }
