@@ -243,7 +243,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
     private final JTextField timeZone = new JTextField(10);
     private final JRadioButton rdLevelIcons = new JRadioButton("Icons");
     private final JRadioButton rdLevelText = new JRadioButton("Text");
-    private final JCheckBox wrapMessage = new JCheckBox("Display entire message field in the table (multi-line rows)");
+    private final JCheckBox wrapMessage = new JCheckBox("Display entire message and marker text in the table (multi-line rows)");
     private JRadioButton rdLast;
 
     //~ Constructors ==========================================================

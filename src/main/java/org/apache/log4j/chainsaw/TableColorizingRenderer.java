@@ -69,7 +69,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private static final Map iconMap = LevelIconFactory.getInstance().getLevelToIconMap();
   private RuleColorizer colorizer;
   private boolean levelUseIcons = false;
-  private boolean wrapMsg = false;
+  private boolean wrap = false;
   private DateFormat dateFormatInUse = DATE_FORMATTER;
   private int loggerPrecision = 0;
   private boolean toolTipsVisible;
@@ -88,22 +88,21 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private static final Border MIDDLE_EMPTY_BORDER = BorderFactory.createEmptyBorder(borderWidth, 0, borderWidth, 0);
   private static final Border RIGHT_EMPTY_BORDER = BorderFactory.createEmptyBorder(borderWidth, 0, borderWidth, borderWidth);
 
-  private final JTextArea msgTextArea = new JTextArea();
   private final JLabel levelLabel = new JLabel();
   private final JLabel generalLabel = new JLabel();
 
-  private final JPanel msgPanel = new JPanel();
+  private final JPanel multiLinePanel = new JPanel();
   private final JPanel generalPanel = new JPanel();
   private final JPanel levelPanel = new JPanel();
     /**
    * Creates a new TableColorizingRenderer object.
    */
   public TableColorizingRenderer(RuleColorizer colorizer) {
-    msgPanel.setLayout(new BoxLayout(msgPanel, BoxLayout.Y_AXIS));
+    multiLinePanel.setLayout(new BoxLayout(multiLinePanel, BoxLayout.Y_AXIS));
     generalPanel.setLayout(new BoxLayout(generalPanel, BoxLayout.Y_AXIS));
     levelPanel.setLayout(new BoxLayout(levelPanel, BoxLayout.Y_AXIS));
 
-    msgPanel.setAlignmentX(TOP_ALIGNMENT);
+    multiLinePanel.setAlignmentX(TOP_ALIGNMENT);
     generalPanel.setAlignmentX(TOP_ALIGNMENT);
     levelPanel.setAlignmentX(TOP_ALIGNMENT);
 
@@ -112,10 +111,6 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     levelLabel.setOpaque(true);
     levelLabel.setText("");
 
-    msgTextArea.setMargin(null);
-    msgTextArea.setEditable(false);
-
-    msgPanel.add(msgTextArea);
     generalPanel.add(generalLabel);
     levelPanel.add(levelLabel);
 
@@ -130,10 +125,12 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     final JTable table, Object value, boolean isSelected, boolean hasFocus,
     int row, int col) {
     value = formatField(value);
+    TableColumn tableColumn = table.getColumnModel().getColumn(col);
 
+    //null unless needed
+    JTextArea multiLineTextArea = null;
     JLabel label = (JLabel)super.getTableCellRendererComponent(table, value,
         isSelected, hasFocus, row, col);
-    TableColumn tableColumn = table.getColumnModel().getColumn(col);
     //chainsawcolumns uses one-based indexing
     int colIndex = tableColumn.getModelIndex() + 1;
 
@@ -168,7 +165,6 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
       component = generalPanel;
       break;
     case ChainsawColumns.INDEX_ID_COL_NAME:
-    case ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME:
     case ChainsawColumns.INDEX_CLASS_COL_NAME:
     case ChainsawColumns.INDEX_FILE_COL_NAME:
     case ChainsawColumns.INDEX_LINE_COL_NAME:
@@ -180,25 +176,35 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
       component = generalPanel;
       break;
 
+    case ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME:
     case ChainsawColumns.INDEX_MESSAGE_COL_NAME:
-        String string = value.toString().trim();
         int width = tableColumn.getWidth();
-        msgTextArea.setLineWrap(wrapMsg);
-        msgTextArea.setWrapStyleWord(wrapMsg);
-        msgTextArea.setFont(label.getFont());
-        msgTextArea.setText(string);
+
+        String thisString = value.toString().trim();
         int tableRowHeight = table.getRowHeight(row);
-        if (wrapMsg) {
+        multiLineTextArea = new JTextArea();
+        multiLineTextArea.setMargin(null);
+        multiLineTextArea.setEditable(false);
+        multiLineTextArea.setLineWrap(wrap);
+        multiLineTextArea.setWrapStyleWord(wrap);
+        multiLineTextArea.setFont(label.getFont());
+        multiLineTextArea.setText(thisString);
+        multiLinePanel.removeAll();
+        multiLinePanel.add(multiLineTextArea);
+        if (wrap) {
             Map paramMap = new HashMap();
-            paramMap.put(TextAttribute.FONT, msgTextArea.getFont());
-            int calculatedHeight = calculateHeight(string, width, paramMap);
-            msgTextArea.setSize(new Dimension(width, calculatedHeight));
-            int msgPanelPrefHeight = msgPanel.getPreferredSize().height;
-            if(tableRowHeight < msgPanelPrefHeight/* && calculatedHeight > tableRowHeight*/) {
-                table.setRowHeight(row, Math.max(ChainsawConstants.DEFAULT_ROW_HEIGHT, msgPanelPrefHeight));
+            paramMap.put(TextAttribute.FONT, multiLineTextArea.getFont());
+
+            int calculatedHeight = calculateHeight(thisString, width, paramMap);
+            //set preferred size to default height
+            multiLineTextArea.setSize(new Dimension(width, calculatedHeight));
+
+            int multiLinePanelPrefHeight = multiLinePanel.getPreferredSize().height;
+            if(tableRowHeight < multiLinePanelPrefHeight) {
+                table.setRowHeight(row, Math.max(ChainsawConstants.DEFAULT_ROW_HEIGHT, multiLinePanelPrefHeight));
             }
         }
-        component = msgPanel;
+        component = multiLinePanel;
         break;
     case ChainsawColumns.INDEX_LEVEL_COL_NAME:
       if (levelUseIcons) {
@@ -274,8 +280,11 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     component.setForeground(foreground);
 
     //set the colors of the components inside 'component'
-    msgTextArea.setBackground(background);
-    msgTextArea.setForeground(foreground);
+    if (multiLineTextArea != null)
+    {
+        multiLineTextArea.setBackground(background);
+        multiLineTextArea.setForeground(foreground);
+    }
     levelLabel.setBackground(background);
     levelLabel.setForeground(foreground);
     generalLabel.setBackground(background);
@@ -352,7 +361,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     * @param wrapMsg
     */
    public void setWrapMessage(boolean wrapMsg) {
-     this.wrapMsg = wrapMsg;
+     this.wrap = wrapMsg;
    }
 
    /**

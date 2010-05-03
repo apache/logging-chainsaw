@@ -145,7 +145,8 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
 	      			} else if (previousSize > filteredList.size()) {
 	      				//less now..update and delete difference
 	      				fireTableRowsUpdated(0, filteredList.size() - 1);
-	      				fireTableRowsDeleted(filteredList.size(), previousSize);
+                        //swing bug exposed by variable height rows when calling fireTableRowsDeleted..use tabledatacchanged
+                        fireTableDataChanged();
 	      			} else if (previousSize < filteredList.size()) {
 	      				//more now..update and insert difference
                         if (previousSize > 0) {

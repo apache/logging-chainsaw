@@ -22,6 +22,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -1547,7 +1548,14 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   }
   
   private void scrollToBottom() {
-    table.scrollToRow(tableModel.getRowCount() - 1);
+    final int scrollRow = tableModel.getRowCount() - 1;
+    EventQueue.invokeLater(new Runnable()
+    {
+        public void run()
+        {
+            table.scrollToRow(scrollRow);
+        }
+    });
   }
 
   public void scrollToTop()
@@ -1636,9 +1644,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
           detailPaneUpdater.setSelectedRow(table.getSelectedRow());
         }
 
-        if (isScrollToBottom()) {
-          scrollToBottom();
-        } else if (selectedEvent != null) {
+        if (!isScrollToBottom() && selectedEvent != null) {
           final int newIndex = tableModel.getRowIndex(selectedEvent);
           if (newIndex >= 0) {
             // Don't scroll, just maintain selection...
@@ -3164,6 +3170,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                     }
                     invalidate();
                     repaint();
+                    if (isScrollToBottom()) {
+                        scrollToBottom();
+                    }
                 }
             });
         }
