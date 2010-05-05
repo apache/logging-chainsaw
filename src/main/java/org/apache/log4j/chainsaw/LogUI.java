@@ -497,7 +497,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
   private void initGUI() {
 
     setupHelpSystem();
-    statusBar = new ChainsawStatusBar();
+    statusBar = new ChainsawStatusBar(this);
     setupReceiverPanel();
 
     setToolBarAndMenus(new ChainsawToolBarAndMenus(this));
@@ -773,6 +773,17 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     getContentPane().setLayout(new BorderLayout());
 
     getTabbedPane().addChangeListener(getToolBarAndMenus());
+    getTabbedPane().addChangeListener(new ChangeListener()
+    {
+        public void stateChanged(ChangeEvent e)
+        {
+            LogPanel thisLogPanel = getCurrentLogPanel();
+            if (thisLogPanel != null)
+            {
+                thisLogPanel.updateStatusBar();
+            }
+        }
+    });
 
     KeyStroke ksRight =
       KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, Event.CTRL_MASK);

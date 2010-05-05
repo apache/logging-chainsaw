@@ -250,6 +250,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   private TableCellEditor markerCellEditor;
   private AutoFilterComboBox filterCombo;
   private JScrollPane eventsPane;
+  private int currentSearchMatchCount;
 
     /**
    * Creates a new LogPanel object.  If a LogPanel with this identifier has
@@ -610,7 +611,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         public void eventCountChanged(int currentCount, int totalCount) {
           if (LogPanel.this.isVisible()) {
             statusBar.setSelectedLine(
-              table.getSelectedRow() + 1, currentCount, totalCount);
+              table.getSelectedRow() + 1, currentCount, totalCount, getIdentifier());
           }
         }
       });
@@ -2015,7 +2016,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       findField.setBackground(UIManager.getColor("TextField.background"));
       findField.setToolTipText(
         "Enter expression - right click or ctrl-space for menu");
-      statusBar.setSearchMatchCount(0);
+      currentSearchMatchCount = 0;
+      statusBar.setSearchMatchCount(currentSearchMatchCount, getIdentifier());
     } else {
       //only turn off scrolltobottom when finding something (find not empty)
       preferenceModel.setScrollToBottom(false);
@@ -2028,17 +2030,18 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         findField.setToolTipText(
           "Enter expression - right click or ctrl-space for menu");
         findRule = ExpressionRule.getRule(ruleText);
-        int matchCount = tableModel.updateEventsWithFindRule(findRule);
+        currentSearchMatchCount = tableModel.updateEventsWithFindRule(findRule);
         colorizer.setFindRule(findRule);
         //valid expression, reset background color in case we were previously an invalid expression
         findField.setBackground(UIManager.getColor("TextField.background"));
-        statusBar.setSearchMatchCount(matchCount);
+        statusBar.setSearchMatchCount(currentSearchMatchCount, getIdentifier());
       } catch (IllegalArgumentException re) {
         findField.setToolTipText(re.getMessage());
         findField.setBackground(INVALID_EXPRESSION_BACKGROUND);
         colorizer.setFindRule(null);
         tableModel.updateEventsWithFindRule(null);
-        statusBar.setSearchMatchCount(0);
+        currentSearchMatchCount = 0;
+        statusBar.setSearchMatchCount(currentSearchMatchCount, getIdentifier());
       }
     }
   }
@@ -2336,13 +2339,14 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   /**
    * Update the status bar with current selected row and row count
    */
-  private void updateStatusBar() {
+  protected void updateStatusBar() {
     SwingHelper.invokeOnEDT(
       new Runnable() {
         public void run() {
           statusBar.setSelectedLine(
             table.getSelectedRow() + 1, tableModel.getRowCount(),
-            tableModel.size());
+            tableModel.size(), getIdentifier());
+          statusBar.setSearchMatchCount(currentSearchMatchCount, getIdentifier());
         }
       });
   }

@@ -936,7 +936,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
 
       pauseButton.getModel().setSelected(logPanel.isPaused());
       toggleCyclicButton.setSelected(logPanel.isCyclic());
-      logui.getStatusBar().setPaused(logPanel.isPaused());
+      logui.getStatusBar().setPaused(logPanel.isPaused(), logPanel.getIdentifier());
       toggleCyclicMenuItem.setSelected(logPanel.isCyclic());
       detailPaneButton.getModel().setSelected(logPanel.isDetailVisible());
       toggleLogTreeMenuItem.setSelected(logPanel.isLogTreeVisible());

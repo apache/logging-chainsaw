@@ -62,10 +62,11 @@ public class ChainsawStatusBar extends JPanel {
   private final NumberFormat nf = NumberFormat.getNumberInstance();
   private final Border statusBarComponentBorder =
     BorderFactory.createLineBorder(statusMsg.getBackground().darker());
+  private final LogUI logUI;
 
-  public ChainsawStatusBar() {
+    public ChainsawStatusBar(LogUI logUI) {
     setLayout(new GridBagLayout());
-
+    this.logUI = logUI;
     nf.setMaximumFractionDigits(0);
     nf.setMinimumFractionDigits(0);
     nf.setGroupingUsed(false);
@@ -237,37 +238,43 @@ public class ChainsawStatusBar extends JPanel {
   /**
    * Called when the paused state of the LogPanel has been updated
    * @param isPaused
+   * @param tabName
    */
-  void setPaused(final boolean isPaused) {
-    Runnable runnable =
-      new Runnable() {
-        public void run() {
-          pausedLabel.setIcon(isPaused ? pausedIcon : null);
-          pausedLabel.setToolTipText(
-            isPaused ? "This Log panel is currently paused"
-                     : "This Log panel is not paused");
-        }
+  void setPaused(final boolean isPaused, String tabName) {
+    if (tabName.equals(logUI.getActiveTabName())) {
+      Runnable runnable =
+        new Runnable() {
+          public void run() {
+              pausedLabel.setIcon(isPaused ? pausedIcon : null);
+              pausedLabel.setToolTipText(
+                isPaused ? "This Log panel is currently paused"
+                         : "This Log panel is not paused");
+          }
       };
-
-    SwingUtilities.invokeLater(runnable);
+      SwingUtilities.invokeLater(runnable);
+    }
   }
 
   void setSelectedLine(
-    final int selectedLine, final int lineCount, final int total) {
-    SwingUtilities.invokeLater(
-      new Runnable() {
-        public void run() {
-          lineSelectionLabel.setText(selectedLine+"");
-	      eventCountLabel.setText("Filtered/Total: " + lineCount + ":" + total);
-        }
-      });
+          final int selectedLine, final int lineCount, final int total, String tabName) {
+    if (tabName.equals(logUI.getActiveTabName())) {
+        SwingUtilities.invokeLater(
+          new Runnable() {
+            public void run() {
+              lineSelectionLabel.setText(selectedLine+"");
+              eventCountLabel.setText("Filtered/Total: " + lineCount + ":" + total);
+            }
+          });
+    }
   }
 
-  void setSearchMatchCount(int searchMatchCount) {
-      if (searchMatchCount == 0) {
-        searchMatchLabel.setText("");
-      } else {
-        searchMatchLabel.setText("Search matches: " + searchMatchCount);
+  void setSearchMatchCount(int searchMatchCount, String tabName) {
+      if (tabName.equals(logUI.getActiveTabName())) {
+          if (searchMatchCount == 0) {
+            searchMatchLabel.setText("");
+          } else {
+            searchMatchLabel.setText("Search matches: " + searchMatchCount);
+          }
       }
   }
 
