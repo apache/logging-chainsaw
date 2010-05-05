@@ -41,6 +41,7 @@ public class VFSLogFilePatternReceiverBeanInfo extends SimpleBeanInfo {
         new PropertyDescriptor("autoReconnect", VFSLogFilePatternReceiver.class),
         new PropertyDescriptor("waitMillis", VFSLogFilePatternReceiver.class),
         new PropertyDescriptor("appendNonMatches", VFSLogFilePatternReceiver.class),
+        new PropertyDescriptor("customLevelDefinitions", VFSLogFilePatternReceiver.class),
         new PropertyDescriptor(
           "filterExpression", VFSLogFilePatternReceiver.class),
           new PropertyDescriptor(
