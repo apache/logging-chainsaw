@@ -100,7 +100,7 @@ public interface EventContainer extends SortTableModel, LoggerNameModel {
    * @param startRow
    * @param searchForward
    */
-  int find(Rule rule, int startRow, boolean searchForward);
+  int locate(Rule rule, int startRow, boolean searchForward);
 
   /**
    * Returns a copied list of all the event in the model.
@@ -122,11 +122,6 @@ public interface EventContainer extends SortTableModel, LoggerNameModel {
    * Returns the vector representing the row.
    */
   ExtendedLoggingEvent getRow(int row);
-
-  /**
-   * Return the last added row.
-   */
-  int getLastAdded();
 
   /**
    * Adds a row to the model.

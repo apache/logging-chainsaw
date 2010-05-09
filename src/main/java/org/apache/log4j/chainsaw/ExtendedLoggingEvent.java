@@ -17,6 +17,8 @@
 package org.apache.log4j.chainsaw;
 
 import java.awt.Color;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.LoggingEvent;
@@ -27,6 +29,8 @@ public class ExtendedLoggingEvent extends LoggingEvent
     private Color colorRuleForeground = ChainsawConstants.COLOR_DEFAULT_FOREGROUND;
 
     private boolean searchMatch = false;
+    //a Map of event fields to Sets of string matches (can be used to render matches differently)
+    Map eventMatches = new HashMap();
 
     //copy constructor
     public ExtendedLoggingEvent(LoggingEvent e) {
@@ -44,9 +48,14 @@ public class ExtendedLoggingEvent extends LoggingEvent
     }
 
     public void evaluateSearchRule(Rule searchRule) {
-        searchMatch = searchRule != null && searchRule.evaluate(this);
+        eventMatches.clear();
+        searchMatch = searchRule != null && searchRule.evaluate(this, eventMatches);
     }
 
+    public Map getSearchMatches() {
+        return eventMatches;
+    }
+    
     public Color getForeground() {
         return searchMatch ? ChainsawConstants.FIND_LOGGER_FOREGROUND : colorRuleForeground;
     }

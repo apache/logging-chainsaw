@@ -75,6 +75,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
 
   //  protected final Object syncLock = new Object();
   private final LoggerNameModel loggerNameModelDelegate = new LoggerNameModelSupport();
+  private final Object mutex = new Object();
 
   //because we may be using a cyclic buffer, if an ID is not provided in the property, 
   //use and increment this row counter as the ID for each received row
@@ -103,17 +104,19 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   }
 
   public List getMatchingEvents(Rule rule) {
+
     List list = new ArrayList();
+    List unfilteredCopy;
+    synchronized (mutex) {
+        unfilteredCopy = new ArrayList(unfilteredList);
+    }
+    Iterator iter = unfilteredCopy.iterator();
 
-    synchronized (unfilteredList) {
-      Iterator iter = unfilteredList.iterator();
+    while (iter.hasNext()) {
+      LoggingEvent event = (LoggingEvent) iter.next();
 
-      while (iter.hasNext()) {
-        LoggingEvent event = (LoggingEvent) iter.next();
-
-        if (rule.evaluate(event)) {
-          list.add(event);
-        }
+      if (rule.evaluate(event, null)) {
+        list.add(event);
       }
     }
 
@@ -121,38 +124,43 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   }
 
   public void reFilter() {
-    synchronized (unfilteredList) {
-      final int previousSize = filteredList.size();
-      try {
-        filteredList.clear();
+    final int previousSize;
+    final int newSize;
+          synchronized (mutex) {
+            previousSize = filteredList.size();
+            filteredList.clear();
+            if (displayRule == null) {
+                filteredList.addAll(unfilteredList);
+            } else {
+                Iterator iter = unfilteredList.iterator();
 
-        Iterator iter = unfilteredList.iterator();
+                while (iter.hasNext()) {
+                  LoggingEvent e = (LoggingEvent) iter.next();
 
-        while (iter.hasNext()) {
-          LoggingEvent e = (LoggingEvent) iter.next();
-
-          if ((displayRule == null) || (displayRule.evaluate(e))) {
-            filteredList.add(e);
+                  if (displayRule.evaluate(e, null)) {
+                    filteredList.add(e);
+                  }
+                }
+            }
+            newSize = filteredList.size();
           }
-        }
-      } finally {
       	SwingHelper.invokeOnEDT(new Runnable() {
       		public void run() {
-      			if (filteredList.size() > 0) {
-	      			if (previousSize == filteredList.size()) {
+      			if (newSize > 0) {
+	      			if (previousSize == newSize) {
 	      				//same - update all
-	      				fireTableRowsUpdated(0, filteredList.size() - 1);
-	      			} else if (previousSize > filteredList.size()) {
+	      				fireTableRowsUpdated(0, newSize - 1);
+	      			} else if (previousSize > newSize) {
 	      				//less now..update and delete difference
-	      				fireTableRowsUpdated(0, filteredList.size() - 1);
+	      				fireTableRowsUpdated(0, newSize - 1);
                         //swing bug exposed by variable height rows when calling fireTableRowsDeleted..use tabledatacchanged
                         fireTableDataChanged();
-	      			} else if (previousSize < filteredList.size()) {
+	      			} else if (previousSize < newSize) {
 	      				//more now..update and insert difference
                         if (previousSize > 0) {
 	      				    fireTableRowsUpdated(0, previousSize - 1);
                         }
-	      				fireTableRowsInserted(Math.max(0, previousSize), filteredList.size() - 1);
+	      				fireTableRowsInserted(Math.max(0, previousSize), newSize - 1);
 	      			}
       			} else {
       				//no rows to show
@@ -160,38 +168,38 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
       			}
 	      	notifyCountListeners();
       	}});
-      }
-    }
   }
 
-  public int find(Rule rule, int startLocation, boolean searchForward) {
-    synchronized (filteredList) {
+  public int locate(Rule rule, int startLocation, boolean searchForward) {
+    List filteredListCopy;
+    synchronized (mutex) {
+      filteredListCopy = new ArrayList(filteredList);
+    }
       if (searchForward) {
-        for (int i = startLocation; i < filteredList.size(); i++) {
-          if (rule.evaluate((LoggingEvent) filteredList.get(i))) {
+        for (int i = startLocation; i < filteredListCopy.size(); i++) {
+          if (rule.evaluate((LoggingEvent) filteredListCopy.get(i), null)) {
             return i;
           }
         }
         //if there was no match, start at row zero and go to startLocation
         for (int i = 0; i < startLocation; i++) {
-          if (rule.evaluate((LoggingEvent) filteredList.get(i))) {
+          if (rule.evaluate((LoggingEvent) filteredListCopy.get(i), null)) {
             return i;
           }
         }
       } else {
         for (int i = startLocation; i > -1; i--) {
-          if (rule.evaluate((LoggingEvent) filteredList.get(i))) {
+          if (rule.evaluate((LoggingEvent) filteredListCopy.get(i), null)) {
             return i;
           }
         }
         //if there was no match, start at row list.size() - 1 and go to startLocation
-        for (int i = filteredList.size() - 1; i > startLocation; i--) {
-          if (rule.evaluate((LoggingEvent) filteredList.get(i))) {
+        for (int i = filteredListCopy.size() - 1; i > startLocation; i--) {
+          if (rule.evaluate((LoggingEvent) filteredListCopy.get(i), null)) {
             return i;
           }
         }
       }
-    }
 
     return -1;
   }
@@ -238,9 +246,15 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
       (EventCountListener[]) eventListenerList.getListeners(
         EventCountListener.class);
 
+    int filteredListSize;
+    int unfilteredListSize;
+    synchronized (mutex) {
+        filteredListSize = filteredList.size();
+        unfilteredListSize = unfilteredList.size();
+    }
     for (int i = 0; i < listeners.length; i++) {
       listeners[i].eventCountChanged(
-        filteredList.size(), unfilteredList.size());
+        filteredListSize, unfilteredListSize);
     }
   }
 
@@ -269,21 +283,26 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
      * @see org.apache.log4j.chainsaw.EventContainer#sort()
      */
   public void sort() {
-    if (sortEnabled && filteredList.size() > 0) {
-      synchronized (filteredList) {
-        Collections.sort(
-          filteredList,
-          new ColumnComparator(
-            getColumnName(currentSortColumn), currentSortColumn,
-            currentSortAscending));
+      boolean sort;
+      final int filteredListSize;
+      synchronized (mutex) {
+          filteredListSize = filteredList.size();
+          sort = (sortEnabled && filteredListSize > 0);
+        if (sort) {
+            Collections.sort(
+              filteredList,
+              new ColumnComparator(
+                getColumnName(currentSortColumn), currentSortColumn,
+                currentSortAscending));
+        }
       }
-
-     	SwingHelper.invokeOnEDT(new Runnable() {
-     		public void run() {
-      			fireTableRowsUpdated(0, Math.max(filteredList.size() - 1, 0));
-      		}
-      	});
-    }
+      if (sort) {
+        SwingHelper.invokeOnEDT(new Runnable() {
+            public void run() {
+                fireTableRowsUpdated(0, Math.max(filteredListSize - 1, 0));
+            }
+        });
+      }
   }
 
   public boolean isSortEnabled() {
@@ -304,7 +323,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   public void clearModel() {
     reachedCapacity = false;
 
-    synchronized (unfilteredList) {
+    synchronized (mutex) {
       unfilteredList.clear();
       filteredList.clear();
       uniqueRow = 0;
@@ -320,43 +339,42 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   }
 
   public List getAllEvents() {
-    List list = new ArrayList(unfilteredList.size());
-
-    synchronized (unfilteredList) {
-      list.addAll(unfilteredList);
-    }
-
-    return list;
+      synchronized (mutex) {
+          return new ArrayList(unfilteredList);
+      }
   }
   
   
   public List getFilteredEvents() {
-  	List list = new ArrayList(filteredList.size());
-  	
-  	synchronized (filteredList) {
-  		list.addAll(filteredList);
+
+  	synchronized (mutex) {
+  		return new ArrayList(filteredList);
   	}
-  	
-  	return list;
   }
   
   public int getRowIndex(LoggingEvent e) {
-    synchronized (filteredList) {
+    synchronized (mutex) {
       return filteredList.indexOf(e);
     }
   }
 
     public void removePropertyFromEvents(String propName) {
         //first remove the event from any displayed events, so we can fire row updated event
-        for (int i=0;i<filteredList.size();i++) {
-            LoggingEvent event = (LoggingEvent)filteredList.get(i);
+        List filteredListCopy;
+        List unfilteredListCopy;
+        synchronized(mutex) {
+            filteredListCopy = new ArrayList(filteredList);
+            unfilteredListCopy = new ArrayList(unfilteredList);
+        }
+        for (int i=0;i<filteredListCopy.size();i++) {
+            LoggingEvent event = (LoggingEvent)filteredListCopy.get(i);
             Object result = event.removeProperty(propName);
             if (result != null) {
                 fireRowUpdated(i, false);
             }
         }
         //now remove the event from all events
-        for (Iterator iter = unfilteredList.iterator();iter.hasNext();) {
+        for (Iterator iter = unfilteredListCopy.iterator();iter.hasNext();) {
             LoggingEvent event = (LoggingEvent)iter.next();
             event.removeProperty(propName);
         }
@@ -364,7 +382,11 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
 
     public int updateEventsWithFindRule(Rule findRule) {
         int count = 0;
-        for (Iterator iter = unfilteredList.iterator();iter.hasNext();) {
+        List unfilteredListCopy;
+        synchronized(mutex) {
+            unfilteredListCopy = new ArrayList(unfilteredList);
+        }
+        for (Iterator iter = unfilteredListCopy.iterator();iter.hasNext();) {
             ExtendedLoggingEvent extendedLoggingEvent = (ExtendedLoggingEvent) iter.next();
             extendedLoggingEvent.evaluateSearchRule(findRule);
             if (extendedLoggingEvent.isSearchMatch()) {
@@ -375,10 +397,13 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     }
 
     public int findColoredRow(int startLocation, boolean searchForward) {
-        synchronized (filteredList) {
+        List filteredListCopy;
+        synchronized (mutex) {
+            filteredListCopy = new ArrayList(filteredList);
+        }
         if (searchForward) {
-          for (int i = startLocation; i < filteredList.size(); i++) {
-            ExtendedLoggingEvent event = (ExtendedLoggingEvent)filteredList.get(i);
+          for (int i = startLocation; i < filteredListCopy.size(); i++) {
+            ExtendedLoggingEvent event = (ExtendedLoggingEvent)filteredListCopy.get(i);
             if (!event.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND) ||
                     !event.getColorRuleForeground().equals(ChainsawConstants.COLOR_DEFAULT_FOREGROUND)) {
                 return i;
@@ -386,7 +411,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
           }
           //searching forward, no colorized event was found - now start at row zero and go to startLocation
           for (int i = 0; i < startLocation; i++) {
-            ExtendedLoggingEvent event = (ExtendedLoggingEvent)filteredList.get(i);
+            ExtendedLoggingEvent event = (ExtendedLoggingEvent)filteredListCopy.get(i);
             if (!event.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND) ||
                     !event.getColorRuleForeground().equals(ChainsawConstants.COLOR_DEFAULT_FOREGROUND)) {
                 return i;
@@ -394,22 +419,21 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
           }
         } else {
           for (int i = startLocation; i > -1; i--) {
-              ExtendedLoggingEvent event = (ExtendedLoggingEvent)filteredList.get(i);
+              ExtendedLoggingEvent event = (ExtendedLoggingEvent)filteredListCopy.get(i);
               if (!event.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND) ||
                       !event.getColorRuleForeground().equals(ChainsawConstants.COLOR_DEFAULT_FOREGROUND)) {
                   return i;
             }
           }
           //searching backward, no colorized event was found - now start at list.size() - 1 and go to startLocation
-          for (int i = filteredList.size() - 1; i > startLocation; i--) {
-              ExtendedLoggingEvent event = (ExtendedLoggingEvent)filteredList.get(i);
+          for (int i = filteredListCopy.size() - 1; i > startLocation; i--) {
+              ExtendedLoggingEvent event = (ExtendedLoggingEvent)filteredListCopy.get(i);
               if (!event.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND) ||
                       !event.getColorRuleForeground().equals(ChainsawConstants.COLOR_DEFAULT_FOREGROUND)) {
                   return i;
             }
           }
         }
-      }
 
       return -1;
     }
@@ -423,7 +447,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   }
 
   public ExtendedLoggingEvent getRow(int row) {
-    synchronized (filteredList) {
+    synchronized (mutex) {
       if (row < filteredList.size()) {
         return (ExtendedLoggingEvent) filteredList.get(row);
       }
@@ -433,7 +457,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   }
 
   public int getRowCount() {
-    synchronized (filteredList) {
+    synchronized (mutex) {
       return filteredList.size();
     }
   }
@@ -441,7 +465,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   public Object getValueAt(int rowIndex, int columnIndex) {
     LoggingEvent event = null;
 
-    synchronized (filteredList) {
+    synchronized (mutex) {
       if (rowIndex < filteredList.size() && rowIndex > -1) {
         event = (LoggingEvent) filteredList.get(rowIndex);
       }
@@ -455,11 +479,6 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
 
     if (event.locationInformationExists()) {
       info = event.getLocationInformation();
-    }
-
-    if (event == null) {
-      logger.error("Invalid rowindex=" + rowIndex);
-      throw new NullPointerException("Invalid rowIndex=" + rowIndex);
     }
 
     switch (columnIndex + 1) {
@@ -499,25 +518,25 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
 
     case ChainsawColumns.INDEX_CLASS_COL_NAME:
       return ((info == null)
-      || ((info != null) && "?".equals(info.getClassName()))) ? ""
+      || ("?".equals(info.getClassName()))) ? ""
                                                               : info
       .getClassName();
 
     case ChainsawColumns.INDEX_FILE_COL_NAME:
       return ((info == null)
-      || ((info != null) && "?".equals(info.getFileName()))) ? ""
+      || ("?".equals(info.getFileName()))) ? ""
                                                              : info
       .getFileName();
 
     case ChainsawColumns.INDEX_LINE_COL_NAME:
       return ((info == null)
-      || ((info != null) && "?".equals(info.getLineNumber()))) ? ""
+      || ("?".equals(info.getLineNumber()))) ? ""
                                                                : info
       .getLineNumber();
 
     case ChainsawColumns.INDEX_METHOD_COL_NAME:
       return ((info == null)
-      || ((info != null) && "?".equals(info.getMethodName()))) ? ""
+      || ("?".equals(info.getMethodName()))) ? ""
                                                                : info
       .getMethodName();
 
@@ -553,20 +572,18 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
          * Set so we are not keeping track of IDs for all events ever received (we'd run out of
          * memory...)
          */
-    if (isCyclic()) {
+    synchronized(mutex) {
+        if (isCyclic()) {
             CyclicBufferList bufferList = (CyclicBufferList) unfilteredList;
             if (bufferList.size() == bufferList.getMaxSize()) {
-                ExtendedLoggingEvent aboutToBeDropped = (ExtendedLoggingEvent) unfilteredList.get(0);
                 reachedCapacity = true;
             }
-    }
-    unfilteredList.add(e);
-
-    if ((displayRule == null) || (displayRule.evaluate(e))) {
-      synchronized (filteredList) {
-        filteredList.add(e);
-        rowAdded = true;
-      }
+        }
+        unfilteredList.add(e);
+        if ((displayRule == null) || (displayRule.evaluate(e, null))) {
+            filteredList.add(e);
+            rowAdded = true;
+        }
     }
 
     checkForNewColumn(e);
@@ -600,18 +617,6 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         }
       }
    }
-
-    public int getLastAdded() {
-    int last = 0;
-
-    if (cyclic) {
-      last = ((CyclicBufferList) filteredList).getLast() - 1;
-    } else {
-      last = filteredList.size() - 1;
-    }
-
-    return Math.max(0, last);
-  }
 
   public void fireTableEvent(final int begin, final int end, final int count) {
   	SwingHelper.invokeOnEDT(new Runnable() {
@@ -749,7 +754,9 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
    * @see org.apache.log4j.chainsaw.EventContainer#size()
    */
   public int size() {
-    return unfilteredList.size();
+    synchronized(mutex) {
+      return unfilteredList.size();
+    }
   }
 
   private class ModelChanger implements PropertyChangeListener {
@@ -766,7 +773,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
               int index = 0;
 
               try {
-                synchronized (unfilteredList) {
+                synchronized (mutex) {
                   monitor =
                     new ProgressMonitor(
                       null, "Switching models...",

@@ -439,6 +439,16 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         }
       });
 
+      preferenceModel.addPropertyChangeListener(
+        "highlightSearchMatchText",
+        new PropertyChangeListener() {
+          public void propertyChange(PropertyChangeEvent evt) {
+            renderer.setHighlightSearchMatchText(
+              ((Boolean) evt.getNewValue()).booleanValue());
+            table.tableChanged(new TableModelEvent(tableModel));
+          }
+        });
+
     preferenceModel.addPropertyChangeListener(
       "detailPaneVisible",
       new PropertyChangeListener() {
@@ -1972,7 +1982,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
    * @return row number or -1 if row with log4jid property with that number was not found
    */
   int setSelectedEvent(int eventNumber) {
-      int row = tableModel.find(ExpressionRule.getRule("prop.log4jid == " + eventNumber), 0, true);
+      int row = tableModel.locate(ExpressionRule.getRule("prop.log4jid == " + eventNumber), 0, true);
       if (row > -1) {
         preferenceModel.setScrollToBottom(false);
 
@@ -2412,7 +2422,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
     if (findRule != null) {
       try {
-        int nextRow = tableModel.find(findRule, table.getSelectedRow() + 1, true);
+        int filteredEventsSize = getFilteredEvents().size();
+        int startRow = table.getSelectedRow() + 1;
+          if (startRow > filteredEventsSize - 1) {
+              startRow = 0;
+          }
+        //no selected row would return -1, so we'd start at row zero
+        int nextRow = tableModel.locate(findRule, startRow, true);
 
         if (nextRow > -1) {
           table.scrollToRow(nextRow);
@@ -2435,8 +2451,12 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
     if (findRule != null) {
       try {
-        final int previousRow =
-          tableModel.find(findRule, table.getSelectedRow() - 1, false);
+        int startRow = table.getSelectedRow() - 1;
+        int filteredEventsSize = getFilteredEvents().size();
+        if (startRow < 0) {
+            startRow = filteredEventsSize - 1;
+        }
+        final int previousRow = tableModel.locate(findRule, startRow, false);
 
         if (previousRow > -1) {
           table.scrollToRow(previousRow);
@@ -2504,6 +2524,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     }
     preferenceModel.setDetailPaneVisible(event.asBoolean("detailPaneVisible"));
     preferenceModel.setLogTreePanelVisible(event.asBoolean("logTreePanelVisible"));
+    preferenceModel.setHighlightSearchMatchText(event.asBoolean("highlightSearchMatchText"));
     //re-add columns to the table in the order provided from the list
     for (Iterator iter = sortedColumnList.iterator(); iter.hasNext();) {
       TableColumn element = (TableColumn) iter.next();
@@ -2591,7 +2612,12 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   }
 
     public void findNextMarker() {
-      final int nextRow = tableModel.find(findMarkerRule, table.getSelectedRow() + 1, true);
+      int startRow = table.getSelectedRow() + 1;
+      int filteredEventsSize = getFilteredEvents().size();
+      if (startRow > filteredEventsSize - 1) {
+          startRow = 0;
+      }
+      final int nextRow = tableModel.locate(findMarkerRule, startRow, true);
 
       if (nextRow > -1) {
         table.scrollToRow(nextRow);
@@ -2599,7 +2625,12 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     }
 
     public void findPreviousMarker() {
-        final int previousRow = tableModel.find(findMarkerRule, table.getSelectedRow() - 1, false);
+        int startRow = table.getSelectedRow() - 1;
+        int filteredEventsSize = getFilteredEvents().size();
+        if (startRow < 0) {
+            startRow = filteredEventsSize - 1;
+        }
+        final int previousRow = tableModel.locate(findMarkerRule, startRow, false);
 
         if (previousRow > -1) {
           table.scrollToRow(previousRow);
@@ -2669,9 +2700,15 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                   // they stopped typing recently, but have stopped for at least
                   // 1 sample period. lets apply the filter
                   //                logger.debug("Typed something recently applying filter");
-                  if (filterText != null && (!(filterText.getText().equals(lastFilterText)))) {
+                  if (!(filterText.getText().equals(lastFilterText))) {
                     lastFilterText = filterText.getText();
-                    setFilter();
+                    EventQueue.invokeLater(new Runnable()
+                    {
+                        public void run()
+                        {
+                            setFilter();
+                        }
+                    });
                   }
                 } else {
                   // they stopped typing a while ago, let's forget about it
@@ -2929,7 +2966,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 				      	SwingHelper.invokeOnEDT(new Runnable() {
 				      		public void run() {
 				      			detail.setDocument(doc);
-                                JEditorPaneFormatter.applySystemFontAndSize(detail);
+                                JTextComponentFormatter.applySystemFontAndSize(detail);
 				      			detail.setCaretPosition(0);
                                 lastRow = selectedRow;
 				      		}
@@ -2946,7 +2983,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 		      	SwingHelper.invokeOnEDT(new Runnable() {
 		      		public void run() {
 		      			detail.setDocument(doc);
-                        JEditorPaneFormatter.applySystemFontAndSize(detail);
+                        JTextComponentFormatter.applySystemFontAndSize(detail);
 		      			detail.setCaretPosition(0);
                         lastRow = selectedRow;
 		      		}

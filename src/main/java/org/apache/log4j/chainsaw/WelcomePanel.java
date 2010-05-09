@@ -74,7 +74,7 @@ public class WelcomePanel extends JPanel {
         textInfo.setEditable(false);
         textInfo.setPreferredSize(new Dimension(320, 240));
         textInfo.setPage(helpURL);
-        JEditorPaneFormatter.applySystemFontAndSize(textInfo);
+        JTextComponentFormatter.applySystemFontAndSize(textInfo);
         textInfo.addHyperlinkListener(
           new HyperlinkListener() {
             public void hyperlinkUpdate(HyperlinkEvent e) {
@@ -104,7 +104,7 @@ public class WelcomePanel extends JPanel {
             urlStack.push(textInfo.getPage());
             textInfo.setPage(url);
             //not all pages displayed in the Welcome Panel are html-based (example receiver config is an xml file)..
-            JEditorPaneFormatter.applySystemFontAndSize(textInfo);
+            JTextComponentFormatter.applySystemFontAndSize(textInfo);
             urlToolbar.updateToolbar();
           } catch (IOException e) {
             e.printStackTrace();

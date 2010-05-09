@@ -19,6 +19,7 @@ package org.apache.log4j.chainsaw;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Map;
 
 import org.apache.log4j.rule.AbstractRule;
 import org.apache.log4j.rule.Rule;
@@ -56,11 +57,12 @@ public class RuleMediator extends AbstractRule implements Rule {
   /* (non-Javadoc)
    * @see org.apache.log4j.chainsaw.rule.Rule#evaluate(org.apache.log4j.spi.LoggingEvent)
    */
-  public boolean evaluate(LoggingEvent e) {
+  public boolean evaluate(LoggingEvent e, Map matches) {
     boolean accepts = true;
 
+    //no need to have rulemediator build matches
     if (inclusionRule != null) {
-      accepts = inclusionRule.evaluate(e);
+      accepts = inclusionRule.evaluate(e, null);
     }
 
     if (!accepts) {
@@ -68,7 +70,7 @@ public class RuleMediator extends AbstractRule implements Rule {
     }
 
     if (loggerRule != null) {
-      accepts = loggerRule.evaluate(e);
+      accepts = loggerRule.evaluate(e, null);
     }
 
     if (!accepts) {
@@ -76,7 +78,7 @@ public class RuleMediator extends AbstractRule implements Rule {
     }
 
     if (refinementRule != null) {
-      accepts = refinementRule.evaluate(e);
+      accepts = refinementRule.evaluate(e, null);
     }
 
     if (!accepts) {
@@ -84,7 +86,7 @@ public class RuleMediator extends AbstractRule implements Rule {
     }
 
     if (exclusionRule != null) {
-      accepts = exclusionRule.evaluate(e);
+      accepts = exclusionRule.evaluate(e, null);
     }
 
     return accepts;

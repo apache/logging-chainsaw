@@ -40,6 +40,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
@@ -158,7 +159,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     setLayout(new BorderLayout());
 
     ruleDelegate = new AbstractRule() {
-    	public boolean evaluate(LoggingEvent e)
+    	public boolean evaluate(LoggingEvent e, Map matches)
         {
           String currentlySelectedLoggerName = getCurrentlySelectedLoggerName();
           boolean hidden = e.getLoggerName() != null && isHidden(e.getLoggerName());
@@ -180,7 +181,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     colorRuleDelegate = 
         new AbstractRule()
         {
-          public boolean evaluate(LoggingEvent e)
+          public boolean evaluate(LoggingEvent e, Map matches)
           {
             boolean hidden = e.getLoggerName() != null && isHidden(e.getLoggerName());
             String currentlySelectedLoggerName = getCurrentlySelectedLoggerName();
@@ -380,11 +381,13 @@ final class LoggerNameTreePanel extends JPanel implements Rule
    *
    * @param e DOCUMENT ME!
    *
+   * @param matches
    * @return DOCUMENT ME!
    */
-  public boolean evaluate(LoggingEvent e)
+  public boolean evaluate(LoggingEvent e, Map matches)
   {
-    return ruleDelegate.evaluate(e);
+    //no need for logger to build matches
+    return ruleDelegate.evaluate(e, null);
   }
   
   public Rule getLoggerColorRule() {

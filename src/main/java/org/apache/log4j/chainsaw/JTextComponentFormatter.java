@@ -18,17 +18,18 @@ package org.apache.log4j.chainsaw;
 
 import java.awt.Font;
 
-import javax.swing.JEditorPane;
 import javax.swing.UIManager;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.html.HTMLDocument;
 
 /**
  * Apply system font and size (normal size + 1) rule if the JEditorPane document contains html.
  */
-public class JEditorPaneFormatter {
-    public static void applySystemFontAndSize(JEditorPane editorPane) {
-        Document document = editorPane.getDocument();
+public class JTextComponentFormatter
+{
+    public static void applySystemFontAndSize(JTextComponent textComponent) {
+        Document document = textComponent.getDocument();
         if (document instanceof HTMLDocument) {
           Font font = UIManager.getFont("Label.font");
           String bodyRule = "body { font-family: " + font.getFamily() + "; font-size: " + (font.getSize() + 1) + "pt; }";

@@ -81,6 +81,7 @@ public class LogPanelPreferenceModel implements Serializable{
   private Collection hiddenLoggers = new HashSet();
   private String timeZone;
   private boolean wrapMsg;
+  private boolean highlightSearchMatchText;
 
     /**
    * Returns an <b>unmodifiable</b> list of the columns.
@@ -220,6 +221,7 @@ public class LogPanelPreferenceModel implements Serializable{
     setDateFormatPattern(model.getDateFormatPattern());
     setLevelIcons(model.isLevelIcons());
     setWrapMessage(model.isWrapMessage());
+    setHighlightSearchMatchText(model.isHighlightSearchMatchText());
     setTimeZone(model.getTimeZone());
     setToolTips(model.isToolTips());
     setScrollToBottom(model.isScrollToBottom());
@@ -254,6 +256,10 @@ public class LogPanelPreferenceModel implements Serializable{
     return wrapMsg;
   }
 
+  public boolean isHighlightSearchMatchText() {
+    return highlightSearchMatchText;
+  }
+
   /**
    * @param levelIcons
    */
@@ -269,6 +275,15 @@ public class LogPanelPreferenceModel implements Serializable{
     this.wrapMsg = wrapMsg;
     propertySupport.firePropertyChange("wrapMessage", !wrapMsg, wrapMsg);
   }
+
+    /**
+     * @param highlightSearchMatchText
+     */
+    public void setHighlightSearchMatchText(boolean highlightSearchMatchText) {
+      this.highlightSearchMatchText = highlightSearchMatchText;
+      propertySupport.firePropertyChange("highlightSearchMatchText", !highlightSearchMatchText, highlightSearchMatchText);
+    }
+
   /**
    * @param loggerPrecision - an integer representing the number of packages to display, 
    * or an empty string representing 'display all packages' 

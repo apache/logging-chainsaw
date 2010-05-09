@@ -26,7 +26,6 @@ import java.util.Map;
 import javax.swing.event.EventListenerList;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.LogManager;
-import org.apache.log4j.MDC;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.net.SocketReceiver;
 import org.apache.log4j.rule.ExpressionRule;
@@ -291,7 +290,7 @@ public class ChainsawAppenderHandler extends AppenderSkeleton {
                   .hasNext();) {
                 Map.Entry entry = (Map.Entry) itery.next();
                 Rule rule = (Rule) entry.getValue();
-                if (rule.evaluate(e)) {
+                if (rule.evaluate(e, null)) {
                   eventBatch.addEvent((String) entry.getKey(), e);
                 }
               }

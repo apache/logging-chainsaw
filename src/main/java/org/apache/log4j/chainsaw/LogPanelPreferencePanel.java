@@ -244,6 +244,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
     private final JRadioButton rdLevelIcons = new JRadioButton("Icons");
     private final JRadioButton rdLevelText = new JRadioButton("Text");
     private final JCheckBox wrapMessage = new JCheckBox("Display entire message and marker text in the table (multi-line rows)");
+    private final JCheckBox highlightSearchMatchText = new JCheckBox("Highlight search match text");
     private JRadioButton rdLast;
 
     //~ Constructors ==========================================================
@@ -364,6 +365,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
 
       add(levelFormatPanel);
       add(wrapMessage);
+      add(highlightSearchMatchText);
 
       JPanel loggerFormatPanel = new JPanel();
       loggerFormatPanel.setLayout(
@@ -512,6 +514,17 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
       };
 
       wrapMessage.addActionListener(wrapMessageListener);
+
+      ActionListener highlightSearchMatchTextListener = new ActionListener()
+      {
+          public void actionPerformed(ActionEvent e)
+          {
+              preferenceModel.setHighlightSearchMatchText(highlightSearchMatchText.isSelected());
+          }
+      };
+
+      highlightSearchMatchText.addActionListener(highlightSearchMatchTextListener);
+
       rdLevelIcons.addActionListener(levelIconListener);
       rdLevelText.addActionListener(levelIconListener);
 
@@ -535,6 +548,17 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
               wrapMessage.setSelected(value);
             }
           });
+
+        preferenceModel.addPropertyChangeListener(
+          "highlightSearchMatchText", new PropertyChangeListener()
+          {
+            public void propertyChange(PropertyChangeEvent evt)
+            {
+              boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+              highlightSearchMatchText.setSelected(value);
+            }
+          });
+
     }
   }
 

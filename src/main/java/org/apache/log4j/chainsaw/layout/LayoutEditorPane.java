@@ -44,7 +44,7 @@ import javax.swing.event.DocumentListener;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.ChainsawConstants;
-import org.apache.log4j.chainsaw.JEditorPaneFormatter;
+import org.apache.log4j.chainsaw.JTextComponentFormatter;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
@@ -205,7 +205,7 @@ public final class LayoutEditorPane extends JPanel {
     okButton.setToolTipText("Accepts the current Pattern layout and will apply it to the Log Panel");
     cancelButton.setToolTipText("Closes this dialog and discards your changes");
 
-    JEditorPaneFormatter.applySystemFontAndSize(previewer);
+    JTextComponentFormatter.applySystemFontAndSize(previewer);
       
     previewer.setEditable(false);
     patternEditor.setPreferredSize(new Dimension(240, 240));

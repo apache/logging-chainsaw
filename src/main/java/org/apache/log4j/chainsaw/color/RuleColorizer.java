@@ -182,7 +182,7 @@ public class RuleColorizer implements Colorizer {
       while (iter.hasNext()) {
         ColorRule rule = (ColorRule) iter.next();
 
-        if ((rule.getBackgroundColor() != null) && (rule.evaluate(event))) {
+        if ((rule.getBackgroundColor() != null) && (rule.evaluate(event, null))) {
           return rule.getBackgroundColor();
         }
       }
@@ -199,7 +199,7 @@ public class RuleColorizer implements Colorizer {
       while (iter.hasNext()) {
         ColorRule rule = (ColorRule) iter.next();
 
-        if ((rule.getForegroundColor() != null) && (rule.evaluate(event))) {
+        if ((rule.getForegroundColor() != null) && (rule.evaluate(event, null))) {
           return rule.getForegroundColor();
         }
       }

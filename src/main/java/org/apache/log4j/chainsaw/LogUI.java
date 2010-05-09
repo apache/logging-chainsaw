@@ -1042,7 +1042,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
     try {
       tutorialArea.setPage(ChainsawConstants.TUTORIAL_URL);
-      JEditorPaneFormatter.applySystemFontAndSize(tutorialArea);
+      JTextComponentFormatter.applySystemFontAndSize(tutorialArea);
 
       container.add(new JScrollPane(tutorialArea), BorderLayout.CENTER);
     } catch (Exception e) {
@@ -1751,6 +1751,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
    *                    The FQN of the LookANdFeel
    */
   private static void applyLookAndFeel(String lookAndFeelClassName) {
+    UIManager.put("swing.boldMetal", Boolean.FALSE);
     if (
       UIManager.getLookAndFeel().getClass().getName().equals(
           lookAndFeelClassName)) {

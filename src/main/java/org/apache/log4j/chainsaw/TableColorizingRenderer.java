@@ -20,6 +20,7 @@ package org.apache.log4j.chainsaw;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineBreakMeasurer;
 import java.awt.font.TextAttribute;
@@ -42,17 +43,21 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
 
 import org.apache.log4j.chainsaw.color.RuleColorizer;
 import org.apache.log4j.chainsaw.icons.LevelIconFactory;
 import org.apache.log4j.helpers.Constants;
+import org.apache.log4j.helpers.Transform;
 import org.apache.log4j.rule.Rule;
+import org.apache.log4j.spi.LoggingEventFieldResolver;
 
 
 /**
@@ -70,6 +75,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private RuleColorizer colorizer;
   private boolean levelUseIcons = false;
   private boolean wrap = false;
+  private boolean highlightSearchMatchText;
   private DateFormat dateFormatInUse = DATE_FORMATTER;
   private int loggerPrecision = 0;
   private boolean toolTipsVisible;
@@ -89,11 +95,12 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private static final Border RIGHT_EMPTY_BORDER = BorderFactory.createEmptyBorder(borderWidth, 0, borderWidth, borderWidth);
 
   private final JLabel levelLabel = new JLabel();
-  private final JLabel generalLabel = new JLabel();
+  private JLabel generalLabel = new JLabel();
 
   private final JPanel multiLinePanel = new JPanel();
   private final JPanel generalPanel = new JPanel();
   private final JPanel levelPanel = new JPanel();
+
     /**
    * Creates a new TableColorizingRenderer object.
    */
@@ -128,7 +135,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     TableColumn tableColumn = table.getColumnModel().getColumn(col);
 
     //null unless needed
-    JTextArea multiLineTextArea = null;
+    JTextPane multiLineTextPane = null;
     JLabel label = (JLabel)super.getTableCellRendererComponent(table, value,
         isSelected, hasFocus, row, col);
     //chainsawcolumns uses one-based indexing
@@ -140,12 +147,19 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     if (loggingEvent == null) {
         return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
     }
+    Map matches = loggingEvent.getSearchMatches();
 
     JComponent component;
     switch (colIndex) {
     case ChainsawColumns.INDEX_THROWABLE_COL_NAME:
       if (value instanceof String[] && ((String[])value).length > 0){
-        generalLabel.setText(((String[]) value)[0]);
+          //exception string is split into an array..just highlight the first line completely if anything in the exception matches if we have a match for the exception field
+          Set exceptionMatches = (Set)matches.get(LoggingEventFieldResolver.EXCEPTION_FIELD);
+          if (exceptionMatches != null && exceptionMatches.size() > 0) {
+              generalLabel.setText(bold(((String[])value)[0]));
+          } else {
+              generalLabel.setText(((String[])value)[0]);
+          }
       } else {
         generalLabel.setText("");
       }
@@ -161,43 +175,80 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
           break;
         }
       }
-      generalLabel.setText(logger.substring(startPos + 1));
+      generalLabel.setText(buildHighlightString(matches.get(LoggingEventFieldResolver.LOGGER_FIELD), logger.substring(startPos + 1)));
       component = generalPanel;
       break;
     case ChainsawColumns.INDEX_ID_COL_NAME:
+        generalLabel.setText(buildHighlightString(matches.get(LoggingEventFieldResolver.PROP_FIELD + "LOG4JID"), value.toString()));
+        component = generalPanel;
+        break;
     case ChainsawColumns.INDEX_CLASS_COL_NAME:
+        generalLabel.setText(buildHighlightString(matches.get(LoggingEventFieldResolver.CLASS_FIELD), value.toString()));
+        component = generalPanel;
+        break;
     case ChainsawColumns.INDEX_FILE_COL_NAME:
+        generalLabel.setText(buildHighlightString(matches.get(LoggingEventFieldResolver.FILE_FIELD), value.toString()));
+        component = generalPanel;
+        break;
     case ChainsawColumns.INDEX_LINE_COL_NAME:
+        generalLabel.setText(buildHighlightString(matches.get(LoggingEventFieldResolver.LINE_FIELD), value.toString()));
+        component = generalPanel;
+        break;
     case ChainsawColumns.INDEX_NDC_COL_NAME:
+        generalLabel.setText(buildHighlightString(matches.get(LoggingEventFieldResolver.NDC_FIELD), value.toString()));
+        component = generalPanel;
+        break;
     case ChainsawColumns.INDEX_THREAD_COL_NAME:
+        generalLabel.setText(buildHighlightString(matches.get(LoggingEventFieldResolver.THREAD_FIELD), value.toString()));
+        component = generalPanel;
+        break;
     case ChainsawColumns.INDEX_TIMESTAMP_COL_NAME:
+        //timestamp matches contain the millis..not the display text..just highlight if we have a match for the timestamp field
+        Set timestampMatches = (Set)matches.get(LoggingEventFieldResolver.TIMESTAMP_FIELD);
+        if (timestampMatches != null && timestampMatches.size() > 0) {
+            generalLabel.setText(bold(value.toString()));
+        } else {
+            generalLabel.setText(value.toString());
+        }
+        component = generalPanel;
+        break;
     case ChainsawColumns.INDEX_METHOD_COL_NAME:
-      generalLabel.setText(value.toString());
-      component = generalPanel;
-      break;
-
+        generalLabel.setText(buildHighlightString(matches.get(LoggingEventFieldResolver.METHOD_FIELD), value.toString()));
+        component = generalPanel;
+        break;
     case ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME:
     case ChainsawColumns.INDEX_MESSAGE_COL_NAME:
         int width = tableColumn.getWidth();
 
-        String thisString = value.toString().trim();
+        String thisString;
+        if (colIndex == ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME) {
+            //property keys are set as all uppercase
+            thisString = buildHighlightString(matches.get(LoggingEventFieldResolver.PROP_FIELD + ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE.toUpperCase()), value.toString().trim());
+        } else {
+            thisString = buildHighlightString(matches.get(LoggingEventFieldResolver.MSG_FIELD), value.toString().trim());
+        }
         int tableRowHeight = table.getRowHeight(row);
-        multiLineTextArea = new JTextArea();
-        multiLineTextArea.setMargin(null);
-        multiLineTextArea.setEditable(false);
-        multiLineTextArea.setLineWrap(wrap);
-        multiLineTextArea.setWrapStyleWord(wrap);
-        multiLineTextArea.setFont(label.getFont());
-        multiLineTextArea.setText(thisString);
+        multiLineTextPane = new JTextPane();
+        multiLineTextPane.setEditorKit(new HTMLEditorKit());
+        multiLineTextPane.setMargin(null);
+        multiLineTextPane.setEditable(false);
+        multiLineTextPane.setFont(label.getFont());
+        setText(thisString);
         multiLinePanel.removeAll();
-        multiLinePanel.add(multiLineTextArea);
+        multiLinePanel.add(multiLineTextPane);
+        HTMLDocument document = new HTMLDocument();
+        multiLineTextPane.setDocument(document);
+        Font font = label.getFont();
+        String bodyRule = "body { font-family: " + font.getFamily() + "; font-size: " + (font.getSize()) + "pt; }";
+        ((HTMLDocument)multiLineTextPane.getDocument()).getStyleSheet().addRule(bodyRule);
+        multiLineTextPane.setText(thisString);
         if (wrap) {
             Map paramMap = new HashMap();
-            paramMap.put(TextAttribute.FONT, multiLineTextArea.getFont());
+            paramMap.put(TextAttribute.FONT, multiLineTextPane.getFont());
 
             int calculatedHeight = calculateHeight(thisString, width, paramMap);
             //set preferred size to default height
-            multiLineTextArea.setSize(new Dimension(width, calculatedHeight));
+            multiLineTextPane.setSize(new Dimension(width, calculatedHeight));
 
             int multiLinePanelPrefHeight = multiLinePanel.getPreferredSize().height;
             if(tableRowHeight < multiLinePanelPrefHeight) {
@@ -218,7 +269,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         }
       } else {
         levelLabel.setIcon(null);
-        levelLabel.setText(value.toString());
+        levelLabel.setText(buildHighlightString(matches.get(LoggingEventFieldResolver.LEVEL_FIELD), value.toString()));
         if (!toolTipsVisible) {
             levelLabel.setToolTipText(null);
         }
@@ -245,7 +296,9 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
             }
         }
         if (thisProp != null) {
-            generalLabel.setText(loggingEvent.getProperty(thisProp));
+            String propKey = LoggingEventFieldResolver.PROP_FIELD + thisProp.toUpperCase();
+            Set propKeyMatches = (Set)matches.get(propKey);
+            generalLabel.setText(buildHighlightString(propKeyMatches, loggingEvent.getProperty(thisProp)));
         } else {
             generalLabel.setText("");
         }
@@ -257,7 +310,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     Color foreground;
     Rule loggerRule = colorizer.getLoggerRule();
     //use logger colors in table instead of event colors if event passes logger rule
-    if (loggerRule != null && loggerRule.evaluate(loggingEvent)) {
+    if (loggerRule != null && loggerRule.evaluate(loggingEvent, null)) {
         background = ChainsawConstants.FIND_LOGGER_BACKGROUND;
         foreground = ChainsawConstants.FIND_LOGGER_FOREGROUND;
     } else {
@@ -280,10 +333,10 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     component.setForeground(foreground);
 
     //set the colors of the components inside 'component'
-    if (multiLineTextArea != null)
+    if (multiLineTextPane != null)
     {
-        multiLineTextArea.setBackground(background);
-        multiLineTextArea.setForeground(foreground);
+        multiLineTextPane.setBackground(background);
+        multiLineTextPane.setForeground(foreground);
     }
     levelLabel.setBackground(background);
     levelLabel.setForeground(foreground);
@@ -407,5 +460,79 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
          height += layoutHeight;
      }
      return Math.max(ChainsawConstants.DEFAULT_ROW_HEIGHT, (int) height);
+    }
+
+    private String buildHighlightString(Object matchSet, String input) {
+        if (!highlightSearchMatchText) {
+            return Transform.escapeTags(input);
+        }
+        if (matchSet instanceof Set) {
+            Set thisSet = (Set)matchSet;
+            //start with result as input and replace each time
+            String result = input;
+            for (Iterator iter = thisSet.iterator();iter.hasNext();) {
+                String thisEntry = iter.next().toString();
+                result = bold(result, thisEntry);
+            }
+            return "<html>" + escapeAllButBoldTags(result) + "</html>";
+        }
+        return Transform.escapeTags(input);
+    }
+
+    private String escapeAllButBoldTags(String input) {
+            if (!highlightSearchMatchText) {
+                return Transform.escapeTags(input);
+            }
+            String lowerInput = input.toLowerCase();
+            String lowerBoldStart = "<b>";
+            String lowerBoldEnd = "</b>";
+            int boldStartLength = lowerBoldStart.length();
+            int boldEndLength = lowerBoldEnd.length();
+            int firstIndex = 0;
+            int currentIndex = 0;
+            StringBuffer newString = new StringBuffer("");
+            while ((currentIndex = lowerInput.indexOf(lowerBoldStart, firstIndex)) > -1) {
+                newString.append(Transform.escapeTags(input.substring(firstIndex, currentIndex)));
+                newString.append(lowerBoldStart);
+                firstIndex = currentIndex + boldStartLength;
+                currentIndex = lowerInput.indexOf(lowerBoldEnd, firstIndex);
+                if (currentIndex > -1) {
+                    newString.append(Transform.escapeTags(input.substring(firstIndex, currentIndex)));
+                    newString.append(lowerBoldEnd);
+                    firstIndex = currentIndex + boldEndLength;
+                }
+            }
+            newString.append(Transform.escapeTags(input.substring(firstIndex, input.length())));
+            return newString.toString();
+        }
+
+    private String bold(String input) {
+        if (!highlightSearchMatchText) {
+            return Transform.escapeTags(input);
+        }
+        return "<html><b>" + Transform.escapeTags(input) + "</b></html>";
+    }
+    
+    private String bold(String input, String textToBold) {
+        String lowerInput = input.toLowerCase();
+        String lowerTextToBold = textToBold.toLowerCase();
+        int textToBoldLength = textToBold.length();
+        int firstIndex = 0;
+        int currentIndex = 0;
+        StringBuffer newString = new StringBuffer("");
+        while ((currentIndex = lowerInput.indexOf(lowerTextToBold, firstIndex)) > -1) {
+            newString.append(input.substring(firstIndex, currentIndex));
+            newString.append("<b>");
+            newString.append(input.substring(currentIndex, currentIndex + textToBoldLength));
+            newString.append("</b>");
+            firstIndex = currentIndex + textToBoldLength;
+        }
+        newString.append(input.substring(firstIndex, input.length()));
+        return newString.toString();
+    }
+
+    public void setHighlightSearchMatchText(boolean highlightSearchMatchText)
+    {
+        this.highlightSearchMatchText = highlightSearchMatchText;
     }
 }
