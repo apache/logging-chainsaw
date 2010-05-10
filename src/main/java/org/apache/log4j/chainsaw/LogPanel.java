@@ -287,9 +287,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     preferencesFrame.setTitle("'" + identifier + "' Log Panel Preferences");
     preferencesFrame.setIconImage(
       ((ImageIcon) ChainsawIcons.ICON_PREFERENCES).getImage());
-    preferencesFrame.getContentPane().add(preferencesPanel);
+    preferencesFrame.getContentPane().add(new JScrollPane(preferencesPanel));
 
-    preferencesFrame.setSize(640, 480);
+    preferencesFrame.setSize(740, 520);
 
     preferencesPanel.setOkCancelActionListener(
       new ActionListener() {
