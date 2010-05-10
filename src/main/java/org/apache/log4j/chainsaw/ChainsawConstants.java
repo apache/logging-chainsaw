@@ -36,10 +36,10 @@ public class ChainsawConstants {
   public static final Color COLOR_DEFAULT_FOREGROUND = Color.BLACK;
 
   public static final int DEFAULT_ROW_HEIGHT = 20;
-  public static final Color FIND_LOGGER_BACKGROUND = new Color(197, 193, 170);
+  public static final Color FIND_LOGGER_BACKGROUND = new Color(213, 226, 235);
   public static final Color FIND_LOGGER_FOREGROUND = Color.BLACK;
 
-  public static final Color COLOR_ODD_ROW = new Color(215, 215, 215);
+  public static final Color COLOR_ODD_ROW = new Color(227, 227, 227);
   public static final Color COLOR_EVEN_ROW = COLOR_DEFAULT_BACKGROUND;
 
   public static final URL WELCOME_URL = ChainsawConstants.class.getClassLoader().getResource(

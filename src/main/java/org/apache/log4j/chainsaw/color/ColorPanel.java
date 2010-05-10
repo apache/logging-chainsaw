@@ -712,8 +712,12 @@ public class ColorPanel extends JPanel {
           repaint();
         } else {
           box.setBackground(Color.white);
-          colorChooser.setColor((Color)table.getValueAt(table.getSelectedRow(), table.getSelectedColumn()));
-          lastColor = (Color)table.getValueAt(table.getSelectedRow(), table.getSelectedColumn());
+          int selectedRow = table.getSelectedRow();
+          int selectedColumn = table.getSelectedColumn();
+          if (selectedRow != -1 && selectedColumn != -1) {
+              colorChooser.setColor((Color)table.getValueAt(selectedRow, selectedColumn));
+              lastColor = (Color)table.getValueAt(selectedRow, selectedColumn);
+          }
           dialog.setVisible(true);
         }
       }
