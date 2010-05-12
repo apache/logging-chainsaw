@@ -552,7 +552,15 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
           preferencesFrame.setVisible(false);
         }
       });
-    
+      KeyStroke escape = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false);
+          Action closeAction = new AbstractAction() {
+              public void actionPerformed(ActionEvent e) {
+                preferencesFrame.setVisible(false);
+              }
+          };
+          preferencesFrame.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escape, "ESCAPE"); preferencesFrame.getRootPane().
+                  getActionMap().put("ESCAPE", closeAction);
+
     OSXIntegration.init(this);
   
   }
@@ -1928,7 +1936,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
   private void buildLogPanel(
       boolean customExpression, final String ident, final List events)
       throws IllegalArgumentException {
-      final LogPanel thisPanel = new LogPanel(getStatusBar(), ident, cyclicBufferSize, allColorizers);
+      final LogPanel thisPanel = new LogPanel(getStatusBar(), ident, cyclicBufferSize, allColorizers, applicationPreferenceModel);
 
 
       /**

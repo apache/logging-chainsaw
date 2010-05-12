@@ -636,7 +636,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
       };
 
     showPreferences.putValue(
-      Action.SHORT_DESCRIPTION, "LogPanel Preferences...");
+      Action.SHORT_DESCRIPTION, "Tab Preferences...");
 
     // TODO think of good mnemonics and HotKey for this action
     return showPreferences;
@@ -656,7 +656,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
       };
 
     createExpressionPanel.putValue(
-      Action.SHORT_DESCRIPTION, "Create custom expression LogPanel...   ");
+      Action.SHORT_DESCRIPTION, "Create tab from expression...   ");
 
     // TODO think of good mnemonics and HotKey for this action
     return createExpressionPanel;
@@ -675,7 +675,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
       };
 
     showColorPanel.putValue(
-      Action.SHORT_DESCRIPTION, "LogPanel Color Filter...");
+      Action.SHORT_DESCRIPTION, "Color settings...");
 
     // TODO think of good mnemonics and HotKey for this action
     return showColorPanel;

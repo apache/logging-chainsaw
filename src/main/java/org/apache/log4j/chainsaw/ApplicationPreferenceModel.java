@@ -16,6 +16,7 @@
  */
 package org.apache.log4j.chainsaw;
 
+import java.awt.Color;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Vector;
@@ -40,8 +41,12 @@ public class ApplicationPreferenceModel {
     private int cyclicBufferSize = 50000;
     private String lastUsedVersion = "";
     private int responsiveness = 3;
-    
-    private String identifierExpression = "PROP.hostname - PROP.application"; 
+    private Color searchBackgroundColor = ChainsawConstants.FIND_LOGGER_BACKGROUND;
+    private Color searchForegroundColor = ChainsawConstants.FIND_LOGGER_FOREGROUND;
+    private Color alternatingColorForegroundColor = ChainsawConstants.COLOR_ODD_ROW_FOREGROUND;
+    private Color alternatingColorBackgroundColor = ChainsawConstants.COLOR_ODD_ROW_BACKGROUND;
+
+    private String identifierExpression = "PROP.hostname - PROP.application";
 
     private transient final PropertyChangeSupport propertySupport =
         new PropertyChangeSupport(this);
@@ -195,8 +200,21 @@ public class ApplicationPreferenceModel {
       setConfigurationURL(model.getConfigurationURL());
       setLastUsedVersion(model.getLastUsedVersion());
       setOkToRemoveSecurityManager(model.isOkToRemoveSecurityManager());
+      Color searchForeground = model.getSearchForegroundColor();
+      Color searchBackground = model.getSearchBackgroundColor();
+      if (searchForeground != null && searchBackground != null) {
+        setSearchBackgroundColor(searchBackground);
+        setSearchForegroundColor(searchForeground);
+      }
+
+      Color alternatingForeground = model.getAlternatingColorForegroundColor();
+      Color alternatingBackground = model.getAlternatingColorBackgroundColor();
+      if (alternatingForeground != null && alternatingBackground != null) {
+        setAlternatingBackgroundColor(alternatingBackground);
+        setAlternatingForegroundColor(alternatingForeground);
+      }
     }
-    
+
     /**
      * @return Returns the responsiveness.
      */
@@ -258,6 +276,42 @@ public class ApplicationPreferenceModel {
       boolean oldValue = this.statusBar;
       this.statusBar = statusBar;
       firePropertyChange("statusBar", oldValue, this.statusBar);
+    }
+
+    public void setAlternatingForegroundColor(Color alternatingColorForegroundColor) {
+        this.alternatingColorForegroundColor = alternatingColorForegroundColor;
+        firePropertyChange("alternatingColor", true, false);
+    }
+
+    public void setAlternatingBackgroundColor(Color alternatingColorBackgroundColor) {
+        this.alternatingColorBackgroundColor = alternatingColorBackgroundColor;
+        firePropertyChange("alternatingColor", true, false);
+    }
+
+    public void setSearchForegroundColor(Color searchForegroundColor) {
+        this.searchForegroundColor = searchForegroundColor;
+        firePropertyChange("searchColor", true, false);
+    }
+
+    public void setSearchBackgroundColor(Color searchBackgroundColor) {
+        this.searchBackgroundColor = searchBackgroundColor;
+        firePropertyChange("searchColor", true, false);
+    }
+
+    public Color getAlternatingColorBackgroundColor() {
+        return alternatingColorBackgroundColor;
+    }
+
+    public Color getAlternatingColorForegroundColor() {
+        return alternatingColorForegroundColor;
+    }
+
+    public Color getSearchBackgroundColor() {
+        return searchBackgroundColor;
+    }
+
+    public Color getSearchForegroundColor() {
+        return searchForegroundColor;
     }
 
     /**

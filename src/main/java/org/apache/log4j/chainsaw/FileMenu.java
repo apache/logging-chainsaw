@@ -64,28 +64,28 @@ class FileMenu extends JMenu {
 
     loadLog4JAction =
       new FileLoadAction(
-        logUI, new XMLDecoder(logUI), "Load Log4J File...", false);
+        logUI, new XMLDecoder(logUI), "Process events from local log4j XML-formatted file (.xml or .zip)...", false);
 
       loadLog4JAction.putValue(
         Action.ACCELERATOR_KEY,
         KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK));
       loadLog4JAction.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_L));
-      loadLog4JAction.putValue(Action.SHORT_DESCRIPTION, "Loads an XML event file");
+      loadLog4JAction.putValue(Action.SHORT_DESCRIPTION, "Loads events from a local XMLLayout-formatted file ");
       loadLog4JAction.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.FILE_OPEN));
 
     loadUtilLoggingAction =
       new FileLoadAction(
         logUI, new UtilLoggingXMLDecoder(logUI),
-        "Load Java Util File...", false);
+        "Process events from local java.util.logging XML-formatted file...", false);
 
     remoteLog4JAction =
       new FileLoadAction(
-        logUI, new XMLDecoder(logUI), "Load Remote Log4J File...",
+        logUI, new XMLDecoder(logUI), "Process events from remote log4j XML-formatted file...",
         true);
     remoteUtilLoggingAction =
       new FileLoadAction(
         logUI, new UtilLoggingXMLDecoder(logUI),
-        "Load Remote Java Util File...", true);
+        "Process events from remote java.util.logging XML-formatted file...", true);
 
     saveAction = new FileSaveAction(logUI);
 

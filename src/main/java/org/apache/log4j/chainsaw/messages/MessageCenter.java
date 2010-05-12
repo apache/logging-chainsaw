@@ -248,8 +248,8 @@ public class MessageCenter {
         super.getListCellRendererComponent(
           list, value, index, isSelected, cellHasFocus);
       c.setBackground(
-        ((index % 2) == 0) ? ChainsawConstants.COLOR_EVEN_ROW
-                           : ChainsawConstants.COLOR_ODD_ROW);
+        ((index % 2) == 0) ? ChainsawConstants.COLOR_EVEN_ROW_BACKGROUND
+                           : ChainsawConstants.COLOR_ODD_ROW_BACKGROUND);
 
       return c;
     }

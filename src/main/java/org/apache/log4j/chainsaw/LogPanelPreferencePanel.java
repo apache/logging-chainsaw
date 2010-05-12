@@ -579,7 +579,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
       new JCheckBox("Show Event Detail panel");
 
     private final JCheckBox loggerTreePanel =
-      new JCheckBox("Show Logger Tree panel");
+      new JCheckBox("Show Logger Tree");
     private final JCheckBox scrollToBottom =
       new JCheckBox("Scroll to bottom (view tracks with new events)");
     private final JCheckBox toolTips =

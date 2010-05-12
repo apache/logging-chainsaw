@@ -49,6 +49,9 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 
@@ -100,11 +103,13 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private final JPanel multiLinePanel = new JPanel();
   private final JPanel generalPanel = new JPanel();
   private final JPanel levelPanel = new JPanel();
+  private ApplicationPreferenceModel applicationPreferenceModel;
 
     /**
    * Creates a new TableColorizingRenderer object.
    */
-  public TableColorizingRenderer(RuleColorizer colorizer) {
+  public TableColorizingRenderer(RuleColorizer colorizer, ApplicationPreferenceModel applicationPreferenceModel) {
+    this.applicationPreferenceModel = applicationPreferenceModel;
     multiLinePanel.setLayout(new BoxLayout(multiLinePanel, BoxLayout.Y_AXIS));
     generalPanel.setLayout(new BoxLayout(generalPanel, BoxLayout.Y_AXIS));
     levelPanel.setLayout(new BoxLayout(levelPanel, BoxLayout.Y_AXIS));
@@ -311,32 +316,34 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     Rule loggerRule = colorizer.getLoggerRule();
     //use logger colors in table instead of event colors if event passes logger rule
     if (loggerRule != null && loggerRule.evaluate(loggingEvent, null)) {
-        background = ChainsawConstants.FIND_LOGGER_BACKGROUND;
-        foreground = ChainsawConstants.FIND_LOGGER_FOREGROUND;
+        background = applicationPreferenceModel.getSearchBackgroundColor();
+        foreground = applicationPreferenceModel.getSearchForegroundColor();
     } else {
-        background = loggingEvent.getBackground();
-        foreground = loggingEvent.getForeground();
+        background = loggingEvent.isSearchMatch()?applicationPreferenceModel.getSearchBackgroundColor():loggingEvent.getBackground();
+        foreground = loggingEvent.isSearchMatch()?applicationPreferenceModel.getSearchForegroundColor():loggingEvent.getForeground();
     }
 
     /**
-     * Colourize background based on row striping if the event still has a background color
+     * Colourize background based on row striping if the event still has default foreground and background color
      */
-    if (background.equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
+    if (background.equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND) && foreground.equals(ChainsawConstants.COLOR_DEFAULT_FOREGROUND)) {
       if ((row % 2) != 0) {
-        background = ChainsawConstants.COLOR_ODD_ROW;
-      } else {
-        background = ChainsawConstants.COLOR_EVEN_ROW;
+        background = applicationPreferenceModel.getAlternatingColorBackgroundColor();
+        foreground = applicationPreferenceModel.getAlternatingColorForegroundColor();
       }
     }
 
     component.setBackground(background);
     component.setForeground(foreground);
 
-    //set the colors of the components inside 'component'
+    //update the background & foreground of the jtextpane using styles
     if (multiLineTextPane != null)
     {
+        StyledDocument styledDocument = multiLineTextPane.getStyledDocument();
+        MutableAttributeSet attributes = multiLineTextPane.getInputAttributes();
+        StyleConstants.setForeground(attributes, foreground);
+        styledDocument.setCharacterAttributes(0, styledDocument.getLength() + 1, attributes, false);
         multiLineTextPane.setBackground(background);
-        multiLineTextPane.setForeground(foreground);
     }
     levelLabel.setBackground(background);
     levelLabel.setForeground(foreground);

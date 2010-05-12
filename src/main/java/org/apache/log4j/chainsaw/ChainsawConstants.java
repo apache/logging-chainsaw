@@ -39,8 +39,11 @@ public class ChainsawConstants {
   public static final Color FIND_LOGGER_BACKGROUND = new Color(213, 226, 235);
   public static final Color FIND_LOGGER_FOREGROUND = Color.BLACK;
 
-  public static final Color COLOR_ODD_ROW = new Color(227, 227, 227);
-  public static final Color COLOR_EVEN_ROW = COLOR_DEFAULT_BACKGROUND;
+  public static final Color COLOR_ODD_ROW_BACKGROUND = new Color(227, 227, 227);
+  public static final Color COLOR_ODD_ROW_FOREGROUND = Color.BLACK;
+
+  public static final Color COLOR_EVEN_ROW_BACKGROUND = COLOR_DEFAULT_BACKGROUND;
+  public static final Color COLOR_EVEN_ROW_FOREGROUND = Color.BLACK;
 
   public static final URL WELCOME_URL = ChainsawConstants.class.getClassLoader().getResource(
   "org/apache/log4j/chainsaw/WelcomePanel.html");

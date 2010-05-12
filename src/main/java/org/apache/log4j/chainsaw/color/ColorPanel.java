@@ -49,12 +49,10 @@ import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
@@ -66,6 +64,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
+import org.apache.log4j.chainsaw.ApplicationPreferenceModel;
 import org.apache.log4j.chainsaw.ChainsawConstants;
 import org.apache.log4j.chainsaw.ExpressionRuleContext;
 import org.apache.log4j.chainsaw.filter.FilterModel;
@@ -83,7 +82,8 @@ import org.apache.log4j.rule.Rule;
  *
  * @author Scott Deboy <sdeboy@apache.org>
  */
-public class ColorPanel extends JPanel {
+public class ColorPanel extends JPanel
+{
   private static final String DEFAULT_STATUS = "<html>Double click a rule field to edit the rule</html>";
   private final String currentRuleSet = "Default";
 
@@ -100,14 +100,28 @@ public class ColorPanel extends JPanel {
   private DefaultComboBoxModel logPanelColorizersModel;
   private Map allLogPanelColorizers;
   private RuleColorizer currentLogPanelColorizer;
+  private JTable searchTable;
+  private DefaultTableModel searchTableModel;
+  private Vector searchColumns;
+  private Vector searchDataVector;
+  private Vector searchDataVectorEntry;
 
-    public ColorPanel(final RuleColorizer currentLogPanelColorizer, final FilterModel filterModel, final Map allLogPanelColorizers) {
+  private JTable alternatingColorTable;
+  private DefaultTableModel alternatingColorTableModel;
+  private Vector alternatingColorColumns;
+  private Vector alternatingColorDataVector;
+  private Vector alternatingColorDataVectorEntry;
+  private ApplicationPreferenceModel applicationPreferenceModel;
+
+    public ColorPanel(final RuleColorizer currentLogPanelColorizer, final FilterModel filterModel,
+                      final Map allLogPanelColorizers, final ApplicationPreferenceModel applicationPreferenceModel) {
     super(new BorderLayout());
 
     this.currentLogPanelColorizer = currentLogPanelColorizer;
     this.colorizer = currentLogPanelColorizer;
     this.filterModel = filterModel;
     this.allLogPanelColorizers = allLogPanelColorizers;
+    this.applicationPreferenceModel = applicationPreferenceModel;
 
     currentLogPanelColorizer.addPropertyChangeListener(
     	      "colorrule",
@@ -120,15 +134,46 @@ public class ColorPanel extends JPanel {
     tableModel = new DefaultTableModel();
     table = new JTable(tableModel);
 
+    searchTableModel = new DefaultTableModel();
+    searchTable = new JTable(searchTableModel);
+    searchTable.setPreferredScrollableViewportSize(new Dimension(30, 30));
+
+    alternatingColorTableModel = new DefaultTableModel();
+    alternatingColorTable = new JTable(alternatingColorTableModel);
+    alternatingColorTable.setPreferredScrollableViewportSize(new Dimension(30, 30));
+
     columns = new Vector();
     columns.add("Expression");
     columns.add("Background");
     columns.add("Foreground");
 
+    searchColumns = new Vector();
+    searchColumns.add("Background");
+    searchColumns.add("Foreground");
+
+    alternatingColorColumns = new Vector();
+    alternatingColorColumns.add("Background");
+    alternatingColorColumns.add("Foreground");
+
+    //searchtable contains only a single-entry vector containing a two-item vector (foreground, background)
+    searchDataVector = new Vector();
+    searchDataVectorEntry = new Vector();
+    searchDataVectorEntry.add(applicationPreferenceModel.getSearchBackgroundColor());
+    searchDataVectorEntry.add(applicationPreferenceModel.getSearchForegroundColor());
+    searchDataVector.add(searchDataVectorEntry);
+    searchTableModel.setDataVector(searchDataVector, searchColumns);
+
+    alternatingColorDataVector = new Vector();
+    alternatingColorDataVectorEntry = new Vector();
+    alternatingColorDataVectorEntry.add(applicationPreferenceModel.getAlternatingColorBackgroundColor());
+    alternatingColorDataVectorEntry.add(applicationPreferenceModel.getAlternatingColorForegroundColor());
+    alternatingColorDataVector.add(alternatingColorDataVectorEntry);
+    alternatingColorTableModel.setDataVector(alternatingColorDataVector, alternatingColorColumns);
+
     table.setPreferredScrollableViewportSize(new Dimension(525, 200));
     tableScrollPane = new JScrollPane(table);
 
-    Vector data = getColorizerVector();    
+    Vector data = getColorizerVector();
     tableModel.setDataVector(data, columns);
 
     table.sizeColumnsToFit(0);
@@ -136,6 +181,20 @@ public class ColorPanel extends JPanel {
     table.getColumnModel().getColumn(2).setPreferredWidth(80);
     table.getColumnModel().getColumn(1).setMaxWidth(80);
     table.getColumnModel().getColumn(2).setMaxWidth(80);
+
+    searchTable.sizeColumnsToFit(0);
+    searchTable.getColumnModel().getColumn(0).setPreferredWidth(80);
+    searchTable.getColumnModel().getColumn(1).setPreferredWidth(80);
+    searchTable.getColumnModel().getColumn(0).setMaxWidth(80);
+    searchTable.getColumnModel().getColumn(1).setMaxWidth(80);
+    configureSingleEntryColorTable(searchTable);
+
+    alternatingColorTable.sizeColumnsToFit(0);
+    alternatingColorTable.getColumnModel().getColumn(0).setPreferredWidth(80);
+    alternatingColorTable.getColumnModel().getColumn(1).setPreferredWidth(80);
+    alternatingColorTable.getColumnModel().getColumn(0).setMaxWidth(80);
+    alternatingColorTable.getColumnModel().getColumn(1).setMaxWidth(80);
+    configureSingleEntryColorTable(alternatingColorTable);
 
     configureTable();
 
@@ -154,7 +213,15 @@ public class ColorPanel extends JPanel {
     JPanel southPanel = new JPanel();
     southPanel.setLayout(new BoxLayout(southPanel, BoxLayout.Y_AXIS));
     southPanel.add(Box.createVerticalStrut(5));
-    southPanel.add(new JSeparator());
+    southPanel.add(Box.createVerticalStrut(5));
+    JPanel searchAndAlternatingColorPanel = buildSearchAndAlternatingColorPanel();
+    JPanel globalLabelPanel = new JPanel();
+    globalLabelPanel.setLayout(new BoxLayout(globalLabelPanel, BoxLayout.X_AXIS));
+    JLabel globalLabel = new JLabel("Global colors:");
+    globalLabelPanel.add(globalLabel);
+    globalLabelPanel.add(Box.createHorizontalGlue());
+    southPanel.add(globalLabelPanel);
+    southPanel.add(searchAndAlternatingColorPanel);
     southPanel.add(Box.createVerticalStrut(5));
     JPanel closePanel = buildClosePanel();
     southPanel.add(closePanel);
@@ -222,47 +289,41 @@ public class ColorPanel extends JPanel {
               }
           }
       }
+      //update search and alternating colors, since they may have changed from another color panel
+      searchDataVectorEntry.set(0, applicationPreferenceModel.getSearchBackgroundColor());
+      searchDataVectorEntry.set(1, applicationPreferenceModel.getSearchForegroundColor());
+      alternatingColorDataVectorEntry.set(0, applicationPreferenceModel.getAlternatingColorBackgroundColor());
+      alternatingColorDataVectorEntry.set(1, applicationPreferenceModel.getAlternatingColorForegroundColor());
   }
 
-  public static void main(String[] args) {
-    FilterModel filterModel = new FilterModel();
-    RuleColorizer colorizer = new RuleColorizer();
+  public JPanel buildSearchAndAlternatingColorPanel() {
+      JPanel panel = new JPanel();
+      panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 
-    Map otherColorizers = new HashMap();
+      JLabel defineSearchColorsLabel = new JLabel("Search colors");
 
-    RuleColorizer panel1Colorizer = new RuleColorizer();
-    HashMap entry1 = new HashMap();
-    List list1 = new ArrayList();
-    list1.add(new ColorRule("logger == test1", ExpressionRule.getRule("logger == test1"), Color.YELLOW, Color.BLACK));
-    entry1.put("Default", list1);
-    panel1Colorizer.setRules(entry1);
-    otherColorizers.put("test1", panel1Colorizer);
+      panel.add(defineSearchColorsLabel);
 
-    RuleColorizer panel2Colorizer = new RuleColorizer();
-    HashMap entry2 = new HashMap();
-    List list2 = new ArrayList();
-    list2.add(new ColorRule("logger == test2", ExpressionRule.getRule("logger == test2"), Color.YELLOW, Color.BLACK));
-    entry2.put("Default", list2);
-    panel2Colorizer.setRules(entry2);
-    otherColorizers.put("test2", panel2Colorizer);
+      panel.add(Box.createHorizontalStrut(10));
+      JScrollPane searchPane = new JScrollPane(searchTable);
+      searchPane.setBorder(BorderFactory.createEmptyBorder());
+      panel.add(searchPane);
 
-    ColorPanel p = new ColorPanel(colorizer, filterModel, otherColorizers);
-    final JFrame f = new JFrame();
+      panel.add(Box.createHorizontalStrut(10));
+      JLabel defineAlternatingColorLabel = new JLabel("Alternating colors");
 
-    p.setCloseActionListener(
-      new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          System.exit(0);
-        }
-      });
+      panel.add(defineAlternatingColorLabel);
 
-//    Following does not compile on JDK 1.3.1
-    f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-    f.getContentPane().add(p);
-    f.pack();
-    f.setVisible(true);
+      panel.add(Box.createHorizontalStrut(10));
+      JScrollPane alternatingColorPane = new JScrollPane(alternatingColorTable);
+      alternatingColorPane.setBorder(BorderFactory.createEmptyBorder());
+
+      panel.add(alternatingColorPane);
+      panel.setBorder(BorderFactory.createEtchedBorder());
+      panel.add(Box.createHorizontalGlue());
+      return panel;
   }
-  
+
   public void updateColors() {
     tableModel.getDataVector().clear();
     tableModel.getDataVector().addAll(getColorizerVector());
@@ -297,6 +358,9 @@ public class ColorPanel extends JPanel {
 
     vec.add(Color.white);
     vec.add(Color.black);
+    //add default alternating color & search backgrounds (both foreground are black)
+    vec.add(ChainsawConstants.COLOR_ODD_ROW_BACKGROUND);
+    vec.add(ChainsawConstants.FIND_LOGGER_BACKGROUND);
 
     vec.add(new Color(255, 255, 225));
     vec.add(new Color(255, 225, 255));
@@ -360,6 +424,39 @@ public class ColorPanel extends JPanel {
       new ColorTableCellRenderer());
     table.getColumnModel().getColumn(2).setCellRenderer(
       new ColorTableCellRenderer());
+  }
+
+  private void configureSingleEntryColorTable(JTable thisTable) {
+      thisTable.setToolTipText("Double click to edit");
+      thisTable.setRowHeight(20);
+      thisTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+      thisTable.setColumnSelectionAllowed(false);
+
+      Vector backgroundColors = getDefaultColors();
+      Vector foregroundColors = getDefaultColors();
+      backgroundColors.add("Browse...");
+      foregroundColors.add("Browse...");
+
+      JComboBox background = new JComboBox(backgroundColors);
+      background.setMaximumRowCount(15);
+      background.setRenderer(new ColorListCellRenderer());
+
+      JComboBox foreground = new JComboBox(foregroundColors);
+      foreground.setMaximumRowCount(15);
+      foreground.setRenderer(new ColorListCellRenderer());
+
+      DefaultCellEditor backgroundEditor = new DefaultCellEditor(background);
+      DefaultCellEditor foregroundEditor = new DefaultCellEditor(foreground);
+      thisTable.getColumnModel().getColumn(0).setCellEditor(backgroundEditor);
+      thisTable.getColumnModel().getColumn(1).setCellEditor(foregroundEditor);
+
+      background.addItemListener(new ColorItemListener(background));
+      foreground.addItemListener(new ColorItemListener(foreground));
+
+      thisTable.getColumnModel().getColumn(0).setCellRenderer(
+        new ColorTableCellRenderer());
+      thisTable.getColumnModel().getColumn(1).setCellRenderer(
+        new ColorTableCellRenderer());
   }
 
   public void setCloseActionListener(ActionListener listener) {
@@ -447,6 +544,8 @@ public class ColorPanel extends JPanel {
       new AbstractAction() {
         public void actionPerformed(ActionEvent evt) {
           applyRules(currentRuleSet, colorizer);
+          saveSearchColors();
+          saveAlternatingColors();
         }
       });
 
@@ -465,6 +564,19 @@ public class ColorPanel extends JPanel {
     panel.add(closeButton);
 
     return panel;
+  }
+
+  private void saveSearchColors() {
+      Vector thisVector = (Vector) searchTableModel.getDataVector().get(0);
+      applicationPreferenceModel.setSearchBackgroundColor((Color)thisVector.get(0));
+      applicationPreferenceModel.setSearchForegroundColor((Color)thisVector.get(1));
+  }
+
+  private void saveAlternatingColors() {
+      Vector thisVector = (Vector) alternatingColorTableModel.getDataVector().get(0);
+      applicationPreferenceModel.setAlternatingBackgroundColor((Color)thisVector.get(0));
+      Color alternatingColorForegroundColor = (Color) thisVector.get(1);
+      applicationPreferenceModel.setAlternatingForegroundColor(alternatingColorForegroundColor);
   }
 
   JPanel buildUpDownPanel() {
@@ -640,6 +752,7 @@ public class ColorPanel extends JPanel {
     listPanel.add(panel, BorderLayout.NORTH);
 
     JPanel tablePanel = new JPanel(new BorderLayout());
+    tableScrollPane.setBorder(BorderFactory.createEtchedBorder());
     tablePanel.add(tableScrollPane, BorderLayout.CENTER);
     tablePanel.add(buildUpDownPanel(), BorderLayout.EAST);
     listPanel.add(tablePanel, BorderLayout.CENTER);

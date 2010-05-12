@@ -57,11 +57,11 @@ public class ExtendedLoggingEvent extends LoggingEvent
     }
     
     public Color getForeground() {
-        return searchMatch ? ChainsawConstants.FIND_LOGGER_FOREGROUND : colorRuleForeground;
+        return colorRuleForeground;
     }
 
     public Color getBackground() {
-        return searchMatch ? ChainsawConstants.FIND_LOGGER_BACKGROUND : colorRuleBackground;
+        return colorRuleBackground;
     }
 
     public Color getColorRuleBackground() {

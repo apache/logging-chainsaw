@@ -206,7 +206,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   private static final double DEFAULT_LOG_TREE_SPLIT_LOCATION = 0.2d;
   private final String identifier;
   private final ChainsawStatusBar statusBar;
-  private final JFrame preferencesFrame = new JFrame();
+  private final JFrame logPanelPreferencesFrame = new JFrame();
   private ColorPanel colorPanel;
   private final JFrame colorFrame = new JFrame();
   private final JFrame undockedFrame;
@@ -224,7 +224,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   private final JSplitPane nameTreeAndMainPanelSplit;
   private final LoggerNameTreePanel logTreePanel;
   private final LogPanelPreferenceModel preferenceModel = new LogPanelPreferenceModel();
-  private final LogPanelPreferencePanel preferencesPanel = new LogPanelPreferencePanel(preferenceModel);
+  private final LogPanelPreferencePanel logPanelPreferencesPanel = new LogPanelPreferencePanel(preferenceModel);
   private final FilterModel filterModel = new FilterModel();
   private final RuleColorizer colorizer = new RuleColorizer();
   private final RuleMediator ruleMediator = new RuleMediator();
@@ -251,6 +251,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   private AutoFilterComboBox filterCombo;
   private JScrollPane eventsPane;
   private int currentSearchMatchCount;
+  private ApplicationPreferenceModel applicationPreferenceModel;
 
     /**
    * Creates a new LogPanel object.  If a LogPanel with this identifier has
@@ -259,9 +260,11 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
    * @param statusBar shared status bar, provided by main application
    * @param identifier used to load and save settings
    */
-  public LogPanel(final ChainsawStatusBar statusBar, final String identifier, int cyclicBufferSize, Map allColorizers) {
+  public LogPanel(final ChainsawStatusBar statusBar, final String identifier, int cyclicBufferSize,
+                  Map allColorizers, ApplicationPreferenceModel applicationPreferenceModel) {
     this.identifier = identifier;
     this.statusBar = statusBar;
+    this.applicationPreferenceModel = applicationPreferenceModel;
     logger.debug("creating logpanel for " + identifier);
 
     setLayout(new BorderLayout());
@@ -284,19 +287,29 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     columnNameKeywordMap.put(ChainsawConstants.THROWABLE_COL_NAME, LoggingEventFieldResolver.EXCEPTION_FIELD);
     columnNameKeywordMap.put(ChainsawConstants.TIMESTAMP_COL_NAME, LoggingEventFieldResolver.TIMESTAMP_FIELD);
 
-    preferencesFrame.setTitle("'" + identifier + "' Log Panel Preferences");
-    preferencesFrame.setIconImage(
+    logPanelPreferencesFrame.setTitle("'" + identifier + "' Log Panel Preferences");
+    logPanelPreferencesFrame.setIconImage(
       ((ImageIcon) ChainsawIcons.ICON_PREFERENCES).getImage());
-    preferencesFrame.getContentPane().add(new JScrollPane(preferencesPanel));
+    logPanelPreferencesFrame.getContentPane().add(new JScrollPane(logPanelPreferencesPanel));
 
-    preferencesFrame.setSize(740, 520);
+    logPanelPreferencesFrame.setSize(740, 520);
 
-    preferencesPanel.setOkCancelActionListener(
+    logPanelPreferencesPanel.setOkCancelActionListener(
       new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          preferencesFrame.setVisible(false);
+          logPanelPreferencesFrame.setVisible(false);
         }
       });
+
+        KeyStroke escape = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false);
+            Action closeLogPanelPreferencesFrameAction = new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                  logPanelPreferencesFrame.setVisible(false);
+                }
+            };
+            logPanelPreferencesFrame.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escape, "ESCAPE"); logPanelPreferencesFrame.getRootPane().
+                    getActionMap().put("ESCAPE", closeLogPanelPreferencesFrameAction);
+
 
     setDetailPaneConversionPattern(
       DefaultLayoutFactory.getDefaultPatternLayout());
@@ -370,7 +383,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     menuItemToggleToolTips.setIcon(new ImageIcon(ChainsawIcons.TOOL_TIP));
 
     final JCheckBoxMenuItem menuItemLoggerTree =
-      new JCheckBoxMenuItem("Show Logger Tree panel");
+      new JCheckBoxMenuItem("Show Logger Tree");
     menuItemLoggerTree.addActionListener(
       new ActionListener() {
         public void actionPerformed(ActionEvent e) {
@@ -588,6 +601,24 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         }
       });
 
+    applicationPreferenceModel.addPropertyChangeListener("searchColor", new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt)
+        {
+            if (table != null) {
+              table.repaint();
+            }
+        }
+    });
+
+    applicationPreferenceModel.addPropertyChangeListener("alternatingColor", new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt)
+        {
+            if (table != null) {
+              table.repaint();
+            }
+        }
+    });
+
     /*
      *End of preferenceModel listeners
      */
@@ -687,14 +718,22 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     /*
      * Color rule frame and panel
      */
-    colorFrame.setTitle("'" + identifier + "' Color Filter");
+    colorFrame.setTitle("'" + identifier + "' color settings");
     colorFrame.setIconImage(
       ((ImageIcon) ChainsawIcons.ICON_PREFERENCES).getImage());
 
     allColorizers.put(identifier, colorizer);
-    colorPanel = new ColorPanel(colorizer, filterModel, allColorizers);
+    colorPanel = new ColorPanel(colorizer, filterModel, allColorizers, applicationPreferenceModel);
 
     colorFrame.getContentPane().add(colorPanel);
+
+        Action closeColorPanelAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+              colorPanel.hidePanel();
+            }
+        };
+        colorFrame.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escape, "ESCAPE"); colorFrame.getRootPane().
+                getActionMap().put("ESCAPE", closeColorPanelAction);
 
     colorPanel.setCloseActionListener(
       new ActionListener() {
@@ -824,7 +863,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         }
       });
 
-    renderer = new TableColorizingRenderer(colorizer);
+    renderer = new TableColorizingRenderer(colorizer, applicationPreferenceModel);
     renderer.setToolTipsVisible(preferenceModel.isToolTips());
 
     table.setDefaultRenderer(Object.class, renderer);
@@ -1297,7 +1336,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         }
       });
 
-    JMenuItem menuItemColorPanel = new JMenuItem("LogPanel Color Filter...");
+    JMenuItem menuItemColorPanel = new JMenuItem("Color settings...");
     menuItemColorPanel.addActionListener(
       new ActionListener() {
         public void actionPerformed(ActionEvent evt) {
@@ -1307,7 +1346,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     menuItemColorPanel.setIcon(ChainsawIcons.ICON_PREFERENCES);
 
     JMenuItem menuItemLogPanelPreferences =
-      new JMenuItem("LogPanel Preferences...");
+      new JMenuItem("Tab Preferences...");
     menuItemLogPanelPreferences.addActionListener(
       new ActionListener() {
         public void actionPerformed(ActionEvent evt) {
@@ -1828,7 +1867,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
      * Display the panel preferences frame
      */
   void showPreferences() {
-    preferencesFrame.setVisible(true);
+    logPanelPreferencesFrame.setVisible(true);
   }
 
   /**
