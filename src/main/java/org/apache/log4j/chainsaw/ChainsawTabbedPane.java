@@ -63,7 +63,7 @@ import org.apache.log4j.chainsaw.prefs.SettingsManager;
 class ChainsawTabbedPane extends JTabbedPane implements SettingsListener {
   public SavableTabSetting tabSetting;
   public static final String WELCOME_TAB = "Welcome";
-  public static final String DRAG_DROP_TAB = "Drag & Drop XML log files here";
+  public static final String ZEROCONF = "Zeroconf";
   /**
    *
    * Create the tabbed pane.  
@@ -145,12 +145,12 @@ class ChainsawTabbedPane extends JTabbedPane implements SettingsListener {
      SavableTabSetting setting = new SavableTabSetting();
      for(int i = 0 ; i < count ; i++){
        title = super.getTitleAt(i);
-       if(title.equals("Welcome")){
+       if(title.equals(WELCOME_TAB)){
          setting.setWelcome(true);
-       } else if (title.equals("Drag & Drop XML log files here")){
-         setting.setDragdrop(true);
        } else if (title.equals("chainsaw-log")){
          setting.setChainsawLog(true);
+       } else if (title.equals(ZEROCONF)){
+         setting.setZeroconf(true);
        }
      }
 
@@ -158,6 +158,7 @@ class ChainsawTabbedPane extends JTabbedPane implements SettingsListener {
      writer.close();
 
    } catch (Exception e) {
+     file.delete();
      e.printStackTrace();
    }
   }
@@ -179,11 +180,12 @@ class ChainsawTabbedPane extends JTabbedPane implements SettingsListener {
       } else {
         tabSetting = new SavableTabSetting();
         tabSetting.setWelcome(true);
-        tabSetting.setDragdrop(true);
         tabSetting.setChainsawLog(true);
+        tabSetting.setZeroconf(true);
       }
     } catch (Exception e) {
       e.printStackTrace();
+      file.delete();
     }
   }
 }

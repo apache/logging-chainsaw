@@ -353,47 +353,14 @@ public class ColorPanel extends JPanel
       return data;
   }
 
-  private Vector getDefaultColors() {
-    Vector vec = new Vector();
-
-    vec.add(Color.white);
-    vec.add(Color.black);
-    //add default alternating color & search backgrounds (both foreground are black)
-    vec.add(ChainsawConstants.COLOR_ODD_ROW_BACKGROUND);
-    vec.add(ChainsawConstants.FIND_LOGGER_BACKGROUND);
-
-    vec.add(new Color(255, 255, 225));
-    vec.add(new Color(255, 225, 255));
-    vec.add(new Color(225, 255, 255));
-    vec.add(new Color(255, 225, 225));
-    vec.add(new Color(225, 255, 225));
-    vec.add(new Color(225, 225, 255));
-    vec.add(new Color(225, 225, 183));
-    vec.add(new Color(225, 183, 225));
-    vec.add(new Color(183, 225, 225));
-    vec.add(new Color(183, 225, 183));
-    vec.add(new Color(183, 183, 225));
-    vec.add(new Color(232, 201, 169));
-    vec.add(new Color(255, 255, 153));
-    vec.add(new Color(255, 153, 153));
-    vec.add(new Color(189, 156, 89));
-    vec.add(new Color(255, 102, 102));
-    vec.add(new Color(255, 177, 61));
-    vec.add(new Color(61, 255, 61));
-    vec.add(new Color(153, 153, 255));
-    vec.add(new Color(255, 153, 255));
-      
-    return vec;
-  }
-
   private void configureTable() {
     table.setToolTipText("Double click to edit");
     table.setRowHeight(20);
     table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     table.setColumnSelectionAllowed(false);
 
-    Vector backgroundColors = getDefaultColors();
-    Vector foregroundColors = getDefaultColors();
+    Vector backgroundColors = colorizer.getDefaultColors();
+    Vector foregroundColors = colorizer.getDefaultColors();
     backgroundColors.add("Browse...");
     foregroundColors.add("Browse...");
 
@@ -432,8 +399,8 @@ public class ColorPanel extends JPanel
       thisTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
       thisTable.setColumnSelectionAllowed(false);
 
-      Vector backgroundColors = getDefaultColors();
-      Vector foregroundColors = getDefaultColors();
+      Vector backgroundColors = colorizer.getDefaultColors();
+      Vector foregroundColors = colorizer.getDefaultColors();
       backgroundColors.add("Browse...");
       foregroundColors.add("Browse...");
 

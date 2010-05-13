@@ -80,6 +80,7 @@ import javax.swing.ComboBoxEditor;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -141,6 +142,7 @@ import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.chainsaw.xstream.TableColumnConverter;
 import org.apache.log4j.helpers.Constants;
+import org.apache.log4j.rule.ColorRule;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.LoggingEvent;
@@ -695,7 +697,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
      *
      */
     LogPanelLoggerTreeModel logTreeModel = new LogPanelLoggerTreeModel();
-    logTreePanel = new LoggerNameTreePanel(logTreeModel, preferenceModel, this);
+    logTreePanel = new LoggerNameTreePanel(logTreeModel, preferenceModel, this, colorizer);
     logTreePanel.addPropertyChangeListener("searchExpression", new PropertyChangeListener()
     {
         public void propertyChange(PropertyChangeEvent evt)
@@ -1356,7 +1358,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     menuItemLogPanelPreferences.setIcon(ChainsawIcons.ICON_PREFERENCES);
 
     final JMenuItem menuItemFocusOn =
-      new JMenuItem("Set 'refine focus' field");
+      new JMenuItem("Set 'refine focus' field to value under pointer");
     menuItemFocusOn.addActionListener(
       new ActionListener() {
         public void actionPerformed(ActionEvent evt) {
@@ -1392,7 +1394,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       });
 
     final JMenuItem menuDefineAddCustomFilter =
-      new JMenuItem("Add to 'refine focus' field");
+      new JMenuItem("Add value under pointer to 'refine focus' field");
     menuDefineAddCustomFilter.addActionListener(
       new ActionListener() {
         public void actionPerformed(ActionEvent evt) {
@@ -1426,6 +1428,51 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                 filterText.getText() + " && "
                 + columnNameKeywordMap.get(colName).toString() + " "
                 + operator + " '" + value + "'");
+            }
+          }
+        }
+      });
+
+    final JMenuItem menuBuildColorRule =
+      new JMenuItem("Define color rule for value under pointer");
+    menuBuildColorRule.addActionListener(
+      new ActionListener() {
+        public void actionPerformed(ActionEvent evt) {
+          if (currentPoint != null) {
+            String operator = "==";
+            int column = table.columnAtPoint(currentPoint);
+            int row = table.rowAtPoint(currentPoint);
+            String colName = table.getColumnName(column).toUpperCase();
+            String value = "";
+
+            if (colName.equalsIgnoreCase(ChainsawConstants.TIMESTAMP_COL_NAME)) {
+              JComponent comp =
+                (JComponent) table.getCellRenderer(row, column);
+
+              if (comp instanceof JLabel) {
+                value = ((JLabel) comp).getText();
+              }
+            } else if (colName.equalsIgnoreCase(ChainsawConstants.LOGGER_COL_NAME)) {
+                operator = "like";
+                value = "^" + table.getValueAt(row, column).toString() + ".*";
+            } else {
+              Object o = table.getValueAt(row, column).toString();
+
+              if (o instanceof String[] && ((String[])o).length > 0) {
+                value = ((String[]) o)[0];
+                operator = "~=";
+              } else {
+                value = o.toString();
+              }
+            }
+
+            if (columnNameKeywordMap.containsKey(colName)) {
+                Color c = JColorChooser.showDialog(getRootPane(), "Choose a color", Color.red);
+                if (c != null) {
+                    String expression = columnNameKeywordMap.get(colName).toString() + " " + operator + " '" + value + "'";
+                    colorizer.addRule(ChainsawConstants.DEFAULT_COLOR_RULE_NAME, new ColorRule(expression,
+                            ExpressionRule.getRule(expression), c, ChainsawConstants.COLOR_DEFAULT_FOREGROUND));
+                }
             }
           }
         }
@@ -1467,7 +1514,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     p.add(new JSeparator());
 
         final JMenuItem menuItemSearch =
-      new JMenuItem("Find next");
+      new JMenuItem("Search for value under pointer");
     menuItemSearch.addActionListener(
       new ActionListener() {
         public void actionPerformed(ActionEvent evt) {
@@ -1480,6 +1527,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
             if (colName.equalsIgnoreCase(ChainsawConstants.TIMESTAMP_COL_NAME)) {
             	value = timestampExpressionFormat.format(new Date(table.getValueAt(row, column).toString()));
+            } else if (colName.equalsIgnoreCase(ChainsawConstants.LOGGER_COL_NAME)) {
+                operator = "like";
+                value = "^" + table.getValueAt(row, column).toString() + ".*";
             } else {
               Object o = table.getValueAt(row, column);
 
@@ -1504,7 +1554,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       });
 
       final Action clearSearchAction =
-        new AbstractAction("Clear find next") {
+        new AbstractAction("Clear search field") {
           public void actionPerformed(ActionEvent e) {
             findField.setText(null);
             updateFindRule(null);
@@ -1534,7 +1584,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     });
 
     final JMenuItem menuItemDisplayRelativeTimesToRowUnderCursor =
-      new JMenuItem("Show times relative to this row");
+      new JMenuItem("Show times relative to this event");
     menuItemDisplayRelativeTimesToRowUnderCursor.addActionListener(
       new ActionListener() {
         public void actionPerformed(ActionEvent e) {
@@ -1556,6 +1606,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     p.add(menuItemDisplayNormalTimes);
     p.add(new JSeparator());
 
+    p.add(menuBuildColorRule);
+    p.add(new JSeparator());
+        
     p.add(menuItemToggleDetails);
     p.add(menuItemLoggerTree);
     p.add(menuItemToggleToolTips);
@@ -1589,6 +1642,15 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   	return preferenceModel.isScrollToBottom();
   }
 
+  public void setRefineFocusText(String refineFocusText) {
+      final JTextField filterText =(JTextField) filterCombo.getEditor().getEditorComponent();
+      filterText.setText(refineFocusText);
+  }
+
+  public String getRefineFocusText() {
+      final JTextField filterText =(JTextField) filterCombo.getEditor().getEditorComponent();
+      return filterText.getText();
+  }
   /**
    * Mutator
    *
@@ -2309,7 +2371,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     undockedFindNextAction.putValue(Action.NAME, "Find next");
     undockedFindNextAction.putValue(
       Action.SHORT_DESCRIPTION,
-      "Find the next occurrence of the rule from the current row");
+      "Find the next search occurrence");
     undockedFindNextAction.putValue(
       Action.SMALL_ICON, new ImageIcon(ChainsawIcons.DOWN));
 
@@ -2334,7 +2396,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     undockedFindPreviousAction.putValue(Action.NAME, "Find previous");
     undockedFindPreviousAction.putValue(
       Action.SHORT_DESCRIPTION,
-      "Find the previous occurrence of the rule from the current row");
+      "Find the previous search occurrence");
     undockedFindPreviousAction.putValue(
       Action.SMALL_ICON, new ImageIcon(ChainsawIcons.UP));
 

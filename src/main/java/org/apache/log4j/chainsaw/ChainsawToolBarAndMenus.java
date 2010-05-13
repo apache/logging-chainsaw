@@ -74,7 +74,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
   private final JTextField findField;
   private final Action changeModelAction;
   private final Action clearAction;
-  private final Action closeAction;
+  private final Action toggleWelcomeVisibleAction;
   private final Action findNextAction;
   private final Action findPreviousAction;
   private final Action findPreviousColorizedEventAction;
@@ -110,7 +110,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     new JCheckBoxMenuItem();
   private final JMenu viewMenu = new JMenu("View");
   private final JMenuBar menuBar;
-  private final JCheckBoxMenuItem menuItemClose = new JCheckBoxMenuItem();
+  private final JCheckBoxMenuItem menuShowWelcome = new JCheckBoxMenuItem();
   private final JToolBar toolbar;
   private final LogUI logui;
   private final SmallButton clearButton = new SmallButton();
@@ -128,7 +128,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     toolbar = new JToolBar(SwingConstants.HORIZONTAL);
     menuBar = new JMenuBar();
     fileMenu = new FileMenu(logui);
-    closeAction = createCloseHelpAction();
+    toggleWelcomeVisibleAction = toggleWelcomeVisibleAction();
     changeModelAction = createChangeModelAction();
     findField = new JTextField();
     findNextAction = getFindNextAction();
@@ -409,16 +409,15 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     return action;
   }
 
-  private Action createCloseHelpAction() {
+  private Action toggleWelcomeVisibleAction() {
     final Action action =
       new AbstractAction() {
         public void actionPerformed(ActionEvent e) {
-          closeAction.putValue(Action.NAME, "Welcome tab");
-          logui.removeWelcomePanel();
-
-          if (menuItemClose.isSelected()) {
+          toggleWelcomeVisibleAction.putValue(Action.NAME, "Welcome tab");
+          if (menuShowWelcome.isSelected()) {
             logui.addWelcomePanel();
           } else {
+            logui.removeWelcomePanel();
           }
         }
       };
@@ -455,7 +454,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
         }
       });
 
-    menuItemClose.setAction(closeAction);
+    menuShowWelcome.setAction(toggleWelcomeVisibleAction);
 
     JCheckBoxMenuItem pause = new JCheckBoxMenuItem(pauseAction);
     JMenuItem menuPrefs = new JMenuItem(showPreferencesAction);
@@ -540,7 +539,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     viewMenu.add(showToolbarCheck);
     viewMenu.add(toggleStatusBarCheck);
     viewMenu.add(toggleShowReceiversCheck);
-    viewMenu.add(menuItemClose);
+    viewMenu.add(menuShowWelcome);
     viewMenu.addSeparator();
     viewMenu.add(menuCustomExpressionPanel);
 
@@ -893,7 +892,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     }
     showReceiversButton.setSelected(
       logui.getApplicationPreferenceModel().isReceivers());
-    menuItemClose.setSelected(logui.getTabbedPane().containsWelcomePanel());
+    menuShowWelcome.setSelected(logui.getTabbedPane().containsWelcomePanel());
 
     /**
      * We get the currently selected LogPanel, and if null, deactivate some
@@ -917,7 +916,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
       findPanel.add(Box.createRigidArea(new Dimension(5, 0)));
       searchLabel.setLabelFor(findField);
       activeTabMenu.setEnabled(false);
-      closeAction.setEnabled(true);
+      toggleWelcomeVisibleAction.setEnabled(true);
       detailPaneButton.setSelected(false);
       toggleCyclicButton.setSelected(false);
     } else {

@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
 import org.apache.log4j.chainsaw.ChainsawConstants;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
@@ -52,32 +53,31 @@ import org.apache.log4j.spi.LoggingEvent;
  * @author Scott Deboy <sdeboy@apache.org>
  */
 public class RuleColorizer implements Colorizer {
-  public static final String DEFAULT_NAME = "Default";
   private Map rules;
   private final PropertyChangeSupport colorChangeSupport =
     new PropertyChangeSupport(this);
   private Map defaultRules = new HashMap();
-  private String currentRuleSet = DEFAULT_NAME;
+  private String currentRuleSet = ChainsawConstants.DEFAULT_COLOR_RULE_NAME;
   private Rule findRule;
   private Rule loggerRule;
 
   private static final String COLORS_EXTENSION = ".colors";
 
   private final Color WARN_DEFAULT_COLOR = new Color(255, 255, 153);
-  private final Color ERROR_OR_FATAL_DEFAULT_COLOR = new Color(255, 153, 153);
+  private final Color FATAL_OR_ERROR_DEFAULT_COLOR = new Color(255, 153, 153);
   private final Color MARKER_DEFAULT_COLOR = new Color(153, 255, 153);
 
   private final String DEFAULT_WARN_EXPRESSION = "level == WARN";
-  private final String DEFAULT_ERROR_FATAL_EXPRESSION = "level == FATAL || level == ERROR";
+  private final String DEFAULT_FATAL_ERROR_EXCEPTION_EXPRESSION = "level == FATAL || level == ERROR || exception exists";
   private final String DEFAULT_MARKER_EXPRESSION = "prop.log4j.marker exists";
 
   public RuleColorizer() {
     List rulesList = new ArrayList();
 
-      String expression = DEFAULT_ERROR_FATAL_EXPRESSION;
+      String expression = DEFAULT_FATAL_ERROR_EXCEPTION_EXPRESSION;
       rulesList.add(
       new ColorRule(
-        expression, ExpressionRule.getRule(expression), ERROR_OR_FATAL_DEFAULT_COLOR,
+        expression, ExpressionRule.getRule(expression), FATAL_OR_ERROR_DEFAULT_COLOR,
         Color.black));
       expression = DEFAULT_WARN_EXPRESSION;
       rulesList.add(
@@ -91,7 +91,7 @@ public class RuleColorizer implements Colorizer {
           expression, ExpressionRule.getRule(expression), MARKER_DEFAULT_COLOR,
           Color.black));
 
-    defaultRules.put(DEFAULT_NAME, rulesList);
+    defaultRules.put(currentRuleSet, rulesList);
     setRules(defaultRules);
   }
 
@@ -294,4 +294,38 @@ public class RuleColorizer implements Colorizer {
     }
     return f.exists();
   }
+
+    public Vector getDefaultColors() {
+      Vector vec = new Vector();
+
+      vec.add(Color.white);
+      vec.add(Color.black);
+      //add default alternating color & search backgrounds (both foreground are black)
+      vec.add(ChainsawConstants.COLOR_ODD_ROW_BACKGROUND);
+      vec.add(ChainsawConstants.FIND_LOGGER_BACKGROUND);
+
+      vec.add(new Color(255, 255, 225));
+      vec.add(new Color(255, 225, 255));
+      vec.add(new Color(225, 255, 255));
+      vec.add(new Color(255, 225, 225));
+      vec.add(new Color(225, 255, 225));
+      vec.add(new Color(225, 225, 255));
+      vec.add(new Color(225, 225, 183));
+      vec.add(new Color(225, 183, 225));
+      vec.add(new Color(183, 225, 225));
+      vec.add(new Color(183, 225, 183));
+      vec.add(new Color(183, 183, 225));
+      vec.add(new Color(232, 201, 169));
+      vec.add(new Color(255, 255, 153));
+      vec.add(new Color(255, 153, 153));
+      vec.add(new Color(189, 156, 89));
+      vec.add(new Color(255, 102, 102));
+      vec.add(new Color(255, 177, 61));
+      vec.add(new Color(61, 255, 61));
+      vec.add(new Color(153, 153, 255));
+      vec.add(new Color(255, 153, 255));
+
+      return vec;
+    }
+
 }
