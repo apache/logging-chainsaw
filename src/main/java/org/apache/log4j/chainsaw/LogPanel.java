@@ -1123,6 +1123,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     JPanel eventsAndStatusPanel = new JPanel(new BorderLayout());
 
     eventsPane = new JScrollPane(table);
+    eventsPane.getVerticalScrollBar().setUnitIncrement(table.getRowHeight());
 
     eventsAndStatusPanel.add(eventsPane, BorderLayout.CENTER);
     JPanel rightPanel = new JPanel();
