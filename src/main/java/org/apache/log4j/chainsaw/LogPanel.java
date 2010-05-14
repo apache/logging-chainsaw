@@ -1020,7 +1020,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     filterExpressionVector.add("LEVEL == FATAL");
     
     filterCombo = new AutoFilterComboBox(filterExpressionVector);
-    filterCombo.setSelectedIndex(-1);
     final JTextField filterText =(JTextField) filterCombo.getEditor().getEditorComponent();
     filterText.getDocument().addDocumentListener(new DelayedFilterTextDocumentListener(filterText));
     filterText.setToolTipText("Enter an expression, press enter to add to list");
@@ -3712,6 +3711,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             private boolean willBecomeVisible = false;
 
             public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                bypassFiltering = true;
+                ((JComboBox)e.getSource()).setSelectedIndex(-1);
+                bypassFiltering = false;
                 if (!willBecomeVisible) {
                     //we already have a match but we're showing the popup - unfilter
                     if (displayedEntries.contains(textField.getText())) {

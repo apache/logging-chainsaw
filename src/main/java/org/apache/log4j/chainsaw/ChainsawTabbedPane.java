@@ -94,7 +94,7 @@ class ChainsawTabbedPane extends JTabbedPane implements SettingsListener {
    * @param name
    * @param component
    */
-  public synchronized void addANewTab(String name, JComponent component, Icon icon) {
+  public void addANewTab(String name, JComponent component, Icon icon) {
     super.insertTab(name, icon, component, null, getTabCount());
 
     super.fireStateChanged();
@@ -117,7 +117,7 @@ class ChainsawTabbedPane extends JTabbedPane implements SettingsListener {
     super.fireStateChanged();
   }
 
-  public synchronized void addANewTab(
+  public void addANewTab(
     String name, JComponent component, Icon icon, String tooltip) {
     super.insertTab(name, icon, component, tooltip, getTabCount());
     super.fireStateChanged();
