@@ -831,7 +831,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
           return;
         }
         String currentFilterText = logPanel.getRefineFocusText();
-        logPanel.setRefineFocusText(currentFilterText + " || logger like '^" + selectedLogger + ".*'");
+        logPanel.setRefineFocusText(currentFilterText + " || logger ~= " + selectedLogger);
     }
 
     private void setRefineFocusUsingCurrentlySelectedNode()
@@ -843,7 +843,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
         {
           return;
         }
-        logPanel.setRefineFocusText("logger like '^" + selectedLogger + ".*'");
+        logPanel.setRefineFocusText("logger ~= " + selectedLogger);
     }
 
     private Action createDefineColorRuleForLoggerAction() {

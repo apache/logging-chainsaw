@@ -1123,7 +1123,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     JPanel eventsAndStatusPanel = new JPanel(new BorderLayout());
 
     eventsPane = new JScrollPane(table);
-    eventsPane.getVerticalScrollBar().setUnitIncrement(table.getRowHeight());
+    eventsPane.getVerticalScrollBar().setUnitIncrement(ChainsawConstants.DEFAULT_ROW_HEIGHT * 2);
 
     eventsAndStatusPanel.add(eventsPane, BorderLayout.CENTER);
     JPanel rightPanel = new JPanel();
@@ -1452,15 +1452,11 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
               if (comp instanceof JLabel) {
                 value = ((JLabel) comp).getText();
               }
-            } else if (colName.equalsIgnoreCase(ChainsawConstants.LOGGER_COL_NAME)) {
-                operator = "like";
-                value = "^" + table.getValueAt(row, column).toString() + ".*";
             } else {
               Object o = table.getValueAt(row, column).toString();
 
               if (o instanceof String[] && ((String[])o).length > 0) {
                 value = ((String[]) o)[0];
-                operator = "~=";
               } else {
                 value = o.toString();
               }
@@ -1527,16 +1523,12 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
             if (colName.equalsIgnoreCase(ChainsawConstants.TIMESTAMP_COL_NAME)) {
             	value = timestampExpressionFormat.format(new Date(table.getValueAt(row, column).toString()));
-            } else if (colName.equalsIgnoreCase(ChainsawConstants.LOGGER_COL_NAME)) {
-                operator = "like";
-                value = "^" + table.getValueAt(row, column).toString() + ".*";
             } else {
               Object o = table.getValueAt(row, column);
 
               if (o != null) {
                 if (o instanceof String[] && ((String[])o).length > 0) {
                   value = ((String[]) o)[0];
-                  operator = "~=";
                 } else {
                   value = o.toString();
                 }
