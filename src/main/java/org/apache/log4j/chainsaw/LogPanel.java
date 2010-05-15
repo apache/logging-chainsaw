@@ -708,6 +708,16 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     });
       
     tableModel.addLoggerNameListener(logTreeModel);
+    ruleMediator.addPropertyChangeListener(new PropertyChangeListener()
+    {
+        public void propertyChange(PropertyChangeEvent evt)
+        {
+            //reset row height to default - logger rule or refinement rule changed the displayed rows - when in multiline row mode,
+            //the table rows may not be the correct height (the row's height may be larger than the preferred height)..
+            //updating all rows to the default height resolves this issue
+            table.setRowHeight(ChainsawConstants.DEFAULT_ROW_HEIGHT);
+        }
+    });
 
     /**
      * Set the LoggerRule to be the LoggerTreePanel, as this visual component
