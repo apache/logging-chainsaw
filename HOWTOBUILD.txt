@@ -3,32 +3,23 @@ HOWTOBUILD.txt
 
 For General Users & log4j developers
 =====================================
-Firstly, you'll need maven 2.0.4+ to build Chainsaw:
+Firstly, you'll need maven 2.0.9+ to build Chainsaw:
 
 http://maven.apache.org
 
 
-Next, an interim step is required until log4j 1.2.15, log4j-components, log4j-receivers, and log4j-expression-filter are voted on and released:
+Next, an interim step is required until the 'companions' are voted on and released:
 
 * SVN check out the following projects:
 	log4j-component - http://svn.apache.org/repos/asf/logging/log4j/companions/component/trunk/
-	log4j-pattern-layout - http://svn.apache.org/repos/asf/logging/log4j/companions/pattern-layout/trunk/
+	log4j-extras - http://svn.apache.org/repos/asf/logging/log4j/companions/extras/trunk/
 	log4j-receivers - http://svn.apache.org/repos/asf/logging/log4j/companions/receivers/trunk/
-	log4j-filters - http://svn.apache.org/repos/asf/logging/log4j/companions/filters/trunk/
-	log4j-zeroconf - http://svn.apache.org/repos/asf/logging/log4j/companions/zeroconf/trunk/
 
-  while Chainsaw has a marked dependency on log4j 1.2.15, building log4j-zeroconf requires log4j 1.2.16-SNAPSHOT, so you will also need to get:
-  
-  log4j - https://svn.apache.org/repos/asf/logging/log4j/trunk
-	
-	
   In each of these checkout directories:
   	mvn install
 
-  This will install into your local maven repository the correct SNAPSHOT releases of the required dependencies. 
-  These dependencies are not yet available in the standard maven repositories, and so failure to complete this 
-  step will prevent you from building Chainsaw.
-
+  This will install into your local maven repository the correct releases of the required dependencies. 
+  These dependencies are not yet available in the standard maven repositories, and so failure to complete this step will prevent you from building Chainsaw.
 
 * cd to Chainsaw project checkout directory
 
