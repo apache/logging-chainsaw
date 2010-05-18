@@ -343,14 +343,14 @@
     </dependency>
     <dependency>
       <groupId>log4j</groupId>
-      <artifactId>apache-log4j-zeroconf</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <artifactId>log4j</artifactId>
+      <version>1.2.16</version>
     </dependency>
     <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.16-SNAPSHOT</version>
-    </dependency>
+      <groupId>jmdns</groupId>
+      <artifactId>jmdns</artifactId>
+      <version>1.0</version>
+    </dependency>    
     <dependency>
       <groupId>xstream</groupId>
       <artifactId>xstream</artifactId>
@@ -372,6 +372,13 @@
       <artifactId>junit</artifactId>
       <version>3.8.1</version>
       <scope>test</scope>
+    </dependency>
+   <dependency>
+      <groupId>org.apache.openejb</groupId>
+      <artifactId>javaee-api</artifactId>
+      <version>5.0-2</version>
+      <type>jar</type>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.jcraft</groupId>
