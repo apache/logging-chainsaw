@@ -539,7 +539,10 @@ public static void main(String[] args) {
         public boolean verify(JComponent input)
         {
             try {
-                new URL((String)configurationURL.getSelectedItem());
+                String selectedItem = (String)configurationURL.getSelectedItem();
+                if (selectedItem != null && !(selectedItem.trim().equals(""))) {
+                    new URL(selectedItem);
+                }
             } catch (Exception e) {
                 return false;
             }

@@ -10,6 +10,10 @@
 <b>NOTE:</b> The mechanism and format used to persist settings in Chainsaw is subject to change.  If you are experiencing problems displaying events in Chainsaw, please delete everything in the $user.dir/.chainsaw directory and restart Chainsaw.
 <br>
 <h1>2.0</h1>
+<h2>20 May 2010</h2>
+<ul>
+<li>For users who would like to specify the Chainsaw configuration file from the command line, the 'log4j.configuration' system property will now be used if the automatic configuration URL is NOT specified in application-wide preferences.  The log4j.configuration system property must provide the -URL- of the Chainsaw configuration file.</li>
+</ul>
 <h2>13 May 2010</h2>
 <ul>
 <li>Added ability to quickly define color rules for field under mouse pointer in the table as well as for the selected logger in the logger tree (uses default color chooser dialog).</li>
@@ -192,7 +196,6 @@ not to provide this, be on the look out for a Mac OS X bundle version soon - Pau
 <ul>
 <li>Changed the default order of columns in Chainsaw to first display ID, level, logger, message and exception</li>
 <li>Added default level expressions (example: LEVEL == DEBUG) to the 'refine focus' combobox</li>
-<li>Modified Chainsaw initialization logic to load Chainsaw-specified config when specified.  <b>NOTE:</b> Chainsaw will load configurations from BOTH the log4j.configuration system property and Chainsaw's automatic configuration URL if the two are specified</li>
 <li>Corrected date pattern format bug (was displaying minutes where it should be displaying months in the detail panel)</li>
 </ul>
 

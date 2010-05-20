@@ -108,6 +108,7 @@ import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SettingsListener;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.chainsaw.receivers.ReceiversPanel;
+import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.net.SocketNodeEventListener;
 import org.apache.log4j.plugins.Plugin;
 import org.apache.log4j.plugins.PluginEvent;
@@ -384,17 +385,23 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     });
 
     String config = model.getConfigurationURL();
-    if(config!=null && (!(config.trim().equals("")))) {
-        config = config.trim();
-        try {
-          URL configURL = new URL(config);
-          logUI.loadConfigurationUsingPluginClassLoader(configURL);
-        }catch(MalformedURLException e) {
-            logger.error("Initial configuration - failed to convert config string to url", e);
-        }
+    if (config == null || (config.trim().equals(""))) {
+        logger.info("No auto-configuration file found in ApplicationPreferenceModel - attempting to use log4j.configurationURL system property");
+        config = System.getProperty(Constants.DEFAULT_CONFIGURATION_KEY);
     }
-    
-    //register a listener to load the configuration when it changes (avoid having to restart Chainsaw when applying a new configuration)
+
+    if (config != null && (!config.trim().equals(""))) {
+      config = config.trim();
+      try {
+        URL configURL = new URL(config);
+        logger.info("Using '" + config + "' for auto-configuration");
+        logUI.loadConfigurationUsingPluginClassLoader(configURL);
+      } catch(MalformedURLException e) {
+        logger.error("Initial configuration - failed to convert config string to url", e);
+      }
+    }
+
+      //register a listener to load the configuration when it changes (avoid having to restart Chainsaw when applying a new configuration)
     //this doesn't remove receivers from receivers panel, it just triggers DOMConfigurator.configure.
 	model.addPropertyChangeListener("configurationURL", new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
@@ -411,11 +418,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             }
         }});
 
-    if (config == null || config.trim().equals("")) {
-      logger.info("No auto-configuration file found within the ApplicationPreferenceModel");
-    } else {
-      logger.info("Using '" + config + "' for auto-configuration");
-    }
     LogManager.getRootLogger().setLevel(Level.TRACE);
 
     logUI.activateViewer();

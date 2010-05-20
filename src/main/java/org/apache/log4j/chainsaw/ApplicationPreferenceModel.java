@@ -404,11 +404,13 @@ public class ApplicationPreferenceModel {
      */
     public final void setConfigurationURL(String configurationURL)
     {
-        //don't add empty entries
+        //don't add empty entries, but allow the current configuration URL to be set to an empty string
+        Object oldValue = this.configurationURL;
         if (configurationURL == null || configurationURL.trim().equals("")) {
+            this.configurationURL = "";
+            firePropertyChange("configurationURL", oldValue, this.configurationURL);
             return;
         }
-        Object oldValue = this.configurationURL;
         //add entry to MRU list
         if (!configurationURLs.contains(configurationURL)) {
           if (configurationURLs.size() == CONFIGURATION_URL_ENTRY_COUNT) {
