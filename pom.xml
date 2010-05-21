@@ -360,7 +360,11 @@
       <groupId>commons-vfs</groupId>
       <artifactId>commons-vfs</artifactId>
       <version>1.0</version>
-      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+      <version>1.1.1</version>
     </dependency>
     <dependency>
       <groupId>jakarta-regexp</groupId>
@@ -378,7 +382,6 @@
       <artifactId>javaee-api</artifactId>
       <version>5.0-2</version>
       <type>jar</type>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.jcraft</groupId>
