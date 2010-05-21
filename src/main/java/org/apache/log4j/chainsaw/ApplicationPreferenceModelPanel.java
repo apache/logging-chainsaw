@@ -497,12 +497,17 @@ public static void main(String[] args) {
 
               String defaultPath = ".";
               if (configurationURL.getItemCount() > 0) {
-                File currentConfigurationPath = new File(configurationURL.getSelectedItem().toString()).getParentFile();
-                  defaultPath = currentConfigurationPath.getPath();
-                  //JFileChooser constructor will not navigate to this location unless we remove the prefixing protocol and slash
-                  //at least on winxp
-                  if (defaultPath.toLowerCase().startsWith("file:\\")) {
-                      defaultPath = defaultPath.substring("file:\\".length());
+                  Object selectedItem = configurationURL.getSelectedItem();
+                  if (selectedItem != null) {
+                      File currentConfigurationPath = new File(selectedItem.toString()).getParentFile();
+                      if (currentConfigurationPath != null) {
+                          defaultPath = currentConfigurationPath.getPath();
+                          //JFileChooser constructor will not navigate to this location unless we remove the prefixing protocol and slash
+                          //at least on winxp
+                          if (defaultPath.toLowerCase().startsWith("file:\\")) {
+                              defaultPath = defaultPath.substring("file:\\".length());
+                          }
+                      }
                   }
               }
 

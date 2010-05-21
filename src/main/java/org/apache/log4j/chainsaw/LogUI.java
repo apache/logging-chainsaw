@@ -174,6 +174,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
   private int dividerSize;
   private int cyclicBufferSize;
   private static Logger logger;
+  private static String configurationURLAppArg;
 
   /**
    * Set to true, if and only if the GUI has completed it's full
@@ -258,7 +259,10 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
    * @param args
    */
   public static void main(String[] args) {
-  
+      if (args.length > 0) {
+          configurationURLAppArg = args[0];
+      }
+
       if(OSXIntegration.IS_OSX) {
           System.setProperty("apple.laf.useScreenMenuBar", "true");
       }
@@ -273,6 +277,10 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     final ApplicationPreferenceModel model = new ApplicationPreferenceModel();
 
     SettingsManager.getInstance().configure(new ApplicationPreferenceModelSaver(model));
+    //if a configuration URL param was provided, set the configuration URL field to null
+    if (configurationURLAppArg != null) {
+        model.setConfigurationURL("");
+    }
 
     applyLookAndFeel(model.getLookAndFeelClassName());
     EventQueue.invokeLater(new Runnable()
@@ -384,10 +392,11 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 		}
     });
 
-    String config = model.getConfigurationURL();
-    if (config == null || (config.trim().equals(""))) {
-        logger.info("No auto-configuration file found in ApplicationPreferenceModel - attempting to use log4j.configurationURL system property");
-        config = System.getProperty(Constants.DEFAULT_CONFIGURATION_KEY);
+    String config = configurationURLAppArg;
+    if (config != null) {
+        logger.info("Command-line configuration arg provided (overriding auto-configuration URL) - using: " + config);
+    } else {
+        config = model.getConfigurationURL();
     }
 
     if (config != null && (!config.trim().equals(""))) {
@@ -999,10 +1008,12 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       });
 
     getSettingsManager().addSettingsListener(this);
-    getSettingsManager().addSettingsListener(new ApplicationPreferenceModelSaver(applicationPreferenceModel));
     getSettingsManager().addSettingsListener(MRUFileListPreferenceSaver.getInstance());
     getSettingsManager().addSettingsListener(receiversPanel);
     getSettingsManager().loadSettings();
+    //app preferences have already been loaded (and configuration url possibly set to blank if being overridden)
+    //but we need a listener so the settings will be saved on exit (added after loadsettings was called)
+    getSettingsManager().addSettingsListener(new ApplicationPreferenceModelSaver(applicationPreferenceModel));
 
     setVisible(true);
 
