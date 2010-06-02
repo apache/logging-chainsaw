@@ -3458,7 +3458,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                 int width = getWidth() - (startX * 2);
                 width = (width / 2);
 
-                drawEvent(wrapper.loggingEvent.getBackground(), verticalLocation, eventHeight, g, startX, width);
+                //use black for search indicator in the 'gutter'
+                drawEvent(Color.BLACK, verticalLocation, eventHeight, g, startX, width);
 //                System.out.println("painting warning - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
             }
         }
