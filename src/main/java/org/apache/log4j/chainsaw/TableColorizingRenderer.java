@@ -104,6 +104,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private final JPanel generalPanel = new JPanel();
   private final JPanel levelPanel = new JPanel();
   private ApplicationPreferenceModel applicationPreferenceModel;
+  private JTextPane multiLineTextPane;
 
     /**
    * Creates a new TableColorizingRenderer object.
@@ -127,6 +128,11 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     levelPanel.add(levelLabel);
 
     this.colorizer = colorizer;
+    multiLineTextPane = new JTextPane();
+    multiLineTextPane.setEditorKit(new HTMLEditorKit());
+    multiLineTextPane.setMargin(null);
+    multiLineTextPane.setEditable(false);
+    multiLineTextPane.setFont(levelLabel.getFont());
   }
 
   public void setToolTipsVisible(boolean toolTipsVisible) {
@@ -139,8 +145,6 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     value = formatField(value);
     TableColumn tableColumn = table.getColumnModel().getColumn(col);
 
-    //null unless needed
-    JTextPane multiLineTextPane = null;
     JLabel label = (JLabel)super.getTableCellRendererComponent(table, value,
         isSelected, hasFocus, row, col);
     //chainsawcolumns uses one-based indexing
@@ -233,11 +237,6 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
             thisString = buildHighlightString(matches.get(LoggingEventFieldResolver.MSG_FIELD), value.toString().trim());
         }
         int tableRowHeight = table.getRowHeight(row);
-        multiLineTextPane = new JTextPane();
-        multiLineTextPane.setEditorKit(new HTMLEditorKit());
-        multiLineTextPane.setMargin(null);
-        multiLineTextPane.setEditable(false);
-        multiLineTextPane.setFont(label.getFont());
         setText(thisString);
         multiLinePanel.removeAll();
         multiLinePanel.add(multiLineTextPane);
