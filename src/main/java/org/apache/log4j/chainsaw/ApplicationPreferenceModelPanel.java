@@ -439,7 +439,7 @@ public static void main(String[] args) {
 
       JPanel p1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-      p1.add(new JLabel("Tab identifier"));
+      p1.add(new JLabel("Tab routing expression"));
       p1.add(Box.createHorizontalStrut(5));
       p1.add(identifierExpression);
       add(p1);
