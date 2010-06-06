@@ -127,6 +127,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     new SmallToggleButton();
   private final Set hiddenSet = new HashSet();
   private final Action hideAction;
+  private final Action hideAllAction;
   private final LogPanelPreferenceModel preferenceModel;
 
   private final JList ignoreList = new JList();
@@ -279,6 +280,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     collapseAction = createCollapseAction();
     focusOnAction = createFocusOnAction();
     hideAction = createIgnoreAction();
+    hideAllAction = createIgnoreAllAction();
     clearIgnoreListAction = createClearIgnoreListAction();
 
     popupMenu = new LoggerTreePopupMenu();
@@ -944,6 +946,50 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     return action;
   }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return
+      */
+    private Action createIgnoreAllAction()
+    {
+      Action action =
+        new AbstractAction(
+          "Ignore all loggers", new ImageIcon(ChainsawIcons.ICON_COLLAPSE))
+        {
+          public void actionPerformed(ActionEvent e)
+          {
+            //add all top level loggers as hidden loggers
+              final DefaultMutableTreeNode root =
+                (DefaultMutableTreeNode) logTreeModel.getRoot();
+              Enumeration topLevelLoggersEnumeration = root.breadthFirstEnumeration();
+              //first element is root node - don't add it to set
+              topLevelLoggersEnumeration.nextElement();
+              Set topLevelLoggersSet = new HashSet();
+              while (topLevelLoggersEnumeration.hasMoreElements()) {
+                  String thisLogger = topLevelLoggersEnumeration.nextElement().toString();
+                  System.out.println("logger: " + thisLogger);
+                  topLevelLoggersSet.add(thisLogger);
+              }
+              if (topLevelLoggersSet.size() > 0) {
+                  ignore(topLevelLoggersSet);
+              }
+
+              logTreeModel.nodeChanged(root);
+              ignoreLoggerButton.setSelected(false);
+              focusOnAction.setEnabled(false);
+              popupMenu.hideCheck.setSelected(false);
+            fireChangeEvent();
+          }
+        };
+
+      action.putValue(
+        Action.SHORT_DESCRIPTION,
+        "Adds all loggers to your Ignore list (unhide loggers you want to see in the view)");
+
+      return action;
+    }
+
   /**
    * DOCUMENT ME!
    *
@@ -1142,6 +1188,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     }
 
     // need to ensure the button doens't update itself with the text, looks stupid otherwise
+    hideAllAction.putValue(Action.NAME, "Ignore all loggers");
     focusOnLoggerButton.setText(null);
     ignoreLoggerButton.setText(null);
   }
@@ -1177,6 +1224,8 @@ final class LoggerNameTreePanel extends JPanel implements Rule
           hideAction.setEnabled(
             (path != null) && (node != null) && (node.getParent() != null)
             && !isFocusOnSelected());
+          //only enable on root node
+          hideAllAction.setEnabled(node != null && (node.getParent() == null));
 
           if (!focusOnAction.isEnabled())
           {
@@ -1486,6 +1535,8 @@ final class LoggerNameTreePanel extends JPanel implements Rule
       addSeparator();
 
       add(clearIgnoreListAction);
+      addSeparator();
+      add(hideAllAction);
     }
   }
 
