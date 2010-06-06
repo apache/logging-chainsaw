@@ -962,13 +962,10 @@ final class LoggerNameTreePanel extends JPanel implements Rule
             //add all top level loggers as hidden loggers
               final DefaultMutableTreeNode root =
                 (DefaultMutableTreeNode) logTreeModel.getRoot();
-              Enumeration topLevelLoggersEnumeration = root.breadthFirstEnumeration();
-              //first element is root node - don't add it to set
-              topLevelLoggersEnumeration.nextElement();
+              Enumeration topLevelLoggersEnumeration = root.children();
               Set topLevelLoggersSet = new HashSet();
               while (topLevelLoggersEnumeration.hasMoreElements()) {
                   String thisLogger = topLevelLoggersEnumeration.nextElement().toString();
-                  System.out.println("logger: " + thisLogger);
                   topLevelLoggersSet.add(thisLogger);
               }
               if (topLevelLoggersSet.size() > 0) {
@@ -979,7 +976,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
               ignoreLoggerButton.setSelected(false);
               focusOnAction.setEnabled(false);
               popupMenu.hideCheck.setSelected(false);
-            fireChangeEvent();
+              fireChangeEvent();
           }
         };
 
