@@ -1219,8 +1219,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
             (path != null) && (node != null) && (node.getParent() != null)
             && !hiddenSet.contains(logger));
           hideAction.setEnabled(
-            (path != null) && (node != null) && (node.getParent() != null)
-            && !isFocusOnSelected());
+            (path != null) && (node != null) && (node.getParent() != null));
           //only enable on root node
           hideAllAction.setEnabled(node != null && (node.getParent() == null));
 
@@ -1367,7 +1366,6 @@ final class LoggerNameTreePanel extends JPanel implements Rule
   private void toggleFocusOnState()
   {
     setFocusOnSelected(!isFocusOnSelected());
-    hideAction.setEnabled(!isFocusOnSelected());
     fireChangeEvent();
   }
 
