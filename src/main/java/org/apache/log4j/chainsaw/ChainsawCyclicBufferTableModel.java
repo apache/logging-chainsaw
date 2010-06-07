@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.ProgressMonitor;
@@ -543,10 +544,23 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     default:
 
       if (columnIndex < columnNames.size()) {
-        return event.getProperty(columnNames.get(columnIndex).toString());
+        //case may not match..try case sensitive and fall back to case-insensitive
+        String result = event.getProperty(columnNames.get(columnIndex).toString());
+        if (result == null) {
+            String lowerColName = columnNames.get(columnIndex).toString().toLowerCase();
+            Set entrySet = event.getProperties().entrySet();
+            for (Iterator iter = entrySet.iterator();iter.hasNext();) {
+                Map.Entry thisEntry = (Map.Entry) iter.next();
+                if (thisEntry.getKey().toString().toLowerCase().equals(lowerColName)) {
+                    result = thisEntry.getValue().toString();
+                }
+            }
+        }
+        if (result != null) {
+            return result;
+        }
       }
     }
-
     return "";
   }
 
