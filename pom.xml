@@ -4,7 +4,7 @@
   <groupId>log4j</groupId>
   <artifactId>apache-chainsaw</artifactId>
   <name>Apache Chainsaw</name>
-  <version>1.99.0-SNAPSHOT</version>
+  <version>2.1.0-SNAPSHOT</version>
   <description>Graphical Viewer for Logging events from a local or remote log4j event system.</description>
   <url>http://logging.apache.org:80/chainsaw</url>
   <issueManagement>

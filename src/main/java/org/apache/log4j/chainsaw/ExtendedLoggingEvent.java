@@ -20,6 +20,7 @@ import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.LoggingEvent;
 
@@ -34,7 +35,7 @@ public class ExtendedLoggingEvent extends LoggingEvent
 
     //copy constructor
     public ExtendedLoggingEvent(LoggingEvent e) {
-        super(e.getFQNOfLoggerClass(), e.getLogger(), e.getTimeStamp(), e.getLevel(), e.getMessage(), e.getThreadName(), e.getThrowableInformation(), e.getNDC(), e.getLocationInformation(), e.getProperties());
+        super(e.getFQNOfLoggerClass(), e.getLogger() != null ? e.getLogger() : Logger.getLogger(e.getLoggerName()), e.getTimeStamp(), e.getLevel(), e.getMessage(), e.getThreadName(), e.getThrowableInformation(), e.getNDC(), e.getLocationInformation(), e.getProperties());
     }
 
     public void updateColorRuleColors(Color backgroundColor, Color foregroundColor) {

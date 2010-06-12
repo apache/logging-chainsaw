@@ -407,6 +407,8 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         logUI.loadConfigurationUsingPluginClassLoader(configURL);
       } catch(MalformedURLException e) {
         logger.error("Initial configuration - failed to convert config string to url", e);
+      } catch (IOException e) {
+          logger.error("Unable to access auto-configuration URL: " + config);
       }
     }
 
