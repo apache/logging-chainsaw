@@ -553,7 +553,8 @@ public static void main(String[] args) {
             }
             return true;
         }});
-        configurationURL.setSelectedItem(committedPreferenceModel.getConfigurationURL());
+        String configToDisplay = committedPreferenceModel.getBypassConfigurationURL() != null?committedPreferenceModel.getBypassConfigurationURL():committedPreferenceModel.getConfigurationURL();
+        configurationURL.setSelectedItem(configToDisplay);
     }
 
     private void initSliderComponent() {

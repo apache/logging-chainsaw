@@ -279,7 +279,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     SettingsManager.getInstance().configure(new ApplicationPreferenceModelSaver(model));
     //if a configuration URL param was provided, set the configuration URL field to null
     if (configurationURLAppArg != null) {
-        model.setConfigurationURL("");
+        model.setBypassConfigurationURL(configurationURLAppArg);
     }
 
     applyLookAndFeel(model.getLookAndFeelClassName());

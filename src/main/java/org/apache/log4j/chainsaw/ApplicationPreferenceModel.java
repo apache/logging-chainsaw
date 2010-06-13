@@ -59,6 +59,11 @@ public class ApplicationPreferenceModel {
     private Vector configurationURLs=new Vector();
 
     private String configurationURL = "";
+
+    /**
+     * Remember current config if provided via means other than configurationURL (command line arg, etc)
+     */
+    private transient String bypassConfigurationURL = null;
     /**
      *    this means for Receivers that require optional jars that can't be delivered
      *    by the Web start classloader, we need to be able to remove the SecurityManager in place
@@ -197,7 +202,10 @@ public class ApplicationPreferenceModel {
       if (configurationURLs != null) {
         setConfigurationURLs(configurationURLs);
       }
-      setConfigurationURL(model.getConfigurationURL());
+      //only set current config URL if bypass is null
+      if (model.getBypassConfigurationURL() == null) {
+        setConfigurationURL(model.getConfigurationURL());
+      }
       setLastUsedVersion(model.getLastUsedVersion());
       setOkToRemoveSecurityManager(model.isOkToRemoveSecurityManager());
       Color searchForeground = model.getSearchForegroundColor();
@@ -399,13 +407,29 @@ public class ApplicationPreferenceModel {
     {
         return this.configurationURL;
     }
+
+    public final String getBypassConfigurationURL() {
+        return bypassConfigurationURL;
+    }
+    /*
+      Set to null to un-bypass
+     */
+    public void setBypassConfigurationURL(String bypassConfigurationURL) {
+        //don't change configuration URL..configurationURL is persisted on app exit
+        if (bypassConfigurationURL != null && bypassConfigurationURL.trim().equals("")) {
+            this.bypassConfigurationURL = null;
+        }
+        this.bypassConfigurationURL = bypassConfigurationURL;
+    }
+
     /**
      * @param configurationURL The configurationURL to set.
      */
     public final void setConfigurationURL(String configurationURL)
     {
         //don't add empty entries, but allow the current configuration URL to be set to an empty string
-        Object oldValue = this.configurationURL;
+        Object oldValue = this.bypassConfigurationURL != null? this.bypassConfigurationURL:this.configurationURL;
+        bypassConfigurationURL = null;
         if (configurationURL == null || configurationURL.trim().equals("")) {
             this.configurationURL = "";
             firePropertyChange("configurationURL", oldValue, this.configurationURL);
