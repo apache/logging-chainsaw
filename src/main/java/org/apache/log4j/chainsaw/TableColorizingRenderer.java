@@ -470,7 +470,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
 
     private String buildHighlightString(Object matchSet, String input) {
         if (!highlightSearchMatchText) {
-            return Transform.escapeTags(input);
+            return fixLeadingSlash(Transform.escapeTags(input));
         }
         if (matchSet instanceof Set) {
             Set thisSet = (Set)matchSet;
@@ -480,9 +480,21 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
                 String thisEntry = iter.next().toString();
                 result = bold(result, thisEntry);
             }
-            return "<html>" + escapeAllButBoldTags(result) + "</html>";
+            return "<html>" + fixLeadingSlash(escapeAllButBoldTags(result)) + "</html>";
         }
-        return Transform.escapeTags(input);
+        return fixLeadingSlash(Transform.escapeTags(input));
+    }
+
+    /*
+        Weird Swing HTML/table cell renderer issue - if first character is a forward slash,
+        the text isn't displayed at all.  
+        Workaround is to render the leading slash character using the ASCII html code for forward slash (&#47;)
+    */
+    private String fixLeadingSlash(String input) {
+        if (input.length() > 0 && input.charAt(0) == '/') {
+            return "&#47;" + input.substring(1);
+        }
+        return input;
     }
 
     private String escapeAllButBoldTags(String input) {
