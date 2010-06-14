@@ -84,6 +84,7 @@ public class LogPanelPreferenceModel implements Serializable{
   private String timeZone;
   private boolean wrapMsg;
   private boolean highlightSearchMatchText;
+  private String hiddenExpression;
 
     /**
    * Returns an <b>unmodifiable</b> list of the columns.
@@ -237,6 +238,7 @@ public class LogPanelPreferenceModel implements Serializable{
     
     setVisibleColumns(model.getVisibleColumns());
     setHiddenLoggers(model.getHiddenLoggers());
+    setHiddenExpression(model.getHiddenExpression());
   }
 
   /**
@@ -451,5 +453,15 @@ public class LogPanelPreferenceModel implements Serializable{
       Object oldValue = this.timeZone;
       this.timeZone = timeZone;
       propertySupport.firePropertyChange("dateFormatTimeZone", oldValue, this.timeZone);
+  }
+
+  public void setHiddenExpression(String hiddenExpression) {
+    Object oldValue = this.hiddenExpression;
+    this.hiddenExpression = hiddenExpression;
+    propertySupport.firePropertyChange("hiddenExpression", oldValue, this.hiddenExpression);
+  }
+
+  public String getHiddenExpression() {
+    return hiddenExpression;
   }
 }

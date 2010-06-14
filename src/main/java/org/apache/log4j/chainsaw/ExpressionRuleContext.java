@@ -30,6 +30,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListModel;
+import javax.swing.text.JTextComponent;
 
 import org.apache.log4j.chainsaw.filter.FilterModel;
 import org.apache.log4j.rule.RuleFactory;
@@ -48,14 +49,14 @@ public class ExpressionRuleContext extends KeyAdapter {
   JList list = new JList();
   FilterModel filterModel;
   JScrollPane scrollPane = new JScrollPane(list);
-  final JTextField textField;
+  final JTextComponent textComponent;
   private DefaultListModel fieldModel = new DefaultListModel();
   private DefaultListModel operatorModel = new DefaultListModel();
 
   public ExpressionRuleContext(
-    final FilterModel filterModel, final JTextField textField) {
+    final FilterModel filterModel, final JTextComponent textComponent) {
     this.filterModel = filterModel;
-    this.textField = textField;
+    this.textComponent = textComponent;
     fieldModel.addElement("LOGGER");
     fieldModel.addElement("LEVEL");
     fieldModel.addElement("CLASS");
@@ -86,7 +87,7 @@ public class ExpressionRuleContext extends KeyAdapter {
     list.setVisibleRowCount(13);
 
     PopupListener popupListener = new PopupListener();
-    textField.addMouseListener(popupListener);
+    textComponent.addMouseListener(popupListener);
 
     list.addKeyListener(
       new KeyAdapter() {
@@ -124,13 +125,13 @@ public class ExpressionRuleContext extends KeyAdapter {
   }
 
   private void updateField(String value) {
-    if (textField.getSelectedText() == null) {
+    if (textComponent.getSelectedText() == null) {
         if (!(value.endsWith("."))) {
             value = value + " ";
         }
     }
 
-    textField.replaceSelection(value);
+    textComponent.replaceSelection(value);
   }
 
   public void keyPressed(KeyEvent e) {
@@ -152,40 +153,40 @@ public class ExpressionRuleContext extends KeyAdapter {
       list.setModel(model);
       list.setSelectedIndex(0);
 
-      Point p = textField.getCaret().getMagicCaretPosition();
+      Point p = textComponent.getCaret().getMagicCaretPosition();
       contextMenu.doLayout();
-      contextMenu.show(textField, p.x, (p.y + (textField.getHeight() - 5)));
+      contextMenu.show(textComponent, p.x, (p.y + (textComponent.getHeight() - 5)));
       list.requestFocus();
     } else {
       if (isOperatorContextValid()) {
         list.setModel(operatorModel);
         list.setSelectedIndex(0);
 
-        Point p = textField.getCaret().getMagicCaretPosition();
+        Point p = textComponent.getCaret().getMagicCaretPosition();
         contextMenu.doLayout();
-        contextMenu.show(textField, p.x, (p.y + (textField.getHeight() - 5)));
+        contextMenu.show(textComponent, p.x, (p.y + (textComponent.getHeight() - 5)));
         list.requestFocus();
       } else if (isFieldContextValid()) {
         list.setModel(fieldModel);
         list.setSelectedIndex(0);
 
-        Point p = textField.getCaret().getMagicCaretPosition();
+        Point p = textComponent.getCaret().getMagicCaretPosition();
 
         if (p == null) {
           p = new Point(
-              textField.getLocation().x,
-              (textField.getLocation().y - textField.getHeight() + 5));
+              textComponent.getLocation().x,
+              (textComponent.getLocation().y - textComponent.getHeight() + 5));
         }
         contextMenu.doLayout();
-        contextMenu.show(textField, p.x, (p.y + (textField.getHeight() - 5)));
+        contextMenu.show(textComponent, p.x, (p.y + (textComponent.getHeight() - 5)));
         list.requestFocus();
       }
     }
   }
 
   private boolean isFieldContextValid() {
-    String text = textField.getText();
-    int currentPosition = textField.getSelectionStart();
+    String text = textComponent.getText();
+    int currentPosition = textComponent.getSelectionStart();
 
     return ((currentPosition == 0)
     || (text.charAt(currentPosition - 1) == ' '));
@@ -202,9 +203,9 @@ public class ExpressionRuleContext extends KeyAdapter {
   }
 
   private boolean isOperatorContextValid() {
-    String text = textField.getText();
+    String text = textComponent.getText();
 
-    int currentPosition = textField.getSelectionStart();
+    int currentPosition = textComponent.getSelectionStart();
 
     if ((currentPosition < 1) || (text.charAt(currentPosition - 1) != ' ')) {
       return false;
@@ -233,9 +234,9 @@ public class ExpressionRuleContext extends KeyAdapter {
   //the field returned is the left hand portion of an expression (for example, logger == )
   //logger is the field that is returned
   private String getField() {
-    String text = textField.getText();
+    String text = textComponent.getText();
 
-    int currentPosition = textField.getSelectionStart();
+    int currentPosition = textComponent.getSelectionStart();
 
     if ((currentPosition < 1) || (text.charAt(currentPosition - 1) != ' ')) {
       return null;
@@ -273,8 +274,8 @@ public class ExpressionRuleContext extends KeyAdapter {
   //subfields allow the key portion of a field to provide context menu support
   //and are available after the fieldname and a . (for example, PROP.)
   private String getSubField() {
-    int currentPosition = textField.getSelectionStart();
-    String text = textField.getText();
+    int currentPosition = textComponent.getSelectionStart();
+    String text = textComponent.getText();
 
     if (text.substring(0, currentPosition).toUpperCase().endsWith("PROP.")) {
       return "PROP.";

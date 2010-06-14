@@ -248,7 +248,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   private int previousLastIndex = -1;
   private final DateFormat timestampExpressionFormat = new SimpleDateFormat(Constants.TIMESTAMP_RULE_FORMAT);
   private final Logger logger = LogManager.getLogger(LogPanel.class);
-  private static final Color INVALID_EXPRESSION_BACKGROUND = new Color(251, 186, 186);
   private TableCellEditor markerCellEditor;
   private AutoFilterComboBox filterCombo;
   private JScrollPane eventsPane;
@@ -698,7 +697,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
      *
      */
     LogPanelLoggerTreeModel logTreeModel = new LogPanelLoggerTreeModel();
-    logTreePanel = new LoggerNameTreePanel(logTreeModel, preferenceModel, this, colorizer);
+    logTreePanel = new LoggerNameTreePanel(logTreeModel, preferenceModel, this, colorizer, filterModel);
     logTreePanel.addPropertyChangeListener("searchExpression", new PropertyChangeListener()
     {
         public void propertyChange(PropertyChangeEvent evt)
@@ -1055,7 +1054,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                   //don't add expressions that aren't valid
                   //invalid expression, change background of the field
                   filterText.setToolTipText(iae.getMessage());
-                  filterText.setBackground(INVALID_EXPRESSION_BACKGROUND);
+                  filterText.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
                 return;
               }
             }
@@ -1865,6 +1864,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     }
 
     logTreePanel.ignore(preferenceModel.getHiddenLoggers());
+    logTreePanel.setHiddenExpression(preferenceModel.getHiddenExpression());
 
     //attempt to load color settings - no need to URL encode the identifier
     colorizer.loadColorSettings(identifier);
@@ -1882,6 +1882,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
               .getSettingsDirectory(), URLEncoder.encode(identifier) + ".xml");
 
     preferenceModel.setHiddenLoggers(new HashSet(logTreePanel.getHiddenSet()));
+    preferenceModel.setHiddenExpression(logTreePanel.getHiddenExpression());
     List visibleOrder = new ArrayList();
     Enumeration cols = table.getColumnModel().getColumns();
     while (cols.hasMoreElements()) {
@@ -2149,7 +2150,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         statusBar.setSearchMatchCount(currentSearchMatchCount, getIdentifier());
       } catch (IllegalArgumentException re) {
         findField.setToolTipText(re.getMessage());
-        findField.setBackground(INVALID_EXPRESSION_BACKGROUND);
+        findField.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
         colorizer.setFindRule(null);
         tableModel.updateEventsWithFindRule(null);
         currentSearchMatchCount = 0;
@@ -2884,7 +2885,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         } catch (IllegalArgumentException iae) {
           //invalid expression, change background of the field
           filterText.setToolTipText(iae.getMessage());
-          filterText.setBackground(INVALID_EXPRESSION_BACKGROUND);
+          filterText.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
         }
       }
     }

@@ -60,10 +60,12 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
@@ -81,6 +83,7 @@ import javax.swing.tree.TreeSelectionModel;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.color.RuleColorizer;
+import org.apache.log4j.chainsaw.filter.FilterModel;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.chainsaw.icons.LineIconFactory;
 import org.apache.log4j.rule.AbstractRule;
@@ -131,9 +134,12 @@ final class LoggerNameTreePanel extends JPanel implements Rule
   private final LogPanelPreferenceModel preferenceModel;
 
   private final JList ignoreList = new JList();
+  private final JTextArea ignoreExpressionTextArea = new JTextArea(4, 75);
   private final JScrollPane ignoreListScroll = new JScrollPane(ignoreList);
   private final JDialog ignoreDialog = new JDialog();
+  private final JDialog ignoreExpressionDialog = new JDialog();
   private final JLabel ignoreSummary = new JLabel("0 hidden loggers");
+  private final JLabel ignoreExpressionSummary = new JLabel("Ignore expression");
   private final SmallToggleButton ignoreLoggerButton = new SmallToggleButton();
   private final EventListenerList listenerList = new EventListenerList();
   private final JTree logTree;
@@ -150,6 +156,8 @@ final class LoggerNameTreePanel extends JPanel implements Rule
   private final JToolBar toolbar = new JToolBar();
   private final LogPanel logPanel;
   private final RuleColorizer colorizer;
+  private Rule ignoreExpressionRule;
+  private FilterModel filterModel;
 
     //~ Constructors ============================================================
 
@@ -158,21 +166,27 @@ final class LoggerNameTreePanel extends JPanel implements Rule
    *
    * @param logTreeModel
    */
-  LoggerNameTreePanel(LogPanelLoggerTreeModel logTreeModel, LogPanelPreferenceModel preferenceModel, LogPanel logPanel, RuleColorizer colorizer)
+  LoggerNameTreePanel(LogPanelLoggerTreeModel logTreeModel, LogPanelPreferenceModel preferenceModel, LogPanel logPanel, RuleColorizer colorizer, FilterModel filterModel)
   {
     super();
     this.logTreeModel = logTreeModel;
     this.preferenceModel = preferenceModel;
     this.logPanel = logPanel;
     this.colorizer = colorizer;
+    this.filterModel = filterModel;
 
     setLayout(new BorderLayout());
+    ignoreExpressionTextArea.setLineWrap(true);
+    ignoreExpressionTextArea.setWrapStyleWord(true);
+    JTextComponentFormatter.applySystemFontAndSize(ignoreExpressionTextArea);
 
     ruleDelegate = new AbstractRule() {
     	public boolean evaluate(LoggingEvent e, Map matches)
         {
           String currentlySelectedLoggerName = getCurrentlySelectedLoggerName();
-          boolean hidden = e.getLoggerName() != null && isHidden(e.getLoggerName());
+          boolean hiddenLogger = e.getLoggerName() != null && isHiddenLogger(e.getLoggerName());
+          boolean hiddenExpression = (ignoreExpressionRule != null && ignoreExpressionRule.evaluate(e, null));
+          boolean hidden = hiddenLogger || hiddenExpression;
           if (currentlySelectedLoggerName == null) {
           	//if there is no selected logger, pass if not hidden
           	return !hidden;
@@ -193,7 +207,9 @@ final class LoggerNameTreePanel extends JPanel implements Rule
         {
           public boolean evaluate(LoggingEvent e, Map matches)
           {
-            boolean hidden = e.getLoggerName() != null && isHidden(e.getLoggerName());
+            boolean hiddenLogger = e.getLoggerName() != null && isHiddenLogger(e.getLoggerName());
+            boolean hiddenExpression = (ignoreExpressionRule != null && ignoreExpressionRule.evaluate(e, null));
+            boolean hidden = hiddenLogger || hiddenExpression;
             String currentlySelectedLoggerName = getCurrentlySelectedLoggerName();
 
             if (!isFocusOnSelected() && !hidden && currentlySelectedLoggerName != null && !"".equals(currentlySelectedLoggerName))
@@ -294,20 +310,40 @@ final class LoggerNameTreePanel extends JPanel implements Rule
 
     ignoreDialog.setTitle("Hidden/Ignored Loggers");
     ignoreDialog.setModal(true);
+
+    ignoreExpressionDialog.setTitle("Hidden/Ignored Expression");
+    ignoreExpressionDialog.setModal(true);
+
+    JPanel ignorePanel = new JPanel();
+    ignorePanel.setLayout(new BoxLayout(ignorePanel, BoxLayout.Y_AXIS));
     JPanel ignoreSummaryPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
     ignoreSummaryPanel.add(ignoreSummary);
     
     Action showIgnoreDialogAction = new AbstractAction("...") {
-
-        public void actionPerformed(ActionEvent e)
-        {
+        public void actionPerformed(ActionEvent e) {
             ignoreDialog.setVisible(true);
-        }};
+        }
+    };
+
+    Action showIgnoreExpressionDialogAction = new AbstractAction("...") {
+      public void actionPerformed(ActionEvent e) {
+        ignoreExpressionDialog.setVisible(true);
+      }
+    };
     showIgnoreDialogAction.putValue(Action.SHORT_DESCRIPTION, "Click to view and manage your hidden/ignored loggers");
     JButton btnShowIgnoreDialog = new SmallButton(showIgnoreDialogAction);
     
     ignoreSummaryPanel.add(btnShowIgnoreDialog);
-    add(ignoreSummaryPanel, BorderLayout.SOUTH);
+    ignorePanel.add(ignoreSummaryPanel);
+
+    JPanel ignoreExpressionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    ignoreExpressionPanel.add(ignoreExpressionSummary);
+    showIgnoreExpressionDialogAction.putValue(Action.SHORT_DESCRIPTION, "Click to view and manage your hidden/ignored expression");
+    JButton btnShowIgnoreExpressionDialog = new SmallButton(showIgnoreExpressionDialogAction);
+    ignoreExpressionPanel.add(btnShowIgnoreExpressionDialog);
+
+    ignorePanel.add(ignoreExpressionPanel);
+    add(ignorePanel, BorderLayout.SOUTH);
 
     ignoreList.setModel(new DefaultListModel());
     ignoreList.addMouseListener(new MouseAdapter()
@@ -340,7 +376,24 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     JPanel ignoreListPanel = new JPanel(new BorderLayout());
     ignoreListScroll.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),"Double click an entry to unhide it"));
     ignoreListPanel.add(ignoreListScroll, BorderLayout.CENTER);
-    
+
+    JPanel ignoreExpressionDialogPanel = new JPanel(new BorderLayout());
+    ignoreExpressionTextArea.addKeyListener(new ExpressionRuleContext(filterModel, ignoreExpressionTextArea));
+
+    ignoreExpressionDialogPanel.add(new JScrollPane(ignoreExpressionTextArea), BorderLayout.CENTER);
+    JButton ignoreExpressionCloseButton = new JButton(new AbstractAction("Close") {
+          public void actionPerformed(ActionEvent e)
+          {
+              String ignoreText = ignoreExpressionTextArea.getText();
+
+              if (updateIgnoreExpression(ignoreText)) {
+                ignoreExpressionDialog.setVisible(false);
+              }
+          }});
+    JPanel closePanel = new JPanel();
+    closePanel.add(ignoreExpressionCloseButton);
+    ignoreExpressionDialogPanel.add(closePanel, BorderLayout.SOUTH);
+
     Box ignoreListButtonPanel = Box.createHorizontalBox();
     
     JButton unhideAll = new JButton(new AbstractAction("Unhide All") {
@@ -373,9 +426,32 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     
     ignoreDialog.getContentPane().add(ignoreListPanel);
     ignoreDialog.pack();
+
+    ignoreExpressionDialog.getContentPane().add(ignoreExpressionDialogPanel);
+    ignoreExpressionDialog.pack();
   }
 
-  //~ Methods =================================================================
+    private boolean updateIgnoreExpression(String ignoreText)
+    {
+        try {
+            if (ignoreText != null && !ignoreText.trim().equals("")) {
+                ignoreExpressionRule = ExpressionRule.getRule(ignoreText);
+            } else {
+                ignoreExpressionRule = null;
+            }
+            firePropertyChange("hiddenSet", null, null);
+
+            updateAllIgnoreStuff();
+            ignoreExpressionTextArea.setBackground(UIManager.getColor("TextField.background"));
+            return true;
+        } catch (IllegalArgumentException iae) {
+            ignoreExpressionTextArea.setToolTipText(iae.getMessage());
+            ignoreExpressionTextArea.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
+            return false;
+        }
+    }
+
+    //~ Methods =================================================================
 
   /**
    * Adds a change Listener to this LoggerNameTreePanel to be notfied
@@ -444,7 +520,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     }
   }
 
-  private boolean isHidden(String loggerName) {
+  private boolean isHiddenLogger(String loggerName) {
     for (Iterator iter = hiddenSet.iterator();iter.hasNext();) {
       String hiddenLoggerEntry = iter.next().toString();
       if (loggerName.startsWith(hiddenLoggerEntry + ".") || loggerName.endsWith(hiddenLoggerEntry)) {
@@ -1342,6 +1418,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
   private void updateAllIgnoreStuff() {
       updateHiddenSetModels();
       updateIgnoreSummary();
+      updateIgnoreExpressionSummary();
   }
   
   private void updateHiddenSetModels() {
@@ -1362,6 +1439,10 @@ final class LoggerNameTreePanel extends JPanel implements Rule
   private void updateIgnoreSummary() {
       ignoreSummary.setText(ignoreList.getModel().getSize() + " hidden loggers");
   }
+
+  private void updateIgnoreExpressionSummary() {
+    ignoreExpressionSummary.setText(ignoreExpressionRule != null?"Ignore expression (set)":"Ignore expression (unset)");
+  }
   
   private void toggleFocusOnState()
   {
@@ -1371,6 +1452,19 @@ final class LoggerNameTreePanel extends JPanel implements Rule
 
     public Collection getHiddenSet() {
         return Collections.unmodifiableSet(hiddenSet);
+    }
+
+    public String getHiddenExpression() {
+        String text = ignoreExpressionTextArea.getText();
+        if (text == null || text.trim().equals("")) {
+            return null;
+        }
+        return text.trim();
+    }
+
+    public void setHiddenExpression(String hiddenExpression) {
+        ignoreExpressionTextArea.setText(hiddenExpression);
+        updateIgnoreExpression(hiddenExpression);
     }
 
     //~ Inner Classes ===========================================================

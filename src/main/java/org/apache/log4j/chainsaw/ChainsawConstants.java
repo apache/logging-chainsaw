@@ -39,6 +39,8 @@ public class ChainsawConstants {
   public static final Color FIND_LOGGER_BACKGROUND = new Color(213, 226, 235);
   public static final Color FIND_LOGGER_FOREGROUND = Color.BLACK;
 
+  public static final Color INVALID_EXPRESSION_BACKGROUND = new Color(251, 186, 186);
+
   public static final Color COLOR_ODD_ROW_BACKGROUND = new Color(227, 227, 227);
   public static final Color COLOR_ODD_ROW_FOREGROUND = Color.BLACK;
 
