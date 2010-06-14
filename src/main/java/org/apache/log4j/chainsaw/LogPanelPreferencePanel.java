@@ -584,6 +584,8 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
       new JCheckBox("Scroll to bottom (view tracks with new events)");
     private final JCheckBox toolTips =
       new JCheckBox("Show Event Detail Tooltips");
+    private final JCheckBox thumbnailBarToolTips =
+      new JCheckBox("Show Thumbnail Bar Tooltips");
 
     //~ Constructors ==========================================================
 
@@ -607,11 +609,13 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
       setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
       add(toolTips);
+      add(thumbnailBarToolTips);
       add(detailPanelVisible);
       add(loggerTreePanel);
       add(scrollToBottom);
 
       toolTips.setSelected(preferenceModel.isToolTips());
+      thumbnailBarToolTips.setSelected(preferenceModel.isThumbnailBarToolTips());
       detailPanelVisible.setSelected(preferenceModel.isDetailPaneVisible());
       loggerTreePanel.setSelected(preferenceModel.isLogTreePanelVisible());
     }
@@ -628,6 +632,13 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
             preferenceModel.setToolTips(toolTips.isSelected());
           }
         });
+
+      thumbnailBarToolTips.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent e) {
+              preferenceModel.setThumbnailBarToolTips(thumbnailBarToolTips.isSelected());
+          }
+      });
+
       preferenceModel.addPropertyChangeListener(
         "toolTips", new PropertyChangeListener()
         {
@@ -637,6 +648,16 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
             toolTips.setSelected(value);
           }
         });
+
+    preferenceModel.addPropertyChangeListener(
+      "thumbnailBarToolTips", new PropertyChangeListener()
+      {
+        public void propertyChange(PropertyChangeEvent evt)
+        {
+          boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+          thumbnailBarToolTips.setSelected(value);
+        }
+      });
 
       detailPanelVisible.addActionListener(new ActionListener()
         {

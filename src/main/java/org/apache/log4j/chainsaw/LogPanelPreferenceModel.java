@@ -74,6 +74,8 @@ public class LogPanelPreferenceModel implements Serializable{
   private List visibleColumnOrder = new ArrayList();
   private boolean detailPaneVisible;
   private boolean toolTips;
+  //default thumbnail bar tooltips to true
+  private boolean thumbnailBarToolTips = true;
   private boolean scrollToBottom;
   private boolean logTreePanelVisible;
   private String loggerPrecision = "";
@@ -224,6 +226,7 @@ public class LogPanelPreferenceModel implements Serializable{
     setHighlightSearchMatchText(model.isHighlightSearchMatchText());
     setTimeZone(model.getTimeZone());
     setToolTips(model.isToolTips());
+    setThumbnailBarToolTips((model.isThumbnailBarToolTips()));
     setScrollToBottom(model.isScrollToBottom());
     setDetailPaneVisible(model.isDetailPaneVisible());
     setLogTreePanelVisible(model.isLogTreePanelVisible());
@@ -377,6 +380,16 @@ public class LogPanelPreferenceModel implements Serializable{
     this.scrollToBottom = scrollToBottom;
     propertySupport.firePropertyChange(
       "scrollToBottom", oldValue, this.scrollToBottom);
+  }
+
+  public final void setThumbnailBarToolTips(boolean thumbnailBarToolTips) {
+      boolean oldValue = this.thumbnailBarToolTips;
+      this.thumbnailBarToolTips = thumbnailBarToolTips;
+      propertySupport.firePropertyChange("thumbnailBarToolTips", oldValue, this.thumbnailBarToolTips);
+  }
+
+  public final boolean isThumbnailBarToolTips() {
+      return thumbnailBarToolTips;
   }
 
   /**

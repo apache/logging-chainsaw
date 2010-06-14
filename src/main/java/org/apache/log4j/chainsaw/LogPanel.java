@@ -1321,8 +1321,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
      * Logger tree splitpane definition
      */
     nameTreeAndMainPanelSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, logTreePanel, lowerPanel);
-    
-    nameTreeAndMainPanelSplit.setToolTipText("Still under development....");
     nameTreeAndMainPanelSplit.setDividerLocation(-1);
 
     add(nameTreeAndMainPanelSplit, BorderLayout.CENTER);
@@ -2699,6 +2697,12 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     return longestWidth + 5;
   }
 
+  private String getToolTipTextForEvent(ExtendedLoggingEvent event) {
+    StringBuffer buf = new StringBuffer();
+    buf.append(detailLayout.getHeader()).append(detailLayout.format(event)).append(detailLayout.getFooter());
+    return buf.toString();
+  }
+
   /**
    * ensures the Entry map of all the unque logger names etc, that is used for
    * the Filter panel is updated with any new information from the event
@@ -2936,11 +2940,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         ExtendedLoggingEvent event = tableModel.getRow(currentRow);
 
         if (event != null) {
-          StringBuffer buf = new StringBuffer();
-          buf.append(detailLayout.getHeader())
-             .append(detailLayout.format(event)).append(
-            detailLayout.getFooter());
-          table.setToolTipText(buf.toString());
+          String toolTipText = getToolTipTextForEvent(event);
+          table.setToolTipText(toolTipText);
         }
       } else {
         table.setToolTipText(null);
@@ -3191,33 +3192,24 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                     configureColors();
                 }
             });
+            
+            addMouseMotionListener(new MouseAdapter() {
+              public void mouseMoved(MouseEvent e) {
+                if (preferenceModel.isThumbnailBarToolTips()) {
+                    int yPosition = e.getPoint().y;
+                    EventWrapper event = getEventWrapperAtPosition(yPosition);
+                    setToolTipText(getToolTipTextForEvent(event.loggingEvent));
+                } else {
+                    setToolTipText(null);
+                }
+              }
+            });
+
             addMouseListener(new MouseAdapter(){
                 public void mouseClicked(MouseEvent e)
                 {
-                    int rowCount = table.getRowCount();
-
-                    Point offsets = getScrollBarOffsets();
-                    int topOffset = offsets.x;
-                    int bottomOffset = offsets.y;
-
-                    //'effective' height of this component is scrollpane height - top/bottom offsets
-                    int height = eventsPane.getHeight() - topOffset - bottomOffset;
-
-                    int clickLocation = e.getPoint().y;
-
-                    //remove top offset from click location but avoid going negative
-                    clickLocation = Math.max(clickLocation - topOffset, 0);
-
-                    //don't let clicklocation exceed height
-                    if (clickLocation >= height) {
-                        clickLocation = height;
-                    }
-
-//                    System.out.println("clicked y pos: " + e.getPoint().y + ", relative: " + clickLocation);
-                    float ratio = (float)clickLocation / height;
-                    int rowToSelect = Math.round(rowCount * ratio);
-//                    System.out.println("rowCount: " + rowCount + ", height: " + height + ", clickLocation: " + clickLocation + ", ratio: " + ratio + ", rowToSelect: " + rowToSelect);
-                    EventWrapper event = getClosestRow(rowToSelect);
+                    int yPosition = e.getPoint().y;
+                    EventWrapper event = getEventWrapperAtPosition(yPosition);
 //                    System.out.println("rowToSelect: " + rowToSelect + ", closestRow: " + event.loggingEvent.getProperty("log4jid"));
                     if (event != null) {
                         int id = new Integer(event.loggingEvent.getProperty("log4jid")).intValue();
@@ -3320,6 +3312,33 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                     }
                 }
             });
+        }
+
+        private EventWrapper getEventWrapperAtPosition(int yPosition)
+        {
+            int rowCount = table.getRowCount();
+
+            Point offsets = getScrollBarOffsets();
+            int topOffset = offsets.x;
+            int bottomOffset = offsets.y;
+
+            //'effective' height of this component is scrollpane height - top/bottom offsets
+            int height = eventsPane.getHeight() - topOffset - bottomOffset;
+
+            //remove top offset from click location but avoid going negative
+            yPosition = Math.max(yPosition - topOffset, 0);
+
+            //don't let clicklocation exceed height
+            if (yPosition >= height) {
+                yPosition = height;
+            }
+
+//                    System.out.println("clicked y pos: " + e.getPoint().y + ", relative: " + clickLocation);
+            float ratio = (float) yPosition / height;
+            int rowToSelect = Math.round(rowCount * ratio);
+//                    System.out.println("rowCount: " + rowCount + ", height: " + height + ", clickLocation: " + clickLocation + ", ratio: " + ratio + ", rowToSelect: " + rowToSelect);
+            EventWrapper event = getClosestRow(rowToSelect);
+            return event;
         }
 
         private EventWrapper getClosestRow(int rowToSelect) {
