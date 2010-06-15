@@ -3199,7 +3199,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                 if (preferenceModel.isThumbnailBarToolTips()) {
                     int yPosition = e.getPoint().y;
                     EventWrapper event = getEventWrapperAtPosition(yPosition);
-                    setToolTipText(getToolTipTextForEvent(event.loggingEvent));
+                    if (event != null) {
+                        setToolTipText(getToolTipTextForEvent(event.loggingEvent));
+                    }
                 } else {
                     setToolTipText(null);
                 }
@@ -3315,6 +3317,11 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             });
         }
 
+        /**
+         * Get event wrapper - may be null
+         * @param yPosition
+         * @return event wrapper or null
+         */
         private EventWrapper getEventWrapperAtPosition(int yPosition)
         {
             int rowCount = table.getRowCount();
