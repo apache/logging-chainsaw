@@ -48,6 +48,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
@@ -650,7 +651,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     Action createExpressionPanel =
       new AbstractAction("", ChainsawIcons.ICON_HELP) {
         public void actionPerformed(ActionEvent arg0) {
-          dialog.setVisible(true);
+            LogPanel.centerAndSetVisible(dialog);
         }
       };
 
@@ -1051,10 +1052,10 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     panel.add(
       new JLabel("Enter expression for new tab:  "), BorderLayout.NORTH);
 
-    final JTextField textField = new JTextField();
-    textField.addKeyListener(
-      new ExpressionRuleContext(new FilterModel(), textField));
-    panel.add(textField, BorderLayout.CENTER);
+    final JTextArea textArea = new JTextArea(4, 75);
+    textArea.addKeyListener(
+      new ExpressionRuleContext(new FilterModel(), textArea));
+    panel.add(textArea, BorderLayout.CENTER);
 
     JButton ok = new JButton("OK");
     JButton close = new JButton("Close");
@@ -1067,7 +1068,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     ok.addActionListener(
       new AbstractAction() {
         public void actionPerformed(ActionEvent evt) {
-          logui.createCustomExpressionLogPanel(textField.getText());
+          logui.createCustomExpressionLogPanel(textArea.getText());
           SwingUtilities.getAncestorOfClass(JDialog.class, panel).setVisible(
             false);
         }

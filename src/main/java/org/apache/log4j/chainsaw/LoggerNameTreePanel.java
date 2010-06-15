@@ -321,13 +321,13 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     
     Action showIgnoreDialogAction = new AbstractAction("...") {
         public void actionPerformed(ActionEvent e) {
-            ignoreDialog.setVisible(true);
+            LogPanel.centerAndSetVisible(ignoreDialog);
         }
     };
 
     Action showIgnoreExpressionDialogAction = new AbstractAction("...") {
       public void actionPerformed(ActionEvent e) {
-        ignoreExpressionDialog.setVisible(true);
+          LogPanel.centerAndSetVisible(ignoreExpressionDialog);
       }
     };
     showIgnoreDialogAction.putValue(Action.SHORT_DESCRIPTION, "Click to view and manage your hidden/ignored loggers");

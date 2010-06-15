@@ -29,6 +29,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -1931,7 +1932,15 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
      * Display the panel preferences frame
      */
   void showPreferences() {
-    logPanelPreferencesFrame.setVisible(true);
+      //don't pack this frame
+      centerAndSetVisible(logPanelPreferencesFrame);
+  }
+
+  public static void centerAndSetVisible(Window window) {
+    Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
+    window.setLocation(new Point((screenDimension.width / 2) - (window.getSize().width / 2),
+      (screenDimension.height / 2) - (window.getSize().height / 2)));
+    window.setVisible(true);
   }
 
   /**
@@ -1940,7 +1949,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   void showColorPreferences() {
     colorPanel.loadLogPanelColorizers();
     colorFrame.pack();
-    colorFrame.setVisible(true);
+    centerAndSetVisible(colorFrame);
   }
 
   /**
