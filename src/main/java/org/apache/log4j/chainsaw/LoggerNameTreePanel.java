@@ -22,6 +22,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Point;
@@ -55,12 +56,12 @@ import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JColorChooser;
 import javax.swing.JDialog;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
@@ -134,7 +135,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
   private final LogPanelPreferenceModel preferenceModel;
 
   private final JList ignoreList = new JList();
-  private final JTextArea ignoreExpressionTextArea = new JTextArea(4, 75);
+  private final JEditorPane ignoreExpressionEntryField = new JEditorPane();
   private final JScrollPane ignoreListScroll = new JScrollPane(ignoreList);
   private final JDialog ignoreDialog = new JDialog();
   private final JDialog ignoreExpressionDialog = new JDialog();
@@ -176,9 +177,8 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     this.filterModel = filterModel;
 
     setLayout(new BorderLayout());
-    ignoreExpressionTextArea.setLineWrap(true);
-    ignoreExpressionTextArea.setWrapStyleWord(true);
-    JTextComponentFormatter.applySystemFontAndSize(ignoreExpressionTextArea);
+    ignoreExpressionEntryField.setPreferredSize(new Dimension(300, 150));
+    JTextComponentFormatter.applySystemFontAndSize(ignoreExpressionEntryField);
 
     ruleDelegate = new AbstractRule() {
     	public boolean evaluate(LoggingEvent e, Map matches)
@@ -378,13 +378,13 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     ignoreListPanel.add(ignoreListScroll, BorderLayout.CENTER);
 
     JPanel ignoreExpressionDialogPanel = new JPanel(new BorderLayout());
-    ignoreExpressionTextArea.addKeyListener(new ExpressionRuleContext(filterModel, ignoreExpressionTextArea));
+    ignoreExpressionEntryField.addKeyListener(new ExpressionRuleContext(filterModel, ignoreExpressionEntryField));
 
-    ignoreExpressionDialogPanel.add(new JScrollPane(ignoreExpressionTextArea), BorderLayout.CENTER);
+    ignoreExpressionDialogPanel.add(new JScrollPane(ignoreExpressionEntryField), BorderLayout.CENTER);
     JButton ignoreExpressionCloseButton = new JButton(new AbstractAction("Close") {
           public void actionPerformed(ActionEvent e)
           {
-              String ignoreText = ignoreExpressionTextArea.getText();
+              String ignoreText = ignoreExpressionEntryField.getText();
 
               if (updateIgnoreExpression(ignoreText)) {
                 ignoreExpressionDialog.setVisible(false);
@@ -442,11 +442,11 @@ final class LoggerNameTreePanel extends JPanel implements Rule
             firePropertyChange("hiddenSet", null, null);
 
             updateAllIgnoreStuff();
-            ignoreExpressionTextArea.setBackground(UIManager.getColor("TextField.background"));
+            ignoreExpressionEntryField.setBackground(UIManager.getColor("TextField.background"));
             return true;
         } catch (IllegalArgumentException iae) {
-            ignoreExpressionTextArea.setToolTipText(iae.getMessage());
-            ignoreExpressionTextArea.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
+            ignoreExpressionEntryField.setToolTipText(iae.getMessage());
+            ignoreExpressionEntryField.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
             return false;
         }
     }
@@ -1455,7 +1455,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     }
 
     public String getHiddenExpression() {
-        String text = ignoreExpressionTextArea.getText();
+        String text = ignoreExpressionEntryField.getText();
         if (text == null || text.trim().equals("")) {
             return null;
         }
@@ -1463,7 +1463,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     }
 
     public void setHiddenExpression(String hiddenExpression) {
-        ignoreExpressionTextArea.setText(hiddenExpression);
+        ignoreExpressionEntryField.setText(hiddenExpression);
         updateIgnoreExpression(hiddenExpression);
     }
 

@@ -889,9 +889,11 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
     final JDialog detailDialog = new JDialog((JFrame) null, true);
     Container container = detailDialog.getContentPane();
-    final JTextArea detailArea = new JTextArea(10, 40);
+    final JEditorPane detailArea = new JEditorPane();
     JTextComponentFormatter.applySystemFontAndSize(detailArea);
     detailArea.setEditable(false);
+    Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
+    detailArea.setPreferredSize(new Dimension(screenDimension.width / 2, screenDimension.height / 2));
     container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
     container.add(new JScrollPane(detailArea));
 
@@ -900,19 +902,16 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     throwableRenderPanel.addActionListener(
       new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          Object o = table.getValueAt(
-            table.getSelectedRow(), table.getSelectedColumn());
-          if (o == null) {
-            //no row selected - ignore
-          	logger.debug("no row selected - unable to display throwable popup");
-            return;
-          }
+          ExtendedLoggingEvent event = tableModel.getRow(table.getSelectedRow());
           detailDialog.setTitle(
             table.getColumnName(table.getSelectedColumn()) + " detail...");
-
-          if (o instanceof String[]) {
+          if (event == null) {
+              detailArea.setText("");
+          } else if (event.getThrowableStrRep() instanceof String[]) {
             StringBuffer buf = new StringBuffer();
-            String[] ti = (String[]) o;
+            buf.append(event.getMessage());
+            buf.append("\n");
+            String[] ti = (String[]) event.getThrowableStrRep();
             buf.append(ti[0]).append("\n");
 
             for (int i = 1; i < ti.length; i++) {
@@ -921,13 +920,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
             detailArea.setText(buf.toString());
           } else {
-            detailArea.setText(o.toString());
+            //no exception
+            detailArea.setText("");
           }
 
-          detailDialog.setLocation(lowerPanel.getLocationOnScreen());
           SwingHelper.invokeOnEDT(new Runnable() {
               public void run() {
-                detailDialog.setVisible(true);
+                centerAndSetVisible(detailDialog);
               }
             });
         }

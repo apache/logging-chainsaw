@@ -42,13 +42,13 @@ import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
@@ -1052,11 +1052,12 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     panel.add(
       new JLabel("Enter expression for new tab:  "), BorderLayout.NORTH);
 
-    final JTextArea textArea = new JTextArea(4, 75);
-    JTextComponentFormatter.applySystemFontAndSize(textArea);
-    textArea.addKeyListener(
-      new ExpressionRuleContext(new FilterModel(), textArea));
-    panel.add(textArea, BorderLayout.CENTER);
+    final JEditorPane entryField = new JEditorPane();
+    entryField.setPreferredSize(new Dimension(350, 75));
+    JTextComponentFormatter.applySystemFontAndSize(entryField);
+    entryField.addKeyListener(
+      new ExpressionRuleContext(new FilterModel(), entryField));
+    panel.add(entryField, BorderLayout.CENTER);
 
     JButton ok = new JButton("OK");
     JButton close = new JButton("Close");
@@ -1069,7 +1070,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     ok.addActionListener(
       new AbstractAction() {
         public void actionPerformed(ActionEvent evt) {
-          logui.createCustomExpressionLogPanel(textArea.getText());
+          logui.createCustomExpressionLogPanel(entryField.getText());
           SwingUtilities.getAncestorOfClass(JDialog.class, panel).setVisible(
             false);
         }
