@@ -72,16 +72,16 @@ class NoReceiversWarningPanel extends JPanel {
     private final JComboBox previousConfigs = new JComboBox();
 
     private final JRadioButton simpleReceiver = new JRadioButton(
-            "Let me use a simple Receiver:");
+            "Define a Socket-based receiver");
 
     private final JRadioButton justLoadingFile = new JRadioButton(
             "I'm fine thanks, don't worry");
     private final JRadioButton searchOption = new JRadioButton(
-            "Let me search for a configuration file");
+            "Use an existing receiver configuration file...");
     private final JRadioButton chainsawSavedConfigOption = new JRadioButton(
-            "Load configuration file saved by Chainsaw");
+            "Use most recent configuration defined through the Receiver configuration panel");
     private final JRadioButton manualOption = new JRadioButton(
-            "Let me define Receivers manually");
+            "Define receivers through the Receiver configuration panel (configuration saved on exit)");
     private final JButton okButton = new JButton("Ok");
     private final PanelModel model = new PanelModel();
     final DefaultComboBoxModel configModel = new DefaultComboBoxModel();
@@ -131,19 +131,19 @@ class NoReceiversWarningPanel extends JPanel {
         gc.weightx = 1.0;
         gc.weighty = 1.0;
 
-        JTextArea label = new JTextArea(
-                "You will not be able to receive events from a Remote source unless you define one in the Log4J configuration file.\n");
-        label.setWrapStyleWord(true);
-        label.setLineWrap(true);
-        label.setEditable(false);
-        label.setOpaque(false);
-        label.setFont(getFont());
+        JTextArea description = new JTextArea("To load events into Chainsaw, a 'receiver' configuration must be provided.\n\n" +
+                "NOTE: An example receiver configuration is available from the Welcome tab ('view example receiver configuration')");
+        description.setWrapStyleWord(true);
+        description.setLineWrap(true);
+        description.setEditable(false);
+        description.setOpaque(false);
+        description.setFont(getFont());
 
-        add(label, gc);
+        add(description, gc);
 
         gc.weightx = 0;
         gc.weighty = 0;
-        gc.gridy = 2;
+        gc.gridy = GridBagConstraints.RELATIVE;
         add(Box.createVerticalStrut(20), gc);
 
         JPanel optionpanel = new JPanel();
@@ -163,8 +163,8 @@ class NoReceiversWarningPanel extends JPanel {
         searchOption.setMnemonic('S');
         
         chainsawSavedConfigOption.setToolTipText(
-             "Allows you to load Receiver definitions saved by Chanisaw previously");
- 
+             "Allows you to load Receiver definitions saved by Chainsaw previously");
+
         chainsawSavedConfigOption.setMnemonic('C');
 
 
@@ -190,7 +190,7 @@ class NoReceiversWarningPanel extends JPanel {
 
         chainsawSavedConfigOption.setEnabled(getModel().isChinsawConfigFileExists());
 
-        gc.gridy = 3;
+        gc.gridy = GridBagConstraints.RELATIVE;
 
 
         configModel.removeAllElements();
@@ -464,7 +464,7 @@ class NoReceiversWarningPanel extends JPanel {
     private URL browseForConfig() throws MalformedURLException {
 
         JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle("Search for Log4j configuration...");
+        chooser.setDialogTitle("Use an existing receiver configuration file...");
         chooser.setDialogType(JFileChooser.OPEN_DIALOG);
         chooser.setFileFilter(new FileFilter() {
                 public boolean accept(File f) {
