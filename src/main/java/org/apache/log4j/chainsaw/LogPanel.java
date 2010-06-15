@@ -907,21 +907,22 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             table.getColumnName(table.getSelectedColumn()) + " detail...");
           if (event == null) {
               detailArea.setText("");
-          } else if (event.getThrowableStrRep() instanceof String[]) {
-            StringBuffer buf = new StringBuffer();
-            buf.append(event.getMessage());
-            buf.append("\n");
-            String[] ti = (String[]) event.getThrowableStrRep();
-            buf.append(ti[0]).append("\n");
-
-            for (int i = 1; i < ti.length; i++) {
-              buf.append(ti[i]).append("\n    ");
-            }
-
-            detailArea.setText(buf.toString());
           } else {
-            //no exception
-            detailArea.setText("");
+            //throwable string representation may be a length-one empty array
+            String[] ti = event.getThrowableStrRep();
+            if (ti != null && ti.length > 0 && (!(ti.length == 1 && ti[0].equals("")))) {
+                StringBuffer buf = new StringBuffer();
+                buf.append(event.getMessage());
+                buf.append("\n");
+                for (int i = 0; i < ti.length; i++) {
+                  buf.append(ti[i]).append("\n    ");
+                }
+
+                detailArea.setText(buf.toString());
+              } else {
+                //no exception
+                detailArea.setText("");
+              }
           }
 
           SwingHelper.invokeOnEDT(new Runnable() {
