@@ -890,6 +890,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     final JDialog detailDialog = new JDialog((JFrame) null, true);
     Container container = detailDialog.getContentPane();
     final JTextArea detailArea = new JTextArea(10, 40);
+    JTextComponentFormatter.applySystemFontAndSize(detailArea);
     detailArea.setEditable(false);
     container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
     container.add(new JScrollPane(detailArea));

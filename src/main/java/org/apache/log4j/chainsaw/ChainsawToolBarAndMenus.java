@@ -1053,6 +1053,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
       new JLabel("Enter expression for new tab:  "), BorderLayout.NORTH);
 
     final JTextArea textArea = new JTextArea(4, 75);
+    JTextComponentFormatter.applySystemFontAndSize(textArea);
     textArea.addKeyListener(
       new ExpressionRuleContext(new FilterModel(), textArea));
     panel.add(textArea, BorderLayout.CENTER);
