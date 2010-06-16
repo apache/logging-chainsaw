@@ -297,8 +297,8 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         break;
     case ChainsawColumns.INDEX_LEVEL_COL_NAME:
       if (levelUseIcons) {
-        levelTextPane.insertIcon((Icon) iconMap.get(value.toString()));
         levelTextPane.setText("");
+        levelTextPane.insertIcon((Icon) iconMap.get(value.toString()));
         if (!toolTipsVisible) {
           levelTextPane.setToolTipText(value.toString());
         }
