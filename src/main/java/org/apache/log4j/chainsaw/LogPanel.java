@@ -30,6 +30,8 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -96,7 +98,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
@@ -1423,7 +1424,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                 value = ((JLabel) comp).getText();
               }
             } else {
-              Object o = table.getValueAt(row, column).toString();
+              Object o = table.getValueAt(row, column);
 
               if (o instanceof String[] && ((String[])o).length > 0) {
                 value = ((String[]) o)[0];
@@ -1463,7 +1464,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                 value = ((JLabel) comp).getText();
               }
             } else {
-              Object o = table.getValueAt(row, column).toString();
+              Object o = table.getValueAt(row, column);
 
               if (o instanceof String[] && ((String[])o).length > 0) {
                 value = ((String[]) o)[0];
@@ -1492,6 +1493,47 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
           filterText.setText(null);
           ruleMediator.setRefinementRule(null);
         }
+      };
+
+    final Action copyAction =
+      new AbstractAction("Copy value under pointer to clipboard") {
+        public void actionPerformed(ActionEvent e) {
+                      if (currentPoint != null) {
+            int column = table.columnAtPoint(currentPoint);
+            int row = table.rowAtPoint(currentPoint);
+            String colName = table.getColumnName(column).toUpperCase();
+            String value = "";
+
+            if (colName.equalsIgnoreCase(ChainsawConstants.TIMESTAMP_COL_NAME)) {
+              JComponent comp =
+                (JComponent) table.getCellRenderer(row, column);
+
+              if (comp instanceof JLabel) {
+                value = ((JLabel) comp).getText();
+              }
+            } else {
+              Object o = table.getValueAt(row, column);
+              //exception - build message + throwable
+              if (o != null) {
+                  if (o instanceof String[]) {
+                      String[] ti = (String[])o;
+                      if (ti.length > 0 && (!(ti.length == 1 && ti[0].equals("")))) {
+                        ExtendedLoggingEvent event = tableModel.getRow(row);
+                        value = event.getMessage().toString();
+                        for (int i=0;i<((String[])o).length;i++) {
+                            value = value + "\n" + ((String[]) o)[i];
+                        }
+                      }
+                  } else {
+                    value = o.toString();
+                  }
+              }
+            }
+            StringSelection selection = new StringSelection(value);
+            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            clipboard.setContents(selection, null);
+        }
+      }
       };
 
     final JMenuItem menuItemToggleDock = new JMenuItem("Undock/dock");
@@ -1609,6 +1651,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     p.add(new JSeparator());
 
     p.add(menuBuildColorRule);
+    p.add(copyAction);
     p.add(new JSeparator());
         
     p.add(menuItemToggleDetails);

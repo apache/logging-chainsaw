@@ -20,7 +20,7 @@ package org.apache.log4j.chainsaw;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
+import java.awt.Insets;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineBreakMeasurer;
 import java.awt.font.TextAttribute;
@@ -44,21 +44,32 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextPane;
-import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.BoxView;
+import javax.swing.text.ComponentView;
+import javax.swing.text.Element;
+import javax.swing.text.IconView;
+import javax.swing.text.LabelView;
 import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.ParagraphView;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-import javax.swing.text.html.HTMLDocument;
-import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.StyledEditorKit;
+import javax.swing.text.TabSet;
+import javax.swing.text.TabStop;
+import javax.swing.text.View;
+import javax.swing.text.ViewFactory;
 
 import org.apache.log4j.chainsaw.color.RuleColorizer;
 import org.apache.log4j.chainsaw.icons.LevelIconFactory;
 import org.apache.log4j.helpers.Constants;
-import org.apache.log4j.helpers.Transform;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.LoggingEventFieldResolver;
 
@@ -97,14 +108,16 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private static final Border MIDDLE_EMPTY_BORDER = BorderFactory.createEmptyBorder(borderWidth, 0, borderWidth, 0);
   private static final Border RIGHT_EMPTY_BORDER = BorderFactory.createEmptyBorder(borderWidth, 0, borderWidth, borderWidth);
 
-  private final JLabel levelLabel = new JLabel();
-  private JLabel generalLabel = new JLabel();
+  private final JTextPane levelTextPane = new JTextPane();
+  private JTextPane singleLineTextPane = new JTextPane();
 
   private final JPanel multiLinePanel = new JPanel();
   private final JPanel generalPanel = new JPanel();
   private final JPanel levelPanel = new JPanel();
   private ApplicationPreferenceModel applicationPreferenceModel;
   private JTextPane multiLineTextPane;
+  private MutableAttributeSet boldAttributeSet;
+  private TabSet tabs;
 
     /**
    * Creates a new TableColorizingRenderer object.
@@ -115,24 +128,36 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     generalPanel.setLayout(new BoxLayout(generalPanel, BoxLayout.Y_AXIS));
     levelPanel.setLayout(new BoxLayout(levelPanel, BoxLayout.Y_AXIS));
 
-    multiLinePanel.setAlignmentX(TOP_ALIGNMENT);
-    generalPanel.setAlignmentX(TOP_ALIGNMENT);
-    levelPanel.setAlignmentX(TOP_ALIGNMENT);
+    //define the 'bold' attributeset
+    boldAttributeSet = new SimpleAttributeSet();
+    StyleConstants.setBold(boldAttributeSet, true);
 
-    generalLabel.setVerticalAlignment(SwingConstants.TOP);
-    levelLabel.setVerticalAlignment(SwingConstants.TOP);
-    levelLabel.setOpaque(true);
-    levelLabel.setText("");
+    //throwable col may have a tab..if so, render the tab as col zero
+    int pos = 0;
+    int align = TabStop.ALIGN_LEFT;
+    int leader = TabStop.LEAD_NONE;
+    TabStop tabStop = new TabStop(pos, align, leader);
+    tabs = new TabSet(new TabStop[]{tabStop});
 
-    generalPanel.add(generalLabel);
-    levelPanel.add(levelLabel);
+    levelTextPane.setOpaque(true);
+    levelTextPane.setText("");
+
+    generalPanel.add(singleLineTextPane);
+    levelPanel.add(levelTextPane);
 
     this.colorizer = colorizer;
     multiLineTextPane = new JTextPane();
-    multiLineTextPane.setEditorKit(new HTMLEditorKit());
-    multiLineTextPane.setMargin(null);
+    multiLineTextPane.setEditorKit(new StyledEditorKit());
+
+    singleLineTextPane.setEditorKit(new OneLineEditorKit());
+    levelTextPane.setEditorKit(new OneLineEditorKit());
+
     multiLineTextPane.setEditable(false);
-    multiLineTextPane.setFont(levelLabel.getFont());
+    multiLineTextPane.setFont(levelTextPane.getFont());
+    Insets leftRightInsets = new Insets(0, 5, 0, 5);
+    multiLineTextPane.setMargin(leftRightInsets);
+    singleLineTextPane.setMargin(leftRightInsets);
+    levelTextPane.setMargin(leftRightInsets);
   }
 
   public void setToolTipsVisible(boolean toolTipsVisible) {
@@ -162,15 +187,20 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     switch (colIndex) {
     case ChainsawColumns.INDEX_THROWABLE_COL_NAME:
       if (value instanceof String[] && ((String[])value).length > 0){
+          Style tabStyle = singleLineTextPane.getLogicalStyle();
+          StyleConstants.setTabSet(tabStyle, tabs);
+          //set the 1st tab at position 3
+          singleLineTextPane.setLogicalStyle(tabStyle);
           //exception string is split into an array..just highlight the first line completely if anything in the exception matches if we have a match for the exception field
           Set exceptionMatches = (Set)matches.get(LoggingEventFieldResolver.EXCEPTION_FIELD);
           if (exceptionMatches != null && exceptionMatches.size() > 0) {
-              generalLabel.setText(bold(((String[])value)[0]));
+              singleLineTextPane.setText(((String[])value)[0]);
+              boldAll((StyledDocument) singleLineTextPane.getDocument());
           } else {
-              generalLabel.setText(((String[])value)[0]);
+              singleLineTextPane.setText(((String[])value)[0]);
           }
       } else {
-        generalLabel.setText("");
+        singleLineTextPane.setText("");
       }
       component = generalPanel;
       break;
@@ -184,68 +214,72 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
           break;
         }
       }
-      generalLabel.setText(buildHighlightString(matches.get(LoggingEventFieldResolver.LOGGER_FIELD), logger.substring(startPos + 1)));
+      singleLineTextPane.setText(logger.substring(startPos + 1));
+      setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.LOGGER_FIELD), (StyledDocument) singleLineTextPane.getDocument());
       component = generalPanel;
       break;
     case ChainsawColumns.INDEX_ID_COL_NAME:
-        generalLabel.setText(buildHighlightString(matches.get(LoggingEventFieldResolver.PROP_FIELD + "LOG4JID"), value.toString()));
+        singleLineTextPane.setText(value.toString());
+        setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.PROP_FIELD + "LOG4JID"), (StyledDocument) singleLineTextPane.getDocument());
         component = generalPanel;
         break;
     case ChainsawColumns.INDEX_CLASS_COL_NAME:
-        generalLabel.setText(buildHighlightString(matches.get(LoggingEventFieldResolver.CLASS_FIELD), value.toString()));
+        singleLineTextPane.setText(value.toString());
+        setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.CLASS_FIELD), (StyledDocument) singleLineTextPane.getDocument());
         component = generalPanel;
         break;
     case ChainsawColumns.INDEX_FILE_COL_NAME:
-        generalLabel.setText(buildHighlightString(matches.get(LoggingEventFieldResolver.FILE_FIELD), value.toString()));
+        singleLineTextPane.setText(value.toString());
+        setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.FILE_FIELD), (StyledDocument) singleLineTextPane.getDocument());
         component = generalPanel;
         break;
     case ChainsawColumns.INDEX_LINE_COL_NAME:
-        generalLabel.setText(buildHighlightString(matches.get(LoggingEventFieldResolver.LINE_FIELD), value.toString()));
+        singleLineTextPane.setText(value.toString());
+        setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.LINE_FIELD), (StyledDocument) singleLineTextPane.getDocument());
         component = generalPanel;
         break;
     case ChainsawColumns.INDEX_NDC_COL_NAME:
-        generalLabel.setText(buildHighlightString(matches.get(LoggingEventFieldResolver.NDC_FIELD), value.toString()));
+        singleLineTextPane.setText(value.toString());
+        setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.NDC_FIELD), (StyledDocument) singleLineTextPane.getDocument());
         component = generalPanel;
         break;
     case ChainsawColumns.INDEX_THREAD_COL_NAME:
-        generalLabel.setText(buildHighlightString(matches.get(LoggingEventFieldResolver.THREAD_FIELD), value.toString()));
+        singleLineTextPane.setText(value.toString());
+        setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.THREAD_FIELD), (StyledDocument) singleLineTextPane.getDocument());
         component = generalPanel;
         break;
     case ChainsawColumns.INDEX_TIMESTAMP_COL_NAME:
         //timestamp matches contain the millis..not the display text..just highlight if we have a match for the timestamp field
         Set timestampMatches = (Set)matches.get(LoggingEventFieldResolver.TIMESTAMP_FIELD);
         if (timestampMatches != null && timestampMatches.size() > 0) {
-            generalLabel.setText(bold(value.toString()));
+            singleLineTextPane.setText(value.toString());
+            boldAll((StyledDocument) singleLineTextPane.getDocument());
         } else {
-            generalLabel.setText(value.toString());
+            singleLineTextPane.setText(value.toString());
         }
         component = generalPanel;
         break;
     case ChainsawColumns.INDEX_METHOD_COL_NAME:
-        generalLabel.setText(buildHighlightString(matches.get(LoggingEventFieldResolver.METHOD_FIELD), value.toString()));
+        singleLineTextPane.setText(value.toString());
+        setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.METHOD_FIELD), (StyledDocument) singleLineTextPane.getDocument());
         component = generalPanel;
         break;
     case ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME:
     case ChainsawColumns.INDEX_MESSAGE_COL_NAME:
+        String thisString = value.toString().trim();
+        multiLineTextPane.setText(thisString);
         int width = tableColumn.getWidth();
 
-        String thisString;
         if (colIndex == ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME) {
             //property keys are set as all uppercase
-            thisString = buildHighlightString(matches.get(LoggingEventFieldResolver.PROP_FIELD + ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE.toUpperCase()), value.toString().trim());
+            setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.PROP_FIELD + ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE.toUpperCase()), (StyledDocument) multiLineTextPane.getDocument());
         } else {
-            thisString = buildHighlightString(matches.get(LoggingEventFieldResolver.MSG_FIELD), value.toString().trim());
+            setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.MSG_FIELD), (StyledDocument) multiLineTextPane.getDocument());
         }
         int tableRowHeight = table.getRowHeight(row);
-        setText(thisString);
         multiLinePanel.removeAll();
         multiLinePanel.add(multiLineTextPane);
-        HTMLDocument document = new HTMLDocument();
-        multiLineTextPane.setDocument(document);
-        Font font = label.getFont();
-        String bodyRule = "body { font-family: " + font.getFamily() + "; font-size: " + (font.getSize()) + "pt; }";
-        ((HTMLDocument)multiLineTextPane.getDocument()).getStyleSheet().addRule(bodyRule);
-        multiLineTextPane.setText(thisString);
+
         if (wrap) {
             Map paramMap = new HashMap();
             paramMap.put(TextAttribute.FONT, multiLineTextPane.getFont());
@@ -263,26 +297,23 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         break;
     case ChainsawColumns.INDEX_LEVEL_COL_NAME:
       if (levelUseIcons) {
-        levelLabel.setIcon((Icon) iconMap.get(value.toString()));
-
-        if (levelLabel.getIcon() != null) {
-          levelLabel.setText("");
-        }
+        levelTextPane.insertIcon((Icon) iconMap.get(value.toString()));
+        levelTextPane.setText("");
         if (!toolTipsVisible) {
-          levelLabel.setToolTipText(value.toString());
+          levelTextPane.setToolTipText(value.toString());
         }
       } else {
-        levelLabel.setIcon(null);
-        levelLabel.setText(buildHighlightString(matches.get(LoggingEventFieldResolver.LEVEL_FIELD), value.toString()));
+        levelTextPane.setText(value.toString());
+        setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.LEVEL_FIELD), (StyledDocument) levelTextPane.getDocument());
         if (!toolTipsVisible) {
-            levelLabel.setToolTipText(null);
+            levelTextPane.setToolTipText(null);
         }
       }
       if (toolTipsVisible) {
-          levelLabel.setToolTipText(label.getToolTipText());
+          levelTextPane.setToolTipText(label.getToolTipText());
       }
-      levelLabel.setForeground(label.getForeground());
-      levelLabel.setBackground(label.getBackground());
+      levelTextPane.setForeground(label.getForeground());
+      levelTextPane.setBackground(label.getBackground());
       component = levelPanel;
       break;
 
@@ -302,9 +333,10 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         if (thisProp != null) {
             String propKey = LoggingEventFieldResolver.PROP_FIELD + thisProp.toUpperCase();
             Set propKeyMatches = (Set)matches.get(propKey);
-            generalLabel.setText(buildHighlightString(propKeyMatches, loggingEvent.getProperty(thisProp)));
+            singleLineTextPane.setText(loggingEvent.getProperty(thisProp));
+            setHighlightAttributesInternal(propKeyMatches, (StyledDocument) singleLineTextPane.getDocument());
         } else {
-            generalLabel.setText("");
+            singleLineTextPane.setText("");
         }
         component = generalPanel;
         break;
@@ -344,10 +376,10 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         styledDocument.setCharacterAttributes(0, styledDocument.getLength() + 1, attributes, false);
         multiLineTextPane.setBackground(background);
     }
-    levelLabel.setBackground(background);
-    levelLabel.setForeground(foreground);
-    generalLabel.setBackground(background);
-    generalLabel.setForeground(foreground);
+    levelTextPane.setBackground(background);
+    levelTextPane.setForeground(foreground);
+    singleLineTextPane.setBackground(background);
+    singleLineTextPane.setForeground(foreground);
 
     if (isSelected) {
       if (col == 0) {
@@ -468,89 +500,90 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
      return Math.max(ChainsawConstants.DEFAULT_ROW_HEIGHT, (int) height);
     }
 
-    private String buildHighlightString(Object matchSet, String input) {
+    private void setHighlightAttributesInternal(Object matchSet, StyledDocument styledDocument) {
         if (!highlightSearchMatchText) {
-            return fixLeadingSlash(Transform.escapeTags(input));
+            return;
         }
+        setHighlightAttributes(matchSet, styledDocument);
+    }
+
+    public void setHighlightAttributes(Object matchSet, StyledDocument styledDocument) {
         if (matchSet instanceof Set) {
             Set thisSet = (Set)matchSet;
-            //start with result as input and replace each time
-            String result = input;
             for (Iterator iter = thisSet.iterator();iter.hasNext();) {
                 String thisEntry = iter.next().toString();
-                result = bold(result, thisEntry);
+                bold(thisEntry, styledDocument);
             }
-            return "<html>" + fixLeadingSlash(escapeAllButBoldTags(result)) + "</html>";
         }
-        return fixLeadingSlash(Transform.escapeTags(input));
     }
 
-    /*
-        Weird Swing HTML/table cell renderer issue - if first character is a forward slash,
-        the text isn't displayed at all.  
-        Workaround is to render the leading slash character using the ASCII html code for forward slash (&#47;)
-    */
-    private String fixLeadingSlash(String input) {
-        if (input.length() > 0 && input.charAt(0) == '/') {
-            return "&#47;" + input.substring(1);
-        }
-        return input;
-    }
-
-    private String escapeAllButBoldTags(String input) {
-            if (!highlightSearchMatchText) {
-                return Transform.escapeTags(input);
-            }
-            String lowerInput = input.toLowerCase();
-            String lowerBoldStart = "<b>";
-            String lowerBoldEnd = "</b>";
-            int boldStartLength = lowerBoldStart.length();
-            int boldEndLength = lowerBoldEnd.length();
-            int firstIndex = 0;
-            int currentIndex = 0;
-            StringBuffer newString = new StringBuffer("");
-            while ((currentIndex = lowerInput.indexOf(lowerBoldStart, firstIndex)) > -1) {
-                newString.append(Transform.escapeTags(input.substring(firstIndex, currentIndex)));
-                newString.append(lowerBoldStart);
-                firstIndex = currentIndex + boldStartLength;
-                currentIndex = lowerInput.indexOf(lowerBoldEnd, firstIndex);
-                if (currentIndex > -1) {
-                    newString.append(Transform.escapeTags(input.substring(firstIndex, currentIndex)));
-                    newString.append(lowerBoldEnd);
-                    firstIndex = currentIndex + boldEndLength;
-                }
-            }
-            newString.append(Transform.escapeTags(input.substring(firstIndex, input.length())));
-            return newString.toString();
-        }
-
-    private String bold(String input) {
+    private void boldAll(StyledDocument styledDocument) {
         if (!highlightSearchMatchText) {
-            return Transform.escapeTags(input);
+            return;
         }
-        return "<html><b>" + Transform.escapeTags(input) + "</b></html>";
+        styledDocument.setCharacterAttributes(0, styledDocument.getLength(), boldAttributeSet, false);
     }
     
-    private String bold(String input, String textToBold) {
-        String lowerInput = input.toLowerCase();
-        String lowerTextToBold = textToBold.toLowerCase();
-        int textToBoldLength = textToBold.length();
-        int firstIndex = 0;
-        int currentIndex = 0;
-        StringBuffer newString = new StringBuffer("");
-        while ((currentIndex = lowerInput.indexOf(lowerTextToBold, firstIndex)) > -1) {
-            newString.append(input.substring(firstIndex, currentIndex));
-            newString.append("<b>");
-            newString.append(input.substring(currentIndex, currentIndex + textToBoldLength));
-            newString.append("</b>");
-            firstIndex = currentIndex + textToBoldLength;
+    private void bold(String textToBold, StyledDocument styledDocument) {
+        try {
+            String lowerInput = styledDocument.getText(0, styledDocument.getLength()).toLowerCase();
+            String lowerTextToBold = textToBold.toLowerCase();
+            int textToBoldLength = textToBold.length();
+            int firstIndex = 0;
+            int currentIndex;
+            while ((currentIndex = lowerInput.indexOf(lowerTextToBold, firstIndex)) > -1) {
+                styledDocument.setCharacterAttributes(currentIndex, textToBoldLength, boldAttributeSet, false);
+                firstIndex = currentIndex + textToBoldLength;
+            }
         }
-        newString.append(input.substring(firstIndex, input.length()));
-        return newString.toString();
+        catch (BadLocationException e) {
+            //ignore
+        }
     }
 
     public void setHighlightSearchMatchText(boolean highlightSearchMatchText)
     {
         this.highlightSearchMatchText = highlightSearchMatchText;
+    }
+
+    private class OneLineEditorKit extends StyledEditorKit {
+        private ViewFactory viewFactoryImpl = new ViewFactoryImpl();
+
+        public ViewFactory getViewFactory() {
+            return viewFactoryImpl;
+        }
+    }
+
+    private class ViewFactoryImpl implements ViewFactory {
+        public View create(Element elem)
+        {
+            String elementName = elem.getName();
+            if (elementName != null)
+            {
+                if (elementName.equals(AbstractDocument.ParagraphElementName)) {
+                    return new OneLineParagraphView(elem);
+                } else  if (elementName.equals(AbstractDocument.ContentElementName)) {
+                    return new LabelView(elem);
+                } else if (elementName.equals(AbstractDocument.SectionElementName)) {
+                    return new BoxView(elem, View.Y_AXIS);
+                } else if (elementName.equals(StyleConstants.ComponentElementName)) {
+                    return new ComponentView(elem);
+                } else if (elementName.equals(StyleConstants.IconElementName)) {
+                    return new IconView(elem);
+                }
+            }
+            return new LabelView(elem);
+        }
+    }
+
+    private class OneLineParagraphView extends ParagraphView {
+        public OneLineParagraphView(Element elem) {
+            super(elem);
+        }
+
+        //this is the main fix - set the flow span to be max val
+        public int getFlowSpan(int index) {
+            return Integer.MAX_VALUE;
+        }
     }
 }
