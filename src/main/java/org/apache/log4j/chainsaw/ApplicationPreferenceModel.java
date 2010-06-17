@@ -187,7 +187,7 @@ public class ApplicationPreferenceModel {
     public void apply(ApplicationPreferenceModel model)
     {
       setIdentifierExpression(model.getIdentifierExpression());
-      setShowNoReceiverWarning(model.isShowNoReceiverWarning());
+      setShowNoReceiverWarning(model.isShowNoReceiverWarning() || (model.getConfigurationURL() == null || model.getConfigurationURL().trim().equals("")));
       setResponsiveness(model.getResponsiveness());
       setTabPlacement(model.getTabPlacement());
       setStatusBar(model.isStatusBar());
