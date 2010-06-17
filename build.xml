@@ -395,7 +395,7 @@
                     name="Chainsaw"
                     mainclass="org.apache.log4j.chainsaw.LogUI"
                     icon="packaging/logo.icns"
-                    version="1.99.99"
+                    version="2.1.0"
                     infostring="Chainsaw"
                     aboutmenuname="Chainsaw"
                     bundleid="org.apache.log4j.chainsaw.ChainsawBundle"
