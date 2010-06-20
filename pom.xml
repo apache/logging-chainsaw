@@ -181,11 +181,33 @@
               </tasks>
             </configuration>
           </execution>
+          <execution>
+            <id>javadoc.resources</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <tasks>
+                <copy todir="${project.build.directory}/apidocs/META-INF">
+                  <fileset dir="${basedir}">
+                    <include name="LICENSE" />
+                    <include name="NOTICE" />
+                  </fileset>
+                </copy>
+              </tasks>
+            </configuration>
+          </execution>
         </executions>
         <dependencies>
           <dependency>
             <groupId>ant</groupId>
             <artifactId>ant-nodeps</artifactId>
+            <version>1.6.5</version>
+          </dependency>
+          <dependency>
+            <groupId>ant</groupId>
+            <artifactId>ant</artifactId>
             <version>1.6.5</version>
           </dependency>
           <dependency>
@@ -217,6 +239,10 @@
       </plugin>
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <encoding>UTF-8</encoding>
+          <docEncoding>UTF-8</docEncoding>
+        </configuration>
         <executions>
           <execution>
             <goals>

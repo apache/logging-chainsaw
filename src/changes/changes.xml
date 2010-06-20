@@ -37,6 +37,7 @@
 		Added ability to remember hidden log panels.
 	</action>
 	<action dev="psmith" issue="42670" type="fix">Address memory leak when using cyclic model</action>
+       <action issue="49078" action="fix">javadoc.jar was missing NOTICE and LICENSE.</action>
     </release>
   </body>
 </document>
