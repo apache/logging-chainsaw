@@ -73,8 +73,17 @@ public class DefaultLayoutFactory {
         } catch (Exception e) {
           content = new StringBuffer(PatternLayout.TTCC_CONVERSION_PATTERN);
         }
-
-        defaultPatternLayout = content.toString();
+        String trimmedContent = content.toString().trim();
+        //the default docs contain the apache license header, strip that out before displaying
+        String startComment = "<!--";
+        String endComment = "-->";
+        if (trimmedContent.startsWith(startComment)) {
+            int endIndex = trimmedContent.indexOf(endComment);
+            if (endIndex > -1) {
+                trimmedContent = trimmedContent.substring(endIndex + endComment.length()).trim();
+            }
+        }
+        defaultPatternLayout = trimmedContent;
       }
 
     return defaultPatternLayout;
