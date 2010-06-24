@@ -63,8 +63,8 @@ public final class LayoutEditorPane extends JPanel {
   private final Action cutAction;
   private final JToolBar editorToolbar = new JToolBar();
   private final JToolBar okCancelToolbar = new JToolBar();
-  private final JButton okButton = new JButton("Ok");
-  private final JButton cancelButton = new JButton("Cancel");
+  private final JButton okButton = new JButton(" OK ");
+  private final JButton cancelButton = new JButton(" Cancel ");
 
   //  private final JButton applyButton = new JButton();
   private final JEditorPane patternEditor = new JEditorPane("text/plain", "");

@@ -54,7 +54,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -66,7 +65,6 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -85,7 +83,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
-
 import org.apache.log4j.Appender;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Level;
@@ -108,7 +105,6 @@ import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SettingsListener;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.chainsaw.receivers.ReceiversPanel;
-import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.net.SocketNodeEventListener;
 import org.apache.log4j.plugins.Plugin;
 import org.apache.log4j.plugins.PluginEvent;
@@ -430,8 +426,11 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         }});
 
     LogManager.getRootLogger().setLevel(Level.TRACE);
-
-    logUI.activateViewer();
+    EventQueue.invokeLater(new Runnable() {
+        public void run() {
+            logUI.activateViewer();
+        }
+    });
 
     logger.info("SecurityManager is now: " + System.getSecurityManager());
 
@@ -1444,12 +1443,9 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
           dialog.setLocation(
             (screenSize.width / 2) - (dialog.getWidth() / 2),
             (screenSize.height / 2) - (dialog.getHeight() / 2));
+
           dialog.setVisible(true);
-
-          dialog.dispose();
-
-          applicationPreferenceModel.setShowNoReceiverWarning(
-            !noReceiversWarningPanel.isDontWarnMeAgain());
+          applicationPreferenceModel.setShowNoReceiverWarning(!noReceiversWarningPanel.isDontWarnMeAgain());
 
           if (noReceiversWarningPanel.getModel().isManualMode()) {
             applicationPreferenceModel.setReceivers(true);
@@ -1548,6 +1544,12 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
   public void showApplicationPreferences() {
     applicationPreferenceModelPanel.updateModel();
     preferencesFrame.setVisible(true);
+  }
+
+  public void showApplicationPreferencesBrowse() {
+      applicationPreferenceModelPanel.updateModel();
+      preferencesFrame.setVisible(true);
+      applicationPreferenceModelPanel.browseForConfiguration();
   }
 
   public void showAboutBox() {

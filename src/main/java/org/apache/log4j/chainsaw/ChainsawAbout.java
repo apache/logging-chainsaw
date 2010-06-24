@@ -63,7 +63,7 @@ class ChainsawAbout extends JDialog {
         setBackground(Color.white);
         getContentPane().setLayout(new BorderLayout());
 
-        JButton closeButton = new JButton("Close");
+        JButton closeButton = new JButton(" Close ");
         closeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 setVisible(false);

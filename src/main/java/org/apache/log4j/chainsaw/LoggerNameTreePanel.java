@@ -381,7 +381,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     ignoreExpressionEntryField.addKeyListener(new ExpressionRuleContext(filterModel, ignoreExpressionEntryField));
 
     ignoreExpressionDialogPanel.add(new JScrollPane(ignoreExpressionEntryField), BorderLayout.CENTER);
-    JButton ignoreExpressionCloseButton = new JButton(new AbstractAction("Close") {
+    JButton ignoreExpressionCloseButton = new JButton(new AbstractAction(" Close ") {
           public void actionPerformed(ActionEvent e)
           {
               String ignoreText = ignoreExpressionEntryField.getText();
@@ -396,7 +396,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
 
     Box ignoreListButtonPanel = Box.createHorizontalBox();
     
-    JButton unhideAll = new JButton(new AbstractAction("Unhide All") {
+    JButton unhideAll = new JButton(new AbstractAction(" Unhide All ") {
 
         public void actionPerformed(final ActionEvent e)
         {
@@ -411,7 +411,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     ignoreListButtonPanel.add(unhideAll);
     
     ignoreListButtonPanel.add(Box.createHorizontalGlue());
-    JButton ignoreCloseButton = new JButton(new AbstractAction("Close") {
+    JButton ignoreCloseButton = new JButton(new AbstractAction(" Close ") {
 
         public void actionPerformed(ActionEvent e)
         {

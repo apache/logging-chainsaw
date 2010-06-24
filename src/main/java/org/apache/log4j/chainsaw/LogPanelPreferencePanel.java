@@ -236,15 +236,15 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
 
     private JTextField customFormatText = new JTextField("", 10);
     private JTextField loggerPrecision = new JTextField(10);
-    private JRadioButton rdCustom = new JRadioButton("Custom Format");
+    private JRadioButton rdCustom = new JRadioButton("Custom Format ");
     private final JRadioButton rdISO =
       new JRadioButton(
-        "<html><b>Fast</b> ISO 8601 format (yyyy-MM-dd HH:mm:ss)</html>");
+        "<html><b>Fast</b> ISO 8601 format (yyyy-MM-dd HH:mm:ss) </html>");
     private final JTextField timeZone = new JTextField(10);
-    private final JRadioButton rdLevelIcons = new JRadioButton("Icons");
-    private final JRadioButton rdLevelText = new JRadioButton("Text");
-    private final JCheckBox wrapMessage = new JCheckBox("Display entire message and marker text in the table (multi-line rows)");
-    private final JCheckBox highlightSearchMatchText = new JCheckBox("Highlight search match text");
+    private final JRadioButton rdLevelIcons = new JRadioButton("Icons ");
+    private final JRadioButton rdLevelText = new JRadioButton("Text ");
+    private final JCheckBox wrapMessage = new JCheckBox("Wrap message field (display multi-line rows) ");
+    private final JCheckBox highlightSearchMatchText = new JCheckBox("Highlight search match text ");
     private JRadioButton rdLast;
 
     //~ Constructors ==========================================================
@@ -337,7 +337,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
       dateFormatPanel.add(customPanel);
       dateFormatPanel.add(Box.createVerticalStrut(5));
 
-      JLabel dateFormatLabel = new JLabel("Time zone of events on tab (leave blank for local time zone");
+      JLabel dateFormatLabel = new JLabel("Time zone of events (or blank for local time zone");
       dateFormatPanel.add(dateFormatLabel);
 
       timeZone.setMaximumSize(timeZone.getPreferredSize());
@@ -378,7 +378,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
       loggerFormatPanel.add(Box.createVerticalStrut(3));
 
       final JLabel precisionLabel =
-        new JLabel("Number of package levels to hide (leave blank to display full logger)");
+        new JLabel("Number of package levels to hide (or blank to display full logger)");
 
       loggerFormatPanel.add(precisionLabel);
       loggerFormatPanel.add(Box.createVerticalStrut(5));
@@ -387,7 +387,6 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
       loggerFormatPanel.add(loggerPrecision);
 
       add(loggerFormatPanel);
-      add(Box.createVerticalGlue());
     }
 
     /*

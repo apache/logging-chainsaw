@@ -532,7 +532,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
 		  gc.anchor=GridBagConstraints.SOUTH;
 	      gc.fill=GridBagConstraints.NONE;
 
-		  JButton submitButton = new JButton("Submit");
+		  JButton submitButton = new JButton(" Submit ");
 		  panel.add(submitButton, gc);
 
 		  getContentPane().add(panel);

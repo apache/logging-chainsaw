@@ -1073,7 +1073,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
 
     //Adding a button to clear filter expressions which are currently remembered by Chainsaw...
-    final JButton clearButton = new JButton("Clear expression");
+    final JButton clearButton = new JButton(" Clear expression ");
     clearButton.setToolTipText("Click here to remove the selected expression from the list");
     clearButton.addActionListener(
             new AbstractAction() {

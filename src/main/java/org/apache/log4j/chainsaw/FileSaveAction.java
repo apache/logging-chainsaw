@@ -89,7 +89,7 @@ class FileSaveAction extends AbstractAction {
     }
     
     chooser.setAcceptAllFileFilterUsed(true);
-    chooser.setDialogTitle("Save displayed events to XML file...");
+    chooser.setDialogTitle("Save displayed events (XML or .zipped XML)...");
     chooser.showSaveDialog(parent);
 
     File selectedFile = chooser.getSelectedFile();

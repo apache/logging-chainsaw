@@ -28,10 +28,10 @@ import java.awt.event.FocusListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -44,12 +44,11 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.filechooser.FileFilter;
-
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
@@ -72,7 +71,7 @@ class NoReceiversWarningPanel extends JPanel {
     private final JComboBox previousConfigs = new JComboBox();
 
     private final JRadioButton simpleReceiver = new JRadioButton(
-            "Define a Socket-based receiver");
+            "Define a ");
 
     private final JRadioButton justLoadingFile = new JRadioButton(
             "I'm fine thanks, don't worry");
@@ -82,7 +81,7 @@ class NoReceiversWarningPanel extends JPanel {
             "Use most recent configuration defined through the Receiver configuration panel");
     private final JRadioButton manualOption = new JRadioButton(
             "Define receivers through the Receiver configuration panel (configuration saved on exit)");
-    private final JButton okButton = new JButton("Ok");
+    private final JButton okButton = new JButton(" OK ");
     private final PanelModel model = new PanelModel();
     final DefaultComboBoxModel configModel = new DefaultComboBoxModel();
 
@@ -131,10 +130,9 @@ class NoReceiversWarningPanel extends JPanel {
         gc.weightx = 1.0;
         gc.weighty = 1.0;
 
-        JTextArea description = new JTextArea("To load events into Chainsaw, a 'receiver' configuration must be provided.\n\n" +
+        JTextPane description = new JTextPane();
+        description.setText("To load events into Chainsaw, a 'receiver' configuration must be provided.\n\n" +
                 "NOTE: An example receiver configuration is available from the Welcome tab ('view example receiver configuration')");
-        description.setWrapStyleWord(true);
-        description.setLineWrap(true);
         description.setEditable(false);
         description.setOpaque(false);
         description.setFont(getFont());
@@ -239,7 +237,7 @@ class NoReceiversWarningPanel extends JPanel {
             });
 
         final JButton searchButton = new JButton(new AbstractAction(
-                    "Browse...") {
+                    " Browse... ") {
                     public void actionPerformed(ActionEvent e) {
 
                         try {
@@ -323,11 +321,11 @@ class NoReceiversWarningPanel extends JPanel {
                 }
             });
 
-        JPanel simpleSocketPanel = new JPanel(new GridBagLayout());
+        JPanel simpleSocketPanel = new JPanel();
+        simpleSocketPanel.setLayout(new BoxLayout(simpleSocketPanel, BoxLayout.X_AXIS));
 
-        GridBagConstraints simpleSocketGC = new GridBagConstraints();
-
-        simpleSocketPanel.add(simpleReceiver, simpleSocketGC);
+        simpleSocketPanel.add(simpleReceiver);
+        simpleSocketPanel.add(Box.createHorizontalStrut(5));
 
         final JComboBox socketCombo = new JComboBox(simplePortModel);
 
@@ -361,8 +359,10 @@ class NoReceiversWarningPanel extends JPanel {
             });
 
         simpleSocketPanel.add(receiverCombo);
+        simpleSocketPanel.add(Box.createHorizontalStrut(5));
         simpleSocketPanel.add(new JLabel(" on port "));
-        simpleSocketPanel.add(socketCombo, simpleSocketGC);
+        simpleSocketPanel.add(Box.createHorizontalStrut(5));
+        simpleSocketPanel.add(socketCombo);
 
         /**
          * This listener activates/deactivates certain controls based on the current

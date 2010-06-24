@@ -51,6 +51,7 @@ import org.apache.log4j.xml.XMLDecoder;
  * @author Scott Deboy <sdeboy@apache.org>
  */
 class FileMenu extends JMenu {
+  private Action loadConfigAction;
   private Action exitAction;
   private Action loadLog4JAction;
   private Action loadUtilLoggingAction;
@@ -62,9 +63,15 @@ class FileMenu extends JMenu {
     super("File");
     setMnemonic(KeyEvent.VK_F);
 
+    loadConfigAction = new AbstractAction("Load Chainsaw configuration"){
+        public void actionPerformed(ActionEvent actionEvent) {
+            logUI.showApplicationPreferencesBrowse();
+        }
+    };
+
     loadLog4JAction =
       new FileLoadAction(
-        logUI, new XMLDecoder(logUI), "Process events from local log4j XML-formatted file (.xml or .zip)...", false);
+        logUI, new XMLDecoder(logUI), "Open log4j XML-formatted file (.xml or .zip)...", false);
 
       loadLog4JAction.putValue(
         Action.ACCELERATOR_KEY,
@@ -76,19 +83,20 @@ class FileMenu extends JMenu {
     loadUtilLoggingAction =
       new FileLoadAction(
         logUI, new UtilLoggingXMLDecoder(logUI),
-        "Process events from local java.util.logging XML-formatted file...", false);
+        "Open util.logging XML-formatted file (.xml or .zip)...", false);
 
     remoteLog4JAction =
       new FileLoadAction(
-        logUI, new XMLDecoder(logUI), "Process events from remote log4j XML-formatted file...",
+        logUI, new XMLDecoder(logUI), "Open remote log4j XML-formatted file (.xml or .zip)...",
         true);
     remoteUtilLoggingAction =
       new FileLoadAction(
         logUI, new UtilLoggingXMLDecoder(logUI),
-        "Process events from remote java.util.logging XML-formatted file...", true);
+        "Open remote util.logging XML-formatted file (.xml or .zip)...", true);
 
     saveAction = new FileSaveAction(logUI);
 
+    JMenuItem loadChainsawConfig = new JMenuItem(loadConfigAction);
     JMenuItem loadLog4JFile = new JMenuItem(loadLog4JAction);
     JMenuItem loadUtilLoggingFile = new JMenuItem(loadUtilLoggingAction);
     JMenuItem remoteLog4JFile = new JMenuItem(remoteLog4JAction);
@@ -111,6 +119,7 @@ class FileMenu extends JMenu {
 
     JMenuItem menuItemExit = new JMenuItem(exitAction);
 
+    add(loadChainsawConfig);
     add(loadLog4JFile);
     add(loadUtilLoggingFile);
     addSeparator();

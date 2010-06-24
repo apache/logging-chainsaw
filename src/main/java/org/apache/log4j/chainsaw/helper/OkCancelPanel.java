@@ -26,8 +26,8 @@ import javax.swing.JPanel;
 
 
 public class OkCancelPanel extends JPanel {
-  private final JButton cancelButton = new JButton("Cancel");
-  private final JButton okButton = new JButton("Ok");
+  private final JButton cancelButton = new JButton(" Cancel ");
+  private final JButton okButton = new JButton(" OK ");
 
   public OkCancelPanel() {
     setLayout(new GridBagLayout());

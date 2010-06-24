@@ -76,8 +76,9 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
   private JTextField cyclicBufferSize;    
   private JComboBox configurationURL;
   private final Logger logger;
+  private GeneralAllPrefPanel generalAllPrefPanel;
 
-  ApplicationPreferenceModelPanel(ApplicationPreferenceModel model) {
+    ApplicationPreferenceModelPanel(ApplicationPreferenceModel model) {
     this.committedPreferenceModel = model;
     logger = LogManager.getLogger(ApplicationPreferenceModelPanel.class);
     initComponents();
@@ -155,8 +156,9 @@ public static void main(String[] args) {
       new DefaultMutableTreeNode("Preferences");
     DefaultTreeModel model = new DefaultTreeModel(rootNode);
 
-    DefaultMutableTreeNode general =
-      new DefaultMutableTreeNode(new GeneralAllPrefPanel());
+      generalAllPrefPanel = new GeneralAllPrefPanel();
+      DefaultMutableTreeNode general =
+      new DefaultMutableTreeNode(generalAllPrefPanel);
 
     DefaultMutableTreeNode visuals =
       new DefaultMutableTreeNode(new VisualsPrefPanel());
@@ -167,7 +169,11 @@ public static void main(String[] args) {
     return model;
   }
 
-  public class VisualsPrefPanel extends BasicPrefPanel {
+    public void browseForConfiguration() {
+        generalAllPrefPanel.browseForConfiguration();
+    }
+
+    public class VisualsPrefPanel extends BasicPrefPanel {
     private final JRadioButton topPlacement = new JRadioButton("Top");
     private final JRadioButton bottomPlacement = new JRadioButton("Bottom");
     private final JCheckBox statusBar = new JCheckBox("Show Status bar");
@@ -489,45 +495,12 @@ public static void main(String[] args) {
 
       p6.add(configURLPanel);
 
-      JButton browseButton = new JButton("Browse");
+      JButton browseButton = new JButton(" Browse ");
       browseButton.addActionListener(new ActionListener()
       {
           public void actionPerformed(ActionEvent e)
           {
-
-              String defaultPath = ".";
-              if (configurationURL.getItemCount() > 0) {
-                  Object selectedItem = configurationURL.getSelectedItem();
-                  if (selectedItem != null) {
-                      File currentConfigurationPath = new File(selectedItem.toString()).getParentFile();
-                      if (currentConfigurationPath != null) {
-                          defaultPath = currentConfigurationPath.getPath();
-                          //JFileChooser constructor will not navigate to this location unless we remove the prefixing protocol and slash
-                          //at least on winxp
-                          if (defaultPath.toLowerCase().startsWith("file:\\")) {
-                              defaultPath = defaultPath.substring("file:\\".length());
-                          }
-                      }
-                  }
-              }
-
-              JFileChooser chooser = new JFileChooser(defaultPath);
-              int result = chooser.showOpenDialog(ApplicationPreferenceModelPanel.this);
-              if (JFileChooser.APPROVE_OPTION == result) {
-                  File f = chooser.getSelectedFile();
-                  try
-                  {
-                      String newConfigurationFile = f.toURI().toURL().toExternalForm();
-                      if (!committedPreferenceModel.getConfigurationURLs().contains(newConfigurationFile)) {
-                        configurationURL.addItem(newConfigurationFile);
-                      }
-                      configurationURL.setSelectedItem(newConfigurationFile);
-                  }
-                  catch (MalformedURLException e1)
-                  {
-                      e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                  }
-              }
+              browseForConfiguration();
           }
       });
       Box browsePanel = new Box(BoxLayout.X_AXIS);
@@ -557,7 +530,43 @@ public static void main(String[] args) {
         configurationURL.setSelectedItem(configToDisplay);
     }
 
-    private void initSliderComponent() {
+    public void browseForConfiguration() {
+          String defaultPath = ".";
+          if (configurationURL.getItemCount() > 0) {
+              Object selectedItem = configurationURL.getSelectedItem();
+              if (selectedItem != null) {
+                  File currentConfigurationPath = new File(selectedItem.toString()).getParentFile();
+                  if (currentConfigurationPath != null) {
+                      defaultPath = currentConfigurationPath.getPath();
+                      //JFileChooser constructor will not navigate to this location unless we remove the prefixing protocol and slash
+                      //at least on winxp
+                      if (defaultPath.toLowerCase().startsWith("file:\\")) {
+                          defaultPath = defaultPath.substring("file:\\".length());
+                      }
+                  }
+              }
+          }
+
+          JFileChooser chooser = new JFileChooser(defaultPath);
+          int result = chooser.showOpenDialog(ApplicationPreferenceModelPanel.this);
+          if (JFileChooser.APPROVE_OPTION == result) {
+              File f = chooser.getSelectedFile();
+              try
+              {
+                  String newConfigurationFile = f.toURI().toURL().toExternalForm();
+                  if (!committedPreferenceModel.getConfigurationURLs().contains(newConfigurationFile)) {
+                    configurationURL.addItem(newConfigurationFile);
+                  }
+                  configurationURL.setSelectedItem(newConfigurationFile);
+              }
+              catch (MalformedURLException e1)
+              {
+                  e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+              }
+          }
+      }
+
+      private void initSliderComponent() {
       responsiveSlider.setToolTipText(
         "Adjust to set the responsiveness of the app.  How often the view is updated.");
       responsiveSlider.setSnapToTicks(true);

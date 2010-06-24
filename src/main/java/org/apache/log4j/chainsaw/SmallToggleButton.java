@@ -45,7 +45,7 @@ import javax.swing.border.SoftBevelBorder;
 class SmallToggleButton extends JToggleButton implements ItemListener,
   MouseListener {
   protected Border m_highlighted = new SoftBevelBorder(BevelBorder.RAISED);
-  protected Border m_raised = BorderFactory.createEmptyBorder();
+  protected Border m_raised = BorderFactory.createEmptyBorder(3, 3, 3, 3);
   protected Border m_inactive = m_raised;
   protected Border m_border = m_inactive;
   protected Border m_lowered = new SoftBevelBorder(BevelBorder.LOWERED);

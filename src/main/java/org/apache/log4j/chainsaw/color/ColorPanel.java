@@ -493,7 +493,7 @@ public class ColorPanel extends JPanel
     panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
     panel.add(Box.createHorizontalGlue());
 
-    JButton saveAsDefaultButton = new JButton("Save as default");
+    JButton saveAsDefaultButton = new JButton(" Save as default ");
 
     saveAsDefaultButton.addActionListener(
       new AbstractAction() {
@@ -505,7 +505,7 @@ public class ColorPanel extends JPanel
 
     panel.add(saveAsDefaultButton);
 
-    JButton applyButton = new JButton("Apply");
+    JButton applyButton = new JButton(" Apply ");
 
     applyButton.addActionListener(
       new AbstractAction() {
@@ -519,7 +519,7 @@ public class ColorPanel extends JPanel
     panel.add(Box.createHorizontalStrut(10));
     panel.add(applyButton);
 
-    JButton closeButton = new JButton("Close");
+    JButton closeButton = new JButton(" Close ");
 
     closeButton.addActionListener(
       new AbstractAction() {
@@ -649,7 +649,7 @@ public class ColorPanel extends JPanel
     buttonPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
     JPanel newPanel = new JPanel();
-    JButton newButton = new JButton("New");
+    JButton newButton = new JButton(" New ");
     newButton.addActionListener(
       new AbstractAction() {
         public void actionPerformed(ActionEvent evt) {
@@ -674,7 +674,7 @@ public class ColorPanel extends JPanel
     newPanel.add(newButton);
 
     JPanel deletePanel = new JPanel();
-    final JButton deleteButton = new JButton("Delete");
+    final JButton deleteButton = new JButton(" Delete ");
     deleteButton.setEnabled(false);
 
     deleteButton.addActionListener(

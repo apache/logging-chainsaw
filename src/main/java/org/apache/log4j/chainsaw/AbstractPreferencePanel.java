@@ -68,8 +68,8 @@ public abstract class AbstractPreferencePanel extends JPanel
   private final JLabel titleLabel = new JLabel("Selected Pref Panel");
   private final JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
   private final JPanel selectedPrefPanel = new JPanel(new BorderLayout(0, 3));
-  private final JButton okButton = new JButton("OK");
-  private final JButton cancelButton = new JButton("Cancel");
+  private final JButton okButton = new JButton(" OK ");
+  private final JButton cancelButton = new JButton(" Cancel ");
   private ActionListener okCancelListener;
   private Component currentlyDisplayedPanel = null;
   private final JTree prefTree = new JTree();

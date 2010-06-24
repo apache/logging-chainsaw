@@ -1059,8 +1059,8 @@ class ChainsawToolBarAndMenus implements ChangeListener {
       new ExpressionRuleContext(new FilterModel(), entryField));
     panel.add(entryField, BorderLayout.CENTER);
 
-    JButton ok = new JButton("OK");
-    JButton close = new JButton("Close");
+    JButton ok = new JButton(" OK ");
+    JButton close = new JButton(" Close ");
     JPanel lowerPanel = new JPanel();
     lowerPanel.add(ok);
     lowerPanel.add(Box.createHorizontalStrut(7));
