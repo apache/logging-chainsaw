@@ -1036,7 +1036,11 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     if (
       noReceiversDefined
         && applicationPreferenceModel.isShowNoReceiverWarning()) {
-      showNoReceiversWarningPanel();
+      EventQueue.invokeLater(new Runnable() {
+          public void run() {
+              showNoReceiversWarningPanel();
+          }
+      });
     }
 
     Container container = tutorialFrame.getContentPane();
