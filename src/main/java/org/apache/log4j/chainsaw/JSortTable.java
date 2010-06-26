@@ -98,11 +98,17 @@ public class JSortTable extends JTable implements MouseListener {
       public void run() {
         if ((row > -1) && (row < getRowCount())) {
           try {
-            setRowSelectionInterval(row, row);
             //get the requested row off of the bottom and top of the screen by making the 5 rows around the requested row visible
-            scrollRectToVisible(getCellRect(row + 5, col, true));
-            scrollRectToVisible(getCellRect(row - 5, col, true));
+            int currentRow = getSelectedRow();
+            //if new past current row, scroll to display the 5th row past new selected row
+            if (row > currentRow) {
+                scrollRectToVisible(getCellRect(row + 5, col, true));
+            }
+            if (row < currentRow) {
+                scrollRectToVisible(getCellRect(row - 5, col, true));
+            }
             scrollRectToVisible(getCellRect(row, col, true));
+            setRowSelectionInterval(row, row);
           } catch (IllegalArgumentException iae) {
             //ignore..out of bounds
           }

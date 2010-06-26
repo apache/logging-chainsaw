@@ -255,6 +255,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   private JScrollPane eventsPane;
   private int currentSearchMatchCount;
   private ApplicationPreferenceModel applicationPreferenceModel;
+  private Rule clearTableExpressionRule;
 
     /**
    * Creates a new LogPanel object.  If a LogPanel with this identifier has
@@ -552,6 +553,20 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     preferenceModel.addPropertyChangeListener(
       "dateFormatPattern", datePrefsChangeListener);
     preferenceModel.addPropertyChangeListener("dateFormatTimeZone", datePrefsChangeListener);
+
+    preferenceModel.addPropertyChangeListener("clearTableExpression", new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            LogPanelPreferenceModel model = (LogPanelPreferenceModel)evt.getSource();
+            String expression = model.getClearTableExpression();
+            try {
+                clearTableExpressionRule = ExpressionRule.getRule(expression);
+                logger.info("clearTableExpressionRule set to: " + expression);
+            } catch (Exception e) {
+                logger.info("clearTableExpressionRule invalid - ignoring: " + expression);
+                clearTableExpressionRule = null;
+            }
+        }
+    });
 
     preferenceModel.addPropertyChangeListener(
       "loggerPrecision",
@@ -1775,6 +1790,11 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         int addedRowCount = 0;
         for (Iterator iter = events.iterator(); iter.hasNext();) {
           ExtendedLoggingEvent event = new ExtendedLoggingEvent((LoggingEvent) iter.next());
+            //if the clearTableExpressionRule is not null, evaluate & clear the table if it matches
+            if (clearTableExpressionRule != null && clearTableExpressionRule.evaluate(event, null)) {
+                logger.info("clear table expression matched - clearing table - matching event msg - " + event.getMessage());
+                clearEvents();
+            }
 
           updateOtherModels(event);
 
@@ -1910,6 +1930,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
     logTreePanel.ignore(preferenceModel.getHiddenLoggers());
     logTreePanel.setHiddenExpression(preferenceModel.getHiddenExpression());
+    if (preferenceModel.getClearTableExpression() != null) {
+        try {
+            clearTableExpressionRule = ExpressionRule.getRule(preferenceModel.getClearTableExpression());
+        } catch (Exception e) {
+            clearTableExpressionRule = null;
+        }
+    }
 
     //attempt to load color settings - no need to URL encode the identifier
     colorizer.loadColorSettings(identifier);

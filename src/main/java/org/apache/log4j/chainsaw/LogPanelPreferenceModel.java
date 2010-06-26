@@ -85,6 +85,7 @@ public class LogPanelPreferenceModel implements Serializable{
   private boolean wrapMsg;
   private boolean highlightSearchMatchText;
   private String hiddenExpression;
+  private String clearTableExpression;
 
     /**
    * Returns an <b>unmodifiable</b> list of the columns.
@@ -239,6 +240,7 @@ public class LogPanelPreferenceModel implements Serializable{
     setVisibleColumns(model.getVisibleColumns());
     setHiddenLoggers(model.getHiddenLoggers());
     setHiddenExpression(model.getHiddenExpression());
+    setClearTableExpression(model.getClearTableExpression());
   }
 
   /**
@@ -463,5 +465,19 @@ public class LogPanelPreferenceModel implements Serializable{
 
   public String getHiddenExpression() {
     return hiddenExpression;
+  }
+
+  public void setClearTableExpression(String clearTableExpression) {
+    Object oldValue = this.clearTableExpression;
+    this.clearTableExpression = clearTableExpression;
+    //no propertychange if both null
+    if (oldValue == null && this.clearTableExpression == null) {
+        return;
+    }
+    propertySupport.firePropertyChange("clearTableExpression", oldValue, this.clearTableExpression);
+  }
+
+  public String getClearTableExpression() {
+    return clearTableExpression;
   }
 }

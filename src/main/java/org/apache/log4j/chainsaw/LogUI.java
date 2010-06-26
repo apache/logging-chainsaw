@@ -645,7 +645,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       new AbstractAction("View example Receiver configuration") {
         public void actionPerformed(ActionEvent e) {
           HelpManager.getInstance().setHelpURL(
-            ChainsawConstants.EXAMLE_CONFIG_URL);
+            ChainsawConstants.EXAMPLE_CONFIG_URL);
         }
       };
 
@@ -1939,6 +1939,9 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       throws IllegalArgumentException {
       final LogPanel thisPanel = new LogPanel(getStatusBar(), ident, cyclicBufferSize, allColorizers, applicationPreferenceModel);
 
+      getSettingsManager().addSettingsListener(thisPanel);
+      getSettingsManager().configure(thisPanel);
+
 
       /**
                * Now add the panel as a batch listener so it can handle it's own
@@ -1992,9 +1995,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       //correct sizes
       getTabbedPane().add(ident, thisPanel);
       getPanelMap().put(ident, thisPanel);
-
-      getSettingsManager().addSettingsListener(thisPanel);
-      getSettingsManager().configure(thisPanel);
 
       /**
                * Let the new LogPanel receive this batch

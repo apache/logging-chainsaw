@@ -49,17 +49,14 @@ public class ChainsawConstants {
 
   public static final URL WELCOME_URL = ChainsawConstants.class.getClassLoader().getResource(
   "org/apache/log4j/chainsaw/WelcomePanel.html");
-  
-  public static final URL EXAMLE_CONFIG_URL =
-  ChainsawConstants.class.getClassLoader().getResource(
-	  "org/apache/log4j/chainsaw/log4j-receiver-sample.xml");
+
+  public static final URL EXAMPLE_CONFIG_URL = 
+          ChainsawConstants.class.getClassLoader().getResource("org/apache/log4j/chainsaw/log4j-receiver-sample.xml");
 
   public static final URL TUTORIAL_URL =
-  ChainsawConstants.class.getClassLoader().getResource(
-	  "org/apache/log4j/chainsaw/help/tutorial.html");
+          ChainsawConstants.class.getClassLoader().getResource("org/apache/log4j/chainsaw/help/tutorial.html");
   public static final URL RELEASE_NOTES_URL =
-      ChainsawConstants.class.getClassLoader().getResource(
-          "org/apache/log4j/chainsaw/help/release-notes.html");
+          ChainsawConstants.class.getClassLoader().getResource("org/apache/log4j/chainsaw/help/release-notes.html");
         
   static final String MAIN_PANEL = "panel";
   static final String LOWER_PANEL = "lower";

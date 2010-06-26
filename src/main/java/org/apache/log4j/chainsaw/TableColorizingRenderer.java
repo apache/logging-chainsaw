@@ -370,16 +370,10 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     //update the background & foreground of the jtextpane using styles
     if (multiLineTextPane != null)
     {
-        StyledDocument styledDocument = multiLineTextPane.getStyledDocument();
-        MutableAttributeSet attributes = multiLineTextPane.getInputAttributes();
-        StyleConstants.setForeground(attributes, foreground);
-        styledDocument.setCharacterAttributes(0, styledDocument.getLength() + 1, attributes, false);
-        multiLineTextPane.setBackground(background);
+        updateColors(multiLineTextPane, background, foreground);
     }
-    levelTextPane.setBackground(background);
-    levelTextPane.setForeground(foreground);
-    singleLineTextPane.setBackground(background);
-    singleLineTextPane.setForeground(foreground);
+    updateColors(levelTextPane, background, foreground);
+    updateColors(singleLineTextPane, background, foreground);
 
     if (isSelected) {
       if (col == 0) {
@@ -401,7 +395,16 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     return component;
   }
 
-  /**
+    private void updateColors(JTextPane textPane, Color background, Color foreground)
+    {
+        StyledDocument styledDocument = textPane.getStyledDocument();
+        MutableAttributeSet attributes = textPane.getInputAttributes();
+        StyleConstants.setForeground(attributes, foreground);
+        styledDocument.setCharacterAttributes(0, styledDocument.getLength() + 1, attributes, false);
+        textPane.setBackground(background);
+    }
+
+    /**
    * Changes the Date Formatting object to be used for rendering dates.
    * @param formatter
    */

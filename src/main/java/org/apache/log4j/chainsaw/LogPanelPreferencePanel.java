@@ -16,6 +16,7 @@
  */
 package org.apache.log4j.chainsaw;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -34,6 +35,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -169,7 +171,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
 
       //		columnBox.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Displayed Columns"));
       final JList columnList = new JList();
-      columnList.setVisibleRowCount(10);
+      columnList.setVisibleRowCount(17);
 
       for (
         Iterator iter = preferenceModel.getColumns().iterator();
@@ -585,6 +587,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
       new JCheckBox("Show Event Detail Tooltips");
     private final JCheckBox thumbnailBarToolTips =
       new JCheckBox("Show Thumbnail Bar Tooltips");
+    private final JEditorPane clearTableExpression = new JEditorPane();
 
     //~ Constructors ==========================================================
 
@@ -605,13 +608,27 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
     */
     private void initPanelComponents()
     {
+      JTextComponentFormatter.applySystemFontAndSize(clearTableExpression);
       setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-
+      toolTips.setAlignmentX(Component.LEFT_ALIGNMENT);
+      thumbnailBarToolTips.setAlignmentX(Component.LEFT_ALIGNMENT);
+      detailPanelVisible.setAlignmentX(Component.LEFT_ALIGNMENT);
+      loggerTreePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+      scrollToBottom.setAlignmentX(Component.LEFT_ALIGNMENT);
       add(toolTips);
       add(thumbnailBarToolTips);
       add(detailPanelVisible);
       add(loggerTreePanel);
       add(scrollToBottom);
+      JPanel clearPanel = new JPanel(new BorderLayout());
+      clearPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+      clearPanel.add(new JLabel("Clear all events if expression matches"), BorderLayout.NORTH);
+      clearTableExpression.setText(preferenceModel.getClearTableExpression());
+      clearTableExpression.setPreferredSize(new Dimension(300, 50));
+      JPanel clearTableScrollPanel = new JPanel(new BorderLayout());
+      clearTableScrollPanel.add(new JScrollPane(clearTableExpression), BorderLayout.NORTH);
+      clearPanel.add(clearTableScrollPanel, BorderLayout.CENTER);
+      add(clearPanel);
 
       toolTips.setSelected(preferenceModel.isToolTips());
       thumbnailBarToolTips.setSelected(preferenceModel.isThumbnailBarToolTips());
@@ -635,6 +652,12 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
       thumbnailBarToolTips.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent e) {
               preferenceModel.setThumbnailBarToolTips(thumbnailBarToolTips.isSelected());
+          }
+      });
+
+      getOkButton().addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent e) {
+              preferenceModel.setClearTableExpression(clearTableExpression.getText().trim());
           }
       });
 
@@ -743,6 +766,13 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
                     columnListModel.fireContentsChanged();
                   }
                 });
+
+        preferenceModel.addPropertyChangeListener("clearTableExpression", new PropertyChangeListener()
+        {
+            public void propertyChange(PropertyChangeEvent evt) {
+                clearTableExpression.setText(((LogPanelPreferenceModel)evt.getSource()).getClearTableExpression());
+            }
+        });
     }
   }
 }
