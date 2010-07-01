@@ -3274,7 +3274,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                 }
             });
             
-            addMouseMotionListener(new MouseAdapter() {
+            addMouseMotionListener(new MouseMotionAdapter() {
               public void mouseMoved(MouseEvent e) {
                 if (preferenceModel.isThumbnailBarToolTips()) {
                     int yPosition = e.getPoint().y;
