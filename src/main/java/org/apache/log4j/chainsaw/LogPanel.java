@@ -715,33 +715,25 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
      */
     LogPanelLoggerTreeModel logTreeModel = new LogPanelLoggerTreeModel();
     logTreePanel = new LoggerNameTreePanel(logTreeModel, preferenceModel, this, colorizer, filterModel);
-    logTreePanel.addPropertyChangeListener("searchExpression", new PropertyChangeListener()
+    logTreePanel.getLoggerVisibilityRule().addPropertyChangeListener(new PropertyChangeListener()
     {
         public void propertyChange(PropertyChangeEvent evt)
         {
-            findField.setText(evt.getNewValue().toString());
-            findNext();
+            if (evt.getPropertyName().equals("searchExpression")) {
+                findField.setText(evt.getNewValue().toString());
+                findNext();
+            }
         }
     });
       
     tableModel.addLoggerNameListener(logTreeModel);
-    ruleMediator.addPropertyChangeListener(new PropertyChangeListener()
-    {
-        public void propertyChange(PropertyChangeEvent evt)
-        {
-            //reset row height to default - logger rule or refinement rule changed the displayed rows - when in multiline row mode,
-            //the table rows may not be the correct height (the row's height may be larger than the preferred height)..
-            //updating all rows to the default height resolves this issue
-            table.setRowHeight(ChainsawConstants.DEFAULT_ROW_HEIGHT);
-        }
-    });
 
     /**
      * Set the LoggerRule to be the LoggerTreePanel, as this visual component
      * is a rule itself, and the RuleMediator will automatically listen when
      * it's rule state changes.
      */
-    ruleMediator.setLoggerRule(logTreePanel);
+    ruleMediator.setLoggerRule(logTreePanel.getLoggerVisibilityRule());
     colorizer.setLoggerRule(logTreePanel.getLoggerColorRule());
 
     /*

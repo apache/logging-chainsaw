@@ -131,15 +131,22 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
             previousSize = filteredList.size();
             filteredList.clear();
             if (displayRule == null) {
-                filteredList.addAll(unfilteredList);
+                for (Iterator iter = unfilteredList.iterator();iter.hasNext();) {
+                    ExtendedLoggingEvent e = (ExtendedLoggingEvent)iter.next();
+                    e.setDisplayed(true);
+                    filteredList.add(e);
+                }
             } else {
                 Iterator iter = unfilteredList.iterator();
 
                 while (iter.hasNext()) {
-                  LoggingEvent e = (LoggingEvent) iter.next();
+                  ExtendedLoggingEvent e = (ExtendedLoggingEvent) iter.next();
 
                   if (displayRule.evaluate(e, null)) {
+                    e.setDisplayed(true);
                     filteredList.add(e);
+                  } else {
+                    e.setDisplayed(false);
                   }
                 }
             }
@@ -290,6 +297,11 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
           filteredListSize = filteredList.size();
           sort = (sortEnabled && filteredListSize > 0);
         if (sort) {
+            //reset display (used to ensure row height is updated)
+            for (Iterator iter = filteredList.iterator();iter.hasNext();) {
+                ExtendedLoggingEvent e = (ExtendedLoggingEvent)iter.next();
+                e.setDisplayed(true);
+            }
             Collections.sort(
               filteredList,
               new ColumnComparator(
@@ -595,8 +607,11 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         }
         unfilteredList.add(e);
         if ((displayRule == null) || (displayRule.evaluate(e, null))) {
+            e.setDisplayed(true);
             filteredList.add(e);
             rowAdded = true;
+        } else {
+            e.setDisplayed(false);
         }
     }
 

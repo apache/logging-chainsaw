@@ -26,8 +26,12 @@ import org.apache.log4j.spi.LoggingEvent;
 
 public class ExtendedLoggingEvent extends LoggingEvent
 {
+    private static final int DEFAULT_HEIGHT = -1;
+
     private Color colorRuleBackground = ChainsawConstants.COLOR_DEFAULT_BACKGROUND;
     private Color colorRuleForeground = ChainsawConstants.COLOR_DEFAULT_FOREGROUND;
+    private int markerHeight = DEFAULT_HEIGHT;
+    private int msgHeight = DEFAULT_HEIGHT;
 
     private boolean searchMatch = false;
     //a Map of event fields to Sets of string matches (can be used to render matches differently)
@@ -77,7 +81,30 @@ public class ExtendedLoggingEvent extends LoggingEvent
         return searchMatch;
     }
 
+    public void setMarkerHeight(int markerHeight) {
+        this.markerHeight = markerHeight;
+    }
+
+    public int getMarkerHeight() {
+        return markerHeight;
+    }
+
+    public void setMsgHeight(int msgHeight) {
+        this.msgHeight = msgHeight;
+    }
+
+    public int getMsgHeight() {
+        return msgHeight;
+    }
+
+    public void setDisplayed(boolean b)
+    {
+        markerHeight = DEFAULT_HEIGHT;
+        msgHeight = DEFAULT_HEIGHT;
+    }
+
     public String toString() {
         return "ExtendedLoggingEvent - id: " + getProperty("log4jid") + " background: " + getBackground() + ", foreground: " + getForeground() + ", msg: " + getMessage();
     }
+
 }

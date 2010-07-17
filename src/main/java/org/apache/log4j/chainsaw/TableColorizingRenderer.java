@@ -21,6 +21,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineBreakMeasurer;
 import java.awt.font.TextAttribute;
@@ -118,6 +119,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private JTextPane multiLineTextPane;
   private MutableAttributeSet boldAttributeSet;
   private TabSet tabs;
+  private int maxHeight;
 
     /**
    * Creates a new TableColorizingRenderer object.
@@ -127,6 +129,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     multiLinePanel.setLayout(new BoxLayout(multiLinePanel, BoxLayout.Y_AXIS));
     generalPanel.setLayout(new BoxLayout(generalPanel, BoxLayout.Y_AXIS));
     levelPanel.setLayout(new BoxLayout(levelPanel, BoxLayout.Y_AXIS));
+    maxHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
 
     //define the 'bold' attributeset
     boldAttributeSet = new SimpleAttributeSet();
@@ -276,22 +279,42 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         } else {
             setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.MSG_FIELD), (StyledDocument) multiLineTextPane.getDocument());
         }
-        int tableRowHeight = table.getRowHeight(row);
         multiLinePanel.removeAll();
         multiLinePanel.add(multiLineTextPane);
 
         if (wrap) {
+            /*
+            calculating the height -would- be the correct thing to do, but setting the size to screen size works as well and
+            doesn't incur massive overhead, like calculateHeight does
             Map paramMap = new HashMap();
             paramMap.put(TextAttribute.FONT, multiLineTextPane.getFont());
 
             int calculatedHeight = calculateHeight(thisString, width, paramMap);
-            //set preferred size to default height
-            multiLineTextPane.setSize(new Dimension(width, calculatedHeight));
-
+             */
+            //instead, set size to max height
+            multiLineTextPane.setSize(new Dimension(width, maxHeight));
+            boolean setHeight = false;
             int multiLinePanelPrefHeight = multiLinePanel.getPreferredSize().height;
-            if(tableRowHeight < multiLinePanelPrefHeight) {
-                table.setRowHeight(row, Math.max(ChainsawConstants.DEFAULT_ROW_HEIGHT, multiLinePanelPrefHeight));
+            int newRowHeight = Math.max(ChainsawConstants.DEFAULT_ROW_HEIGHT, multiLinePanelPrefHeight);
+            if (colIndex == ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME) {
+                int currentMarkerHeight = loggingEvent.getMarkerHeight();
+                loggingEvent.setMarkerHeight(newRowHeight);
+                if (newRowHeight != currentMarkerHeight && newRowHeight >= loggingEvent.getMsgHeight()) {
+                    setHeight = true;
+                }
             }
+
+            if (colIndex == ChainsawColumns.INDEX_MESSAGE_COL_NAME) {
+                int currentMsgHeight = loggingEvent.getMsgHeight();
+                loggingEvent.setMsgHeight(newRowHeight);
+                if (newRowHeight != currentMsgHeight && newRowHeight >= loggingEvent.getMarkerHeight()) {
+                    setHeight = true;
+                }
+            }
+            if (setHeight) {
+                table.setRowHeight(row, newRowHeight);
+            }
+
         }
         component = multiLinePanel;
         break;

@@ -101,7 +101,7 @@ import org.apache.log4j.spi.LoggingEvent;
  *
  * @author Paul Smith <psmith@apache.org>
  */
-final class LoggerNameTreePanel extends JPanel implements Rule
+final class LoggerNameTreePanel extends JPanel
 {
   //~ Static fields/initializers ==============================================
 
@@ -151,7 +151,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
   private final LogPanelLoggerTreeModel logTreeModel;
   private final PopupListener popupListener;
   private final LoggerTreePopupMenu popupMenu;
-  private final Rule ruleDelegate;
+  private final VisibilityRuleDelegate visibilityRuleDelegate;
   private Rule colorRuleDelegate; 
   private final JScrollPane scrollTree;
   private final JToolBar toolbar = new JToolBar();
@@ -180,28 +180,8 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     ignoreExpressionEntryField.setPreferredSize(new Dimension(300, 150));
     JTextComponentFormatter.applySystemFontAndSize(ignoreExpressionEntryField);
 
-    ruleDelegate = new AbstractRule() {
-    	public boolean evaluate(LoggingEvent e, Map matches)
-        {
-          String currentlySelectedLoggerName = getCurrentlySelectedLoggerName();
-          boolean hiddenLogger = e.getLoggerName() != null && isHiddenLogger(e.getLoggerName());
-          boolean hiddenExpression = (ignoreExpressionRule != null && ignoreExpressionRule.evaluate(e, null));
-          boolean hidden = hiddenLogger || hiddenExpression;
-          if (currentlySelectedLoggerName == null) {
-          	//if there is no selected logger, pass if not hidden
-          	return !hidden;
-          }
-          boolean result = (e.getLoggerName() != null) && !hidden;
 
-          if (result && isFocusOnSelected())
-          {
-            result = (e.getLoggerName() != null && (e.getLoggerName().startsWith(currentlySelectedLoggerName+".") || e.getLoggerName().endsWith(currentlySelectedLoggerName)));
-          }
-
-          return result;
-        }
-      };
-    
+    visibilityRuleDelegate = new VisibilityRuleDelegate();
     colorRuleDelegate = 
         new AbstractRule()
         {
@@ -439,7 +419,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
             } else {
                 ignoreExpressionRule = null;
             }
-            firePropertyChange("hiddenSet", null, null);
+            visibilityRuleDelegate.firePropertyChange("hiddenSet", null, null);
 
             updateAllIgnoreStuff();
             ignoreExpressionEntryField.setBackground(UIManager.getColor("TextField.background"));
@@ -464,25 +444,12 @@ final class LoggerNameTreePanel extends JPanel implements Rule
     listenerList.add(ChangeListener.class, l);
   }
 
-  /* (non-Javadoc)
-   * @see org.apache.log4j.chainsaw.rule.Rule#evaluate(org.apache.log4j.spi.LoggingEvent)
-   */
-  /**
-   * DOCUMENT ME!
-   *
-   * @param e DOCUMENT ME!
-   *
-   * @param matches
-   * @return DOCUMENT ME!
-   */
-  public boolean evaluate(LoggingEvent e, Map matches)
-  {
-    //no need for logger to build matches
-    return ruleDelegate.evaluate(e, null);
-  }
-  
   public Rule getLoggerColorRule() {
   	return colorRuleDelegate;
+  }
+
+  public Rule getLoggerVisibilityRule() {
+      return visibilityRuleDelegate;
   }
 
   /**
@@ -548,7 +515,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
       hiddenSet.remove(logger);
     }
 
-    firePropertyChange("hiddenSet", (Object) null, (Object) null);
+    visibilityRuleDelegate.firePropertyChange("hiddenSet", (Object) null, (Object) null);
   }
 
   /**
@@ -611,7 +578,7 @@ final class LoggerNameTreePanel extends JPanel implements Rule
   void ignore(Collection fqnLoggersToIgnore)
   {
     hiddenSet.addAll(fqnLoggersToIgnore);
-    firePropertyChange("hiddenSet", null, null);
+    visibilityRuleDelegate.firePropertyChange("hiddenSet", null, null);
     fireChangeEvent();
   }
 
@@ -1142,12 +1109,12 @@ final class LoggerNameTreePanel extends JPanel implements Rule
       {
         return;
       }
-      firePropertyChange("searchExpression", null, "logger like '^" + selectedLogger + ".*'");
+      visibilityRuleDelegate.firePropertyChange("searchExpression", null, "logger like '^" + selectedLogger + ".*'");
   }
 
   private void clearFindNext()
   {
-      firePropertyChange("searchExpression", null, "");
+      visibilityRuleDelegate.firePropertyChange("searchExpression", null, "");
   }
 
   private void clearRefineFocus()
@@ -1417,16 +1384,18 @@ final class LoggerNameTreePanel extends JPanel implements Rule
       {
         public void stateChanged(ChangeEvent evt)
         {
-          firePropertyChange("rule", null, null);
+          visibilityRuleDelegate.firePropertyChange("rule", null, null);
           updateAllIgnoreStuff();
         }
       });
 
-    addPropertyChangeListener("hiddenSet", new PropertyChangeListener()
+    visibilityRuleDelegate.addPropertyChangeListener(new PropertyChangeListener()
       {
-        public void propertyChange(PropertyChangeEvent arg0)
+        public void propertyChange(PropertyChangeEvent event)
         {
-          updateAllIgnoreStuff();
+          if (event.getPropertyName().equals("hiddenSet")) {
+            updateAllIgnoreStuff();
+          }
         }
       });
   }
@@ -1768,4 +1737,37 @@ final class LoggerNameTreePanel extends JPanel implements Rule
       }
     }
   }
+
+  class VisibilityRuleDelegate extends AbstractRule {
+    	public boolean evaluate(LoggingEvent e, Map matches)
+        {
+          String currentlySelectedLoggerName = getCurrentlySelectedLoggerName();
+          boolean hiddenLogger = e.getLoggerName() != null && isHiddenLogger(e.getLoggerName());
+          boolean hiddenExpression = (ignoreExpressionRule != null && ignoreExpressionRule.evaluate(e, null));
+          boolean hidden = hiddenLogger || hiddenExpression;
+          if (currentlySelectedLoggerName == null) {
+          	//if there is no selected logger, pass if not hidden
+          	return !hidden;
+          }
+          boolean result = (e.getLoggerName() != null) && !hidden;
+
+          if (result && isFocusOnSelected())
+          {
+            result = (e.getLoggerName() != null && (e.getLoggerName().startsWith(currentlySelectedLoggerName+".") || e.getLoggerName().endsWith(currentlySelectedLoggerName)));
+          }
+
+          return result;
+        }
+
+        public void firePropertyChange(String propertyName, Object oldVal, Object newVal)
+        {
+            super.firePropertyChange(propertyName, oldVal, newVal);
+        }
+
+        public void firePropertyChange(PropertyChangeEvent evt)
+        {
+            super.firePropertyChange(evt);
+        }
+    }
+
 }
