@@ -62,6 +62,7 @@ import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.stream.StreamResult;
@@ -641,11 +642,19 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
     */
 
   public void saveSettings(SaveSettingsEvent event){
-      List pluginList = pluginRegistry.getPlugins();
-
+      List fullPluginList = pluginRegistry.getPlugins();
+      List pluginList = new ArrayList();
+      for (Iterator iter = fullPluginList.iterator();iter.hasNext();) {
+          Plugin thisPlugin = (Plugin)iter.next();
+          if (thisPlugin instanceof Receiver) {
+              pluginList.add(thisPlugin);
+          }
+      }
+      //remove everything that isn't a receiver..otherwise, we'd create an empty config file
       try {
-          if (pluginList.size() != 0) {
-              File file = new File(SettingsManager.getInstance().getSettingsDirectory(), "receiver-configs.xml");
+          if (pluginList.size() > 0) {
+              //we programmatically register the ZeroConf plugin in the plugin registry
+              File file = new File(SettingsManager.getInstance().getSettingsDirectory(), "receiver-config.xml");
               DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
               factory.setNamespaceAware(true);
               DocumentBuilder builder = factory.newDocumentBuilder();
@@ -673,7 +682,11 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
 
                   for (int j = 0; j < list.size(); j++) {
                       PropertyDescriptor d = (PropertyDescriptor) list.get(j);
-
+                      //don't serialize the loggerRepository property for subclasses of componentbase..
+                      //easier to change this than tweak componentbase right now..
+                      if (d.getReadMethod().getName().equals("getLoggerRepository")) {
+                          continue;
+                      }
                       Object o = d.getReadMethod().invoke(receiver, new Object[] {} );
                       if (o != null) {
                           Element paramElement = document.createElement("param");
@@ -689,6 +702,8 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
 
               TransformerFactory transformerFactory = TransformerFactory.newInstance();
               Transformer transformer = transformerFactory.newTransformer();
+              transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+              transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
               DOMSource source = new DOMSource(rootElement);
               FileOutputStream stream = new FileOutputStream(file);
               StreamResult result = new StreamResult(stream);

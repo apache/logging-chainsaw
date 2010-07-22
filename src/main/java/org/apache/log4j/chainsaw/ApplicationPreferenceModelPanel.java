@@ -169,10 +169,6 @@ public static void main(String[] args) {
     return model;
   }
 
-    public void browseForConfiguration() {
-        generalAllPrefPanel.browseForConfiguration();
-    }
-
     public class VisualsPrefPanel extends BasicPrefPanel {
     private final JRadioButton topPlacement = new JRadioButton("Top");
     private final JRadioButton bottomPlacement = new JRadioButton("Bottom");

@@ -242,9 +242,9 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
       //on receiver restart, only prompt for credentials if we don't already have them
       if (promptForUserInfo && getFileURL().indexOf("@") == -1) {
     	  /*
-    	  if promptforuserinfo is true, wait for a reference to the container 
+    	  if promptforuserinfo is true, wait for a reference to the container
     	  (via the VisualReceiver callback).
-    	  
+
     	  We need to display a login dialog on top of the container, so we must then
     	  wait until the container has been added to a frame
     	  */
@@ -260,18 +260,22 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
     			  } catch (InterruptedException ie){}
     		  }
     	  }
-    	      	  
+
     	  Frame containerFrame1;
-    	  synchronized(waitForContainerLock) {
-    		  //loop until the container has a frame
-    		  while ((containerFrame1 = (Frame)SwingUtilities.getAncestorOfClass(Frame.class, container)) == null) {
-    			  try {
-    				  waitForContainerLock.wait(1000);
-    				  getLogger().debug("waiting for container's frame to be available");
-    			  } catch (InterruptedException ie) {}
-    		  }
-    	  }
-    	  		final Frame containerFrame = containerFrame1;
+          if (container instanceof Frame) {
+              containerFrame1 = (Frame)container;
+          } else {
+              synchronized(waitForContainerLock) {
+                  //loop until the container has a frame
+                  while ((containerFrame1 = (Frame)SwingUtilities.getAncestorOfClass(Frame.class, container)) == null) {
+                      try {
+                          waitForContainerLock.wait(1000);
+                          getLogger().debug("waiting for container's frame to be available");
+                      } catch (InterruptedException ie) {}
+                  }
+              }
+          }
+            final Frame containerFrame = containerFrame1;
     	  	  //create the dialog
     	  	  SwingUtilities.invokeLater(new Runnable() {
     	  		public void run() {

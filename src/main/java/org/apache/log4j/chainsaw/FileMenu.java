@@ -65,7 +65,7 @@ class FileMenu extends JMenu {
 
     loadConfigAction = new AbstractAction("Load Chainsaw configuration"){
         public void actionPerformed(ActionEvent actionEvent) {
-            logUI.showApplicationPreferencesBrowse();
+            logUI.showReceiverConfiguration();
         }
     };
 

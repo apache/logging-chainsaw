@@ -3564,6 +3564,12 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             }
         }
 
+        public Point getToolTipLocation(MouseEvent event)
+        {
+            //shift tooltip down so the the pointer doesn't cover up events below the current mouse location
+            return new Point(event.getX(), event.getY() + 30);
+        }
+
         private void drawEvent(Color newColor, int verticalLocation, int eventHeight, Graphics g, int x, int width) {
 //            System.out.println("painting: - color: " + newColor + ", verticalLocation: " + verticalLocation + ", eventHeight: " + eventHeight);
             //center drawing at vertical location

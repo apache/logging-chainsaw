@@ -122,7 +122,8 @@ public class LogPanelPreferenceModel implements Serializable{
   private TableColumn findColumnByHeader(List list, String header) {
 	  for (Iterator iter = list.iterator();iter.hasNext();) {
 		  TableColumn c = (TableColumn)iter.next();
-		  if (c.getHeaderValue().equals(header)) {
+          //columns may have changed - header may not exist
+		  if (c != null && c.getHeaderValue() != null && c.getHeaderValue().equals(header)) {
 			  return c;
 		  }
 	  }
