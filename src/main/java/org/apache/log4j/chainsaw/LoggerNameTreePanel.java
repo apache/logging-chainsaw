@@ -1504,7 +1504,7 @@ final class LoggerNameTreePanel extends JPanel
         (JLabel) super.getTreeCellRendererComponent(
           tree, value, sel, expanded, leaf, row, focus);
 
-      Font originalFont = component.getFont();
+      Font originalFont = new Font(component.getFont().getName(), component.getFont().getStyle(), component.getFont().getSize());
 
       int style = Font.PLAIN;
 
