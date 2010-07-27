@@ -23,7 +23,7 @@
 <!-- Javac with debug on/off. Log4j without debug on is hard to debug, so leave this setting on. -->
   <property name="debug" value="on"/>
 
-  <property name="version" value="2.0alpha-1"/>
+  <property name="version" value="2.10"/>
   
     <!-- The directory where source files are stored. -->
   <property name="java.source.dir" value="src/main/java/"/>
@@ -128,17 +128,17 @@
 	
   <target name="BuildZeroConfJar" depends="JmDNSCheck, build.chainsaw" if="jmdns-present">
     <javac deprecation="${deprecation}"
-           srcdir="zeroconf"
+           srcdir="${java.source.dir}"
     	   debug="${debug}"
            destdir="${javac.dest}">
       <patternset>
-        <include name="**/*.java"/>
+        <include name="**/zeroconf/*.java"/>
       </patternset>
       <classpath refid="compile.classpath"/>   
     </javac>	
   	
-    <jar jarfile="${jar.dest}/log4j-zeroconf.jar" basedir="${javac.dest}"
-         includes="${stem}/**/net/ZeroConf*.class,${stem}/**/net/Zeroconf*.class" excludes="**/*Test*.class">
+    <jar jarfile="${jar.dest}/log4j-chainsaw-zeroconf.jar" basedir="${javac.dest}"
+         includes="${stem}/**/zeroconf/*.class" excludes="**/*Test*.class">
       <manifest>
         <attribute name="Manifest-version" value="1.0"/>
         <section name="org/apache/log4j/">
@@ -242,8 +242,11 @@
              ${stem}/chainsaw/icons/*.jpg, 
              ${stem}/chainsaw/icons/LICENCE"
              excludes="**/UnitTest**">
+        <!-- ZeroConf stuff goes in it's own Jar -->
+     <exclude name="**/zeroconf/**/*" />
+
     	<!-- VFS stuff goes in it's own Jar -->
-     <exclude name="**/vfs/*" />
+     <exclude name="**/vfs/**/*" />
       <!-- we need to exclude the JMS + DB Receiver BeanInfo for webstart purposes -->
       <exclude name="**/JMS*BeanInfo.class" if="webstart" />
       <exclude name="**/DB*BeanInfo.class" if="webstart" />
