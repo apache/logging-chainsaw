@@ -1149,10 +1149,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     JPanel rightPanel = new JPanel();
     rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
     JPanel thumbNailPanel = new EventMatchThumbnail();
+    rightPanel.add(thumbNailPanel);
 
     //set thumbnail width to be a bit narrower than scrollbar width
-    thumbNailPanel.setPreferredSize(new Dimension(((Integer)UIManager.get("ScrollBar.width")).intValue() -4, -1));
-    rightPanel.add(thumbNailPanel);
+    Integer scrollBarWidth = (Integer) UIManager.get("ScrollBar.width");
+    if (scrollBarWidth != null) {
+        thumbNailPanel.setPreferredSize(new Dimension(scrollBarWidth.intValue() -4, -1));
+    }
     eventsAndStatusPanel.add(rightPanel, BorderLayout.EAST);
 
     final JPanel statusLabelPanel = new JPanel();
@@ -3472,7 +3475,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
          * @return point representing top and bottom offsets (x and y values of Point)
          */
         public Point getScrollBarOffsets() {
-            int scrollBarOffset = ((Integer)UIManager.get("ScrollBar.width")).intValue();
+            Integer scrollBarWidth = (Integer) UIManager.get("ScrollBar.width");
+            int scrollBarOffset = scrollBarWidth == null ? 0 : scrollBarWidth.intValue();
             //calculate topOffset and bottomOffset (topOffset is tableheader size + optional vertical scrollbar thumb height
             //bottom offset is optional vertical scrollbar thumb height + optional horizontal scrollbar thumb height
             int topOffset = table.getTableHeader().getMinimumSize().height;

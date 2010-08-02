@@ -49,6 +49,9 @@ import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
@@ -232,7 +235,13 @@ class ReceiverConfigurationPanel extends JPanel {
         c.weightx = 1.0;
         c.fill = GridBagConstraints.HORIZONTAL;
         JTextPane descriptionTextPane = new JTextPane();
-        descriptionTextPane.setText("Specify the source of events to process or load a Chainsaw configuration file\nAn example configuration file is available from the Welcome tab");
+
+        StyledDocument doc = descriptionTextPane.getStyledDocument();
+        SimpleAttributeSet center = new SimpleAttributeSet();
+        StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
+        doc.setParagraphAttributes(0, doc.getLength(), center, false);
+        
+        descriptionTextPane.setText("Define an event source or load a configuration file");
         descriptionTextPane.setEditable(false);
         descriptionTextPane.setOpaque(false);
         descriptionTextPane.setFont(getFont());
@@ -263,7 +272,13 @@ class ReceiverConfigurationPanel extends JPanel {
 
     private JPanel buildBottomDescriptionPanel() {
         JTextPane descriptionTextPane = new JTextPane();
-        descriptionTextPane.setText("The active receiver configuration is auto-saved on exit to $HOME/.chainsaw/receiver-config.xml");
+
+        StyledDocument doc = descriptionTextPane.getStyledDocument();
+        SimpleAttributeSet center = new SimpleAttributeSet();
+        StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
+        doc.setParagraphAttributes(0, doc.getLength(), center, false);
+
+        descriptionTextPane.setText("The active configuration is auto-saved on exit to $HOME/.chainsaw/receiver-config.xml\n\nAn example configuration file is available from the Welcome tab");
         descriptionTextPane.setEditable(false);
         descriptionTextPane.setOpaque(false);
         descriptionTextPane.setFont(getFont());
@@ -289,7 +304,6 @@ class ReceiverConfigurationPanel extends JPanel {
         networkReceiverPortComboBox = new JComboBox(networkReceiverPortComboBoxModel);
         networkReceiverPortComboBox.setEditable(true);
         networkReceiverPortComboBox.setOpaque(false);
-        networkReceiverPortComboBox.setBackground(getBackground());
 
         networkReceiverClassNameComboBoxModel = new DefaultComboBoxModel();
         networkReceiverClassNameComboBoxModel.addElement(SocketReceiver.class);
@@ -298,6 +312,7 @@ class ReceiverConfigurationPanel extends JPanel {
         networkReceiverClassNameComboBox = new JComboBox(networkReceiverClassNameComboBoxModel);
 
         networkReceiverClassNameComboBox.setEditable(false);
+        networkReceiverClassNameComboBox.setOpaque(false);
 
         networkReceiverClassNameComboBox.setRenderer(new DefaultListCellRenderer() {
             public Component getListCellRendererComponent(JList list,
@@ -311,6 +326,8 @@ class ReceiverConfigurationPanel extends JPanel {
                     JLabel cellLabel = (JLabel) component;
                     String shortenedName = receiverClass.getName().substring(receiverClass.getName().lastIndexOf('.') + 1);
                     cellLabel.setText(shortenedName);
+                    cellLabel.setOpaque(false);
+                    cellLabel.setEnabled(networkReceiverClassNameComboBox.isEnabled());
                 }
 
                 return component;
@@ -324,6 +341,7 @@ class ReceiverConfigurationPanel extends JPanel {
         c.weightx = 0.5;
         c.gridx = 0;
         c.gridy = 0;
+        c.insets = new Insets(0, 0, 0, 5);
         panel.add(networkReceiverClassNameComboBox, c);
 
         c = new GridBagConstraints();
@@ -360,19 +378,19 @@ class ReceiverConfigurationPanel extends JPanel {
         c.gridx = 0;
         c.gridy = 0;
         c.anchor = GridBagConstraints.LINE_START;
+        c.insets = new Insets(0, 0, 5, 0);
         panel.add(browseLogFileButton, c);
 
         c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = 1;
         c.anchor = GridBagConstraints.LINE_END;
-        c.insets = new Insets(0, 0, 0, 5);
-        panel.add(new JLabel("Log file URL"), c);
+        c.insets = new Insets(0, 0, 5, 5);
+        panel.add(new JLabel(" Log file URL "), c);
         logFileURLComboBoxModel = new DefaultComboBoxModel();
         logFileURLComboBox = new JComboBox(logFileURLComboBoxModel);
         logFileURLComboBox.setEditable(true);
         logFileURLComboBox.setOpaque(false);
-        logFileURLComboBox.setBackground(getBackground());
 
         c = new GridBagConstraints();
         c.gridx = 1;
@@ -381,14 +399,15 @@ class ReceiverConfigurationPanel extends JPanel {
         c.gridwidth = 1;
         c.anchor = GridBagConstraints.LINE_START;
         c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(0, 0, 5, 0);
         panel.add(logFileURLComboBox, c);
 
         c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = 2;
         c.anchor = GridBagConstraints.LINE_END;
-        c.insets = new Insets(0, 0, 0, 5);
-        panel.add(new JLabel("Log file format type"), c);
+        c.insets = new Insets(0, 0, 5, 5);
+        panel.add(new JLabel(" Log file format type "), c);
 
         DefaultComboBoxModel comboBoxModel = new DefaultComboBoxModel();
         comboBoxModel.addElement("PatternLayout format");
@@ -396,26 +415,25 @@ class ReceiverConfigurationPanel extends JPanel {
 
         logFileFormatTypeComboBox = new JComboBox(comboBoxModel);
         logFileFormatTypeComboBox.setOpaque(false);
-        logFileFormatTypeComboBox.setBackground(getBackground());
 
         c = new GridBagConstraints();
         c.gridx = 1;
         c.gridy = 2;
         c.anchor = GridBagConstraints.LINE_START;
+        c.insets = new Insets(0, 0, 5, 0);
         panel.add(logFileFormatTypeComboBox, c);
 
         c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = 3;
         c.anchor = GridBagConstraints.LINE_END;
-        c.insets = new Insets(0, 5, 0, 5);
-        panel.add(new JLabel("Log file format"), c);
+        c.insets = new Insets(0, 5, 5, 5);
+        panel.add(new JLabel(" Log file format "), c);
 
         logFileFormatComboBoxModel = new DefaultComboBoxModel();
         logFileFormatComboBox = new JComboBox(logFileFormatComboBoxModel);
         logFileFormatComboBox.setEditable(true);
         logFileFormatComboBox.setOpaque(false);
-        logFileFormatComboBox.setBackground(getBackground());
 
         c = new GridBagConstraints();
         c.gridx = 1;
@@ -423,25 +441,27 @@ class ReceiverConfigurationPanel extends JPanel {
         c.weightx = 0.5;
         c.anchor = GridBagConstraints.LINE_START;
         c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(0, 0, 5, 0);
         panel.add(logFileFormatComboBox, c);
 
         c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = 4;
-        c.insets = new Insets(0, 5, 0, 5);
-        panel.add(new JLabel("Log file timestamp format"), c);
+        c.insets = new Insets(0, 5, 5, 5);
+        panel.add(new JLabel(" Log file timestamp format "), c);
 
         logFileFormatTimestampFormatComboBoxModel = new DefaultComboBoxModel();
         seedLogFileFormatTimestampComboBoxModel();
         logFileFormatTimestampFormatComboBox = new JComboBox(logFileFormatTimestampFormatComboBoxModel);
         logFileFormatTimestampFormatComboBox.setEditable(true);
         logFileFormatTimestampFormatComboBox.setOpaque(false);
-        logFileFormatTimestampFormatComboBox.setBackground(getBackground());
+
         c = new GridBagConstraints();
         c.gridx = 1;
         c.gridy = 4;
         c.weightx = 0.5;
         c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(0, 0, 5, 0);
         panel.add(logFileFormatTimestampFormatComboBox, c);
 
         DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss,SSS");
@@ -449,8 +469,8 @@ class ReceiverConfigurationPanel extends JPanel {
         c.gridx = 0;
         c.gridy = 5;
         c.gridwidth=5;
-        c.insets = new Insets(5, 5, 0, 5);
-        panel.add(new JLabel("Timestamps parsed using Java's SimpleDateFormat - use yyyy.MM.dd HH:mm:ss,SSS to parse " +  dateFormat.format(new Date())), c);
+        c.insets = new Insets(5, 5, 5, 5);
+        panel.add(new JLabel(" Timestamps parsed using Java's SimpleDateFormat - use yyyy.MM.dd HH:mm:ss,SSS to parse " +  dateFormat.format(new Date()) + " "), c);
         return panel;
     }
 
@@ -470,7 +490,6 @@ class ReceiverConfigurationPanel extends JPanel {
 
         existingConfigurationComboBox = new JComboBox(existingConfigurationComboBoxModel);
         existingConfigurationComboBox.setOpaque(false);
-        existingConfigurationComboBox.setBackground(getBackground());
         existingConfigurationComboBox.setToolTipText("Previously loaded configurations can be chosen here");
         existingConfigurationComboBox.setEditable(true);
 
@@ -515,13 +534,14 @@ class ReceiverConfigurationPanel extends JPanel {
         c.gridy = 0;
         c.gridwidth = 2;
         c.anchor = GridBagConstraints.LINE_START;
+        c.insets = new Insets(0, 0, 5, 0);
         panel.add(browseForAnExistingConfigurationButton, c);
 
         c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = 1;
         c.insets = new Insets(0, 5, 0, 5);
-        panel.add(new JLabel("Configuration file URL"), c);
+        panel.add(new JLabel(" Configuration file URL "), c);
 
         c = new GridBagConstraints();
         c.gridx = 1;
@@ -571,7 +591,7 @@ class ReceiverConfigurationPanel extends JPanel {
     private URL browseConfig() throws MalformedURLException {
 
         JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle("Use an existing receiver configuration file...");
+        chooser.setDialogTitle("Use an existing configuration file...");
         chooser.setDialogType(JFileChooser.OPEN_DIALOG);
         chooser.setFileFilter(new FileFilter() {
                 public boolean accept(File f) {
