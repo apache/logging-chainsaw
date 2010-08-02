@@ -290,6 +290,7 @@ class ReceiverConfigurationPanel extends JPanel {
         c.gridy = 0;
         c.weightx = 1.0;
         c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(0, 0, 5, 0);
 
         panel.add(descriptionTextPane, c);
 
@@ -326,8 +327,6 @@ class ReceiverConfigurationPanel extends JPanel {
                     JLabel cellLabel = (JLabel) component;
                     String shortenedName = receiverClass.getName().substring(receiverClass.getName().lastIndexOf('.') + 1);
                     cellLabel.setText(shortenedName);
-                    cellLabel.setOpaque(false);
-                    cellLabel.setEnabled(networkReceiverClassNameComboBox.isEnabled());
                 }
 
                 return component;
