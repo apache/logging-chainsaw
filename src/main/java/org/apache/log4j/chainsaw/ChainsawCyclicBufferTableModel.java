@@ -17,6 +17,7 @@
 
 package org.apache.log4j.chainsaw;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -128,6 +129,8 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     final int previousSize;
     final int newSize;
           synchronized (mutex) {
+            //post refilter with newValue of TRUE (filtering is about to begin)
+            propertySupport.firePropertyChange("refilter", Boolean.FALSE, Boolean.TRUE);
             previousSize = filteredList.size();
             filteredList.clear();
             if (displayRule == null) {
@@ -175,6 +178,12 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
       				fireTableDataChanged();
       			}
 	      	notifyCountListeners();
+            //post refilter with newValue of FALSE (filtering is complete) (enqueue on EDT, don't run now)
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    propertySupport.firePropertyChange("refilter", Boolean.TRUE, Boolean.FALSE);
+                }
+            });
       	}});
   }
 

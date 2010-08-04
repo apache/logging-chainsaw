@@ -987,6 +987,42 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         }
       });
 
+    //if the table is refiltered, try to reselect the last selected row
+    //refilter with a newValue of TRUE means refiltering is about to begin
+    //refilter with a newValue of FALSE means refiltering is complete
+    tableModel.addPropertyChangeListener("refilter", new PropertyChangeListener() {
+        private LoggingEvent currentEvent;
+        public void propertyChange(PropertyChangeEvent evt) {
+            //if new value is true, filtering is about to begin
+            //if new value is false, filtering is complete
+            if (evt.getNewValue().equals(Boolean.TRUE)) {
+                currentEvent = tableModel.getRow(table.getSelectedRow());
+            } else {
+                //events are still coming in..wait until all events are added before resetting current row
+                new Thread(new Runnable() {
+                    public void run() {
+                        try
+                        {
+                            Thread.sleep(500);
+                        }
+                        catch (InterruptedException e)
+                        {
+                            e.printStackTrace();
+                        }
+                        EventQueue.invokeLater(new Runnable() {
+                            public void run() {
+                                //refilter is about to begin...get current selected row
+                                if (currentEvent != null) {
+                                    table.scrollToRow(tableModel.getRowIndex(currentEvent));
+                                }
+                            }
+                        });
+                    }
+                }).start();
+            }
+        }
+    });
+
     table.getTableHeader().addMouseListener(
       new MouseAdapter() {
         public void mouseClicked(MouseEvent e) {
@@ -1716,11 +1752,11 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   }
   
   private void scrollToBottom() {
-    final int scrollRow = tableModel.getRowCount() - 1;
     EventQueue.invokeLater(new Runnable()
     {
         public void run()
         {
+            int scrollRow = tableModel.getRowCount() - 1;
             table.scrollToRow(scrollRow);
         }
     });
@@ -1728,9 +1764,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
   public void scrollToTop()
   {
-    if (tableModel.getRowCount() > 1) {
-        table.scrollToRow(0);
-    }
+      EventQueue.invokeLater(new Runnable() {
+          public void run() {
+              if (tableModel.getRowCount() > 1) {
+                  table.scrollToRow(0);
+              }
+          }
+      });
   }
 
   /**
@@ -2096,7 +2136,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
    * and placing it inside it's own JFrame.
    */
   void undock() {
-  	int row = table.getSelectedRow();
+  	final int row = table.getSelectedRow();
     setDocked(false);
     externalPanel.removeAll();
     findPanel.removeAll();
@@ -2121,7 +2161,11 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     dockingAction.putValue(Action.NAME, "Dock");
     dockingAction.putValue(Action.SMALL_ICON, ChainsawIcons.ICON_DOCK);
     if (row > -1) {
-    	table.scrollToRow(row);
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                table.scrollToRow(row);
+            }
+        });
     }
   }
 
@@ -2578,17 +2622,25 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   }
 
   public void findNextColorizedEvent() {
-    int nextRow = tableModel.findColoredRow(table.getSelectedRow() + 1, true);        
-    if (nextRow > -1) {
-      table.scrollToRow(nextRow);
-    }
+    EventQueue.invokeLater(new Runnable() {
+        public void run() {
+            final int nextRow = tableModel.findColoredRow(table.getSelectedRow() + 1, true);
+            if (nextRow > -1) {
+                table.scrollToRow(nextRow);
+            }
+        }
+    });
   }
 
   public void findPreviousColorizedEvent() {
-    int previousRow = tableModel.findColoredRow(table.getSelectedRow() - 1, false);
-    if (previousRow > -1) {
-      table.scrollToRow(previousRow);
-    }
+    EventQueue.invokeLater(new Runnable() {
+        public void run() {
+            final int previousRow = tableModel.findColoredRow(table.getSelectedRow() - 1, false);
+            if (previousRow > -1) {
+                table.scrollToRow(previousRow);
+            }
+        }
+    });
   }
 
   /**
@@ -2600,23 +2652,27 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     updateFindRule(findField.getText());
 
     if (findRule != null) {
-      try {
-        int filteredEventsSize = getFilteredEvents().size();
-        int startRow = table.getSelectedRow() + 1;
-          if (startRow > filteredEventsSize - 1) {
-              startRow = 0;
-          }
-        //no selected row would return -1, so we'd start at row zero
-        int nextRow = tableModel.locate(findRule, startRow, true);
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                  int filteredEventsSize = getFilteredEvents().size();
+                  int startRow = table.getSelectedRow() + 1;
+                    if (startRow > filteredEventsSize - 1) {
+                        startRow = 0;
+                    }
+                  //no selected row would return -1, so we'd start at row zero
+                  final int nextRow = tableModel.locate(findRule, startRow, true);
 
-        if (nextRow > -1) {
-          table.scrollToRow(nextRow);
-          findField.setToolTipText("Enter an expression");
-        }
-      } catch (IllegalArgumentException iae) {
-        findField.setToolTipText(iae.getMessage());
-        colorizer.setFindRule(null);
-      }
+                  if (nextRow > -1) {
+                    table.scrollToRow(nextRow);
+                    findField.setToolTipText("Enter an expression");
+                  }
+                } catch (IllegalArgumentException iae) {
+                  findField.setToolTipText(iae.getMessage());
+                  colorizer.setFindRule(null);
+                }
+            }
+        });
     }
   }
 
@@ -2629,21 +2685,25 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     updateFindRule(findField.getText());
 
     if (findRule != null) {
-      try {
-        int startRow = table.getSelectedRow() - 1;
-        int filteredEventsSize = getFilteredEvents().size();
-        if (startRow < 0) {
-            startRow = filteredEventsSize - 1;
-        }
-        final int previousRow = tableModel.locate(findRule, startRow, false);
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    int startRow = table.getSelectedRow() - 1;
+                    int filteredEventsSize = getFilteredEvents().size();
+                    if (startRow < 0) {
+                        startRow = filteredEventsSize - 1;
+                    }
+                    final int previousRow = tableModel.locate(findRule, startRow, false);
 
-        if (previousRow > -1) {
-          table.scrollToRow(previousRow);
-          findField.setToolTipText("Enter an expression");
-        }
-      } catch (IllegalArgumentException iae) {
-        findField.setToolTipText(iae.getMessage());
-      }
+                    if (previousRow > -1) {
+                        table.scrollToRow(previousRow);
+                        findField.setToolTipText("Enter an expression");
+                    }
+                } catch (IllegalArgumentException iae) {
+                  findField.setToolTipText(iae.getMessage());
+                }
+            }
+        });
     }
   }
 
@@ -2653,7 +2713,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
    */
   private void dock() {
   	
-  	int row = table.getSelectedRow();
+  	final int row = table.getSelectedRow();
     setDocked(true);
     undockedFrame.setVisible(false);
     removeAll();
@@ -2663,7 +2723,11 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     dockingAction.putValue(Action.NAME, "Undock");
     dockingAction.putValue(Action.SMALL_ICON, ChainsawIcons.ICON_UNDOCK);
     if (row > -1) {
-    	table.scrollToRow(row);
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                table.scrollToRow(row);
+            }
+        });
     }
   }
 
@@ -2797,29 +2861,37 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   }
 
     public void findNextMarker() {
-      int startRow = table.getSelectedRow() + 1;
-      int filteredEventsSize = getFilteredEvents().size();
-      if (startRow > filteredEventsSize - 1) {
-          startRow = 0;
-      }
-      final int nextRow = tableModel.locate(findMarkerRule, startRow, true);
+      EventQueue.invokeLater(new Runnable() {
+          public void run() {
+              int startRow = table.getSelectedRow() + 1;
+              int filteredEventsSize = getFilteredEvents().size();
+              if (startRow > filteredEventsSize - 1) {
+                  startRow = 0;
+              }
+              final int nextRow = tableModel.locate(findMarkerRule, startRow, true);
 
-      if (nextRow > -1) {
-        table.scrollToRow(nextRow);
-      }
+              if (nextRow > -1) {
+                  table.scrollToRow(nextRow);
+              }
+          }
+      });
     }
 
     public void findPreviousMarker() {
-        int startRow = table.getSelectedRow() - 1;
-        int filteredEventsSize = getFilteredEvents().size();
-        if (startRow < 0) {
-            startRow = filteredEventsSize - 1;
-        }
-        final int previousRow = tableModel.locate(findMarkerRule, startRow, false);
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                int startRow = table.getSelectedRow() - 1;
+                int filteredEventsSize = getFilteredEvents().size();
+                if (startRow < 0) {
+                    startRow = filteredEventsSize - 1;
+                }
+                final int previousRow = tableModel.locate(findMarkerRule, startRow, false);
 
-        if (previousRow > -1) {
-          table.scrollToRow(previousRow);
-        }
+                if (previousRow > -1) {
+                    table.scrollToRow(previousRow);
+                }
+            }
+        });
     }
 
     public void clearAllMarkers() {
