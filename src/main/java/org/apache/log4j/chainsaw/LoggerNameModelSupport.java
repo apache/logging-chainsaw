@@ -59,6 +59,17 @@ public class LoggerNameModelSupport implements LoggerNameModel {
     return isNew;
   }
 
+  public void reset() {
+      loggerNameSet.clear();
+      LoggerNameListener[] eventListeners = (LoggerNameListener[]) listenerList.getListeners(LoggerNameListener.class);
+
+      for (int i = 0; i < eventListeners.length; i++)
+      {
+        LoggerNameListener listener = eventListeners[i];
+        listener.reset();
+      }
+  }
+
   /**
    * Notifies all the registered listeners that a new unique
    * logger name has been added to this model

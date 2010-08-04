@@ -101,7 +101,7 @@ import org.apache.log4j.spi.LoggingEvent;
  *
  * @author Paul Smith <psmith@apache.org>
  */
-final class LoggerNameTreePanel extends JPanel
+final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
 {
   //~ Static fields/initializers ==============================================
 
@@ -159,6 +159,7 @@ final class LoggerNameTreePanel extends JPanel
   private final RuleColorizer colorizer;
   private Rule ignoreExpressionRule;
   private FilterModel filterModel;
+  private boolean expandRootLatch = false;
 
     //~ Constructors ============================================================
 
@@ -229,18 +230,16 @@ final class LoggerNameTreePanel extends JPanel
     //	============================================
     logTreeModel.addTreeModelListener(new TreeModelListener()
       {
-        private boolean latched = false;
-
         public void treeNodesChanged(TreeModelEvent e)
         {
         }
 
         public void treeNodesInserted(TreeModelEvent e)
         {
-          if (!latched)
+          if (!expandRootLatch)
           {
             ensureRootExpanded();
-            latched = true;
+            expandRootLatch = true;
           }
         }
 
@@ -1450,6 +1449,16 @@ final class LoggerNameTreePanel extends JPanel
     public void setHiddenExpression(String hiddenExpression) {
         ignoreExpressionEntryField.setText(hiddenExpression);
         updateIgnoreExpression(hiddenExpression);
+    }
+
+    public void loggerNameAdded(String loggerName)
+    {
+        //no-op
+    }
+
+    public void reset()
+    {
+        expandRootLatch = false;
     }
 
     //~ Inner Classes ===========================================================

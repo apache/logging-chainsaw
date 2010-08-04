@@ -49,6 +49,11 @@ public interface LoggerNameModel {
    * @param loggerName
    */
   public boolean addLoggerName(String loggerName);
+
+  /**
+   * The logger names have been cleared
+   */
+  public void reset();
   
   public void addLoggerNameListener(LoggerNameListener l);
   public void removeLoggerNameListener(LoggerNameListener l);

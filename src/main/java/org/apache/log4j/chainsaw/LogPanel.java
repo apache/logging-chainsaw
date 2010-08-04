@@ -727,6 +727,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     });
       
     tableModel.addLoggerNameListener(logTreeModel);
+    tableModel.addLoggerNameListener(logTreePanel);
 
     /**
      * Set the LoggerRule to be the LoggerTreePanel, as this visual component

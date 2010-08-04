@@ -33,4 +33,9 @@ public interface LoggerNameListener extends EventListener {
    * @param loggerName the new, unique loggerName
    */
   public void loggerNameAdded(String loggerName);
+
+  /**
+   * Logger names were reset (used to clear the tree model)
+   */
+  public void reset();
 }

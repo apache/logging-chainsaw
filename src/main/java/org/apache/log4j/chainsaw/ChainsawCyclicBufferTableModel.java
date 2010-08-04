@@ -227,6 +227,10 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     return loggerNameModelDelegate.addLoggerName(loggerName);
   }
 
+  public void reset() {
+      loggerNameModelDelegate.reset();
+  }
+
   /**
    * @param l
    */
@@ -349,6 +353,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     });
 
     notifyCountListeners();
+    loggerNameModelDelegate.reset();
   }
 
   public List getAllEvents() {

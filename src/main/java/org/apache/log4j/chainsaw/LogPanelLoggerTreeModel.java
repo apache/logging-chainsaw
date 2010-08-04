@@ -62,6 +62,13 @@ class LogPanelLoggerTreeModel extends DefaultTreeModel
       });
   }
 
+  public void reset() {
+      DefaultMutableTreeNode current = (DefaultMutableTreeNode) getRoot();
+      current.removeAllChildren();
+      fullPackageMap.clear();
+      nodeStructureChanged(current);
+  }
+
   private void addLoggerNameInDispatchThread(final String loggerName) {
     String[] packages = tokenize(loggerName);
 
