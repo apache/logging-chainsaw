@@ -23,6 +23,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Point;
@@ -160,6 +161,7 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
   private Rule ignoreExpressionRule;
   private FilterModel filterModel;
   private boolean expandRootLatch = false;
+  private String currentlySelectedLoggerName;
 
     //~ Constructors ============================================================
 
@@ -1191,7 +1193,7 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
         DefaultMutableTreeNode node =
           (DefaultMutableTreeNode) depthEnum.nextElement();
 
-        if (node.isLeaf())
+        if (node.isLeaf() && node.getParent() != null)
         {
           TreeNode[] nodes =
             ((DefaultMutableTreeNode) node.getParent()).getPath();
@@ -1275,10 +1277,10 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
           }
           boolean focusOnSelected = isFocusOnSelected();
           //          editLoggerAction.setEnabled(path != null);
-          String logger = getCurrentlySelectedLoggerName();
+          currentlySelectedLoggerName = getCurrentlySelectedLoggerName();
           focusOnAction.setEnabled(
             (path != null) && (node != null) && (node.getParent() != null)
-            && !hiddenSet.contains(logger));
+            && !hiddenSet.contains(currentlySelectedLoggerName));
           hideAction.setEnabled(
             (path != null) && (node != null) && (node.getParent() != null));
           if (!focusOnAction.isEnabled())
@@ -1297,9 +1299,9 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
           updateRefineFocusAction.setEnabled(path != null);
           clearRefineFocusAction.setEnabled(true);
 
-          if (logger != null)
+          if (currentlySelectedLoggerName != null)
           {
-            boolean isHidden = hiddenSet.contains(logger);
+            boolean isHidden = hiddenSet.contains(currentlySelectedLoggerName);
             popupMenu.hideCheck.setSelected(isHidden);
             ignoreLoggerButton.setSelected(isHidden);
           }
@@ -1459,6 +1461,20 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
     public void reset()
     {
         expandRootLatch = false;
+        //keep track if focuson was active when we were reset
+        final String logger = currentlySelectedLoggerName;
+        final boolean focusOnSelected = isFocusOnSelected();
+        if (logger == null || !focusOnSelected) {
+            return;
+        }
+
+        //loggernameAdded runs on EDT
+        logTreeModel.loggerNameAdded(logger);
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                setFocusOn(logger);
+            }
+        });
     }
 
     //~ Inner Classes ===========================================================

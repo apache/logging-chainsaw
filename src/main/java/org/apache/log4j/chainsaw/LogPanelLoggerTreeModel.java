@@ -33,6 +33,7 @@ import javax.swing.tree.MutableTreeNode;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.log4j.chainsaw.helper.SwingHelper;
 
 
 /**
@@ -54,6 +55,7 @@ class LogPanelLoggerTreeModel extends DefaultTreeModel
    * @see org.apache.log4j.chainsaw.LoggerNameListener#loggerNameAdded(java.lang.String)
    */
   public void loggerNameAdded(final String loggerName) {
+    //invoke later, not on current EDT
     SwingUtilities.invokeLater(
       new Runnable() {
         public void run() {
