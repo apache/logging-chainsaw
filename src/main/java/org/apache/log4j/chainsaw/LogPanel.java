@@ -990,6 +990,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     //if the table is refiltered, try to reselect the last selected row
     //refilter with a newValue of TRUE means refiltering is about to begin
     //refilter with a newValue of FALSE means refiltering is complete
+    //assuming notification is called on the EDT so we can in the current EDT call update the scroll & selection
     tableModel.addPropertyChangeListener("refilter", new PropertyChangeListener() {
         private LoggingEvent currentEvent;
         public void propertyChange(PropertyChangeEvent evt) {
@@ -998,27 +999,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             if (evt.getNewValue().equals(Boolean.TRUE)) {
                 currentEvent = tableModel.getRow(table.getSelectedRow());
             } else {
-                //events are still coming in..wait until all events are added before resetting current row
-                new Thread(new Runnable() {
-                    public void run() {
-                        try
-                        {
-                            Thread.sleep(500);
-                        }
-                        catch (InterruptedException e)
-                        {
-                            e.printStackTrace();
-                        }
-                        EventQueue.invokeLater(new Runnable() {
-                            public void run() {
-                                //refilter is about to begin...get current selected row
-                                if (currentEvent != null) {
-                                    table.scrollToRow(tableModel.getRowIndex(currentEvent));
-                                }
-                            }
-                        });
-                    }
-                }).start();
+                if (currentEvent != null) {
+                    table.scrollToRow(tableModel.getRowIndex(currentEvent));
+                }
             }
         }
     });

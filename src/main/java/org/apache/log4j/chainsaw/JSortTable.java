@@ -93,6 +93,7 @@ public class JSortTable extends JTable implements MouseListener {
     getTableHeader().resizeAndRepaint();
   }
 
+  //Allow synchronous updates if already on the EDT
   public void scrollTo(final int row, final int col) {
     SwingHelper.invokeOnEDT(new Runnable() {
       public void run() {
