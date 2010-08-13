@@ -172,7 +172,6 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
   private boolean promptForUserInfo = false;
   private Container container;
   private Object waitForContainerLock = new Object();
-  private String password;
   private boolean autoReconnect;
   private VFSReader vfsReader;
 
@@ -312,9 +311,6 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
             String lastPart = oldURL.substring(index + "://".length());
             int passEndIndex = lastPart.indexOf("@");
             if (passEndIndex > -1) { //we have a username/password
-                int passBeginIndex = lastPart.indexOf(":");
-    //	        String userName = lastPart.substring(0, passBeginIndex);
-                password = lastPart.substring(passBeginIndex + 1, passEndIndex);
                 setHost(oldURL.substring(0, index + "://".length()));
                 setPath(lastPart.substring(passEndIndex + 1));
             }
