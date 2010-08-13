@@ -345,7 +345,6 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                     //if jsch not in classpath, can get NoClassDefFoundError here
                     try {
                     	SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
-                    	SftpFileSystemConfigBuilder.getInstance().setUserInfo(opts, new MyUserInfo(password));
                     } catch (NoClassDefFoundError ncdfe) {
                     	getLogger().warn("JSch not on classpath!", ncdfe);
                     }
@@ -392,7 +391,6 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                         //if jsch not in classpath, can get NoClassDefFoundError here
                         try {
                             SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
-                            SftpFileSystemConfigBuilder.getInstance().setUserInfo(opts, new MyUserInfo(password));
                         } catch (NoClassDefFoundError ncdfe) {
                             getLogger().warn("JSch not on classpath!", ncdfe);
                         }
@@ -557,45 +555,5 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
 	  public char[] getPassword() {
 		  return password;
 	  }
-  }
-
-  /**
-   * UserInfo class used to automatically log in if needed - also implemements
-   * UIKeyboardInteractive (UserInfo methods not used, just UIKeyboardInteractive)
-   * 
-   * @author sdeboy
-   */
-  public static class MyUserInfo implements UserInfo, UIKeyboardInteractive {
-    private final String thisPassword;
-    
-    public MyUserInfo(String thisPassword) {
-        this.thisPassword = thisPassword;
-    }
-	public String[] promptKeyboardInteractive(String destination, String loginName, String instruction, String[] prompt, boolean[] echo) {
-		return new String[]{thisPassword};
-	}
-
-	public String getPassphrase() {
-		return null;
-	}
-
-	public String getPassword() {
-		return null;
-	}
-
-	public boolean promptPassphrase(String arg0) {
-		return false;
-	}
-
-	public boolean promptPassword(String arg0) {
-		return false;
-	}
-
-	public boolean promptYesNo(String arg0) {
-		return false;
-	}
-
-	public void showMessage(String arg0) {
-	}
   }
 }
