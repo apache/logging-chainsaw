@@ -888,8 +888,10 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     LogPanel panel = logui.getCurrentLogPanel();
     if (panel != null) {
     	scrollToBottomButton.setSelected(panel.isScrollToBottom());
+        toggleDetailMenuItem.setSelected(panel.isDetailVisible());
     } else {
     	scrollToBottomButton.setSelected(false);
+        toggleDetailMenuItem.setSelected(false);
     }
     showReceiversButton.setSelected(
       logui.getApplicationPreferenceModel().isReceivers());

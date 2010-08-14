@@ -54,6 +54,7 @@ import javax.swing.event.TableModelListener;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.log4j.chainsaw.ChainsawConstants;
 import org.apache.log4j.chainsaw.SmallButton;
 import org.apache.log4j.chainsaw.help.HelpManager;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
@@ -124,6 +125,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
 
     public ZeroConfPlugin() {
         setName("Zeroconf");
+        deviceTable.setRowHeight(ChainsawConstants.DEFAULT_ROW_HEIGHT);
     }
 
     public void shutdown() {

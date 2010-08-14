@@ -50,6 +50,7 @@ import javax.swing.table.TableModel;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.log4j.chainsaw.ChainsawConstants;
 import org.apache.log4j.chainsaw.Generator;
 import org.apache.log4j.chainsaw.helper.TableCellEditorFactory;
 import org.apache.log4j.net.SocketHubReceiver;
@@ -84,7 +85,7 @@ public class PluginPropertyEditorPanel extends JPanel {
      *
      */
     private void initComponents() {
-        propertyTable.setRowHeight(19);
+        propertyTable.setRowHeight(ChainsawConstants.DEFAULT_ROW_HEIGHT);
         setLayout(new BorderLayout());
         scrollPane.setViewportView(propertyTable);
 

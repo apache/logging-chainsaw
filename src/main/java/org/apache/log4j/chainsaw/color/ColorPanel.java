@@ -133,13 +133,16 @@ public class ColorPanel extends JPanel
 
     tableModel = new DefaultTableModel();
     table = new JTable(tableModel);
+    table.setRowHeight(ChainsawConstants.DEFAULT_ROW_HEIGHT);
 
     searchTableModel = new DefaultTableModel();
     searchTable = new JTable(searchTableModel);
+    searchTable.setRowHeight(ChainsawConstants.DEFAULT_ROW_HEIGHT);
     searchTable.setPreferredScrollableViewportSize(new Dimension(30, 30));
 
     alternatingColorTableModel = new DefaultTableModel();
     alternatingColorTable = new JTable(alternatingColorTableModel);
+    alternatingColorTable.setRowHeight(ChainsawConstants.DEFAULT_ROW_HEIGHT);
     alternatingColorTable.setPreferredScrollableViewportSize(new Dimension(30, 30));
 
     columns = new Vector();

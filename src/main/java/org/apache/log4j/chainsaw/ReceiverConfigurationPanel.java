@@ -272,7 +272,6 @@ class ReceiverConfigurationPanel extends JPanel {
 
     private JPanel buildBottomDescriptionPanel() {
         JTextPane descriptionTextPane = new JTextPane();
-
         StyledDocument doc = descriptionTextPane.getStyledDocument();
         SimpleAttributeSet center = new SimpleAttributeSet();
         StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
@@ -290,7 +289,6 @@ class ReceiverConfigurationPanel extends JPanel {
         c.gridy = 0;
         c.weightx = 1.0;
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(0, 0, 5, 0);
 
         panel.add(descriptionTextPane, c);
 
