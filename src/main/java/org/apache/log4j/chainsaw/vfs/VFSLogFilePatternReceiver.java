@@ -399,15 +399,13 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                         fileObject = fileSystemManager.resolveFile(getFileURL(), opts);
 
                         //file may not exist..
+                        boolean fileLarger = false;
                         if (fileObject != null && fileObject.exists()) {
                             try {
                                 //available in vfs as of 30 Mar 2006 - will load but not tail if not available
                                 fileObject.refresh();
                             } catch (Error err) {
                                 getLogger().info(getPath() + " - unable to refresh fileobject", err);
-                            }
-                            if (lastFileSize == 0) {
-                                getLogger().info(getPath() + " - loading file");
                             }
                             //could have been truncated or appended to (don't do anything if same size)
                             if (fileObject.getContent().getSize() < lastFileSize) {
@@ -416,6 +414,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                                 lastFileSize = 0; //seek to beginning of file
                                 lastFilePointer = 0;
                             } else if (fileObject.getContent().getSize() > lastFileSize) {
+                                fileLarger = true;
                                 RandomAccessContent rac = fileObject.getContent().getRandomAccessContent(RandomAccessMode.READ);
                                 rac.seek(lastFilePointer);
                                 reader = new InputStreamReader(rac.getInputStream());
@@ -451,7 +450,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                                 wait(getWaitMillis());
                             }
                         } catch (InterruptedException ie) {}
-                        if (isTailing() && !terminated) {
+                        if (isTailing() && fileLarger && !terminated) {
                             getLogger().debug(getPath() + " - tailing file - file size: " + lastFileSize);
                         }
                     } while (isTailing() && !terminated);

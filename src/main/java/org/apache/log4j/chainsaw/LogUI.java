@@ -1541,9 +1541,9 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                   public void run() {
                     if (receiverConfigurationPanel.isDontWarnMeAgain()) {
                         applicationPreferenceModel.setConfigurationURL(finalURL.toExternalForm());
+                    } else {
+                        loadConfigurationUsingPluginClassLoader(finalURL);
                     }
-                    loadConfigurationUsingPluginClassLoader(finalURL);
-
 
                     receiversPanel.updateReceiverTreeInDispatchThread();
                   }
