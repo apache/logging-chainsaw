@@ -86,6 +86,8 @@ public class LogPanelPreferenceModel implements Serializable{
   private boolean highlightSearchMatchText;
   private String hiddenExpression;
   private String clearTableExpression;
+  //default to cyclic mode
+  private boolean cyclic = true;
 
     /**
    * Returns an <b>unmodifiable</b> list of the columns.
@@ -98,6 +100,14 @@ public class LogPanelPreferenceModel implements Serializable{
    */
   public List getColumns() {
       return Collections.unmodifiableList(allColumns);
+  }
+
+  public void setCyclic(boolean cyclic) {
+    this.cyclic = cyclic;
+  }
+
+  public boolean isCyclic() {
+      return cyclic;
   }
   
   /**
@@ -222,6 +232,7 @@ public class LogPanelPreferenceModel implements Serializable{
    * all the properties from
    */
   public void apply(LogPanelPreferenceModel model) {
+    setCyclic(model.isCyclic());
     setLoggerPrecision(model.getLoggerPrecision());
     setDateFormatPattern(model.getDateFormatPattern());
     setLevelIcons(model.isLevelIcons());

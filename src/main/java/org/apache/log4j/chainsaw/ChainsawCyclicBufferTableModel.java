@@ -63,6 +63,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   implements EventContainer, PropertyChangeListener {
 
   private static final int DEFAULT_CAPACITY = 5000;
+  //cyclic field used internally in this class, but not exposed via the eventcontainer
   private boolean cyclic = true;
   private int cyclicBufferSize = DEFAULT_CAPACITY;
   List unfilteredList;
@@ -475,7 +476,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
 
   public ExtendedLoggingEvent getRow(int row) {
     synchronized (mutex) {
-      if (row < filteredList.size()) {
+      if (row < filteredList.size() && row > -1) {
         return (ExtendedLoggingEvent) filteredList.get(row);
       }
     }
@@ -613,7 +614,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
          * memory...)
          */
     synchronized(mutex) {
-        if (isCyclic()) {
+        if (cyclic) {
             CyclicBufferList bufferList = (CyclicBufferList) unfilteredList;
             if (bufferList.size() == bufferList.getMaxSize()) {
                 reachedCapacity = true;
@@ -717,14 +718,6 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   }
 
   /**
-     * Returns true if this model is Cyclic (bounded) or not
-     * @return true/false
-     */
-  public boolean isCyclic() {
-    return cyclic;
-  }
-
-  /**
    * @return
    */
   public int getMaxSize() {
@@ -825,12 +818,12 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
                   monitor.setMillisToDecideToPopup(250);
                   monitor.setMillisToPopup(100);
                   logger.debug(
-                    "Changing Model, isCyclic is now " + isCyclic());
+                    "Changing Model, isCyclic is now " + cyclic);
 
                   List newUnfilteredList = null;
                   List newFilteredList = null;
 
-                  if (isCyclic()) {
+                  if (cyclic) {
                     newUnfilteredList = new CyclicBufferList(cyclicBufferSize);
                     newFilteredList = new CyclicBufferList(cyclicBufferSize);
                   } else {

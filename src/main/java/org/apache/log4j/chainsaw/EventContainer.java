@@ -68,12 +68,6 @@ public interface EventContainer extends SortTableModel, LoggerNameModel {
   List getMatchingEvents(Rule rule);
 
   /**
-   * Returns true if this model is Cyclic (bounded) or not.
-   * @return true/false
-   */
-  boolean isCyclic();
-
-  /**
    * Configures this model to use Cyclic or non-cyclic models.
    * This method should fire a property Change event if
    * it involves an actual change in the underlying model.

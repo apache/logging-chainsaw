@@ -683,7 +683,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         boolean warning100 = false;
 
         public void eventCountChanged(int currentCount, int totalCount) {
-          if (tableModel.isCyclic()) {
+          if (preferenceModel.isCyclic()) {
             double percent =
               ((double) totalCount) / ((ChainsawCyclicBufferTableModel) tableModel)
               .getMaxSize();
@@ -972,21 +972,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         }
       });
 
-    tableModel.addPropertyChangeListener(
-      "cyclic",
-      new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent arg0) {
-          if (tableModel.isCyclic()) {
-            MessageCenter.getInstance().getLogger().warn(
-              "Changed to Cyclic Mode. Maximum # events kept: "
-              + tableModel.getMaxSize());
-          } else {
-            MessageCenter.getInstance().getLogger().warn(
-              "Changed to Unlimited Mode. Warning, you may run out of memory.");
-          }
-        }
-      });
-
     //if the table is refiltered, try to reselect the last selected row
     //refilter with a newValue of TRUE means refiltering is about to begin
     //refilter with a newValue of FALSE means refiltering is complete
@@ -997,7 +982,10 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             //if new value is true, filtering is about to begin
             //if new value is false, filtering is complete
             if (evt.getNewValue().equals(Boolean.TRUE)) {
-                currentEvent = tableModel.getRow(table.getSelectedRow());
+                int currentRow = table.getSelectedRow();
+                if (currentRow > -1) {
+                    currentEvent = tableModel.getRow(currentRow);
+                }
             } else {
                 if (currentEvent != null) {
                     table.scrollToRow(tableModel.getRowIndex(currentEvent));
@@ -1918,6 +1906,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                 } else {
                     loadDefaultColumnSettings(event);
                 }
+                //ensure tablemodel cyclic flag is updated
+                tableModel.setCyclic(preferenceModel.isCyclic());
                 //may be panel configs that don't have these values
                 lowerPanel.setDividerLocation(lowerPanelDividerLocation);
                 nameTreeAndMainPanelSplit.setDividerLocation(treeDividerLocation);
@@ -2211,7 +2201,10 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
    * events or an ArrayList of events
    */
   void toggleCyclic() {
-    tableModel.setCyclic(!tableModel.isCyclic());
+    boolean toggledCyclic = !preferenceModel.isCyclic();
+
+    preferenceModel.setCyclic(toggledCyclic);
+    tableModel.setCyclic(toggledCyclic);
   }
 
   /**
@@ -2220,7 +2213,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
    * @return flag answering if LoggingEvent container is a cyclic buffer
    */
   boolean isCyclic() {
-    return tableModel.isCyclic();
+    return preferenceModel.isCyclic();
   }
 
   public void updateFindRule(String ruleText) {
