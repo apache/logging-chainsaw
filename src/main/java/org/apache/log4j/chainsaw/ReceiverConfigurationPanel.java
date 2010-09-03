@@ -45,6 +45,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
@@ -79,12 +80,10 @@ class ReceiverConfigurationPanel extends JPanel {
     private JButton browseLogFileButton;
     private JComboBox logFileFormatTypeComboBox;
 
-    private JComboBox logFileFormatComboBox;
+    private JTextField logFileFormatTextField;
     private JComboBox logFileFormatTimestampFormatComboBox;
-    private JComboBox logFileURLComboBox;
-    private DefaultComboBoxModel logFileFormatComboBoxModel;
+    private JTextField logFileURLTextField;
     private DefaultComboBoxModel logFileFormatTimestampFormatComboBoxModel;
-    private DefaultComboBoxModel logFileURLComboBoxModel;
 
     //use existing configuration widgets
     private JButton browseForAnExistingConfigurationButton;
@@ -360,8 +359,7 @@ class ReceiverConfigurationPanel extends JPanel {
                     URL url = browseLogFile();
                     if (url != null) {
                         String item = url.toURI().toString();
-                        logFileURLComboBoxModel.addElement(item);
-                        logFileURLComboBox.setSelectedItem(item);
+                        logFileURLTextField.setText(item);
                     }
                 } catch (Exception ex) {
                     logger.error(
@@ -384,10 +382,9 @@ class ReceiverConfigurationPanel extends JPanel {
         c.anchor = GridBagConstraints.LINE_END;
         c.insets = new Insets(0, 0, 5, 5);
         panel.add(new JLabel(" Log file URL "), c);
-        logFileURLComboBoxModel = new DefaultComboBoxModel();
-        logFileURLComboBox = new JComboBox(logFileURLComboBoxModel);
-        logFileURLComboBox.setEditable(true);
-        logFileURLComboBox.setOpaque(false);
+        logFileURLTextField = new JTextField();
+        logFileURLTextField.setEditable(true);
+        logFileURLTextField.setOpaque(false);
 
         c = new GridBagConstraints();
         c.gridx = 1;
@@ -397,7 +394,7 @@ class ReceiverConfigurationPanel extends JPanel {
         c.anchor = GridBagConstraints.LINE_START;
         c.fill = GridBagConstraints.HORIZONTAL;
         c.insets = new Insets(0, 0, 5, 0);
-        panel.add(logFileURLComboBox, c);
+        panel.add(logFileURLTextField, c);
 
         c = new GridBagConstraints();
         c.gridx = 0;
@@ -427,10 +424,9 @@ class ReceiverConfigurationPanel extends JPanel {
         c.insets = new Insets(0, 5, 5, 5);
         panel.add(new JLabel(" Log file format "), c);
 
-        logFileFormatComboBoxModel = new DefaultComboBoxModel();
-        logFileFormatComboBox = new JComboBox(logFileFormatComboBoxModel);
-        logFileFormatComboBox.setEditable(true);
-        logFileFormatComboBox.setOpaque(false);
+        logFileFormatTextField = new JTextField();
+        logFileFormatTextField.setEditable(true);
+        logFileFormatTextField.setOpaque(false);
 
         c = new GridBagConstraints();
         c.gridx = 1;
@@ -439,7 +435,7 @@ class ReceiverConfigurationPanel extends JPanel {
         c.anchor = GridBagConstraints.LINE_START;
         c.fill = GridBagConstraints.HORIZONTAL;
         c.insets = new Insets(0, 0, 5, 0);
-        panel.add(logFileFormatComboBox, c);
+        panel.add(logFileFormatTextField, c);
 
         c = new GridBagConstraints();
         c.gridx = 0;
@@ -575,9 +571,9 @@ class ReceiverConfigurationPanel extends JPanel {
         networkReceiverPortComboBox.setEnabled(component == networkReceiverRadioButton);
         networkReceiverClassNameComboBox.setEnabled(component == networkReceiverRadioButton);
         browseLogFileButton.setEnabled(component == logFileReceiverRadioButton);
-        logFileURLComboBox.setEnabled(component == logFileReceiverRadioButton);
+        logFileURLTextField.setEnabled(component == logFileReceiverRadioButton);
         logFileFormatTypeComboBox.setEnabled(component == logFileReceiverRadioButton);
-        logFileFormatComboBox.setEnabled(component == logFileReceiverRadioButton);
+        logFileFormatTextField.setEnabled(component == logFileReceiverRadioButton);
         logFileFormatTimestampFormatComboBox.setEnabled(component == logFileReceiverRadioButton);
     }
 
@@ -749,7 +745,7 @@ class ReceiverConfigurationPanel extends JPanel {
         URL getLogFileURL() {
             try
             {
-                Object item = logFileURLComboBox.getSelectedItem();
+                Object item = logFileURLTextField.getText();
                 if (item != null) {
                     return new URL(item.toString());
                 }
@@ -762,7 +758,7 @@ class ReceiverConfigurationPanel extends JPanel {
         }
 
         String getLogFormat() {
-            Object item = logFileFormatComboBox.getSelectedItem();
+            Object item = logFileFormatTextField.getText();
             if (item != null) {
                 return item.toString();
             }

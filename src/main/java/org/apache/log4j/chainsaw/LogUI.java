@@ -615,8 +615,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       "visible",
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          MessageCenter.getInstance().getLogger().debug(
-            "Receiver's panel:" + evt.getNewValue());
           getApplicationPreferenceModel().setReceivers(
             ((Boolean) evt.getNewValue()).booleanValue());
         }

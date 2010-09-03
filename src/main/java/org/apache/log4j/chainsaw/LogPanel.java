@@ -700,6 +700,11 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                 + getIdentifier()
                 + "' buffer has been used.  Older events are being discarded.";
               warning100 = true;
+            } else {
+                //clear msg
+                msg = "";
+                warning75 = false;
+                warning100 = false;
             }
 
             if (msg != null) {
