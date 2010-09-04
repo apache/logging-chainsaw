@@ -384,7 +384,6 @@ class ReceiverConfigurationPanel extends JPanel {
         panel.add(new JLabel(" Log file URL "), c);
         logFileURLTextField = new JTextField();
         logFileURLTextField.setEditable(true);
-        logFileURLTextField.setOpaque(false);
 
         c = new GridBagConstraints();
         c.gridx = 1;
@@ -426,7 +425,6 @@ class ReceiverConfigurationPanel extends JPanel {
 
         logFileFormatTextField = new JTextField();
         logFileFormatTextField.setEditable(true);
-        logFileFormatTextField.setOpaque(false);
 
         c = new GridBagConstraints();
         c.gridx = 1;
