@@ -30,26 +30,22 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
-
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
@@ -304,31 +300,13 @@ class ReceiverConfigurationPanel extends JPanel {
         networkReceiverPortComboBox.setOpaque(false);
 
         networkReceiverClassNameComboBoxModel = new DefaultComboBoxModel();
-        networkReceiverClassNameComboBoxModel.addElement(SocketReceiver.class);
-        networkReceiverClassNameComboBoxModel.addElement(UDPReceiver.class);
+        networkReceiverClassNameComboBoxModel.addElement(SocketReceiver.class.getName());
+        networkReceiverClassNameComboBoxModel.addElement(UDPReceiver.class.getName());
 
         networkReceiverClassNameComboBox = new JComboBox(networkReceiverClassNameComboBoxModel);
 
         networkReceiverClassNameComboBox.setEditable(false);
         networkReceiverClassNameComboBox.setOpaque(false);
-
-        networkReceiverClassNameComboBox.setRenderer(new DefaultListCellRenderer() {
-            public Component getListCellRendererComponent(JList list,
-                Object value, int index, boolean isSelected,
-                boolean cellHasFocus) {
-
-                Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-
-                if (value instanceof Class) {
-                    Class receiverClass = (Class) value;
-                    JLabel cellLabel = (JLabel) component;
-                    String shortenedName = receiverClass.getName().substring(receiverClass.getName().lastIndexOf('.') + 1);
-                    cellLabel.setText(shortenedName);
-                }
-
-                return component;
-            }
-        });
 
         JPanel panel = new JPanel(new GridBagLayout());
 
@@ -680,9 +658,8 @@ class ReceiverConfigurationPanel extends JPanel {
             return Integer.parseInt(networkReceiverPortComboBoxModel.getSelectedItem().toString());
         }
 
-        Class getNetworkReceiverClass() {
-
-            return (Class) networkReceiverClassNameComboBoxModel.getSelectedItem();
+        Class getNetworkReceiverClass() throws ClassNotFoundException {
+            return Class.forName(networkReceiverClassNameComboBoxModel.getSelectedItem().toString());
         }
 
         boolean isLoadConfig() {

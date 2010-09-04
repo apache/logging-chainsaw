@@ -1470,9 +1470,9 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
           if (receiverConfigurationPanel.getModel().isNetworkReceiverMode()) {
             int port = receiverConfigurationPanel.getModel().getNetworkReceiverPort();
-            Class receiverClass = receiverConfigurationPanel.getModel().getNetworkReceiverClass();
 
             try {
+              Class receiverClass = receiverConfigurationPanel.getModel().getNetworkReceiverClass();
               Receiver networkReceiver = (Receiver) receiverClass.newInstance();
               networkReceiver.setName(receiverClass.getSimpleName() + "-" + port);
 
