@@ -40,6 +40,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
@@ -100,7 +101,6 @@ class ReceiverConfigurationPanel extends JPanel {
     private ButtonGroup buttonGroup;
 
     ReceiverConfigurationPanel() {
-        JPanel topDescriptionPanel = buildTopDescriptionPanel();
         JPanel networkReceiverPanel = buildNetworkReceiverPanel();
         JPanel logFileReceiverPanel = buildLogFileReceiverPanel();
         JPanel useExistingConfigurationPanel = buildUseExistingConfigurationPanel();
@@ -113,32 +113,33 @@ class ReceiverConfigurationPanel extends JPanel {
 
         setLayout(new GridBagLayout());
 
+        int yPos = 0;
         GridBagConstraints c = new GridBagConstraints();
         c.gridx = 0;
-        c.gridy = 0;
+        c.gridy = yPos++;
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(0, 0, 10, 0);
-        add(topDescriptionPanel, c);
-
-        c = new GridBagConstraints();
-        c.gridx = 0;
-        c.gridy = 1;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        logFileReceiverRadioButton = new JRadioButton("Load events from a regular log file (and continue to tail the file)");
+        logFileReceiverRadioButton = new JRadioButton("Load and tail events from a regular text log file");
         buttonGroup.add(logFileReceiverRadioButton);
         add(logFileReceiverRadioButton, c);
 
         c = new GridBagConstraints();
         c.gridx = 0;
-        c.gridy = 2;
+        c.gridy = yPos++;
         c.weightx = 0.5;
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(0, 20, 20, 0);
+        c.insets = new Insets(0, 10, 0, 0);
         add(logFileReceiverPanel, c);
 
         c = new GridBagConstraints();
         c.gridx = 0;
-        c.gridy = 3;
+        c.gridy = yPos++;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(2, 10, 2, 0);
+        add(new JSeparator(), c);
+
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = yPos++;
         c.fill = GridBagConstraints.HORIZONTAL;
         networkReceiverRadioButton = new JRadioButton("Receive events from the network");
         buttonGroup.add(networkReceiverRadioButton);
@@ -146,15 +147,22 @@ class ReceiverConfigurationPanel extends JPanel {
 
         c = new GridBagConstraints();
         c.gridx = 0;
-        c.gridy = 4;
+        c.gridy = yPos++;
         c.weightx = 0.5;
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(0, 20, 20, 0);
+        c.insets = new Insets(0, 10, 0, 0);
         add(networkReceiverPanel, c);
 
         c = new GridBagConstraints();
         c.gridx = 0;
-        c.gridy = 5;
+        c.gridy = yPos++;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(2, 10, 2, 0);
+        add(new JSeparator(), c);
+
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = yPos++;
         c.fill = GridBagConstraints.HORIZONTAL;
         useExistingConfigurationRadioButton = new JRadioButton("Use an existing Chainsaw configuration file...");
         buttonGroup.add(useExistingConfigurationRadioButton);
@@ -162,24 +170,38 @@ class ReceiverConfigurationPanel extends JPanel {
 
         c = new GridBagConstraints();
         c.gridx = 0;
-        c.gridy = 6;
+        c.gridy = yPos++;
         c.weightx = 0.5;
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(0, 20, 20, 0);
+        c.insets = new Insets(0, 10, 0, 0);
         add(useExistingConfigurationPanel, c);
 
         c = new GridBagConstraints();
         c.gridx = 0;
-        c.gridy = 7;
+        c.gridy = yPos++;
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(0, 0, 20, 0);
-        useAutoSavedConfigRadioButton = new JRadioButton("Use last used/auto-saved configuration from $HOME/.chainsaw/receiver-config.xml");
+        c.insets = new Insets(2, 10, 2, 0);
+        add(new JSeparator(), c);
+
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = yPos++;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(0, 0, 0, 0);
+        useAutoSavedConfigRadioButton = new JRadioButton("Use auto-saved configuration from $HOME/.chainsaw/receiver-config.xml");
         buttonGroup.add(useAutoSavedConfigRadioButton);
         add(useAutoSavedConfigRadioButton, c);
 
         c = new GridBagConstraints();
         c.gridx = 0;
-        c.gridy = 9;
+        c.gridy = yPos++;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(2, 10, 2, 0);
+        add(new JSeparator(), c);
+
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = yPos++;
         c.fill = GridBagConstraints.HORIZONTAL;
         doNothingRadioButton = new JRadioButton("I'm fine thanks, don't worry");
         buttonGroup.add(doNothingRadioButton);
@@ -187,15 +209,22 @@ class ReceiverConfigurationPanel extends JPanel {
 
         c = new GridBagConstraints();
         c.gridx = 0;
-        c.gridy = 10;
+        c.gridy = yPos++;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(2, 10, 2, 0);
+        add(new JSeparator(), c);
+
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = yPos++;
         c.weightx = 0.5;
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(0, 20, 20, 0);
+        c.insets = new Insets(0, 10, 0, 0);
         add(dontWarnAndOKPanel, c);
 
         c = new GridBagConstraints();
         c.gridx = 0;
-        c.gridy = 11;
+        c.gridy = yPos++;
         c.fill = GridBagConstraints.HORIZONTAL;
         add(bottomDescriptionPanel, c);
 
@@ -218,29 +247,6 @@ class ReceiverConfigurationPanel extends JPanel {
         //set 'do nothing' as default
         buttonGroup.setSelected(doNothingRadioButton.getModel(), true);
         updateEnabledState(doNothingRadioButton);
-    }
-
-    private JPanel buildTopDescriptionPanel() {
-        JPanel panel = new JPanel(new GridBagLayout());
-
-        GridBagConstraints c = new GridBagConstraints();
-        c.gridx = 0;
-        c.gridy = 0;
-        c.weightx = 1.0;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        JTextPane descriptionTextPane = new JTextPane();
-
-        StyledDocument doc = descriptionTextPane.getStyledDocument();
-        SimpleAttributeSet center = new SimpleAttributeSet();
-        StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
-        doc.setParagraphAttributes(0, doc.getLength(), center, false);
-        
-        descriptionTextPane.setText("Define an event source or load a configuration file");
-        descriptionTextPane.setEditable(false);
-        descriptionTextPane.setOpaque(false);
-        descriptionTextPane.setFont(getFont());
-        panel.add(descriptionTextPane, c);
-        return panel;
     }
 
     private JPanel buildDontWarnAndOKPanel() {
@@ -429,15 +435,15 @@ class ReceiverConfigurationPanel extends JPanel {
         c.gridy = 4;
         c.weightx = 0.5;
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(0, 0, 5, 0);
+        c.insets = new Insets(0, 0, 0, 0);
         panel.add(logFileFormatTimestampFormatComboBox, c);
 
         c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = 5;
         c.gridwidth=5;
-        c.insets = new Insets(5, 5, 5, 5);
-        panel.add(new JLabel("<html> Log file format examples (See PatternLayout or LogFilePatternReceiver JavaDoc for details): <ul><li>PatternLayout: %-5p %d [%t] %c: %m%n</li><li>LogFilePatternReceiver: LEVEL TIMESTAMP [THREAD] LOGGER: MESSAGE</li></ul></html>"), c);
+        c.insets = new Insets(5, 5, 0, 5);
+        panel.add(new JLabel("<html> Log file format examples: (See PatternLayout or LogFilePatternReceiver JavaDoc for details) <ul><li>PatternLayout: %-5p %d [%t] %c: %m%n</li><li>LogFilePatternReceiver: LEVEL TIMESTAMP [THREAD] LOGGER: MESSAGE</li></ul></html>"), c);
         return panel;
     }
 
