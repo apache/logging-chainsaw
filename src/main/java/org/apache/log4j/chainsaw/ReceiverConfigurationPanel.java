@@ -130,11 +130,12 @@ class ReceiverConfigurationPanel extends JPanel {
         c.insets = new Insets(0, 10, 0, 0);
         add(logFileReceiverPanel, c);
 
+        //HTML label is adding extra space..
         c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = yPos++;
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(2, 10, 2, 0);
+        c.insets = new Insets(3, 30, 5, 30);
         add(new JSeparator(), c);
 
         c = new GridBagConstraints();
@@ -157,7 +158,7 @@ class ReceiverConfigurationPanel extends JPanel {
         c.gridx = 0;
         c.gridy = yPos++;
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(2, 10, 2, 0);
+        c.insets = new Insets(12, 30, 5, 30);
         add(new JSeparator(), c);
 
         c = new GridBagConstraints();
@@ -180,7 +181,7 @@ class ReceiverConfigurationPanel extends JPanel {
         c.gridx = 0;
         c.gridy = yPos++;
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(2, 10, 2, 0);
+        c.insets = new Insets(12, 30, 5, 30);
         add(new JSeparator(), c);
 
         c = new GridBagConstraints();
@@ -196,7 +197,7 @@ class ReceiverConfigurationPanel extends JPanel {
         c.gridx = 0;
         c.gridy = yPos++;
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(2, 10, 2, 0);
+        c.insets = new Insets(12, 30, 5, 30);
         add(new JSeparator(), c);
 
         c = new GridBagConstraints();
@@ -206,13 +207,6 @@ class ReceiverConfigurationPanel extends JPanel {
         doNothingRadioButton = new JRadioButton("I'm fine thanks, don't worry");
         buttonGroup.add(doNothingRadioButton);
         add(doNothingRadioButton, c);
-
-        c = new GridBagConstraints();
-        c.gridx = 0;
-        c.gridy = yPos++;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(2, 10, 2, 0);
-        add(new JSeparator(), c);
 
         c = new GridBagConstraints();
         c.gridx = 0;
