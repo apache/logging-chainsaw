@@ -27,9 +27,7 @@ import java.awt.event.FocusListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -49,6 +47,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
+
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
@@ -110,7 +109,7 @@ class ReceiverConfigurationPanel extends JPanel {
 
         buttonGroup = new ButtonGroup();
 
-        setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
 
         setLayout(new GridBagLayout());
 
@@ -433,13 +432,12 @@ class ReceiverConfigurationPanel extends JPanel {
         c.insets = new Insets(0, 0, 5, 0);
         panel.add(logFileFormatTimestampFormatComboBox, c);
 
-        DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss,SSS");
         c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = 5;
         c.gridwidth=5;
         c.insets = new Insets(5, 5, 5, 5);
-        panel.add(new JLabel(" Timestamps parsed using Java's SimpleDateFormat - use yyyy.MM.dd HH:mm:ss,SSS to parse " +  dateFormat.format(new Date()) + " "), c);
+        panel.add(new JLabel("<html> Log file format examples (See PatternLayout or LogFilePatternReceiver JavaDoc for details): <ul><li>PatternLayout: %-5p %d [%t] %c: %m%n</li><li>LogFilePatternReceiver: LEVEL TIMESTAMP [THREAD] LOGGER: MESSAGE</li></ul></html>"), c);
         return panel;
     }
 
