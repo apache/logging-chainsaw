@@ -1448,7 +1448,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
           dialog.setResizable(false);
 
-          receiverConfigurationPanel.setOkActionListener(
+          receiverConfigurationPanel.setCompletionActionListener(
             new ActionListener() {
               public void actionPerformed(ActionEvent e) {
                 dialog.setVisible(false);

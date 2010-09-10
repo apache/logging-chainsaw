@@ -16,7 +16,9 @@
  */
 package org.apache.log4j.chainsaw;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -40,7 +42,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
@@ -89,31 +90,40 @@ class ReceiverConfigurationPanel extends JPanel {
     //don't warn again widgets
     private JCheckBox dontwarnIfNoReceiver;
 
-    //ok button
     private JButton okButton;
+    private JButton cancelButton;
 
     //radiobutton widgets
     private JRadioButton logFileReceiverRadioButton;
     private JRadioButton networkReceiverRadioButton;
-    private JRadioButton doNothingRadioButton;
     private JRadioButton useExistingConfigurationRadioButton;
     private JRadioButton useAutoSavedConfigRadioButton;
     private ButtonGroup buttonGroup;
 
+    private JPanel lowerPanel;
+
+    private final JPanel networkReceiverPanel = buildNetworkReceiverPanel();
+    private final JPanel logFileReceiverPanel = buildLogFileReceiverPanel();
+    private final JPanel useExistingConfigurationPanel = buildUseExistingConfigurationPanel();
+    private final JPanel dontWarnAndOKPanel = buildDontWarnAndOKPanel();
+    private final JPanel bottomDescriptionPanel = buildBottomDescriptionPanel();
+
+    //set by LogUI to handle hiding of the dialog
+    private ActionListener completionActionListener;
+
     ReceiverConfigurationPanel() {
-        JPanel networkReceiverPanel = buildNetworkReceiverPanel();
-        JPanel logFileReceiverPanel = buildLogFileReceiverPanel();
-        JPanel useExistingConfigurationPanel = buildUseExistingConfigurationPanel();
-        JPanel dontWarnAndOKPanel = buildDontWarnAndOKPanel();
-        JPanel bottomDescriptionPanel = buildBottomDescriptionPanel();
+        setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
+        setLayout(new GridBagLayout());
 
         buttonGroup = new ButtonGroup();
 
-        setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
-
-        setLayout(new GridBagLayout());
+        lowerPanel = new JPanel(new BorderLayout());
+        lowerPanel.setBorder(BorderFactory.createEtchedBorder());
+        lowerPanel.setPreferredSize(new Dimension(600, 275));
+        lowerPanel.setMinimumSize(new Dimension(600, 275));
 
         int yPos = 0;
+
         GridBagConstraints c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = yPos++;
@@ -121,22 +131,6 @@ class ReceiverConfigurationPanel extends JPanel {
         logFileReceiverRadioButton = new JRadioButton("Load and tail events from a regular text log file");
         buttonGroup.add(logFileReceiverRadioButton);
         add(logFileReceiverRadioButton, c);
-
-        c = new GridBagConstraints();
-        c.gridx = 0;
-        c.gridy = yPos++;
-        c.weightx = 0.5;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(0, 10, 0, 0);
-        add(logFileReceiverPanel, c);
-
-        //HTML label is adding extra space..
-        c = new GridBagConstraints();
-        c.gridx = 0;
-        c.gridy = yPos++;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(3, 30, 5, 30);
-        add(new JSeparator(), c);
 
         c = new GridBagConstraints();
         c.gridx = 0;
@@ -149,40 +143,10 @@ class ReceiverConfigurationPanel extends JPanel {
         c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = yPos++;
-        c.weightx = 0.5;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(0, 10, 0, 0);
-        add(networkReceiverPanel, c);
-
-        c = new GridBagConstraints();
-        c.gridx = 0;
-        c.gridy = yPos++;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(12, 30, 5, 30);
-        add(new JSeparator(), c);
-
-        c = new GridBagConstraints();
-        c.gridx = 0;
-        c.gridy = yPos++;
         c.fill = GridBagConstraints.HORIZONTAL;
         useExistingConfigurationRadioButton = new JRadioButton("Use an existing Chainsaw configuration file...");
         buttonGroup.add(useExistingConfigurationRadioButton);
         add(useExistingConfigurationRadioButton, c);
-
-        c = new GridBagConstraints();
-        c.gridx = 0;
-        c.gridy = yPos++;
-        c.weightx = 0.5;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(0, 10, 0, 0);
-        add(useExistingConfigurationPanel, c);
-
-        c = new GridBagConstraints();
-        c.gridx = 0;
-        c.gridy = yPos++;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(12, 30, 5, 30);
-        add(new JSeparator(), c);
 
         c = new GridBagConstraints();
         c.gridx = 0;
@@ -197,17 +161,9 @@ class ReceiverConfigurationPanel extends JPanel {
         c.gridx = 0;
         c.gridy = yPos++;
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(12, 30, 5, 30);
-        add(new JSeparator(), c);
-
-        c = new GridBagConstraints();
-        c.gridx = 0;
-        c.gridy = yPos++;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        doNothingRadioButton = new JRadioButton("I'm fine thanks, don't worry");
-        buttonGroup.add(doNothingRadioButton);
-        add(doNothingRadioButton, c);
-
+        c.insets = new Insets(10, 10, 10, 0);
+        add(lowerPanel, c);
+        
         c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = yPos++;
@@ -220,6 +176,7 @@ class ReceiverConfigurationPanel extends JPanel {
         c.gridx = 0;
         c.gridy = yPos++;
         c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(10, 10, 10, 0);
         add(bottomDescriptionPanel, c);
 
         /**
@@ -234,13 +191,11 @@ class ReceiverConfigurationPanel extends JPanel {
 
         logFileReceiverRadioButton.addActionListener(al);
         networkReceiverRadioButton.addActionListener(al);
-        doNothingRadioButton.addActionListener(al);
         useExistingConfigurationRadioButton.addActionListener(al);
         useAutoSavedConfigRadioButton.addActionListener(al);
 
-        //set 'do nothing' as default
-        buttonGroup.setSelected(doNothingRadioButton.getModel(), true);
-        updateEnabledState(doNothingRadioButton);
+        buttonGroup.setSelected(logFileReceiverRadioButton.getModel(), true);
+        updateEnabledState(logFileReceiverRadioButton);
     }
 
     private JPanel buildDontWarnAndOKPanel() {
@@ -261,6 +216,28 @@ class ReceiverConfigurationPanel extends JPanel {
         okButton = new JButton(" OK ");
         panel.add(okButton, c);
 
+        c = new GridBagConstraints();
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = 2;
+        c.gridy = 0;
+        cancelButton = new JButton(" Cancel ");
+        panel.add(cancelButton, c);
+        cancelButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent e)
+            {
+                panelModel.setCancelled();
+                completionActionListener.actionPerformed(new ActionEvent(this, -1, "cancelled"));
+            }
+        });
+
+        okButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent e)
+            {
+                completionActionListener.actionPerformed(new ActionEvent(this, -1, "cancelled"));
+            }
+        });
         return panel;
     }
 
@@ -271,7 +248,7 @@ class ReceiverConfigurationPanel extends JPanel {
         StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
         doc.setParagraphAttributes(0, doc.getLength(), center, false);
 
-        descriptionTextPane.setText("The active configuration is auto-saved on exit to $HOME/.chainsaw/receiver-config.xml\n\nAn example configuration file is available from the Welcome tab");
+        descriptionTextPane.setText("An example configuration file is available from the Welcome tab");
         descriptionTextPane.setEditable(false);
         descriptionTextPane.setOpaque(false);
         descriptionTextPane.setFont(getFont());
@@ -437,7 +414,7 @@ class ReceiverConfigurationPanel extends JPanel {
         c.gridy = 5;
         c.gridwidth=5;
         c.insets = new Insets(5, 5, 0, 5);
-        panel.add(new JLabel("<html> Log file format examples: (See PatternLayout or LogFilePatternReceiver JavaDoc for details) <ul><li>PatternLayout: %-5p %d [%t] %c: %m%n</li><li>LogFilePatternReceiver: LEVEL TIMESTAMP [THREAD] LOGGER: MESSAGE</li></ul></html>"), c);
+        panel.add(new JLabel("<html> Log file format examples: <ul><li>PatternLayout: %-5p %d [%t] %c: %m%n</li><li>LogFilePatternReceiver: LEVEL TIMESTAMP [THREAD] LOGGER: MESSAGE</li></ul> See PatternLayout or LogFilePatternReceiver JavaDoc for details</html>"), c);
         return panel;
     }
 
@@ -535,20 +512,23 @@ class ReceiverConfigurationPanel extends JPanel {
      * back this Panel's model top determine what to do.
      * @param actionListener listener which will be notified that ok was selected
      */
-    void setOkActionListener(ActionListener actionListener) {
-        okButton.addActionListener(actionListener);
+    void setCompletionActionListener(ActionListener actionListener) {
+        completionActionListener = actionListener;
     }
 
     private void updateEnabledState(Component component) {
-        existingConfigurationComboBox.setEnabled(component == useExistingConfigurationRadioButton);
-        browseForAnExistingConfigurationButton.setEnabled(component == useExistingConfigurationRadioButton);
-        networkReceiverPortComboBox.setEnabled(component == networkReceiverRadioButton);
-        networkReceiverClassNameComboBox.setEnabled(component == networkReceiverRadioButton);
-        browseLogFileButton.setEnabled(component == logFileReceiverRadioButton);
-        logFileURLTextField.setEnabled(component == logFileReceiverRadioButton);
-        logFileFormatTypeComboBox.setEnabled(component == logFileReceiverRadioButton);
-        logFileFormatTextField.setEnabled(component == logFileReceiverRadioButton);
-        logFileFormatTimestampFormatComboBox.setEnabled(component == logFileReceiverRadioButton);
+        lowerPanel.removeAll();
+        if (component == useExistingConfigurationRadioButton) {
+            lowerPanel.add(useExistingConfigurationPanel, BorderLayout.NORTH);
+        }
+        if (component == networkReceiverRadioButton) {
+            lowerPanel.add(networkReceiverPanel, BorderLayout.NORTH);
+        }
+        if (component == logFileReceiverRadioButton) {
+            lowerPanel.add(logFileReceiverPanel, BorderLayout.NORTH);
+        }
+        lowerPanel.revalidate();
+        lowerPanel.repaint();
     }
 
     /**
@@ -641,6 +621,7 @@ class ReceiverConfigurationPanel extends JPanel {
 
         private URL configUrl;
         private File file;
+        private boolean cancelled;
 
         public PanelModel(){
             file = new File(SettingsManager.getInstance().getSettingsDirectory(), "receiver-config.xml");
@@ -648,7 +629,7 @@ class ReceiverConfigurationPanel extends JPanel {
 
         boolean isNetworkReceiverMode() {
 
-            return networkReceiverRadioButton.isSelected();
+            return !cancelled && networkReceiverRadioButton.isSelected();
         }
 
         int getNetworkReceiverPort() {
@@ -662,16 +643,16 @@ class ReceiverConfigurationPanel extends JPanel {
 
         boolean isLoadConfig() {
 
-            return useExistingConfigurationRadioButton.isSelected();
+            return !cancelled && useExistingConfigurationRadioButton.isSelected();
         }
 
         boolean isLoadSavedConfigs() {
 
-            return useAutoSavedConfigRadioButton.isSelected();
+            return !cancelled && useAutoSavedConfigRadioButton.isSelected();
         }
 
         boolean isLogFileReceiverConfig() {
-            return logFileReceiverRadioButton.isSelected();
+            return !cancelled && logFileReceiverRadioButton.isSelected();
         }
 
         public Object[] getRememberedConfigs() {
@@ -763,6 +744,11 @@ class ReceiverConfigurationPanel extends JPanel {
         {
             //TODO: implement
             return new Object[0];
+        }
+
+        public void setCancelled()
+        {
+            cancelled = true;
         }
     }
 }
