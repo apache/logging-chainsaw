@@ -67,7 +67,6 @@
 	<fileset dir="${deps.dir}">
   	  <include name="*.jar"/>
   	</fileset>
-  	<pathelement location="${jakarta-oro.jar}"/>
   	<pathelement location="${log4j-chainsaw.jar}"/>
   </path>
 

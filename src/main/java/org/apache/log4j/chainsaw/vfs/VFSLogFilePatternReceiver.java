@@ -38,9 +38,6 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-import com.jcraft.jsch.UIKeyboardInteractive;
-import com.jcraft.jsch.UserInfo;
-
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileSystemManager;
@@ -86,7 +83,7 @@ import org.apache.log4j.varia.LogFilePatternReceiver;
  * An sftp URI that would be used with promptForUserInfo=false:
  * sftp://username:password@192.168.1.100:22/home/thisuser/logfile.txt
  * <p>
- * This receiver relies on ORO Perl5 features to perform the parsing of text in the 
+ * This receiver relies on java.util.regex features to perform the parsing of text in the 
  * log file, however the only regular expression field explicitly supported is 
  * a glob-style wildcard used to ignore fields in the log file if needed.  All other
  * fields are parsed by using the supplied keywords.
