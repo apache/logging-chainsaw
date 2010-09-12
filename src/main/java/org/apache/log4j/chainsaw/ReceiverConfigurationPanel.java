@@ -77,9 +77,10 @@ class ReceiverConfigurationPanel extends JPanel {
     private JButton browseLogFileButton;
     private JComboBox logFileFormatTypeComboBox;
 
-    private JTextField logFileFormatTextField;
+    private JComboBox logFileFormatComboBox;
     private JComboBox logFileFormatTimestampFormatComboBox;
     private JTextField logFileURLTextField;
+    private DefaultComboBoxModel logFileFormatComboBoxModel;
     private DefaultComboBoxModel logFileFormatTimestampFormatComboBoxModel;
 
     //use existing configuration widgets
@@ -118,9 +119,9 @@ class ReceiverConfigurationPanel extends JPanel {
         buttonGroup = new ButtonGroup();
 
         lowerPanel = new JPanel(new BorderLayout());
-        lowerPanel.setBorder(BorderFactory.createEtchedBorder());
-        lowerPanel.setPreferredSize(new Dimension(600, 275));
-        lowerPanel.setMinimumSize(new Dimension(600, 275));
+        lowerPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEtchedBorder(), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        lowerPanel.setPreferredSize(new Dimension(600, 200));
+        lowerPanel.setMinimumSize(new Dimension(600, 200));
 
         int yPos = 0;
 
@@ -377,8 +378,11 @@ class ReceiverConfigurationPanel extends JPanel {
         c.insets = new Insets(0, 5, 5, 5);
         panel.add(new JLabel(" Log file format "), c);
 
-        logFileFormatTextField = new JTextField();
-        logFileFormatTextField.setEditable(true);
+        logFileFormatComboBoxModel = new DefaultComboBoxModel();
+        seedLogFileFormatComboBoxModel();
+        logFileFormatComboBox = new JComboBox(logFileFormatComboBoxModel);
+        logFileFormatComboBox.setEditable(true);
+        logFileFormatComboBox.setOpaque(false);
 
         c = new GridBagConstraints();
         c.gridx = 1;
@@ -387,7 +391,7 @@ class ReceiverConfigurationPanel extends JPanel {
         c.anchor = GridBagConstraints.LINE_START;
         c.fill = GridBagConstraints.HORIZONTAL;
         c.insets = new Insets(0, 0, 5, 0);
-        panel.add(logFileFormatTextField, c);
+        panel.add(logFileFormatComboBox, c);
 
         c = new GridBagConstraints();
         c.gridx = 0;
@@ -414,8 +418,16 @@ class ReceiverConfigurationPanel extends JPanel {
         c.gridy = 5;
         c.gridwidth=5;
         c.insets = new Insets(5, 5, 0, 5);
-        panel.add(new JLabel("<html> Log file format examples: <ul><li>PatternLayout: %-5p %d [%t] %c: %m%n</li><li>LogFilePatternReceiver: LEVEL TIMESTAMP [THREAD] LOGGER: MESSAGE</li></ul> See PatternLayout or LogFilePatternReceiver JavaDoc for details</html>"), c);
+        panel.add(new JLabel("<html> See PatternLayout or LogFilePatternReceiver JavaDoc for details </html>"), c);
         return panel;
+    }
+
+    private void seedLogFileFormatComboBoxModel()
+    {
+        logFileFormatComboBoxModel.addElement("%p %t %c - %m%n");
+        logFileFormatComboBoxModel.addElement("LEVEL THREAD LOGGER - MESSAGE");
+        logFileFormatComboBoxModel.addElement("%d{ABSOLUTE} %-5p [%c{1}] %m%n");
+        logFileFormatComboBoxModel.addElement("TIMESTAMP LEVEL [LOGGER] MESSAGE");
     }
 
     private void seedLogFileFormatTimestampComboBoxModel()
@@ -712,7 +724,7 @@ class ReceiverConfigurationPanel extends JPanel {
         }
 
         String getLogFormat() {
-            Object item = logFileFormatTextField.getText();
+            Object item = logFileFormatComboBox.getSelectedItem();
             if (item != null) {
                 return item.toString();
             }
