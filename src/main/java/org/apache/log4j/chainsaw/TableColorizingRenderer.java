@@ -24,14 +24,12 @@ import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineBreakMeasurer;
-import java.awt.font.TextAttribute;
 import java.awt.font.TextLayout;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -72,6 +70,7 @@ import org.apache.log4j.chainsaw.color.RuleColorizer;
 import org.apache.log4j.chainsaw.icons.LevelIconFactory;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.rule.Rule;
+import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.LoggingEventFieldResolver;
 
 
@@ -95,7 +94,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private int loggerPrecision = 0;
   private boolean toolTipsVisible;
   private String dateFormatTZ;
-  private boolean useRelativeTimes = false;
+  private boolean useRelativeTimesToFixedTime = false;
   private long relativeTimestampBase;
 
   private static int borderWidth = 2;
@@ -120,12 +119,15 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private MutableAttributeSet boldAttributeSet;
   private TabSet tabs;
   private int maxHeight;
+  private boolean useRelativeTimesToPrevious;
+  private EventContainer eventContainer;
 
     /**
    * Creates a new TableColorizingRenderer object.
    */
-  public TableColorizingRenderer(RuleColorizer colorizer, ApplicationPreferenceModel applicationPreferenceModel) {
+  public TableColorizingRenderer(RuleColorizer colorizer, ApplicationPreferenceModel applicationPreferenceModel, EventContainer eventContainer) {
     this.applicationPreferenceModel = applicationPreferenceModel;
+    this.eventContainer = eventContainer;
     multiLinePanel.setLayout(new BoxLayout(multiLinePanel, BoxLayout.Y_AXIS));
     generalPanel.setLayout(new BoxLayout(generalPanel, BoxLayout.Y_AXIS));
     levelPanel.setLayout(new BoxLayout(levelPanel, BoxLayout.Y_AXIS));
@@ -170,7 +172,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   public Component getTableCellRendererComponent(
     final JTable table, Object value, boolean isSelected, boolean hasFocus,
     int row, int col) {
-    value = formatField(value);
+    value = formatField(value, row);
     TableColumn tableColumn = table.getColumnModel().getColumn(col);
 
     JLabel label = (JLabel)super.getTableCellRendererComponent(table, value,
@@ -457,17 +459,25 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
    *
    * @param o object
    *
+   * @param renderingRow
    * @return formatted object
    */
-  private Object formatField(Object o) {
+  private Object formatField(Object o, int renderingRow) {
     if (!(o instanceof Date)) {
       return (o == null ? "" : o);
     }
 
     //handle date field
-    if (useRelativeTimes)
-    {
+    if (useRelativeTimesToFixedTime) {
         return "" + (((Date)o).getTime() - relativeTimestampBase);
+    }
+    if (useRelativeTimesToPrevious) {
+        if (renderingRow == 0) {
+            return "0";
+        } else {
+            LoggingEvent previous = eventContainer.getRow(renderingRow - 1);
+            return "" + (((Date)o).getTime() - previous.getTimeStamp());
+        }
     }
 
     return dateFormatInUse.format((Date) o);
@@ -501,12 +511,19 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   }
 
   public void setUseRelativeTimes(long timeStamp) {
-    useRelativeTimes = true;
+    useRelativeTimesToFixedTime = true;
+    useRelativeTimesToPrevious = false;
     relativeTimestampBase = timeStamp;
   }
 
+  public void setUseRelativeTimesToPreviousRow() {
+     useRelativeTimesToFixedTime = false;
+     useRelativeTimesToPrevious = true;
+  }
+
   public void setUseNormalTimes() {
-    useRelativeTimes = false;
+    useRelativeTimesToFixedTime = false;
+    useRelativeTimesToPrevious = false;
   }
 
    private int calculateHeight(String string, int width, Map paramMap) {

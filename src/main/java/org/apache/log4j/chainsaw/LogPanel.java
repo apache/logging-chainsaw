@@ -890,7 +890,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         }
       });
 
-    renderer = new TableColorizingRenderer(colorizer, applicationPreferenceModel);
+    renderer = new TableColorizingRenderer(colorizer, applicationPreferenceModel, tableModel);
     renderer.setToolTipsVisible(preferenceModel.isToolTips());
 
     table.setDefaultRenderer(Object.class, renderer);
@@ -1668,8 +1668,22 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         }
       });
 
+      final JMenuItem menuItemDisplayRelativeTimesToPreviousRow =
+        new JMenuItem("Show times relative to previous rows");
+      menuItemDisplayRelativeTimesToPreviousRow.addActionListener(
+        new ActionListener() {
+          public void actionPerformed(ActionEvent e) {
+              if (currentPoint != null) {
+                renderer.setUseRelativeTimesToPreviousRow();
+                tableModel.reFilter();
+                 menuItemDisplayNormalTimes.setEnabled(true);
+              }
+          }
+        });
+
     menuItemDisplayNormalTimes.setEnabled(false);
     p.add(menuItemDisplayRelativeTimesToRowUnderCursor);
+    p.add(menuItemDisplayRelativeTimesToPreviousRow);
     p.add(menuItemDisplayNormalTimes);
     p.add(new JSeparator());
 
