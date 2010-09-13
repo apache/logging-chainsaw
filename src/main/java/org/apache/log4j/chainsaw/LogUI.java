@@ -2045,6 +2045,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
           public void run() {
             getTabbedPane().addANewTab(
               ident, thisPanel, new ImageIcon(ChainsawIcons.ANIM_RADIO_TOWER));
+              thisPanel.layoutComponents();
             thisPanel.receiveEventBatch(ident, events);
             if(!getTabbedPane().tabSetting.isChainsawLog()){
               displayPanel("chainsaw-log", false);

@@ -72,7 +72,8 @@ public class LogPanelPreferenceModel implements Serializable{
   private List allColumns = new ArrayList();
   private List visibleColumns = new ArrayList();
   private List visibleColumnOrder = new ArrayList();
-  private boolean detailPaneVisible;
+  //set to true to match default 'detailPaneVisible' setting
+  private boolean detailPaneVisible = true;
   private boolean toolTips;
   //default thumbnail bar tooltips to true
   private boolean thumbnailBarToolTips = true;

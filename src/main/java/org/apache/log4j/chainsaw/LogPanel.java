@@ -256,6 +256,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   private int currentSearchMatchCount;
   private ApplicationPreferenceModel applicationPreferenceModel;
   private Rule clearTableExpressionRule;
+  private int lowerPanelDividerLocation;
 
     /**
    * Creates a new LogPanel object.  If a LogPanel with this identifier has
@@ -1188,12 +1189,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     lowerPanel.setBorder(null);
     lowerPanel.setContinuousLayout(true);
 
-    if (preferenceModel.isDetailPaneVisible()) {
-      showDetailPane();
-    } else {
-      hideDetailPane();
-    }
-    
     /*
      * Detail panel layout editor
      */
@@ -1877,7 +1872,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             FileReader r = new FileReader(xmlFile);
             in = stream.createObjectInputStream(r);
             LogPanelPreferenceModel storedPrefs = (LogPanelPreferenceModel)in.readObject();
-            int lowerPanelDividerLocation = in.readInt();
+            lowerPanelDividerLocation = in.readInt();
             int treeDividerLocation = in.readInt();
             String conversionPattern = in.readObject().toString();
             Point p = (Point)in.readObject();
@@ -1997,7 +1992,12 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     	FileWriter w = new FileWriter(xmlFile);
     	s = stream.createObjectOutputStream(w);
     	s.writeObject(preferenceModel);
-        s.writeInt(lowerPanel.getDividerLocation());
+        if (lowerPanelDividerLocation == 0) {
+            //pick a reasonable default
+            s.writeInt((int) (lowerPanel.getSize().height * DEFAULT_DETAIL_SPLIT_LOCATION));
+        } else {
+            s.writeInt(lowerPanelDividerLocation);
+        }
     	s.writeInt(nameTreeAndMainPanelSplit.getDividerLocation());
     	s.writeObject(detailLayout.getConversionPattern());
     	s.writeObject(undockedFrame.getLocation());
@@ -2279,8 +2279,12 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
    */
   private void showDetailPane() {
     lowerPanel.setDividerSize(dividerSize);
-    lowerPanel.setDividerLocation(lastDetailPanelSplitLocation);
-    detailPanel.setVisible(true);
+      if (lowerPanelDividerLocation != 0) {
+          lowerPanel.setDividerLocation(lowerPanelDividerLocation);
+      } else {
+          lowerPanel.setDividerLocation(lastDetailPanelSplitLocation);
+      }
+      detailPanel.setVisible(true);
     lowerPanel.repaint();
   }
 
@@ -2293,6 +2297,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     if (currentSize > 0) {
       lastDetailPanelSplitLocation =
         (double) lowerPanel.getDividerLocation() / currentSize;
+     }
+     if (lowerPanel.getDividerLocation() > 0) {
+        lowerPanelDividerLocation = lowerPanel.getDividerLocation();
      }
 
     lowerPanel.setDividerSize(0);
@@ -2907,6 +2914,15 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
               //if marker -was- null, it no longer is (may need to add the column)
               tableModel.fireRowUpdated(row, (marker == null));
           }
+        }
+    }
+
+    public void layoutComponents()
+    {
+        if (preferenceModel.isDetailPaneVisible()) {
+          showDetailPane();
+         } else {
+          hideDetailPane();
         }
     }
 
