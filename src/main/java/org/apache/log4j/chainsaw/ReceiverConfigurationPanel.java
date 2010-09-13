@@ -206,8 +206,8 @@ class ReceiverConfigurationPanel extends JPanel {
         c.gridx = 0;
         c.gridy = 0;
         c.weightx = 1.0;
-        c.anchor = GridBagConstraints.LINE_END;
-        dontwarnIfNoReceiver = new JCheckBox("Don't show this again");
+        c.anchor = GridBagConstraints.LINE_START;
+        dontwarnIfNoReceiver = new JCheckBox("Always start Chainsaw with this configuration");
         panel.add(dontwarnIfNoReceiver, c);
 
         c = new GridBagConstraints();
