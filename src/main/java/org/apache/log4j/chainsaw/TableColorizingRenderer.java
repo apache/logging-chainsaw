@@ -100,13 +100,6 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private static int borderWidth = 2;
 
   private static Color borderColor = (Color)UIManager.get("Table.selectionBackground");
-  private static final Border LEFT_BORDER = BorderFactory.createMatteBorder(borderWidth, borderWidth, borderWidth, 0, borderColor);
-  private static final Border MIDDLE_BORDER = BorderFactory.createMatteBorder(borderWidth, 0, borderWidth, 0, borderColor);
-  private static final Border RIGHT_BORDER = BorderFactory.createMatteBorder(borderWidth, 0, borderWidth, borderWidth, borderColor);
-
-  private static final Border LEFT_EMPTY_BORDER = BorderFactory.createEmptyBorder(borderWidth, borderWidth, borderWidth, 0);
-  private static final Border MIDDLE_EMPTY_BORDER = BorderFactory.createEmptyBorder(borderWidth, 0, borderWidth, 0);
-  private static final Border RIGHT_EMPTY_BORDER = BorderFactory.createEmptyBorder(borderWidth, 0, borderWidth, borderWidth);
 
   private final JTextPane levelTextPane = new JTextPane();
   private JTextPane singleLineTextPane = new JTextPane();
@@ -121,12 +114,15 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private int maxHeight;
   private boolean useRelativeTimesToPrevious;
   private EventContainer eventContainer;
+  private LogPanelPreferenceModel logPanelPreferenceModel;
 
     /**
    * Creates a new TableColorizingRenderer object.
    */
-  public TableColorizingRenderer(RuleColorizer colorizer, ApplicationPreferenceModel applicationPreferenceModel, EventContainer eventContainer) {
+  public TableColorizingRenderer(RuleColorizer colorizer, ApplicationPreferenceModel applicationPreferenceModel,
+                                 EventContainer eventContainer, LogPanelPreferenceModel logPanelPreferenceModel) {
     this.applicationPreferenceModel = applicationPreferenceModel;
+    this.logPanelPreferenceModel = logPanelPreferenceModel;
     this.eventContainer = eventContainer;
     multiLinePanel.setLayout(new BoxLayout(multiLinePanel, BoxLayout.Y_AXIS));
     generalPanel.setLayout(new BoxLayout(generalPanel, BoxLayout.Y_AXIS));
@@ -172,7 +168,9 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   public Component getTableCellRendererComponent(
     final JTable table, Object value, boolean isSelected, boolean hasFocus,
     int row, int col) {
-    value = formatField(value, row);
+    EventContainer container = (EventContainer) table.getModel();
+    ExtendedLoggingEvent loggingEvent = container.getRow(row);
+    value = formatField(value, row, loggingEvent);
     TableColumn tableColumn = table.getColumnModel().getColumn(col);
 
     JLabel label = (JLabel)super.getTableCellRendererComponent(table, value,
@@ -180,12 +178,17 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     //chainsawcolumns uses one-based indexing
     int colIndex = tableColumn.getModelIndex() + 1;
 
-    EventContainer container = (EventContainer) table.getModel();
-    ExtendedLoggingEvent loggingEvent = container.getRow(row);
     //no event, use default renderer
     if (loggingEvent == null) {
         return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
     }
+    long delta = 0;
+    if (row > 0) {
+        LoggingEvent previous = eventContainer.getRow(row - 1);
+        float deltaFactor = .002F;
+        delta = (long) ((loggingEvent.getTimeStamp() - previous.getTimeStamp()) * deltaFactor);
+    }
+
     Map matches = loggingEvent.getSearchMatches();
 
     JComponent component;
@@ -400,25 +403,53 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     updateColors(levelTextPane, background, foreground);
     updateColors(singleLineTextPane, background, foreground);
 
-    if (isSelected) {
       if (col == 0) {
-        component.setBorder(LEFT_BORDER);
+        component.setBorder(getLeftBorder(isSelected, delta));
       } else if (col == table.getColumnCount() - 1) {
-        component.setBorder(RIGHT_BORDER);
+        component.setBorder(getRightBorder(isSelected, delta));
       } else {
-        component.setBorder(MIDDLE_BORDER);
+        component.setBorder(getMiddleBorder(isSelected, delta));
       }
-    } else {
-      if (col == 0) {
-        component.setBorder(LEFT_EMPTY_BORDER);
-      } else if (col == table.getColumnCount() - 1) {
-        component.setBorder(RIGHT_EMPTY_BORDER);
-      } else {
-        component.setBorder(MIDDLE_EMPTY_BORDER);
-      }
-    }
+      
     return component;
   }
+
+    private Border getLeftBorder(boolean isSelected, long delta) {
+        Border LEFT_BORDER = BorderFactory.createMatteBorder(borderWidth, borderWidth, borderWidth, 0, borderColor);
+        Border LEFT_EMPTY_BORDER = BorderFactory.createEmptyBorder(borderWidth, borderWidth, borderWidth, 0);
+
+        Border innerBorder =isSelected?LEFT_BORDER : LEFT_EMPTY_BORDER;
+        if (delta == 0 || !wrap || !logPanelPreferenceModel.isShowMillisDeltaAsGap()) {
+            return innerBorder;
+        } else {
+            Border outerBorder = BorderFactory.createMatteBorder((int) Math.max(borderWidth, delta), 0, 0, 0, getDeltaColor());
+            return BorderFactory.createCompoundBorder(outerBorder, innerBorder);
+        }
+    }
+
+    private Border getRightBorder(boolean isSelected, long delta) {
+        Border RIGHT_BORDER = BorderFactory.createMatteBorder(borderWidth, 0, borderWidth, borderWidth, borderColor);
+        Border RIGHT_EMPTY_BORDER = BorderFactory.createEmptyBorder(borderWidth, 0, borderWidth, borderWidth);
+        Border innerBorder =isSelected?RIGHT_BORDER : RIGHT_EMPTY_BORDER;
+        if (delta == 0 || !wrap || !logPanelPreferenceModel.isShowMillisDeltaAsGap()) {
+            return innerBorder;
+        } else {
+            Border outerBorder = BorderFactory.createMatteBorder((int) Math.max(borderWidth, delta), 0, 0, 0, getDeltaColor());
+            return BorderFactory.createCompoundBorder(outerBorder, innerBorder);
+        }
+    }
+
+    private Border getMiddleBorder(boolean isSelected, long delta) {
+        Border MIDDLE_BORDER = BorderFactory.createMatteBorder(borderWidth, 0, borderWidth, 0, borderColor);
+        Border MIDDLE_EMPTY_BORDER = BorderFactory.createEmptyBorder(borderWidth, 0, borderWidth, 0);
+        Border innerBorder =isSelected ?MIDDLE_BORDER : MIDDLE_EMPTY_BORDER;
+        if (delta == 0 || !wrap || !logPanelPreferenceModel.isShowMillisDeltaAsGap()) {
+            return innerBorder;
+        } else {
+            Border outerBorder = BorderFactory.createMatteBorder((int)Math.max(borderWidth, delta), 0, 0, 0, getDeltaColor());
+            return BorderFactory.createCompoundBorder(outerBorder, innerBorder);
+        }
+    }
 
     private void updateColors(JTextPane textPane, Color background, Color foreground)
     {
@@ -429,7 +460,21 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         textPane.setBackground(background);
     }
 
-    /**
+    //use a lighter version of search color as the delta color
+    private Color getDeltaColor() {
+        float factor = 1.3F;
+        Color search = applicationPreferenceModel.getSearchBackgroundColor();
+
+        return new Color(boundColorValue((int)(search.getRed() * factor)),
+                boundColorValue((int)(search.getGreen() * factor)),
+                boundColorValue((int)(search.getBlue() * factor)));
+    }
+
+    private int boundColorValue(int colorValue) {
+      return Math.min(Math.max(0, colorValue), 255);
+    }
+    
+  /**
    * Changes the Date Formatting object to be used for rendering dates.
    * @param formatter
    */
@@ -457,30 +502,25 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   /**
    *Format date field
    *
-   * @param o object
+   * @param field object
    *
    * @param renderingRow
    * @return formatted object
    */
-  private Object formatField(Object o, int renderingRow) {
-    if (!(o instanceof Date)) {
-      return (o == null ? "" : o);
+  private Object formatField(Object field, int renderingRow, ExtendedLoggingEvent loggingEvent) {
+    if (!(field instanceof Date)) {
+      return (field == null ? "" : field);
     }
 
     //handle date field
     if (useRelativeTimesToFixedTime) {
-        return "" + (((Date)o).getTime() - relativeTimestampBase);
+        return "" + (((Date)field).getTime() - relativeTimestampBase);
     }
     if (useRelativeTimesToPrevious) {
-        if (renderingRow == 0) {
-            return "0";
-        } else {
-            LoggingEvent previous = eventContainer.getRow(renderingRow - 1);
-            return "" + (((Date)o).getTime() - previous.getTimeStamp());
-        }
+        return loggingEvent.getProperty(ChainsawConstants.MILLIS_DELTA);
     }
 
-    return dateFormatInUse.format((Date) o);
+    return dateFormatInUse.format((Date) field);
   }
 
     /**

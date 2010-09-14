@@ -101,10 +101,17 @@ public class ExtendedLoggingEvent extends LoggingEvent
     {
         markerHeight = DEFAULT_HEIGHT;
         msgHeight = DEFAULT_HEIGHT;
+        if (!b) {
+            setProperty(ChainsawConstants.MILLIS_DELTA, "");
+        }
     }
 
     public String toString() {
         return "ExtendedLoggingEvent - id: " + getProperty("log4jid") + " background: " + getBackground() + ", foreground: " + getForeground() + ", msg: " + getMessage();
     }
 
+    public void setPreviousDisplayedEventTimestamp(long previousDisplayedEventTimeStamp)
+    {
+        setProperty(ChainsawConstants.MILLIS_DELTA, String.valueOf(timeStamp - previousDisplayedEventTimeStamp));
+    }
 }

@@ -10,6 +10,12 @@
 <b>NOTE:</b> The mechanism and format used to persist settings in Chainsaw is subject to change.  If you are experiencing problems displaying events in Chainsaw, please delete everything in the $user.dir/.chainsaw directory and restart Chainsaw.
 <br>
 <h1>2.1</h1>
+<h2>13 Sep 2010</h2>
+<ul>
+<li>Added new 'Display timestamp delta between displayed events as space between rows' preference to log panel preferences screen - feature adds a gap between rows proportionate to the time delta between displayed events (off by default)</li>
+<li>Added 'millisdelta' dynamic property to events, which is always updated to represent the number of millis between this event and the displayed event in (thisrow-1) - this property can be used in color and find rules (but using it in a filtering rule will change the delta since the displayed rows are changing)</li>
+<li>Renamed 'log4j.marker' property to 'marker' (prop.marker can now be used in expression)</li>
+</ul>
 <h2>11 Sep 2010</h2>
 <ul>
 <li>Added 'Show times relative to previous rows' feature - displays millis to last displayed event in the timestamp field</li>

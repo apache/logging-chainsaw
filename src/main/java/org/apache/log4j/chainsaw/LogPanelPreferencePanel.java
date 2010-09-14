@@ -583,6 +583,8 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
       new JCheckBox("Show Logger Tree");
     private final JCheckBox scrollToBottom =
       new JCheckBox("Scroll to bottom (view tracks with new events)");
+    private final JCheckBox showMillisDeltaAsGap =
+      new JCheckBox("Display timestamp delta between displayed events as space between rows");
     private final JCheckBox toolTips =
       new JCheckBox("Show Event Detail Tooltips");
     private final JCheckBox thumbnailBarToolTips =
@@ -615,11 +617,13 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
       detailPanelVisible.setAlignmentX(Component.LEFT_ALIGNMENT);
       loggerTreePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
       scrollToBottom.setAlignmentX(Component.LEFT_ALIGNMENT);
+      showMillisDeltaAsGap.setAlignmentX(Component.LEFT_ALIGNMENT);
       add(toolTips);
       add(thumbnailBarToolTips);
       add(detailPanelVisible);
       add(loggerTreePanel);
       add(scrollToBottom);
+      add(showMillisDeltaAsGap);
       JPanel clearPanel = new JPanel(new BorderLayout());
       clearPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
       clearPanel.add(new JLabel("Clear all events if expression matches"), BorderLayout.NORTH);
@@ -707,6 +711,22 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
           }
         });
 
+      showMillisDeltaAsGap.addActionListener(new ActionListener()
+      {
+          public void actionPerformed(ActionEvent e)
+          {
+              preferenceModel.setShowMillisDeltaAsGap(showMillisDeltaAsGap.isSelected());
+          }
+      });
+
+      preferenceModel.addPropertyChangeListener("showMillisDeltaAsGap", new PropertyChangeListener()
+      {
+          public void propertyChange(PropertyChangeEvent evt)
+          {
+              boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+              showMillisDeltaAsGap.setSelected(value);
+          }
+      });
       preferenceModel.addPropertyChangeListener(
         "scrollToBottom", new PropertyChangeListener()
         {

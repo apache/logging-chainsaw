@@ -89,6 +89,7 @@ public class LogPanelPreferenceModel implements Serializable{
   private String clearTableExpression;
   //default to cyclic mode
   private boolean cyclic = true;
+  private boolean showMillisDeltaAsGap;
 
     /**
    * Returns an <b>unmodifiable</b> list of the columns.
@@ -389,6 +390,10 @@ public class LogPanelPreferenceModel implements Serializable{
     return scrollToBottom;
   }
 
+
+  public final boolean isShowMillisDeltaAsGap() {
+      return showMillisDeltaAsGap;
+  }
   /**
    * @param scrollToBottom
    */
@@ -398,6 +403,16 @@ public class LogPanelPreferenceModel implements Serializable{
     propertySupport.firePropertyChange(
       "scrollToBottom", oldValue, this.scrollToBottom);
   }
+
+    /**
+     * @param showMillisDeltaAsGap
+     */
+    public final void setShowMillisDeltaAsGap(boolean showMillisDeltaAsGap) {
+      boolean oldValue = this.showMillisDeltaAsGap;
+      this.showMillisDeltaAsGap = showMillisDeltaAsGap;
+      propertySupport.firePropertyChange(
+        "showMillisDeltaAsGap", oldValue, this.showMillisDeltaAsGap);
+    }
 
   public final void setThumbnailBarToolTips(boolean thumbnailBarToolTips) {
       boolean oldValue = this.thumbnailBarToolTips;

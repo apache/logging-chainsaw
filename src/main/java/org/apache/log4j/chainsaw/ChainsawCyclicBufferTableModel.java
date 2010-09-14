@@ -135,20 +135,25 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
             previousSize = filteredList.size();
             filteredList.clear();
             if (displayRule == null) {
+                LoggingEvent lastEvent = null;
                 for (Iterator iter = unfilteredList.iterator();iter.hasNext();) {
                     ExtendedLoggingEvent e = (ExtendedLoggingEvent)iter.next();
                     e.setDisplayed(true);
+                    updateEventMillisDelta(e, lastEvent);
                     filteredList.add(e);
+                    lastEvent = e;
                 }
             } else {
                 Iterator iter = unfilteredList.iterator();
-
+                LoggingEvent lastEvent = null;
                 while (iter.hasNext()) {
                   ExtendedLoggingEvent e = (ExtendedLoggingEvent) iter.next();
 
                   if (displayRule.evaluate(e, null)) {
                     e.setDisplayed(true);
                     filteredList.add(e);
+                    updateEventMillisDelta(e, lastEvent);
+                    lastEvent = e;
                   } else {
                     e.setDisplayed(false);
                   }
@@ -312,9 +317,12 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
           sort = (sortEnabled && filteredListSize > 0);
         if (sort) {
             //reset display (used to ensure row height is updated)
+            LoggingEvent lastEvent = null;
             for (Iterator iter = filteredList.iterator();iter.hasNext();) {
                 ExtendedLoggingEvent e = (ExtendedLoggingEvent)iter.next();
                 e.setDisplayed(true);
+                updateEventMillisDelta(e, lastEvent);
+                lastEvent = e;
             }
             Collections.sort(
               filteredList,
@@ -620,9 +628,15 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
                 reachedCapacity = true;
             }
         }
+        int unfilteredSize = unfilteredList.size();
+        LoggingEvent lastEvent = null;
+        if (unfilteredSize > 0) {
+            lastEvent = (LoggingEvent) unfilteredList.get(unfilteredSize - 1);
+        }
         unfilteredList.add(e);
         if ((displayRule == null) || (displayRule.evaluate(e, null))) {
             e.setDisplayed(true);
+            updateEventMillisDelta(e, lastEvent);
             filteredList.add(e);
             rowAdded = true;
         } else {
@@ -634,6 +648,15 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
 
     return rowAdded;
   }
+
+    private void updateEventMillisDelta(ExtendedLoggingEvent e, LoggingEvent lastEvent) {
+      if (lastEvent != null) {
+        e.setPreviousDisplayedEventTimestamp(lastEvent.getTimeStamp());
+      } else {
+        //delta to same event = 0
+        e.setPreviousDisplayedEventTimestamp(e.getTimeStamp());
+      }
+    }
 
    private void checkForNewColumn(ExtendedLoggingEvent e)
    {

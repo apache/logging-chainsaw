@@ -69,7 +69,7 @@ public class RuleColorizer implements Colorizer {
 
   private final String DEFAULT_WARN_EXPRESSION = "level == WARN";
   private final String DEFAULT_FATAL_ERROR_EXCEPTION_EXPRESSION = "level == FATAL || level == ERROR || exception exists";
-  private final String DEFAULT_MARKER_EXPRESSION = "prop.log4j.marker exists";
+  private final String DEFAULT_MARKER_EXPRESSION = "prop.marker exists";
 
   public RuleColorizer() {
     List rulesList = new ArrayList();

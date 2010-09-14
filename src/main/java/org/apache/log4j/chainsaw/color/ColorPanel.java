@@ -858,6 +858,9 @@ public class ColorPanel extends JPanel
     public Component getTableCellRendererComponent(
       JTable thisTable, Object value, boolean isSelected, boolean hasFocus, int row,
       int column) {
+      if (value == null) {
+          return panel;
+      }
 
       Vector v = tableModel.getDataVector();
       Vector r = (Vector) v.elementAt(row);

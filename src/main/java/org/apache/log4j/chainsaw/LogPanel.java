@@ -689,7 +689,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
               ((double) totalCount) / ((ChainsawCyclicBufferTableModel) tableModel)
               .getMaxSize();
             String msg = null;
-
+            boolean wasWarning = warning75 || warning100;
             if ((percent > 0.75) && (percent < 1.0) && !warning75) {
               msg =
                 "Warning :: " + formatter.format(percent) + " of the '"
@@ -708,7 +708,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                 warning100 = false;
             }
 
-            if (msg != null) {
+            if (msg != null && wasWarning) {
               MessageCenter.getInstance().getLogger().info(msg);
             }
           }
@@ -891,7 +891,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         }
       });
 
-    renderer = new TableColorizingRenderer(colorizer, applicationPreferenceModel, tableModel);
+    renderer = new TableColorizingRenderer(colorizer, applicationPreferenceModel, tableModel, preferenceModel);
     renderer.setToolTipsVisible(preferenceModel.isToolTips());
 
     table.setDefaultRenderer(Object.class, renderer);
