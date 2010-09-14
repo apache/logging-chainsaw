@@ -470,8 +470,7 @@ class ReceiverConfigurationPanel extends JPanel {
                             URL url = browseConfig();
 
                             if (url != null) {
-                                getModel().configUrl = url;
-                                existingConfigurationComboBoxModel.addElement(url);
+                                existingConfigurationComboBoxModel.addElement(url.toExternalForm());
                                 existingConfigurationComboBox.getModel().setSelectedItem(
                                     url);
                             }
@@ -631,7 +630,6 @@ class ReceiverConfigurationPanel extends JPanel {
      */
     class PanelModel {
 
-        private URL configUrl;
         private File file;
         private boolean cancelled;
 
@@ -692,16 +690,19 @@ class ReceiverConfigurationPanel extends JPanel {
 
         URL getConfigToLoad() {
 
-            return configUrl;
+            try
+            {
+                return new URL(existingConfigurationComboBoxModel.getSelectedItem().toString());
+            }
+            catch (MalformedURLException e)
+            {
+                return null;
+            }
         }
 
         URL getSavedConfigToLoad() {
             try {
-                if (file.exists()){
-                    return file.toURL();
-                } else {
-                    logger.debug("No configuration file found");
-                }
+                return file.toURI().toURL();
             } catch (MalformedURLException e) {
                 logger.error("Error loading saved configurations by Chainsaw", e);
             }

@@ -30,7 +30,7 @@ import java.util.Vector;
  */
 public class ApplicationPreferenceModel {
 
-    private boolean showNoReceiverWarning = true ;
+    private boolean showNoReceiverWarning = false ;
     private boolean statusBar = true;
     private boolean toolbar = true;
     private boolean receivers = false; //setting this to true will cause the receivers panel to be displayed by default

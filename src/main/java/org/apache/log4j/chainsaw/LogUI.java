@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.AllPermission;
 import java.security.CodeSource;
@@ -419,8 +420,17 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                 try {
                     logger.info("loading updated configuration: " + newConfiguration);
                     URL newConfigurationURL = new URL(newConfiguration);
-                    logUI.loadConfigurationUsingPluginClassLoader(newConfigurationURL);
+                    File file = new File(newConfigurationURL.toURI());
+                    if (file.exists()) {
+                        logUI.loadConfigurationUsingPluginClassLoader(newConfigurationURL);
+                    } else {
+                        logger.info("Updated configuration but file does not exist");
+                    }
                 } catch (MalformedURLException e) {
+                    logger.error("Updated configuration - failed to convert config string to URL", e);
+                }
+                catch (URISyntaxException e)
+                {
                     logger.error("Updated configuration - failed to convert config string to URL", e);
                 }
             }
@@ -1466,6 +1476,17 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
           dialog.setVisible(true);
           applicationPreferenceModel.setShowNoReceiverWarning(!receiverConfigurationPanel.isDontWarnMeAgain());
+          //using this config next time - stop all plugins
+          if (receiverConfigurationPanel.isDontWarnMeAgain()) {
+              List plugins = pluginRegistry.getPlugins();
+              for (Iterator iter = plugins.iterator();iter.hasNext();) {
+                  Plugin plugin = (Plugin)iter.next();
+                  //don't stop ZeroConfPlugin if it is registered
+                  if (!plugin.getName().toLowerCase().contains("zeroconf")) {
+                    pluginRegistry.stopPlugin(plugin.getName());
+                  }
+              }
+          }
           URL configURL = null;
 
           if (receiverConfigurationPanel.getModel().isNetworkReceiverMode()) {
@@ -1487,6 +1508,10 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
               pluginRegistry.addPlugin(networkReceiver);
               networkReceiver.activateOptions();
               receiversPanel.updateReceiverTreeInDispatchThread();
+              //setting config URL here ensures we have the receiver panel auto-saved config loaded
+              if (receiverConfigurationPanel.isDontWarnMeAgain()) {
+                  configURL = receiverConfigurationPanel.getModel().getSavedConfigToLoad();
+              }
             } catch (Exception e) {
               MessageCenter.getInstance().getLogger().error(
                 "Error creating Receiver", e);
@@ -1522,6 +1547,9 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                     pluginRegistry.addPlugin(fileReceiver);
                     fileReceiver.activateOptions();
                     receiversPanel.updateReceiverTreeInDispatchThread();
+                    if (receiverConfigurationPanel.isDontWarnMeAgain()) {
+                        configURL = receiverConfigurationPanel.getModel().getSavedConfigToLoad();
+                    }
                 }
             } catch (Exception e) {
                 MessageCenter.getInstance().getLogger().error(
@@ -1540,7 +1568,14 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                     if (receiverConfigurationPanel.isDontWarnMeAgain()) {
                         applicationPreferenceModel.setConfigurationURL(finalURL.toExternalForm());
                     } else {
-                        loadConfigurationUsingPluginClassLoader(finalURL);
+                        try {
+                            if (new File(finalURL.toURI()).exists()) {
+                                loadConfigurationUsingPluginClassLoader(finalURL);
+                            }
+                        }
+                        catch (URISyntaxException e) {
+                            //ignore
+                        }
                     }
 
                     receiversPanel.updateReceiverTreeInDispatchThread();
