@@ -254,6 +254,7 @@ public class LogPanelPreferenceModel implements Serializable{
     setVisibleColumns(model.getVisibleColumns());
     setHiddenLoggers(model.getHiddenLoggers());
     setHiddenExpression(model.getHiddenExpression());
+    setShowMillisDeltaAsGap(model.isShowMillisDeltaAsGap());
     setClearTableExpression(model.getClearTableExpression());
   }
 

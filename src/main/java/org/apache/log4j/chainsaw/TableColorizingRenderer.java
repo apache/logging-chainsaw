@@ -17,6 +17,7 @@
 
 package org.apache.log4j.chainsaw;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -104,9 +105,9 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private final JTextPane levelTextPane = new JTextPane();
   private JTextPane singleLineTextPane = new JTextPane();
 
-  private final JPanel multiLinePanel = new JPanel();
-  private final JPanel generalPanel = new JPanel();
-  private final JPanel levelPanel = new JPanel();
+  private final JPanel multiLinePanel = new JPanel(new BorderLayout());
+  private final JPanel generalPanel = new JPanel(new BorderLayout());
+  private final JPanel levelPanel = new JPanel(new BorderLayout());
   private ApplicationPreferenceModel applicationPreferenceModel;
   private JTextPane multiLineTextPane;
   private MutableAttributeSet boldAttributeSet;
@@ -143,7 +144,6 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     levelTextPane.setOpaque(true);
     levelTextPane.setText("");
 
-    generalPanel.add(singleLineTextPane);
     levelPanel.add(levelTextPane);
 
     this.colorizer = colorizer;
@@ -172,6 +172,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     ExtendedLoggingEvent loggingEvent = container.getRow(row);
     value = formatField(value, row, loggingEvent);
     TableColumn tableColumn = table.getColumnModel().getColumn(col);
+    int width = tableColumn.getWidth();
 
     JLabel label = (JLabel)super.getTableCellRendererComponent(table, value,
         isSelected, hasFocus, row, col);
@@ -186,7 +187,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     if (row > 0) {
         LoggingEvent previous = eventContainer.getRow(row - 1);
         float deltaFactor = .002F;
-        delta = (long) ((loggingEvent.getTimeStamp() - previous.getTimeStamp()) * deltaFactor);
+        delta = Math.min(50, Math.max(0, (long) ((loggingEvent.getTimeStamp() - previous.getTimeStamp()) * deltaFactor)));
     }
 
     Map matches = loggingEvent.getSearchMatches();
@@ -210,6 +211,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
       } else {
         singleLineTextPane.setText("");
       }
+      layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
       component = generalPanel;
       break;
     case ChainsawColumns.INDEX_LOGGER_COL_NAME:
@@ -222,38 +224,45 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
           break;
         }
       }
-      singleLineTextPane.setText(logger.substring(startPos + 1));
-      setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.LOGGER_FIELD), (StyledDocument) singleLineTextPane.getDocument());
-      component = generalPanel;
+        singleLineTextPane.setText(logger.substring(startPos + 1));
+        setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.LOGGER_FIELD), (StyledDocument) singleLineTextPane.getDocument());
+        layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
+        component = generalPanel;
       break;
     case ChainsawColumns.INDEX_ID_COL_NAME:
         singleLineTextPane.setText(value.toString());
         setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.PROP_FIELD + "LOG4JID"), (StyledDocument) singleLineTextPane.getDocument());
+        layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
         component = generalPanel;
         break;
     case ChainsawColumns.INDEX_CLASS_COL_NAME:
         singleLineTextPane.setText(value.toString());
         setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.CLASS_FIELD), (StyledDocument) singleLineTextPane.getDocument());
+        layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
         component = generalPanel;
         break;
     case ChainsawColumns.INDEX_FILE_COL_NAME:
         singleLineTextPane.setText(value.toString());
         setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.FILE_FIELD), (StyledDocument) singleLineTextPane.getDocument());
+        layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
         component = generalPanel;
         break;
     case ChainsawColumns.INDEX_LINE_COL_NAME:
         singleLineTextPane.setText(value.toString());
         setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.LINE_FIELD), (StyledDocument) singleLineTextPane.getDocument());
+        layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
         component = generalPanel;
         break;
     case ChainsawColumns.INDEX_NDC_COL_NAME:
         singleLineTextPane.setText(value.toString());
         setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.NDC_FIELD), (StyledDocument) singleLineTextPane.getDocument());
+        layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
         component = generalPanel;
         break;
     case ChainsawColumns.INDEX_THREAD_COL_NAME:
         singleLineTextPane.setText(value.toString());
         setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.THREAD_FIELD), (StyledDocument) singleLineTextPane.getDocument());
+        layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
         component = generalPanel;
         break;
     case ChainsawColumns.INDEX_TIMESTAMP_COL_NAME:
@@ -265,18 +274,19 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         } else {
             singleLineTextPane.setText(value.toString());
         }
+        layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
         component = generalPanel;
         break;
     case ChainsawColumns.INDEX_METHOD_COL_NAME:
         singleLineTextPane.setText(value.toString());
         setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.METHOD_FIELD), (StyledDocument) singleLineTextPane.getDocument());
+        layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
         component = generalPanel;
         break;
     case ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME:
     case ChainsawColumns.INDEX_MESSAGE_COL_NAME:
         String thisString = value.toString().trim();
         multiLineTextPane.setText(thisString);
-        int width = tableColumn.getWidth();
 
         if (colIndex == ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME) {
             //property keys are set as all uppercase
@@ -285,7 +295,36 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
             setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.MSG_FIELD), (StyledDocument) multiLineTextPane.getDocument());
         }
         multiLinePanel.removeAll();
-        multiLinePanel.add(multiLineTextPane);
+        if (delta > 0 && logPanelPreferenceModel.isShowMillisDeltaAsGap()) {
+            JPanel newPanel = new JPanel();
+            newPanel.setOpaque(true);
+            newPanel.setBackground(getDeltaColor());
+            newPanel.setPreferredSize(new Dimension(width, (int) delta));
+            multiLinePanel.add(newPanel, BorderLayout.NORTH);
+        }
+        multiLinePanel.add(multiLineTextPane, BorderLayout.SOUTH);
+
+        if (delta == 0 || !logPanelPreferenceModel.isShowMillisDeltaAsGap()) {
+          if (col == 0) {
+            multiLineTextPane.setBorder(getLeftBorder(isSelected, delta));
+          } else if (col == table.getColumnCount() - 1) {
+            multiLineTextPane.setBorder(getRightBorder(isSelected, delta));
+          } else {
+            multiLineTextPane.setBorder(getMiddleBorder(isSelected, delta));
+          }
+        } else {
+            if (col == 0) {
+              multiLineTextPane.setBorder(getLeftBorder(isSelected, 0));
+            } else if (col == table.getColumnCount() - 1) {
+              multiLineTextPane.setBorder(getRightBorder(isSelected, 0));
+            } else {
+              multiLineTextPane.setBorder(getMiddleBorder(isSelected, 0));
+            }
+        }
+        int currentMarkerHeight = loggingEvent.getMarkerHeight();
+        int currentMsgHeight = loggingEvent.getMsgHeight();
+        int newRowHeight = ChainsawConstants.DEFAULT_ROW_HEIGHT;
+        boolean setHeight = false;
 
         if (wrap) {
             /*
@@ -298,29 +337,32 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
              */
             //instead, set size to max height
             multiLineTextPane.setSize(new Dimension(width, maxHeight));
-            boolean setHeight = false;
             int multiLinePanelPrefHeight = multiLinePanel.getPreferredSize().height;
-            int newRowHeight = Math.max(ChainsawConstants.DEFAULT_ROW_HEIGHT, multiLinePanelPrefHeight);
-            if (colIndex == ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME) {
-                int currentMarkerHeight = loggingEvent.getMarkerHeight();
-                loggingEvent.setMarkerHeight(newRowHeight);
-                if (newRowHeight != currentMarkerHeight && newRowHeight >= loggingEvent.getMsgHeight()) {
-                    setHeight = true;
-                }
-            }
-
-            if (colIndex == ChainsawColumns.INDEX_MESSAGE_COL_NAME) {
-                int currentMsgHeight = loggingEvent.getMsgHeight();
-                loggingEvent.setMsgHeight(newRowHeight);
-                if (newRowHeight != currentMsgHeight && newRowHeight >= loggingEvent.getMarkerHeight()) {
-                    setHeight = true;
-                }
-            }
-            if (setHeight) {
-                table.setRowHeight(row, newRowHeight);
-            }
+            newRowHeight = Math.max(ChainsawConstants.DEFAULT_ROW_HEIGHT, multiLinePanelPrefHeight);
 
         }
+        if (!wrap && logPanelPreferenceModel.isShowMillisDeltaAsGap()) {
+            multiLineTextPane.setSize(new Dimension(Integer.MAX_VALUE, ChainsawConstants.DEFAULT_ROW_HEIGHT));
+            newRowHeight = (int) (ChainsawConstants.DEFAULT_ROW_HEIGHT + delta);
+        }
+
+        if (colIndex == ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME) {
+            loggingEvent.setMarkerHeight(newRowHeight);
+            if (newRowHeight != currentMarkerHeight && newRowHeight >= loggingEvent.getMsgHeight()) {
+                setHeight = true;
+            }
+        }
+
+        if (colIndex == ChainsawColumns.INDEX_MESSAGE_COL_NAME) {
+            loggingEvent.setMsgHeight(newRowHeight);
+            if (newRowHeight != currentMsgHeight && newRowHeight >= loggingEvent.getMarkerHeight()) {
+                setHeight = true;
+            }
+        }
+        if (setHeight) {
+            table.setRowHeight(row, newRowHeight);
+        }
+
         component = multiLinePanel;
         break;
     case ChainsawColumns.INDEX_LEVEL_COL_NAME:
@@ -342,6 +384,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
       }
       levelTextPane.setForeground(label.getForeground());
       levelTextPane.setBackground(label.getBackground());
+      layoutRenderingPanel(levelPanel, levelTextPane, delta, isSelected, width, col, table);
       component = levelPanel;
       break;
 
@@ -366,6 +409,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         } else {
             singleLineTextPane.setText("");
         }
+        layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
         component = generalPanel;
         break;
     }
@@ -403,16 +447,37 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     updateColors(levelTextPane, background, foreground);
     updateColors(singleLineTextPane, background, foreground);
 
-      if (col == 0) {
-        component.setBorder(getLeftBorder(isSelected, delta));
-      } else if (col == table.getColumnCount() - 1) {
-        component.setBorder(getRightBorder(isSelected, delta));
-      } else {
-        component.setBorder(getMiddleBorder(isSelected, delta));
-      }
-      
     return component;
   }
+
+    private void layoutRenderingPanel(JComponent container, JComponent bottomComponent, long delta, boolean isSelected,
+                                      int width, int col, JTable table) {
+        container.removeAll();
+        if (delta == 0 || !logPanelPreferenceModel.isShowMillisDeltaAsGap()) {
+          if (col == 0) {
+            bottomComponent.setBorder(getLeftBorder(isSelected, delta));
+          } else if (col == table.getColumnCount() - 1) {
+            bottomComponent.setBorder(getRightBorder(isSelected, delta));
+          } else {
+            bottomComponent.setBorder(getMiddleBorder(isSelected, delta));
+          }
+        } else {
+            JPanel newPanel = new JPanel();
+            newPanel.setOpaque(true);
+            newPanel.setBackground(getDeltaColor());
+            newPanel.setPreferredSize(new Dimension(width, (int) delta));
+            container.add(newPanel, BorderLayout.NORTH);
+            if (col == 0) {
+              bottomComponent.setBorder(getLeftBorder(isSelected, 0));
+            } else if (col == table.getColumnCount() - 1) {
+              bottomComponent.setBorder(getRightBorder(isSelected, 0));
+            } else {
+              bottomComponent.setBorder(getMiddleBorder(isSelected, 0));
+            }
+        }
+
+        container.add(bottomComponent, BorderLayout.SOUTH);
+    }
 
     private Border getLeftBorder(boolean isSelected, long delta) {
         Border LEFT_BORDER = BorderFactory.createMatteBorder(borderWidth, borderWidth, borderWidth, 0, borderColor);

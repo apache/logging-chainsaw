@@ -644,6 +644,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
      */
     tableModel = new ChainsawCyclicBufferTableModel(cyclicBufferSize, colorizer);
     table = new JSortTable(tableModel);
+    table.setColumnSelectionAllowed(false);
+    table.setRowSelectionAllowed(true);
 
     //we've mapped f2, shift f2 and ctrl-f2 to marker-related actions, unmap them from the table
     table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke("F2"), "none");
@@ -3276,6 +3278,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         JTextField textField = new JTextField();
         Set cellEditorListeners = new HashSet();
         private ExtendedLoggingEvent currentEvent;
+        private final Object mutex = new Object();
 
         public Object getCellEditorValue()
         {
@@ -3302,7 +3305,12 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             }
             tableModel.fireRowUpdated(table.getSelectedRow(), true);
             ChangeEvent event = new ChangeEvent(table);
-            for (Iterator iter = cellEditorListeners.iterator();iter.hasNext();) {
+            Set cellEditorListenersCopy;
+            synchronized(mutex) {
+                cellEditorListenersCopy = new HashSet(cellEditorListeners);
+            }
+
+            for (Iterator iter = cellEditorListenersCopy.iterator();iter.hasNext();) {
                 ((CellEditorListener)iter.next()).editingStopped(event);
             }
             return true;
@@ -3310,20 +3318,29 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
         public void cancelCellEditing()
         {
+            Set cellEditorListenersCopy;
+            synchronized(mutex) {
+                cellEditorListenersCopy = new HashSet(cellEditorListeners);
+            }
+
            ChangeEvent event = new ChangeEvent(table);
-           for (Iterator iter = cellEditorListeners.iterator();iter.hasNext();) {
+           for (Iterator iter = cellEditorListenersCopy.iterator();iter.hasNext();) {
                ((CellEditorListener)iter.next()).editingCanceled(event);
            }
         }
 
         public void addCellEditorListener(CellEditorListener l)
         {
-            cellEditorListeners.add(l);
+            synchronized(mutex) {
+                cellEditorListeners.add(l);
+            }
         }
 
         public void removeCellEditorListener(CellEditorListener l)
         {
-            cellEditorListeners.remove(l);
+            synchronized(mutex) {
+                cellEditorListeners.remove(l);
+            }
         }
 
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column)

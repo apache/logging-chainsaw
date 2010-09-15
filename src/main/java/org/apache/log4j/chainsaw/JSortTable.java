@@ -41,6 +41,7 @@ public class JSortTable extends JTable implements MouseListener {
   protected int sortedColumnIndex = -1;
   protected boolean sortedColumnAscending = true;
   private String sortedColumn;
+  private int lastSelectedColumn = -1;
 
   public JSortTable() {
     super();
@@ -61,6 +62,19 @@ public class JSortTable extends JTable implements MouseListener {
     ListSelectionModel selModel) {
     super(model, colModel, selModel);
     initSortHeader();
+  }
+
+  public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
+    //selection of the msg field causes rendering to flash...skip over it
+    int colToSelect = columnIndex;
+    //CHAINSAW columns are 1-based indexes
+    if (columnIndex + 1 == ChainsawColumns.INDEX_MESSAGE_COL_NAME) {
+        colToSelect = lastSelectedColumn < columnIndex ? columnIndex + 1 : columnIndex - 1;
+        super.changeSelection(rowIndex, colToSelect, toggle, extend);
+    } else {
+        super.changeSelection(rowIndex, columnIndex, toggle, extend);
+    }
+    lastSelectedColumn = colToSelect;
   }
 
   protected void initSortHeader() {
@@ -95,13 +109,14 @@ public class JSortTable extends JTable implements MouseListener {
 
   //Allow synchronous updates if already on the EDT
   public void scrollTo(final int row, final int col) {
+    final int currentRow = getSelectedRow();
     SwingHelper.invokeOnEDT(new Runnable() {
       public void run() {
         if ((row > -1) && (row < getRowCount())) {
           try {
             //get the requested row off of the bottom and top of the screen by making the 5 rows around the requested row visible
-            int currentRow = getSelectedRow();
-            //if new past current row, scroll to display the 5th row past new selected row
+            //if new past current row, scroll to display the 20th row past new selected row
+            scrollRectToVisible(getCellRect(row, col, true));
             if (row > currentRow) {
                 scrollRectToVisible(getCellRect(row + 5, col, true));
             }
