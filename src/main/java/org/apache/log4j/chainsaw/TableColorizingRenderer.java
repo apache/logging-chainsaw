@@ -186,8 +186,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     long delta = 0;
     if (row > 0) {
         LoggingEvent previous = eventContainer.getRow(row - 1);
-        float deltaFactor = .002F;
-        delta = Math.min(50, Math.max(0, (long) ((loggingEvent.getTimeStamp() - previous.getTimeStamp()) * deltaFactor)));
+        delta = Math.min(ChainsawConstants.MILLIS_DELTA_RENDERING_HEIGHT_MAX, Math.max(0, (long) ((loggingEvent.getTimeStamp() - previous.getTimeStamp()) * ChainsawConstants.MILLIS_DELTA_RENDERING_FACTOR)));
     }
 
     Map matches = loggingEvent.getSearchMatches();
@@ -298,7 +297,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         if (delta > 0 && logPanelPreferenceModel.isShowMillisDeltaAsGap()) {
             JPanel newPanel = new JPanel();
             newPanel.setOpaque(true);
-            newPanel.setBackground(getDeltaColor());
+            newPanel.setBackground(applicationPreferenceModel.getDeltaColor());
             newPanel.setPreferredSize(new Dimension(width, (int) delta));
             multiLinePanel.add(newPanel, BorderLayout.NORTH);
         }
@@ -464,7 +463,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         } else {
             JPanel newPanel = new JPanel();
             newPanel.setOpaque(true);
-            newPanel.setBackground(getDeltaColor());
+            newPanel.setBackground(applicationPreferenceModel.getDeltaColor());
             newPanel.setPreferredSize(new Dimension(width, (int) delta));
             container.add(newPanel, BorderLayout.NORTH);
             if (col == 0) {
@@ -487,7 +486,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         if (delta == 0 || !wrap || !logPanelPreferenceModel.isShowMillisDeltaAsGap()) {
             return innerBorder;
         } else {
-            Border outerBorder = BorderFactory.createMatteBorder((int) Math.max(borderWidth, delta), 0, 0, 0, getDeltaColor());
+            Border outerBorder = BorderFactory.createMatteBorder((int) Math.max(borderWidth, delta), 0, 0, 0, applicationPreferenceModel.getDeltaColor());
             return BorderFactory.createCompoundBorder(outerBorder, innerBorder);
         }
     }
@@ -499,7 +498,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         if (delta == 0 || !wrap || !logPanelPreferenceModel.isShowMillisDeltaAsGap()) {
             return innerBorder;
         } else {
-            Border outerBorder = BorderFactory.createMatteBorder((int) Math.max(borderWidth, delta), 0, 0, 0, getDeltaColor());
+            Border outerBorder = BorderFactory.createMatteBorder((int) Math.max(borderWidth, delta), 0, 0, 0, applicationPreferenceModel.getDeltaColor());
             return BorderFactory.createCompoundBorder(outerBorder, innerBorder);
         }
     }
@@ -511,7 +510,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         if (delta == 0 || !wrap || !logPanelPreferenceModel.isShowMillisDeltaAsGap()) {
             return innerBorder;
         } else {
-            Border outerBorder = BorderFactory.createMatteBorder((int)Math.max(borderWidth, delta), 0, 0, 0, getDeltaColor());
+            Border outerBorder = BorderFactory.createMatteBorder((int)Math.max(borderWidth, delta), 0, 0, 0, applicationPreferenceModel.getDeltaColor());
             return BorderFactory.createCompoundBorder(outerBorder, innerBorder);
         }
     }
@@ -525,20 +524,6 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         textPane.setBackground(background);
     }
 
-    //use a lighter version of search color as the delta color
-    private Color getDeltaColor() {
-        float factor = 1.3F;
-        Color search = applicationPreferenceModel.getSearchBackgroundColor();
-
-        return new Color(boundColorValue((int)(search.getRed() * factor)),
-                boundColorValue((int)(search.getGreen() * factor)),
-                boundColorValue((int)(search.getBlue() * factor)));
-    }
-
-    private int boundColorValue(int colorValue) {
-      return Math.min(Math.max(0, colorValue), 255);
-    }
-    
   /**
    * Changes the Date Formatting object to be used for rendering dates.
    * @param formatter

@@ -31,7 +31,9 @@ import java.net.URL;
 public class ChainsawConstants {
   private ChainsawConstants(){}
   
-  public static final String MILLIS_DELTA = "MILLISDELTA";
+  public static final String MILLIS_DELTA = "millisdelta";
+  public static final int MILLIS_DELTA_RENDERING_HEIGHT_MAX = 50;
+  public static final float MILLIS_DELTA_RENDERING_FACTOR = .002F;
 
   public static final String DEFAULT_COLOR_RULE_NAME = "Default";
   public static final Color COLOR_DEFAULT_BACKGROUND = new Color(255,255,255);

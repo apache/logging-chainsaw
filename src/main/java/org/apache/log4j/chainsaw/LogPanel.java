@@ -1162,17 +1162,28 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     eventsPane.getVerticalScrollBar().setUnitIncrement(ChainsawConstants.DEFAULT_ROW_HEIGHT * 2);
 
     eventsAndStatusPanel.add(eventsPane, BorderLayout.CENTER);
+
+    Integer scrollBarWidth = (Integer) UIManager.get("ScrollBar.width");
+
     JPanel rightPanel = new JPanel();
     rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-    JPanel thumbNailPanel = new EventMatchThumbnail();
-    rightPanel.add(thumbNailPanel);
-
+    JPanel rightThumbNailPanel = new ColorizedEventAndSearchMatchThumbnail();
+    rightPanel.add(rightThumbNailPanel);
     //set thumbnail width to be a bit narrower than scrollbar width
-    Integer scrollBarWidth = (Integer) UIManager.get("ScrollBar.width");
     if (scrollBarWidth != null) {
-        thumbNailPanel.setPreferredSize(new Dimension(scrollBarWidth.intValue() -4, -1));
+        rightThumbNailPanel.setPreferredSize(new Dimension(scrollBarWidth.intValue() -4, -1));
     }
     eventsAndStatusPanel.add(rightPanel, BorderLayout.EAST);
+
+    JPanel leftPanel = new JPanel();
+    leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
+    JPanel leftThumbNailPanel = new EventTimeDeltaMatchThumbnail();
+    leftPanel.add(leftThumbNailPanel);
+    //set thumbnail width to be a bit narrower than scrollbar width
+    if (scrollBarWidth != null) {
+        leftThumbNailPanel.setPreferredSize(new Dimension(scrollBarWidth.intValue() -4, -1));
+    }
+    eventsAndStatusPanel.add(leftPanel, BorderLayout.WEST);
 
     final JPanel statusLabelPanel = new JPanel();
     statusLabelPanel.setLayout(new BorderLayout());
@@ -3354,22 +3365,214 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         }
     }
 
-    private class EventMatchThumbnail extends JPanel {
-        private List all = new ArrayList();
-        private List findMatches = new ArrayList();
+    private class EventTimeDeltaMatchThumbnail extends AbstractEventMatchThumbnail {
+        public EventTimeDeltaMatchThumbnail() {
+            super();
+            initializeLists();
+        }
 
-        private final int maxEventHeight = 6;
+        boolean primaryMatches(EventWrapper wrapper) {
+            String millisDelta = wrapper.loggingEvent.getProperty(ChainsawConstants.MILLIS_DELTA);
+            if (millisDelta != null && !millisDelta.trim().equals("")) {
+                long millisDeltaLong = Long.parseLong(millisDelta);
+                //arbitrary
+                return millisDeltaLong >= 1000;
+            }
+            return false;
+        }
 
-        public EventMatchThumbnail() {
+        boolean secondaryMatches(EventWrapper wrapper) {
+            //secondary is not used
+            return false;
+        }
+
+        private void initializeLists() {
+            secondaryList.clear();
+            primaryList.clear();
+
+            int i=0;
+            for (Iterator iter = tableModel.getFilteredEvents().iterator();iter.hasNext();) {
+                ExtendedLoggingEvent extendedLoggingEvent = (ExtendedLoggingEvent) iter.next();
+                EventWrapper wrapper = new EventWrapper(i, extendedLoggingEvent);
+                i++;
+                //only add if there is a color defined
+                if (primaryMatches(wrapper)) {
+                    primaryList.add(wrapper);
+                }
+            }
+            invalidate();
+            repaint();
+        }
+
+        public void paintComponent(Graphics g) {
+            super.paintComponent(g);
+
+            Point topAndBottomOffset = getScrollBarOffsets();
+            int topOffset = topAndBottomOffset.x;
+            int bottomOffset = topAndBottomOffset.y;
+
+            int rowCount = table.getRowCount();
+            if (rowCount == 0) {
+                return;
+            }
+            //use event pane height as reference height - max component height will be extended by event height if
+            // last row is rendered, so subtract here
+            int height = eventsPane.getHeight() - topOffset - bottomOffset;
+            int maxHeight = Math.min(maxEventHeight, (height / rowCount));
+            int minHeight = Math.max(1, maxHeight);
+            int componentHeight = height - minHeight;
+            int eventHeight = minHeight;
+
+            //draw all events
+            for (Iterator iter = primaryList.iterator();iter.hasNext();) {
+                EventWrapper wrapper = (EventWrapper)iter.next();
+                    if (primaryMatches(wrapper)) {
+                        float ratio = (wrapper.rowNum / (float)rowCount);
+        //                System.out.println("error - ratio: " + ratio + ", component height: " + componentHeight);
+                        int verticalLocation = (int) (componentHeight * ratio) + topOffset;
+
+                        int startX = 1;
+                        int width = getWidth() - (startX * 2);
+                        //max out at 50, min 2...
+                        String millisDelta = wrapper.loggingEvent.getProperty(ChainsawConstants.MILLIS_DELTA);
+                        long millisDeltaLong = Long.parseLong(millisDelta);
+                        long delta = Math.min(ChainsawConstants.MILLIS_DELTA_RENDERING_HEIGHT_MAX, Math.max(0, (long) (millisDeltaLong * ChainsawConstants.MILLIS_DELTA_RENDERING_FACTOR)));
+                        float widthMaxMillisDeltaRenderRatio = ((float)width / ChainsawConstants.MILLIS_DELTA_RENDERING_HEIGHT_MAX);
+                        int widthToUse = Math.max(2, (int)(delta * widthMaxMillisDeltaRenderRatio));
+                        eventHeight = Math.min(maxEventHeight, eventHeight + 3);
+//                            eventHeight = maxEventHeight;
+                        drawEvent(applicationPreferenceModel.getDeltaColor(), (verticalLocation - eventHeight + 1), eventHeight, g, startX, widthToUse);
+    //                System.out.println("painting error - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
+                }
+            }
+        }
+    }
+
+    private class ColorizedEventAndSearchMatchThumbnail extends AbstractEventMatchThumbnail {
+        public ColorizedEventAndSearchMatchThumbnail() {
+            super();
             configureColors();
-            colorizer.addPropertyChangeListener(new PropertyChangeListener()
-            {
-                public void propertyChange(PropertyChangeEvent evt)
-                {
+            colorizer.addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
                     configureColors();
                 }
             });
-            
+        }
+
+        boolean primaryMatches(EventWrapper wrapper) {
+            return !wrapper.loggingEvent.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND);
+        }
+
+        boolean secondaryMatches(EventWrapper wrapper) {
+            return wrapper.loggingEvent.isSearchMatch();
+        }
+
+        private void configureColors() {
+            secondaryList.clear();
+            primaryList.clear();
+
+            int i=0;
+            for (Iterator iter = tableModel.getFilteredEvents().iterator();iter.hasNext();) {
+                ExtendedLoggingEvent extendedLoggingEvent = (ExtendedLoggingEvent) iter.next();
+                extendedLoggingEvent.updateColorRuleColors(colorizer.getBackgroundColor(extendedLoggingEvent), colorizer.getForegroundColor(extendedLoggingEvent));
+                EventWrapper wrapper = new EventWrapper(i, extendedLoggingEvent);
+                if (secondaryMatches(wrapper)) {
+                    secondaryList.add(wrapper);
+                }
+                i++;
+                //only add if there is a color defined
+                if (primaryMatches(wrapper)) {
+                    primaryList.add(wrapper);
+                }
+            }
+            invalidate();
+            repaint();
+        }
+
+        public void paintComponent(Graphics g) {
+            super.paintComponent(g);
+
+            Point topAndBottomOffset = getScrollBarOffsets();
+            int topOffset = topAndBottomOffset.x;
+            int bottomOffset = topAndBottomOffset.y;
+
+            int rowCount = table.getRowCount();
+            if (rowCount == 0) {
+                return;
+            }
+            //use event pane height as reference height - max component height will be extended by event height if
+            // last row is rendered, so subtract here
+            int height = eventsPane.getHeight() - topOffset - bottomOffset;
+            int maxHeight = Math.min(maxEventHeight, (height / rowCount));
+            int minHeight = Math.max(1, maxHeight);
+            int componentHeight = height - minHeight;
+            int eventHeight = minHeight;
+
+            //draw all non error/warning/marker events
+            for (Iterator iter = primaryList.iterator();iter.hasNext();) {
+                EventWrapper wrapper = (EventWrapper)iter.next();
+                if (!wrapper.loggingEvent.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
+                    if (wrapper.loggingEvent.getLevel().toInt() < Level.WARN.toInt() && wrapper.loggingEvent.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE) == null) {
+                        float ratio = (wrapper.rowNum / (float)rowCount);
+        //                System.out.println("error - ratio: " + ratio + ", component height: " + componentHeight);
+                        int verticalLocation = (int) (componentHeight * ratio) + topOffset;
+
+                        int startX = 1;
+                        int width = getWidth() - (startX * 2);
+
+                        drawEvent(wrapper.loggingEvent.getColorRuleBackground(), verticalLocation, eventHeight, g, startX, width);
+        //                System.out.println("painting error - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
+                    }
+                }
+            }
+
+            //draw warnings, error, fatal & markers last (full width)
+            for (Iterator iter = primaryList.iterator();iter.hasNext();) {
+                EventWrapper wrapper = (EventWrapper)iter.next();
+                if (!wrapper.loggingEvent.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
+                    if (wrapper.loggingEvent.getLevel().toInt() >= Level.WARN.toInt() || wrapper.loggingEvent.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE) != null) {
+                        float ratio = (wrapper.rowNum / (float)rowCount);
+        //                System.out.println("error - ratio: " + ratio + ", component height: " + componentHeight);
+                        int verticalLocation = (int) (componentHeight * ratio) + topOffset;
+
+                        int startX = 1;
+                        int width = getWidth() - (startX * 2);
+                        //narrow the color a bit if level is less than warn
+                            //make warnings, errors a little taller
+
+                        eventHeight = Math.min(maxEventHeight, eventHeight + 3);
+//                            eventHeight = maxEventHeight;
+
+                        drawEvent(wrapper.loggingEvent.getColorRuleBackground(), (verticalLocation - eventHeight + 1), eventHeight, g, startX, width);
+    //                System.out.println("painting error - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
+                    }
+                }
+            }
+
+            for (Iterator iter = secondaryList.iterator();iter.hasNext();) {
+                EventWrapper wrapper = (EventWrapper)iter.next();
+                float ratio = (wrapper.rowNum / (float)rowCount);
+//                System.out.println("warning - ratio: " + ratio + ", component height: " + componentHeight);
+                int verticalLocation = (int) (componentHeight * ratio) + topOffset;
+
+                int startX = 1;
+                int width = getWidth() - (startX * 2);
+                width = (width / 2);
+
+                //use black for search indicator in the 'gutter'
+                drawEvent(Color.BLACK, verticalLocation, eventHeight, g, startX, width);
+//                System.out.println("painting warning - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
+            }
+        }
+    }
+
+    abstract class AbstractEventMatchThumbnail extends JPanel {
+        protected List primaryList = new ArrayList();
+        protected List secondaryList = new ArrayList();
+        protected final int maxEventHeight = 6;
+
+        AbstractEventMatchThumbnail() {
+            super();
             addMouseMotionListener(new MouseMotionAdapter() {
               public void mouseMoved(MouseEvent e) {
                 if (preferenceModel.isThumbnailBarToolTips()) {
@@ -3404,8 +3607,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                     int lastRow = Math.min(e.getLastRow(), table.getRowCount() - 1);
                     //clear everything if we got an event w/-1 for first or last row
                     if (firstRow < 0 || lastRow < 0) {
-                        all.clear();
-                        findMatches.clear();
+                        primaryList.clear();
+                        secondaryList.clear();
                     }
 
 //                    System.out.println("lastRow: " + lastRow + ", first row: " + firstRow + ", original last row: " + e.getLastRow() + ", type: " + e.getType());
@@ -3416,13 +3619,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                         for (int i=firstRow;i<lastRow;i++) {
                             ExtendedLoggingEvent event = (ExtendedLoggingEvent)displayedEvents.get(i);
                             EventWrapper wrapper = new EventWrapper(i, event);
-                            if (event.isSearchMatch()) {
-                                findMatches.add(wrapper);
+                            if (secondaryMatches(wrapper)) {
+                                secondaryList.add(wrapper);
 //                                System.out.println("added warning: " + i + " - " + event.getLevel());
                             }
-                            if (!wrapper.loggingEvent.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
+                            if (primaryMatches(wrapper)) {
                                 //add to this one
-                                all.add(wrapper);
+                                primaryList.add(wrapper);
                             }
 //                                System.out.println("added error: " + i + " - " + event.getLevel());
                         }
@@ -3432,14 +3635,14 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                     } else if (e.getType() == TableModelEvent.DELETE) {
                         //find each eventwrapper with an id in the deleted range and remove it...
 //                        System.out.println("delete- current warnings: " + warnings.size() + ", errors: " + errors.size() + ", first row: " + firstRow + ", last row: " + lastRow + ", displayed event count: " + displayedEvents.size() );
-                        for (Iterator iter = findMatches.iterator();iter.hasNext();) {
+                        for (Iterator iter = secondaryList.iterator();iter.hasNext();) {
                             EventWrapper wrapper = (EventWrapper)iter.next();
                             if ((wrapper.rowNum >= firstRow) && (wrapper.rowNum <= lastRow)) {
 //                                System.out.println("deleting find: " + wrapper);
                                 iter.remove();
                             }
                         }
-                        for (Iterator iter = all.iterator();iter.hasNext();) {
+                        for (Iterator iter = primaryList.iterator();iter.hasNext();) {
                             EventWrapper wrapper = (EventWrapper)iter.next();
                             if ((wrapper.rowNum >= firstRow) && (wrapper.rowNum <= lastRow)) {
 //                                System.out.println("deleting error: " + wrapper);
@@ -3452,14 +3655,14 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                     } else if (e.getType() == TableModelEvent.UPDATE) {
 //                        System.out.println("update - about to delete old warnings in range: " + firstRow + " to " + lastRow + ", current warnings: " + warnings.size() + ", errors: " + errors.size());
                         //find each eventwrapper with an id in the deleted range and remove it...
-                        for (Iterator iter = findMatches.iterator();iter.hasNext();) {
+                        for (Iterator iter = secondaryList.iterator();iter.hasNext();) {
                             EventWrapper wrapper = (EventWrapper)iter.next();
                             if ((wrapper.rowNum >= firstRow) && (wrapper.rowNum <= lastRow)) {
 //                                System.out.println("update - deleting warning: " + wrapper);
                                 iter.remove();
                             }
                         }
-                        for (Iterator iter = all.iterator();iter.hasNext();) {
+                        for (Iterator iter = primaryList.iterator();iter.hasNext();) {
                             EventWrapper wrapper = (EventWrapper)iter.next();
                             if ((wrapper.rowNum >= firstRow) && (wrapper.rowNum <= lastRow)) {
 //                                System.out.println("update - deleting error: " + wrapper);
@@ -3473,13 +3676,19 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                             EventWrapper wrapper = new EventWrapper(i, event);
 //                                System.out.println("update - adding error: " + i + ", event: " + event.getMessage());
                             //only add event to thumbnail if there is a color
-                            if (!wrapper.loggingEvent.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
-                                all.add(wrapper);
+                            if (primaryMatches(wrapper)) {
+                                //!wrapper.loggingEvent.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)
+                                primaryList.add(wrapper);
+                            } else {
+                                primaryList.remove(wrapper);
                             }
 
-                            if (event.isSearchMatch()) {
+                            if (secondaryMatches(wrapper)) {
+                                //event.isSearchMatch())
 //                                System.out.println("update - adding marker: " + i + ", event: " + event.getMessage());
-                                findMatches.add(wrapper);
+                                secondaryList.add(wrapper);
+                            } else {
+                                secondaryList.remove(wrapper);
                             }
                         }
 //                        System.out.println("update - new warnings: " + warnings.size() + ", errors: " + errors.size());
@@ -3493,13 +3702,15 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             });
         }
 
+        abstract boolean primaryMatches(EventWrapper wrapper);
+
+        abstract boolean secondaryMatches(EventWrapper wrapper);
         /**
          * Get event wrapper - may be null
          * @param yPosition
          * @return event wrapper or null
          */
-        private EventWrapper getEventWrapperAtPosition(int yPosition)
-        {
+        protected EventWrapper getEventWrapperAtPosition(int yPosition) {
             int rowCount = table.getRowCount();
 
             Point offsets = getScrollBarOffsets();
@@ -3517,10 +3728,10 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                 yPosition = height;
             }
 
-//                    System.out.println("clicked y pos: " + e.getPoint().y + ", relative: " + clickLocation);
+    //                    System.out.println("clicked y pos: " + e.getPoint().y + ", relative: " + clickLocation);
             float ratio = (float) yPosition / height;
             int rowToSelect = Math.round(rowCount * ratio);
-//                    System.out.println("rowCount: " + rowCount + ", height: " + height + ", clickLocation: " + clickLocation + ", ratio: " + ratio + ", rowToSelect: " + rowToSelect);
+    //                    System.out.println("rowCount: " + rowCount + ", height: " + height + ", clickLocation: " + clickLocation + ", ratio: " + ratio + ", rowToSelect: " + rowToSelect);
             EventWrapper event = getClosestRow(rowToSelect);
             return event;
         }
@@ -3528,7 +3739,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         private EventWrapper getClosestRow(int rowToSelect) {
             EventWrapper closestRow = null;
             int rowDelta = Integer.MAX_VALUE;
-            for (Iterator iter = findMatches.iterator();iter.hasNext();) {
+            for (Iterator iter = secondaryList.iterator();iter.hasNext();) {
                 EventWrapper event = (EventWrapper) iter.next();
                 int newRowDelta = Math.abs(rowToSelect - event.rowNum);
                 if (newRowDelta < rowDelta) {
@@ -3536,7 +3747,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                     rowDelta = newRowDelta;
                 }
             }
-            for (Iterator iter = all.iterator();iter.hasNext();) {
+            for (Iterator iter = primaryList.iterator();iter.hasNext();) {
                 EventWrapper event = (EventWrapper) iter.next();
                 int newRowDelta = Math.abs(rowToSelect - event.rowNum);
                 if (newRowDelta < rowDelta) {
@@ -3545,28 +3756,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                 }
             }
             return closestRow;
-        }
-
-        private void configureColors() {
-            findMatches.clear();
-            all.clear();
-
-            int i=0;
-            for (Iterator iter = tableModel.getFilteredEvents().iterator();iter.hasNext();) {
-                ExtendedLoggingEvent extendedLoggingEvent = (ExtendedLoggingEvent) iter.next();
-                extendedLoggingEvent.updateColorRuleColors(colorizer.getBackgroundColor(extendedLoggingEvent), colorizer.getForegroundColor(extendedLoggingEvent));
-                EventWrapper wrapper = new EventWrapper(i, extendedLoggingEvent);
-                if (extendedLoggingEvent.isSearchMatch()) {
-                    findMatches.add(wrapper);
-                }
-                i++;
-                //only add if there is a color defined
-                if (!wrapper.loggingEvent.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
-                    all.add(wrapper);
-                }
-            }
-            invalidate();
-            repaint();
         }
 
         /**
@@ -3592,91 +3781,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             return new Point(topOffset, bottomOffset);
         }
 
-        public void paintComponent(Graphics g)
-        {
-            super.paintComponent(g);
-
-            Point topAndBottomOffset = getScrollBarOffsets();
-            int topOffset = topAndBottomOffset.x;
-            int bottomOffset = topAndBottomOffset.y;
-
-            int rowCount = table.getRowCount();
-            if (rowCount == 0) {
-                return;
-            }
-            //use event pane height as reference height - max component height will be extended by event height if
-            // last row is rendered, so subtract here
-            int height = eventsPane.getHeight() - topOffset - bottomOffset;
-            int maxHeight = Math.min(maxEventHeight, (height / rowCount));
-            int minHeight = Math.max(1, maxHeight);
-            int componentHeight = height - minHeight;
-            int eventHeight = minHeight;
-
-            //draw all non error/warning/marker events
-            for (Iterator iter = all.iterator();iter.hasNext();) {
-                EventWrapper wrapper = (EventWrapper)iter.next();
-                if (!wrapper.loggingEvent.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
-                    if (wrapper.loggingEvent.getLevel().toInt() < Level.WARN.toInt() && wrapper.loggingEvent.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE) == null) {
-                        float ratio = (wrapper.rowNum / (float)rowCount);
-        //                System.out.println("error - ratio: " + ratio + ", component height: " + componentHeight);
-                        int verticalLocation = (int) (componentHeight * ratio) + topOffset;
-
-                        int startX = 1;
-                        int width = getWidth() - (startX * 2);
-
-                        drawEvent(wrapper.loggingEvent.getColorRuleBackground(), verticalLocation, eventHeight, g, startX, width);
-        //                System.out.println("painting error - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
-                    }
-                }
-            }
-
-            //draw warnings, error, fatal & markers last (full width)
-            for (Iterator iter = all.iterator();iter.hasNext();) {
-                EventWrapper wrapper = (EventWrapper)iter.next();
-                if (!wrapper.loggingEvent.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
-                    if (wrapper.loggingEvent.getLevel().toInt() >= Level.WARN.toInt() || wrapper.loggingEvent.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE) != null) {
-                        float ratio = (wrapper.rowNum / (float)rowCount);
-        //                System.out.println("error - ratio: " + ratio + ", component height: " + componentHeight);
-                        int verticalLocation = (int) (componentHeight * ratio) + topOffset;
-
-                        int startX = 1;
-                        int width = getWidth() - (startX * 2);
-                        //narrow the color a bit if level is less than warn
-                            //make warnings, errors a little taller
-
-                        eventHeight = Math.min(maxEventHeight, eventHeight + 3);
-//                            eventHeight = maxEventHeight;
-
-                        drawEvent(wrapper.loggingEvent.getColorRuleBackground(), (verticalLocation - eventHeight + 1), eventHeight, g, startX, width);
-    //                System.out.println("painting error - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
-                    }
-                }
-            }
-
-            for (Iterator iter = findMatches.iterator();iter.hasNext();) {
-                EventWrapper wrapper = (EventWrapper)iter.next();
-                float ratio = (wrapper.rowNum / (float)rowCount);
-//                System.out.println("warning - ratio: " + ratio + ", component height: " + componentHeight);
-                int verticalLocation = (int) (componentHeight * ratio) + topOffset;
-
-                int startX = 1;
-                int width = getWidth() - (startX * 2);
-                width = (width / 2);
-
-                //use black for search indicator in the 'gutter'
-                drawEvent(Color.BLACK, verticalLocation, eventHeight, g, startX, width);
-//                System.out.println("painting warning - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
-            }
-        }
-
-        public Point getToolTipLocation(MouseEvent event)
-        {
+        public Point getToolTipLocation(MouseEvent event) {
             //shift tooltip down so the the pointer doesn't cover up events below the current mouse location
             return new Point(event.getX(), event.getY() + 30);
         }
 
-        private void drawEvent(Color newColor, int verticalLocation, int eventHeight, Graphics g, int x, int width) {
-//            System.out.println("painting: - color: " + newColor + ", verticalLocation: " + verticalLocation + ", eventHeight: " + eventHeight);
+        protected void drawEvent(Color newColor, int verticalLocation, int eventHeight, Graphics g, int x, int width) {
+    //            System.out.println("painting: - color: " + newColor + ", verticalLocation: " + verticalLocation + ", eventHeight: " + eventHeight);
             //center drawing at vertical location
             int y = verticalLocation + (eventHeight / 2);
             Color oldColor = g.getColor();
@@ -3688,45 +3799,39 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             }
             g.setColor(oldColor);
         }
+    }
 
-        class EventWrapper {
-            int rowNum;
-            ExtendedLoggingEvent loggingEvent;
-            public EventWrapper(int rowNum, ExtendedLoggingEvent loggingEvent) {
-                this.rowNum = rowNum;
-                this.loggingEvent = loggingEvent;
-            }
+    class EventWrapper {
+        int rowNum;
+        ExtendedLoggingEvent loggingEvent;
+        public EventWrapper(int rowNum, ExtendedLoggingEvent loggingEvent) {
+            this.rowNum = rowNum;
+            this.loggingEvent = loggingEvent;
+        }
 
-            public String toString()
-            {
-                return "event - rownum: " + rowNum + ", level: " + loggingEvent.getLevel();
-            }
+        public String toString() {
+            return "event - rownum: " + rowNum + ", level: " + loggingEvent.getLevel();
+        }
 
-            public boolean equals(Object o)
-            {
-                if (this == o)
-                {
-                    return true;
-                }
-                if (o == null || getClass() != o.getClass())
-                {
-                    return false;
-                }
-
-                EventWrapper that = (EventWrapper) o;
-
-                if (loggingEvent != null ? !loggingEvent.equals(that.loggingEvent) : that.loggingEvent != null)
-                {
-                    return false;
-                }
-
+        public boolean equals(Object o) {
+            if (this == o) {
                 return true;
             }
-
-            public int hashCode()
-            {
-                return loggingEvent != null ? loggingEvent.hashCode() : 0;
+            if (o == null || getClass() != o.getClass()) {
+                return false;
             }
+
+            EventWrapper that = (EventWrapper) o;
+
+            if (loggingEvent != null ? !loggingEvent.equals(that.loggingEvent) : that.loggingEvent != null) {
+                return false;
+            }
+
+            return true;
+        }
+
+        public int hashCode() {
+            return loggingEvent != null ? loggingEvent.hashCode() : 0;
         }
     }
 

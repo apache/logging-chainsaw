@@ -223,6 +223,21 @@ public class ApplicationPreferenceModel {
       }
     }
 
+    //use a lighter version of search color as the delta color
+    public Color getDeltaColor() {
+        float factor = 1.3F;
+        Color search = getSearchBackgroundColor();
+
+        return new Color(boundColorValue((int)(search.getRed() * factor)),
+                boundColorValue((int)(search.getGreen() * factor)),
+                boundColorValue((int)(search.getBlue() * factor)));
+    }
+
+    private int boundColorValue(int colorValue) {
+      return Math.min(Math.max(0, colorValue), 255);
+    }
+
+
     /**
      * @return Returns the responsiveness.
      */
