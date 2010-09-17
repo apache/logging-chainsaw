@@ -220,7 +220,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   private final JSortTable table;
   private final TableColorizingRenderer renderer;
   private final EventContainer tableModel;
-  private final ThrowableRenderPanel throwableRenderPanel;
   private final JEditorPane detail;
   private final JSplitPane lowerPanel;
   private final DetailPaneUpdater detailPaneUpdater;
@@ -901,7 +900,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     /*
      * Throwable popup
      */
-    throwableRenderPanel = new ThrowableRenderPanel();
     markerCellEditor = new MarkerCellEditor();
 
     final JDialog detailDialog = new JDialog((JFrame) null, true);
@@ -916,39 +914,36 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
     detailDialog.pack();
 
-    throwableRenderPanel.addActionListener(
-      new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          ExtendedLoggingEvent event = tableModel.getRow(table.getSelectedRow());
-          detailDialog.setTitle(
-            table.getColumnName(table.getSelectedColumn()) + " detail...");
-          if (event == null) {
-              detailArea.setText("");
-          } else {
+    table.addMouseListener(new MouseAdapter() {
+        public void mouseClicked(MouseEvent e)
+        {
+            TableColumn column = table.getColumnModel().getColumn(table.columnAtPoint(e.getPoint()));
+            if (!column.getHeaderValue().toString().toUpperCase().equals(ChainsawColumns.getColumnName(ChainsawColumns.INDEX_THROWABLE_COL_NAME))) {
+                return;
+            }
+
+            ExtendedLoggingEvent event = tableModel.getRow(table.getSelectedRow());
+
             //throwable string representation may be a length-one empty array
             String[] ti = event.getThrowableStrRep();
             if (ti != null && ti.length > 0 && (!(ti.length == 1 && ti[0].equals("")))) {
-                StringBuffer buf = new StringBuffer();
-                buf.append(event.getMessage());
-                buf.append("\n");
-                for (int i = 0; i < ti.length; i++) {
-                  buf.append(ti[i]).append("\n    ");
+                 detailDialog.setTitle(table.getColumnName(table.getSelectedColumn()) + " detail...");
+                  StringBuffer buf = new StringBuffer();
+                  buf.append(event.getMessage());
+                  buf.append("\n");
+                  for (int i = 0; i < ti.length; i++) {
+                    buf.append(ti[i]).append("\n    ");
+                  }
+
+                  detailArea.setText(buf.toString());
+                  SwingHelper.invokeOnEDT(new Runnable() {
+                    public void run() {
+                      centerAndSetVisible(detailDialog);
+                    }
+                  });
                 }
-
-                detailArea.setText(buf.toString());
-              } else {
-                //no exception
-                detailArea.setText("");
-              }
-          }
-
-          SwingHelper.invokeOnEDT(new Runnable() {
-              public void run() {
-                centerAndSetVisible(detailDialog);
-              }
-            });
         }
-      });
+    });
 
     /*
      * We listen for new Key's coming in so we can get them automatically
@@ -3130,8 +3125,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     }
 
     /**
-     * If a new column was added to the display and that column was the exception column,
-     * set the cell editor to the throwablerenderer
+     * If a new column was added to the display and that column was the marker column,
+     * set the cell editor to the markerCellEditor
      *
      * @param e
      */
@@ -3141,10 +3136,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       while (enumeration.hasMoreElements()) {
         TableColumn column = (TableColumn) enumeration.nextElement();
 
-        if (
-          (column.getModelIndex() + 1) == ChainsawColumns.INDEX_THROWABLE_COL_NAME) {
-          column.setCellEditor(throwableRenderPanel);
-        }
         if (column.getHeaderValue().toString().toLowerCase().equals(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE)) {
           column.setCellEditor(markerCellEditor);
         }

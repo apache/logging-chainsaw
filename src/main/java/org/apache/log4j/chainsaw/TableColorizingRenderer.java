@@ -116,6 +116,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private boolean useRelativeTimesToPrevious;
   private EventContainer eventContainer;
   private LogPanelPreferenceModel logPanelPreferenceModel;
+  private SimpleAttributeSet insetAttributeSet;
 
     /**
    * Creates a new TableColorizingRenderer object.
@@ -134,6 +135,8 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     boldAttributeSet = new SimpleAttributeSet();
     StyleConstants.setBold(boldAttributeSet, true);
 
+    insetAttributeSet = new SimpleAttributeSet();
+    StyleConstants.setLeftIndent(insetAttributeSet, 6);
     //throwable col may have a tab..if so, render the tab as col zero
     int pos = 0;
     int align = TabStop.ALIGN_LEFT;
@@ -155,10 +158,10 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
 
     multiLineTextPane.setEditable(false);
     multiLineTextPane.setFont(levelTextPane.getFont());
-    Insets leftRightInsets = new Insets(0, 5, 0, 5);
-    multiLineTextPane.setMargin(leftRightInsets);
-    singleLineTextPane.setMargin(leftRightInsets);
-    levelTextPane.setMargin(leftRightInsets);
+
+    multiLineTextPane.setParagraphAttributes(insetAttributeSet, false);
+    singleLineTextPane.setParagraphAttributes(insetAttributeSet, false);
+    levelTextPane.setParagraphAttributes(insetAttributeSet, false);
   }
 
   public void setToolTipsVisible(boolean toolTipsVisible) {

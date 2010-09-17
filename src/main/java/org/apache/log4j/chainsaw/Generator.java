@@ -17,13 +17,18 @@
 
 package org.apache.log4j.chainsaw;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.MDC;
 import org.apache.log4j.NDC;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.plugins.Receiver;
+import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
+import org.apache.log4j.spi.ThrowableInformation;
 
 
 /**
@@ -51,11 +56,13 @@ public class Generator extends Receiver implements Runnable {
 
   private LoggingEvent createEvent(
     Level level, Logger logger, String msg, Throwable t) {
+      ThrowableInformation ti = new ThrowableInformation(t);
+      Map properties = new HashMap();
+      properties.put(Constants.APPLICATION_KEY, getName());
+      properties.put(Constants.HOSTNAME_KEY, "localhost");
+      LocationInfo li = new LocationInfo("file", logger.getClass().getName(), "method", "123");
     LoggingEvent e = new LoggingEvent(
-        logger.getClass().getName(), logger, level, msg, t);
-    e.setProperty(Constants.APPLICATION_KEY, getName());
-    e.setProperty(Constants.HOSTNAME_KEY, "localhost");
-
+        logger.getClass().getName(), logger, System.currentTimeMillis(), level, msg, "Thread=1", ti, "NDC value", li, properties);
     return e;
   }
 
