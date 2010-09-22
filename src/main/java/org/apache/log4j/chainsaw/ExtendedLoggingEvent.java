@@ -102,7 +102,7 @@ public class ExtendedLoggingEvent extends LoggingEvent
         markerHeight = DEFAULT_HEIGHT;
         msgHeight = DEFAULT_HEIGHT;
         if (!b) {
-            setProperty(ChainsawConstants.MILLIS_DELTA, "");
+            setProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE, "");
         }
     }
 
@@ -112,6 +112,6 @@ public class ExtendedLoggingEvent extends LoggingEvent
 
     public void setPreviousDisplayedEventTimestamp(long previousDisplayedEventTimeStamp)
     {
-        setProperty(ChainsawConstants.MILLIS_DELTA, String.valueOf(timeStamp - previousDisplayedEventTimeStamp));
+        setProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE, String.valueOf(timeStamp - previousDisplayedEventTimeStamp));
     }
 }

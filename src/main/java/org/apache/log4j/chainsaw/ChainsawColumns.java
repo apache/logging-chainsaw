@@ -47,6 +47,7 @@ public class ChainsawColumns {
     columnNames.add(ChainsawConstants.CLASS_COL_NAME);
     columnNames.add(ChainsawConstants.METHOD_COL_NAME);
     columnNames.add(ChainsawConstants.FILE_COL_NAME);
+    columnNames.add(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE.toUpperCase()); //add uppercase col name
     columnNames.add(ChainsawConstants.LINE_COL_NAME);
 
     //NOTE:  ID must ALWAYS be last field because the model adds this value itself as an identifier to the end of the consructed vector
@@ -65,7 +66,8 @@ public class ChainsawColumns {
   public static final int INDEX_METHOD_COL_NAME = 10;
   public static final int INDEX_FILE_COL_NAME = 11;
   public static final int INDEX_LINE_COL_NAME = 12;
-  public static final int INDEX_ID_COL_NAME = 13;
+  public static final int INDEX_MILLIS_DELTA_COL_NAME = 13;
+  public static final int INDEX_ID_COL_NAME = 14;
 
  public static final Cursor CURSOR_FOCUS_ON;
  static{

@@ -181,6 +181,10 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
 
     setLayout(new BorderLayout());
     ignoreExpressionEntryField.setPreferredSize(new Dimension(300, 150));
+
+    ignoreExpressionSummary.setMinimumSize(new Dimension(10, ignoreExpressionSummary.getHeight()));
+    ignoreSummary.setMinimumSize(new Dimension(10, ignoreSummary.getHeight()));
+
     JTextComponentFormatter.applySystemFontAndSize(ignoreExpressionEntryField);
 
 
@@ -297,7 +301,8 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
 
     JPanel ignorePanel = new JPanel();
     ignorePanel.setLayout(new BoxLayout(ignorePanel, BoxLayout.Y_AXIS));
-    JPanel ignoreSummaryPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    JPanel ignoreSummaryPanel = new JPanel();
+    ignoreSummaryPanel.setLayout(new BoxLayout(ignoreSummaryPanel, BoxLayout.X_AXIS));
     ignoreSummaryPanel.add(ignoreSummary);
     
     Action showIgnoreDialogAction = new AbstractAction("...") {
@@ -317,7 +322,8 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
     ignoreSummaryPanel.add(btnShowIgnoreDialog);
     ignorePanel.add(ignoreSummaryPanel);
 
-    JPanel ignoreExpressionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    JPanel ignoreExpressionPanel = new JPanel();
+    ignoreExpressionPanel.setLayout(new BoxLayout(ignoreExpressionPanel, BoxLayout.X_AXIS));
     ignoreExpressionPanel.add(ignoreExpressionSummary);
     showIgnoreExpressionDialogAction.putValue(Action.SHORT_DESCRIPTION, "Click to view and manage your hidden/ignored expression");
     JButton btnShowIgnoreExpressionDialog = new SmallButton(showIgnoreExpressionDialogAction);
@@ -1427,7 +1433,7 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
   }
 
   private void updateIgnoreExpressionSummary() {
-    ignoreExpressionSummary.setText(ignoreExpressionRule != null?"Ignore expression (set)":"Ignore expression (unset)");
+    ignoreExpressionSummary.setText(ignoreExpressionRule != null?"Ignore (set)":"Ignore (unset)");
   }
   
   private void toggleFocusOnState()

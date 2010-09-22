@@ -534,6 +534,9 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     case ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME:
       return event.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
 
+    case ChainsawColumns.INDEX_MILLIS_DELTA_COL_NAME:
+      return event.getProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
+
     case ChainsawColumns.INDEX_LOGGER_COL_NAME:
       return event.getLoggerName();
 
@@ -553,32 +556,20 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
       return event.getThrowableStrRep();
 
     case ChainsawColumns.INDEX_CLASS_COL_NAME:
-      return ((info == null)
-      || ("?".equals(info.getClassName()))) ? ""
-                                                              : info
-      .getClassName();
+      return ((info == null) || ("?".equals(info.getClassName()))) ? "" : info.getClassName();
 
-    case ChainsawColumns.INDEX_FILE_COL_NAME:
-      return ((info == null)
-      || ("?".equals(info.getFileName()))) ? ""
-                                                             : info
-      .getFileName();
+        case ChainsawColumns.INDEX_FILE_COL_NAME:
+      return ((info == null) || ("?".equals(info.getFileName()))) ? "" : info.getFileName();
 
-    case ChainsawColumns.INDEX_LINE_COL_NAME:
-      return ((info == null)
-      || ("?".equals(info.getLineNumber()))) ? ""
-                                                               : info
-      .getLineNumber();
+        case ChainsawColumns.INDEX_LINE_COL_NAME:
+      return ((info == null) || ("?".equals(info.getLineNumber()))) ? "" : info.getLineNumber();
 
-    case ChainsawColumns.INDEX_METHOD_COL_NAME:
-      return ((info == null)
-      || ("?".equals(info.getMethodName()))) ? ""
-                                                               : info
-      .getMethodName();
+        case ChainsawColumns.INDEX_METHOD_COL_NAME:
+      return ((info == null) || ("?".equals(info.getMethodName()))) ? "" : info.getMethodName();
 
-    default:
+        default:
 
-      if (columnIndex < columnNames.size()) {
+            if (columnIndex < columnNames.size()) {
         //case may not match..try case sensitive and fall back to case-insensitive
         String result = event.getProperty(columnNames.get(columnIndex).toString());
         if (result == null) {

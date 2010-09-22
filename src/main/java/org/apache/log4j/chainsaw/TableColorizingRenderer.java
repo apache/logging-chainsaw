@@ -21,7 +21,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineBreakMeasurer;
@@ -570,7 +569,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         return "" + (((Date)field).getTime() - relativeTimestampBase);
     }
     if (useRelativeTimesToPrevious) {
-        return loggingEvent.getProperty(ChainsawConstants.MILLIS_DELTA);
+        return loggingEvent.getProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
     }
 
     return dateFormatInUse.format((Date) field);

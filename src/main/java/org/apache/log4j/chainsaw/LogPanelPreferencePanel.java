@@ -245,8 +245,6 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
     private final JTextField timeZone = new JTextField(10);
     private final JRadioButton rdLevelIcons = new JRadioButton("Icons ");
     private final JRadioButton rdLevelText = new JRadioButton("Text ");
-    private final JCheckBox wrapMessage = new JCheckBox("Wrap message field (display multi-line rows) ");
-    private final JCheckBox highlightSearchMatchText = new JCheckBox("Highlight search match text ");
     private JRadioButton rdLast;
 
     //~ Constructors ==========================================================
@@ -366,8 +364,6 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
       levelFormatPanel.add(rdLevelText);
 
       add(levelFormatPanel);
-      add(wrapMessage);
-      add(highlightSearchMatchText);
 
       JPanel loggerFormatPanel = new JPanel();
       loggerFormatPanel.setLayout(
@@ -506,26 +502,6 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
           }
         };
 
-      ActionListener wrapMessageListener = new ActionListener()
-      {
-          public void actionPerformed(ActionEvent e)
-          {
-              preferenceModel.setWrapMessage(wrapMessage.isSelected());
-          }
-      };
-
-      wrapMessage.addActionListener(wrapMessageListener);
-
-      ActionListener highlightSearchMatchTextListener = new ActionListener()
-      {
-          public void actionPerformed(ActionEvent e)
-          {
-              preferenceModel.setHighlightSearchMatchText(highlightSearchMatchText.isSelected());
-          }
-      };
-
-      highlightSearchMatchText.addActionListener(highlightSearchMatchTextListener);
-
       rdLevelIcons.addActionListener(levelIconListener);
       rdLevelText.addActionListener(levelIconListener);
 
@@ -539,27 +515,6 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
             rdLevelText.setSelected(!value);
           }
         });
-        
-        preferenceModel.addPropertyChangeListener(
-          "wrapMessage", new PropertyChangeListener()
-          {
-            public void propertyChange(PropertyChangeEvent evt)
-            {
-              boolean value = ((Boolean) evt.getNewValue()).booleanValue();
-              wrapMessage.setSelected(value);
-            }
-          });
-
-        preferenceModel.addPropertyChangeListener(
-          "highlightSearchMatchText", new PropertyChangeListener()
-          {
-            public void propertyChange(PropertyChangeEvent evt)
-            {
-              boolean value = ((Boolean) evt.getNewValue()).booleanValue();
-              highlightSearchMatchText.setSelected(value);
-            }
-          });
-
     }
   }
 
@@ -581,6 +536,8 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
 
     private final JCheckBox loggerTreePanel =
       new JCheckBox("Show Logger Tree");
+    private final JCheckBox wrapMessage = new JCheckBox("Wrap message field (display multi-line rows) ");
+    private final JCheckBox highlightSearchMatchText = new JCheckBox("Highlight search match text ");
     private final JCheckBox scrollToBottom =
       new JCheckBox("Scroll to bottom (view tracks with new events)");
     private final JCheckBox showMillisDeltaAsGap =
@@ -623,6 +580,9 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
       add(detailPanelVisible);
       add(loggerTreePanel);
       add(scrollToBottom);
+      add(wrapMessage);
+      add(highlightSearchMatchText);
+
       add(showMillisDeltaAsGap);
       JPanel clearPanel = new JPanel(new BorderLayout());
       clearPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -645,6 +605,46 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
     */
     private void setupListeners()
     {
+        ActionListener wrapMessageListener = new ActionListener()
+        {
+            public void actionPerformed(ActionEvent e)
+            {
+                preferenceModel.setWrapMessage(wrapMessage.isSelected());
+            }
+        };
+
+        wrapMessage.addActionListener(wrapMessageListener);
+
+        ActionListener highlightSearchMatchTextListener = new ActionListener()
+        {
+            public void actionPerformed(ActionEvent e)
+            {
+                preferenceModel.setHighlightSearchMatchText(highlightSearchMatchText.isSelected());
+            }
+        };
+
+        highlightSearchMatchText.addActionListener(highlightSearchMatchTextListener);
+
+        preferenceModel.addPropertyChangeListener(
+          "wrapMessage", new PropertyChangeListener()
+          {
+            public void propertyChange(PropertyChangeEvent evt)
+            {
+              boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+              wrapMessage.setSelected(value);
+            }
+          });
+
+        preferenceModel.addPropertyChangeListener(
+          "highlightSearchMatchText", new PropertyChangeListener()
+          {
+            public void propertyChange(PropertyChangeEvent evt)
+            {
+              boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+              highlightSearchMatchText.setSelected(value);
+            }
+          });
+
       toolTips.addActionListener(new ActionListener()
         {
           public void actionPerformed(ActionEvent e)

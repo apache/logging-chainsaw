@@ -291,6 +291,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     columnNameKeywordMap.put(ChainsawConstants.THROWABLE_COL_NAME, LoggingEventFieldResolver.EXCEPTION_FIELD);
     columnNameKeywordMap.put(ChainsawConstants.TIMESTAMP_COL_NAME, LoggingEventFieldResolver.TIMESTAMP_FIELD);
     columnNameKeywordMap.put(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE.toUpperCase(), LoggingEventFieldResolver.PROP_FIELD + ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
+    columnNameKeywordMap.put(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE.toUpperCase(), LoggingEventFieldResolver.PROP_FIELD + ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
 
     logPanelPreferencesFrame.setTitle("'" + identifier + "' Log Panel Preferences");
     logPanelPreferencesFrame.setIconImage(
@@ -2778,6 +2779,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     preferenceModel.setDetailPaneVisible(event.asBoolean("detailPaneVisible"));
     preferenceModel.setLogTreePanelVisible(event.asBoolean("logTreePanelVisible"));
     preferenceModel.setHighlightSearchMatchText(event.asBoolean("highlightSearchMatchText"));
+    preferenceModel.setWrapMessage(event.asBoolean("wrapMessage"));
     //re-add columns to the table in the order provided from the list
     for (Iterator iter = sortedColumnList.iterator(); iter.hasNext();) {
       TableColumn element = (TableColumn) iter.next();
@@ -3363,7 +3365,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         }
 
         boolean primaryMatches(EventWrapper wrapper) {
-            String millisDelta = wrapper.loggingEvent.getProperty(ChainsawConstants.MILLIS_DELTA);
+            String millisDelta = wrapper.loggingEvent.getProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
             if (millisDelta != null && !millisDelta.trim().equals("")) {
                 long millisDeltaLong = Long.parseLong(millisDelta);
                 //arbitrary
@@ -3425,7 +3427,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                         int startX = 1;
                         int width = getWidth() - (startX * 2);
                         //max out at 50, min 2...
-                        String millisDelta = wrapper.loggingEvent.getProperty(ChainsawConstants.MILLIS_DELTA);
+                        String millisDelta = wrapper.loggingEvent.getProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
                         long millisDeltaLong = Long.parseLong(millisDelta);
                         long delta = Math.min(ChainsawConstants.MILLIS_DELTA_RENDERING_HEIGHT_MAX, Math.max(0, (long) (millisDeltaLong * ChainsawConstants.MILLIS_DELTA_RENDERING_FACTOR)));
                         float widthMaxMillisDeltaRenderRatio = ((float)width / ChainsawConstants.MILLIS_DELTA_RENDERING_HEIGHT_MAX);

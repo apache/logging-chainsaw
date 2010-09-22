@@ -83,7 +83,8 @@ public class LogPanelPreferenceModel implements Serializable{
 
   private Collection hiddenLoggers = new HashSet();
   private String timeZone;
-  private boolean wrapMsg;
+  //default wrapMsg to true
+  private boolean wrapMsg = true;
   private boolean highlightSearchMatchText;
   private String hiddenExpression;
   private String clearTableExpression;
