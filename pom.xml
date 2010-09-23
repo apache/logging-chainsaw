@@ -105,6 +105,11 @@
         <artifactId>apache-rat-plugin</artifactId>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>2.2</version>
+      </plugin>
+      <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <workingDirectory>target</workingDirectory>
@@ -219,14 +224,13 @@
       </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <executions>
-          <execution>
-			<phase>package</phase>
-            <goals>
-              <goal>assembly</goal>
-            </goals>
-          </execution>
-        </executions>
+        <version>2.2-beta-5</version>
+          <executions>
+            <execution>
+              <id>make-assembly</id>
+              <phase>package</phase>
+            </execution>
+          </executions>
         <configuration>
           <descriptors>
             <descriptor>src/assembly/bin.xml</descriptor>
@@ -241,7 +245,6 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
           <encoding>UTF-8</encoding>
-          <docEncoding>UTF-8</docEncoding>
         </configuration>
         <executions>
           <execution>
@@ -275,7 +278,9 @@
         </executions>
       </plugin>
       <plugin>
-        <artifactId>maven-source-plugin</artifactId>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>2.1.2</version>
         <executions>
           <execution>
             <goals>
@@ -306,12 +311,12 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>appbundler-maven-plugin</artifactId>
-        <version>1.0-SNAPSHOT</version>
+         <groupId>org.codehaus.mojo</groupId>
+         <artifactId>osxappbundle-maven-plugin</artifactId>
+         <version>1.0-alpha-2</version>
         <configuration>
           <mainClass>${chainsaw.mainclass}</mainClass>
-          <dictionaryFile>src/main/resources/Info.plist</dictionaryFile>
+          <dictionaryFile>${basedir}/src/main/resources/Info.plist</dictionaryFile>
           <iconFile>${basedir}/src/main/resources/logo.icns</iconFile>
           <bundleName>Chainsaw</bundleName>
         </configuration>
@@ -319,7 +324,6 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>webstart-maven-plugin</artifactId>
-        <version>1.0-SNAPSHOT</version>
         <configuration>
           <jnlp>
             <outputFile>webstart.jnlp</outputFile>
@@ -352,7 +356,7 @@
       </releases>
       <snapshots />
       <id>Codehaus Snapshots</id>
-      <url>http://snapshots.repository.codehaus.org/</url>
+      <url>http://nexus.codehaus.org/snapshots</url>
     </repository>
     <repository>
       <id>logging.rc</id>
@@ -367,7 +371,7 @@
       </releases>
       <snapshots />
       <id>Codehaus Snapshots</id>
-      <url>http://snapshots.repository.codehaus.org/</url>
+      <url>http://nexus.codehaus.org/snapshots</url>
     </pluginRepository>
   </pluginRepositories>
   <dependencies>
@@ -434,21 +438,23 @@
     <excludeDefaults>true</excludeDefaults>
     <plugins>
       <plugin>
-        <artifactId>maven-project-info-reports-plugin</artifactId>
+         <groupId>org.apache.maven.plugins</groupId>
+         <artifactId>maven-jxr-plugin</artifactId>
+         <version>2.2</version>
       </plugin>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>jxr-maven-plugin</artifactId>
-      </plugin>
-      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
+        <version>2.0</version>
         <configuration>
           <goals>site-deploy</goals>
           <goals>assembly:assembly</goals>
         </configuration>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-changes-plugin</artifactId>
+        <version>2.3</version>
         <configuration>
           <issueLinkTemplate>%URL%/show_bug.cgi?id=%ISSUE%</issueLinkTemplate>
         </configuration>
@@ -464,7 +470,9 @@
         <artifactId>maven-pmd-plugin</artifactId>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.7</version>
       </plugin>
     </plugins>
   </reporting>
