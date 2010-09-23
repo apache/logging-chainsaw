@@ -222,24 +222,49 @@
           </dependency>
         </dependencies>
       </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>appassembler-maven-plugin</artifactId>
+          <executions>
+            <execution>
+              <phase>package</phase>
+              <goals>
+                <goal>assemble</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <showConsoleWindow>false</showConsoleWindow>
+            <programs>
+              <program>
+                <mainClass>${chainsaw.mainclass}</mainClass>
+                <name>chainsaw</name>
+              </program>
+            </programs>
+          </configuration>
+        </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
         <version>2.2-beta-5</version>
           <executions>
             <execution>
               <id>make-assembly</id>
               <phase>package</phase>
+              <goals>
+                <goal>single</goal>
+              </goals>
+                <configuration>
+                  <descriptors>
+                    <descriptor>src/assembly/bin.xml</descriptor>
+                    <descriptor>src/assembly/standalone.xml</descriptor>
+                  </descriptors>
+        <!-- we append the assembly ID here,but note that the bin assembly does not have an id specified
+            in its config, so it doesn't have a suffix -->
+                  <appendAssemblyId>true</appendAssemblyId>
+                </configuration>
             </execution>
           </executions>
-        <configuration>
-          <descriptors>
-            <descriptor>src/assembly/bin.xml</descriptor>
-			<descriptor>src/assembly/standalone.xml</descriptor>
-          </descriptors>
-<!-- we append the assembly ID here,but note that the bin assembly does not have an id specified
-	in its config, so it doesn't have a suffix -->
-          <appendAssemblyId>true</appendAssemblyId>
-        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
@@ -288,27 +313,6 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>appassembler-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>assemble</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <showConsoleWindow>false</showConsoleWindow>
-          <programs>
-            <program>
-              <mainClass>${chainsaw.mainclass}</mainClass>
-              <name>chainsaw</name>
-            </program>
-          </programs>
-        </configuration>
       </plugin>
       <plugin>
          <groupId>org.codehaus.mojo</groupId>
