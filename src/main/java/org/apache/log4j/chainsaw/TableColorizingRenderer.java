@@ -99,7 +99,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
 
   private static int borderWidth = 2;
 
-  private static Color borderColor = (Color)UIManager.get("Table.selectionBackground");
+  private final Color borderColor;
 
   private final JTextPane levelTextPane = new JTextPane();
   private JTextPane singleLineTextPane = new JTextPane();
@@ -130,6 +130,11 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     levelPanel.setLayout(new BoxLayout(levelPanel, BoxLayout.Y_AXIS));
     maxHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
 
+    if (UIManager.get("Table.selectionBackground") != null) {
+        borderColor = (Color)UIManager.get("Table.selectionBackground");
+    } else {
+        borderColor = Color.BLUE;
+    }
     //define the 'bold' attributeset
     boldAttributeSet = new SimpleAttributeSet();
     StyleConstants.setBold(boldAttributeSet, true);
@@ -287,39 +292,41 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     case ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME:
     case ChainsawColumns.INDEX_MESSAGE_COL_NAME:
         String thisString = value.toString().trim();
-        multiLineTextPane.setText(thisString);
+        JTextPane textPane = wrap ? multiLineTextPane : singleLineTextPane;
+        JComponent textPaneContainer = wrap ? multiLinePanel : generalPanel;
+        textPane.setText(thisString);
 
         if (colIndex == ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME) {
             //property keys are set as all uppercase
-            setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.PROP_FIELD + ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE.toUpperCase()), (StyledDocument) multiLineTextPane.getDocument());
+            setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.PROP_FIELD + ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE.toUpperCase()), (StyledDocument) textPane.getDocument());
         } else {
-            setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.MSG_FIELD), (StyledDocument) multiLineTextPane.getDocument());
+            setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.MSG_FIELD), (StyledDocument) textPane.getDocument());
         }
-        multiLinePanel.removeAll();
+        textPaneContainer.removeAll();
         if (delta > 0 && logPanelPreferenceModel.isShowMillisDeltaAsGap()) {
             JPanel newPanel = new JPanel();
             newPanel.setOpaque(true);
             newPanel.setBackground(applicationPreferenceModel.getDeltaColor());
             newPanel.setPreferredSize(new Dimension(width, (int) delta));
-            multiLinePanel.add(newPanel, BorderLayout.NORTH);
+            textPaneContainer.add(newPanel, BorderLayout.NORTH);
         }
-        multiLinePanel.add(multiLineTextPane, BorderLayout.SOUTH);
+        textPaneContainer.add(textPane, BorderLayout.SOUTH);
 
         if (delta == 0 || !logPanelPreferenceModel.isShowMillisDeltaAsGap()) {
           if (col == 0) {
-            multiLineTextPane.setBorder(getLeftBorder(isSelected, delta));
+            textPane.setBorder(getLeftBorder(isSelected, delta));
           } else if (col == table.getColumnCount() - 1) {
-            multiLineTextPane.setBorder(getRightBorder(isSelected, delta));
+            textPane.setBorder(getRightBorder(isSelected, delta));
           } else {
-            multiLineTextPane.setBorder(getMiddleBorder(isSelected, delta));
+            textPane.setBorder(getMiddleBorder(isSelected, delta));
           }
         } else {
             if (col == 0) {
-              multiLineTextPane.setBorder(getLeftBorder(isSelected, 0));
+              textPane.setBorder(getLeftBorder(isSelected, 0));
             } else if (col == table.getColumnCount() - 1) {
-              multiLineTextPane.setBorder(getRightBorder(isSelected, 0));
+              textPane.setBorder(getRightBorder(isSelected, 0));
             } else {
-              multiLineTextPane.setBorder(getMiddleBorder(isSelected, 0));
+              textPane.setBorder(getMiddleBorder(isSelected, 0));
             }
         }
         int currentMarkerHeight = loggingEvent.getMarkerHeight();
@@ -337,13 +344,13 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
             int calculatedHeight = calculateHeight(thisString, width, paramMap);
              */
             //instead, set size to max height
-            multiLineTextPane.setSize(new Dimension(width, maxHeight));
-            int multiLinePanelPrefHeight = multiLinePanel.getPreferredSize().height;
+            textPane.setSize(new Dimension(width, maxHeight));
+            int multiLinePanelPrefHeight = textPaneContainer.getPreferredSize().height;
             newRowHeight = Math.max(ChainsawConstants.DEFAULT_ROW_HEIGHT, multiLinePanelPrefHeight);
 
         }
         if (!wrap && logPanelPreferenceModel.isShowMillisDeltaAsGap()) {
-            multiLineTextPane.setSize(new Dimension(Integer.MAX_VALUE, ChainsawConstants.DEFAULT_ROW_HEIGHT));
+            textPane.setSize(new Dimension(Integer.MAX_VALUE, ChainsawConstants.DEFAULT_ROW_HEIGHT));
             newRowHeight = (int) (ChainsawConstants.DEFAULT_ROW_HEIGHT + delta);
         }
 
@@ -364,7 +371,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
             table.setRowHeight(row, newRowHeight);
         }
 
-        component = multiLinePanel;
+        component = textPaneContainer;
         break;
     case ChainsawColumns.INDEX_LEVEL_COL_NAME:
       if (levelUseIcons) {

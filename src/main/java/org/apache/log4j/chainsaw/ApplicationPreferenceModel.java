@@ -21,6 +21,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Vector;
 
+import javax.swing.UIManager;
 
 /**
  * Encapsulates the Chainsaw Application wide properties
@@ -193,7 +194,12 @@ public class ApplicationPreferenceModel {
       setStatusBar(model.isStatusBar());
       setToolbar(model.isToolbar());
       setReceivers(model.isReceivers());
-      setLookAndFeelClassName(model.getLookAndFeelClassName());
+      if (model.getLookAndFeelClassName() != null && !model.getLookAndFeelClassName().trim().equals("")) {
+          setLookAndFeelClassName(model.getLookAndFeelClassName());
+      } else {
+          //ensure current look and feel is selected
+          setLookAndFeelClassName(UIManager.getLookAndFeel().getClass().getName());
+      }
       setConfirmExit(model.isConfirmExit());
       setShowSplash(model.isShowSplash());
       setToolTipDisplayMillis(model.getToolTipDisplayMillis());

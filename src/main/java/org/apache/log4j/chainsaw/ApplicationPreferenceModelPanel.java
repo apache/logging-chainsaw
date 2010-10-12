@@ -175,12 +175,28 @@ public static void main(String[] args) {
     private final JCheckBox statusBar = new JCheckBox("Show Status bar");
     private final JCheckBox toolBar = new JCheckBox("Show Toolbar");
     private final JCheckBox receivers = new JCheckBox("Show Receivers");
-    private UIManager.LookAndFeelInfo[] lookAndFeels =
-      UIManager.getInstalledLookAndFeels();
+    private UIManager.LookAndFeelInfo[] lookAndFeels = UIManager.getInstalledLookAndFeels();
     private final ButtonGroup lookAndFeelGroup = new ButtonGroup();
 
     private VisualsPrefPanel() {
       super("Visuals");
+
+      //Nimbus has major issues with colors in tables..just remove it from the list..
+      //only use this if nimbus was found..
+      UIManager.LookAndFeelInfo[] newLookAndFeels = new UIManager.LookAndFeelInfo[lookAndFeels.length - 1];
+      boolean useNewLookAndFeels = false;
+      int j = 0;
+      for (int i=0;i<lookAndFeels.length;i++) {
+          if (!lookAndFeels[i].getClassName().toLowerCase().contains("nimbus")) {
+              newLookAndFeels[j++] = lookAndFeels[i];
+          } else {
+              useNewLookAndFeels = true;
+          }
+      }
+      if (useNewLookAndFeels) {
+          lookAndFeels = newLookAndFeels;
+      }
+
       setupComponents();
       setupListeners();
       setupInitialValues();
