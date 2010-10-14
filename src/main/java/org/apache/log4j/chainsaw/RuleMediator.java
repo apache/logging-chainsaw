@@ -30,87 +30,56 @@ import org.apache.log4j.spi.LoggingEvent;
  * A mediator class that implements the Rule interface, by combining several 
  * optional rules used by Chainsaw's filtering GUI's into a single Rule.
  *
- * <p>This class is based upon the concept of Inclusion, Exclusion and Refinement.
- * By default, this class accepts all events by returning true as part of the 
- * Rule interface, unless the Inclusion/Exclusion/Refinement sub-rules have been
- * configured.
- *
- * <p>The sub-rules are queried in this order: Inclusion, Refinement, Exclusion.  
- * If any are null, that particular sub-rule is not queried.  If any of the 
- * sub-rules returns false, this mediator returns false immediately, otherwise
- * they are queried in that order to ensure the overall rule evaluates.
- *
- * <p>Setting the individual sub-rules propagates a PropertyChangeEvent as per 
+ * <p>Setting the individual sub-rules propagates a PropertyChangeEvent as per
  * standard Java beans principles.
  *
  * @author Paul Smith <psmith@apache.org>
  * @author Scott Deboy <sdeboy@apache.org>
  */
-public class RuleMediator extends AbstractRule implements Rule {
-  private Rule inclusionRule;
+public class RuleMediator extends AbstractRule {
   private Rule loggerRule;
-  private Rule refinementRule;
-  private Rule exclusionRule;
-  private final PropertyChangeListener ruleChangerNotifier =
-    new RuleChangerNotifier();
+  private Rule filterRule;
+  private Rule findRule;
+  private final PropertyChangeListener ruleChangerNotifier = new RuleChangerNotifier();
+  private boolean findRuleRequired;
 
+  public RuleMediator(boolean findRuleRequired) {
+    this.findRuleRequired = findRuleRequired;
+  }
   /* (non-Javadoc)
    * @see org.apache.log4j.chainsaw.rule.Rule#evaluate(org.apache.log4j.spi.LoggingEvent)
    */
   public boolean evaluate(LoggingEvent e, Map matches) {
-    boolean accepts = true;
-
-    //no need to have rulemediator build matches
-    if (inclusionRule != null) {
-      accepts = inclusionRule.evaluate(e, null);
+    if (findRuleRequired) {
+      if (findRule == null) {
+        return false;
+      }
+      if (!findRule.evaluate(e, null)) {
+        return false;
+      }
     }
 
-    if (!accepts) {
+    if (loggerRule != null && !loggerRule.evaluate(e, null)) {
       return false;
     }
 
-    if (loggerRule != null) {
-      accepts = loggerRule.evaluate(e, null);
-    }
-
-    if (!accepts) {
+    if (filterRule != null && !filterRule.evaluate(e, null)) {
       return false;
     }
 
-    if (refinementRule != null) {
-      accepts = refinementRule.evaluate(e, null);
-    }
-
-    if (!accepts) {
-      return false;
-    }
-
-    if (exclusionRule != null) {
-      accepts = exclusionRule.evaluate(e, null);
-    }
-
-    return accepts;
+    return true;
   }
 
-  /**
-   * Sets the Inclusion rule to be used, and fires a PropertyChangeEvent to listeners
-   * @param r
-   */
-  public void setInclusionRule(Rule r) {
-    Rule oldRule = this.inclusionRule;
-    this.inclusionRule = r;
-    firePropertyChange("inclusionRule", oldRule, this.inclusionRule);
+  public void setFilterRule(Rule r) {
+    Rule oldFilterRule = this.filterRule;
+    this.filterRule = r;
+    firePropertyChange("filterRule", oldFilterRule, this.filterRule);
   }
 
-  /**
-   * Sets the Refinement rule to be used, and fires a PropertyChangeEvent to listeners
-   * @param r
-   */
-  public void setRefinementRule(Rule r) {
-    Rule oldRefinementRule = this.refinementRule;
-    this.refinementRule = r;
-    firePropertyChange(
-      "refinementRule", oldRefinementRule, this.refinementRule);
+  public void setFindRule(Rule r) {
+    Rule oldFindRule = this.findRule;
+    this.findRule = r;
+    firePropertyChange("findRule", oldFindRule, this.findRule);
   }
 
   public void setLoggerRule(Rule r) {
@@ -121,45 +90,6 @@ public class RuleMediator extends AbstractRule implements Rule {
     }
     this.loggerRule.addPropertyChangeListener(ruleChangerNotifier);
     firePropertyChange("loggerRule", oldLoggerRule, this.loggerRule);
-  }
-
-  /**
-   * Sets the Exclusion rule to be used, and fires a PropertyChangeEvent to listeners.
-   *
-   * @param r
-   */
-  public void setExclusionRule(Rule r) {
-    Rule oldExclusionRule = this.exclusionRule;
-    this.exclusionRule = r;
-    firePropertyChange("exclusionRule", oldExclusionRule, this.exclusionRule);
-  }
-
-  /**
-   * @return exclusion rule
-   */
-  public final Rule getExclusionRule() {
-    return exclusionRule;
-  }
-
-  /**
-   * @return inclusion rule
-   */
-  public final Rule getInclusionRule() {
-    return inclusionRule;
-  }
-
-  /**
-   * @return logger rule
-   */
-  public final Rule getLoggerRule() {
-    return loggerRule;
-  }
-
-  /**
-   * @return refinement rule
-   */
-  public final Rule getRefinementRule() {
-    return refinementRule;
   }
 
   /**

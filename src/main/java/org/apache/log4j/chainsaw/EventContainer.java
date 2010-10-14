@@ -21,7 +21,6 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 
 import org.apache.log4j.rule.Rule;
-import org.apache.log4j.spi.LoggingEvent;
 
 
 /**
@@ -115,14 +114,14 @@ public interface EventContainer extends SortTableModel, LoggerNameModel {
   /**
    * Returns the vector representing the row.
    */
-  ExtendedLoggingEvent getRow(int row);
+  LoggingEventWrapper getRow(int row);
 
   /**
    * Adds a row to the model.
    * @param e event
    * @return flag representing whether or not the row is being displayed (not filtered)
    */
-  boolean isAddRow(ExtendedLoggingEvent e);
+  boolean isAddRow(LoggingEventWrapper e);
 
   /**
    * Fire appropriate table update events for the range.
@@ -152,10 +151,10 @@ public interface EventContainer extends SortTableModel, LoggerNameModel {
   void setDisplayRule(Rule displayRule);
 
   /**
-   * Returns the index of the LoggingEvent
-   * @param e
+   * Returns the index of the LoggingEventWrapper
+   * @param loggingEventWrapper
    */
-  int getRowIndex(LoggingEvent e);
+  int getRowIndex(LoggingEventWrapper loggingEventWrapper);
 
   /**
    * Remove property from all events in container

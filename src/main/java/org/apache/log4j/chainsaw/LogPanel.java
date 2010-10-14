@@ -230,11 +230,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   private final LogPanelPreferencePanel logPanelPreferencesPanel = new LogPanelPreferencePanel(preferenceModel);
   private final FilterModel filterModel = new FilterModel();
   private final RuleColorizer colorizer = new RuleColorizer();
-  private final RuleMediator ruleMediator = new RuleMediator();
+  private final RuleMediator tableRuleMediator = new RuleMediator(false);
+  private final RuleMediator searchRuleMediator = new RuleMediator(true);
   private final EventDetailLayout detailLayout = new EventDetailLayout();
   private double lastDetailPanelSplitLocation = DEFAULT_DETAIL_SPLIT_LOCATION;
   private double lastLogTreePanelSplitLocation = DEFAULT_LOG_TREE_SPLIT_LOCATION;
   private Point currentPoint;
+  private JTable currentTable;
   private boolean paused = false;
   private Rule findRule;
   private String currentFindRuleText;
@@ -249,15 +251,25 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   private int previousLastIndex = -1;
   private final DateFormat timestampExpressionFormat = new SimpleDateFormat(Constants.TIMESTAMP_RULE_FORMAT);
   private final Logger logger = LogManager.getLogger(LogPanel.class);
-  private TableCellEditor markerCellEditor;
   private AutoFilterComboBox filterCombo;
   private JScrollPane eventsPane;
   private int currentSearchMatchCount;
   private ApplicationPreferenceModel applicationPreferenceModel;
   private Rule clearTableExpressionRule;
   private int lowerPanelDividerLocation;
+  private EventContainer searchModel;
+  private JSortTable searchTable;
+  private TableColorizingRenderer searchRenderer;
+  private ToggleToolTips mainToggleToolTips;
+  private ToggleToolTips searchToggleToolTips;
+  private JScrollPane detailPane;
+  private JScrollPane searchPane;
+  //only one tableCellEditor, shared by both tables
+  private TableCellEditor markerCellEditor;
+  private JToolBar detailToolbar;
+  private boolean searchResultsDisplayed;
 
-    /**
+  /**
    * Creates a new LogPanel object.  If a LogPanel with this identifier has
    * been loaded previously, reload settings saved on last exit.
    *
@@ -378,16 +390,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     dateFormatChangePopup.add(isoButton);
     dateFormatChangePopup.add(simpleTimeButton);
 
-    final JCheckBoxMenuItem menuItemToggleToolTips =
-      new JCheckBoxMenuItem("Show ToolTips");
-    menuItemToggleToolTips.addActionListener(
-      new ActionListener() {
-        public void actionPerformed(ActionEvent evt) {
-          preferenceModel.setToolTips(menuItemToggleToolTips.isSelected());
-        }
-      });
-    menuItemToggleToolTips.setIcon(new ImageIcon(ChainsawIcons.TOOL_TIP));
-
     final JCheckBoxMenuItem menuItemLoggerTree =
       new JCheckBoxMenuItem("Show Logger Tree");
     menuItemLoggerTree.addActionListener(
@@ -435,36 +437,51 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     /*
      * add preferencemodel listeners
      */
-    preferenceModel.addPropertyChangeListener(
-      "levelIcons",
+    preferenceModel.addPropertyChangeListener("levelIcons",
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          renderer.setLevelUseIcons(
-            ((Boolean) evt.getNewValue()).booleanValue());
+          boolean useIcons = ((Boolean) evt.getNewValue()).booleanValue();
+          renderer.setLevelUseIcons(useIcons);
           table.tableChanged(new TableModelEvent(tableModel));
+          searchRenderer.setLevelUseIcons(useIcons);
+          searchTable.tableChanged(new TableModelEvent(searchModel));
         }
       });
 
     /*
      * add preferencemodel listeners
      */
-    preferenceModel.addPropertyChangeListener(
-      "wrapMessage",
+    preferenceModel.addPropertyChangeListener("wrapMessage",
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          renderer.setWrapMessage(
-            ((Boolean) evt.getNewValue()).booleanValue());
+          boolean wrap = ((Boolean) evt.getNewValue()).booleanValue();
+          renderer.setWrapMessage(wrap);
           table.tableChanged(new TableModelEvent(tableModel));
+          searchRenderer.setWrapMessage(wrap);
+          searchTable.tableChanged(new TableModelEvent(searchModel));
         }
       });
 
-      preferenceModel.addPropertyChangeListener(
-        "highlightSearchMatchText",
+    preferenceModel.addPropertyChangeListener("searchResultsVisible",
+      new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+          boolean displaySearchResultsInDetailsIfAvailable = ((Boolean) evt.getNewValue()).booleanValue();
+          if (displaySearchResultsInDetailsIfAvailable) {
+            showSearchResults();
+          } else {
+            hideSearchResults();
+          }
+        }
+      });
+
+      preferenceModel.addPropertyChangeListener("highlightSearchMatchText",
         new PropertyChangeListener() {
           public void propertyChange(PropertyChangeEvent evt) {
-            renderer.setHighlightSearchMatchText(
-              ((Boolean) evt.getNewValue()).booleanValue());
+            boolean highlightText = ((Boolean) evt.getNewValue()).booleanValue();
+            renderer.setHighlightSearchMatchText(highlightText);
             table.tableChanged(new TableModelEvent(tableModel));
+            searchRenderer.setHighlightSearchMatchText(highlightText);
+            searchTable.tableChanged(new TableModelEvent(searchModel));
           }
         });
 
@@ -472,12 +489,15 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       "detailPaneVisible",
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          boolean newValue = ((Boolean) evt.getNewValue()).booleanValue();
+          boolean detailPaneVisible = ((Boolean) evt.getNewValue()).booleanValue();
 
-          if (newValue) {
+          if (detailPaneVisible) {
             showDetailPane();
           } else {
-            hideDetailPane();
+            //don't hide the detail pane if search results are being displayed
+            if (!searchResultsDisplayed) {
+              hideDetailPane();
+            }
           }
         }
       });
@@ -496,63 +516,79 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         }
       });
     
-    preferenceModel.addPropertyChangeListener(
-      "toolTips",
+    preferenceModel.addPropertyChangeListener("toolTips",
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          renderer.setToolTipsVisible(
-            ((Boolean) evt.getNewValue()).booleanValue());
+          boolean toolTips = ((Boolean) evt.getNewValue()).booleanValue();
+          renderer.setToolTipsVisible(toolTips);
+          searchRenderer.setToolTipsVisible(toolTips);
         }
       });
 
-    preferenceModel.addPropertyChangeListener(
-      "visibleColumns",
+    preferenceModel.addPropertyChangeListener("visibleColumns",
       new PropertyChangeListener() {
     	public void propertyChange(PropertyChangeEvent evt) {
     		//remove all columns and re-add visible
             TableColumnModel columnModel = table.getColumnModel();
             while (columnModel.getColumnCount() > 0) {
-                columnModel.removeColumn(columnModel.getColumn(0)); 
-    		}
+                columnModel.removeColumn(columnModel.getColumn(0));
+        		}
             for (Iterator iter = preferenceModel.getVisibleColumnOrder().iterator();iter.hasNext();) {
-    			TableColumn c = (TableColumn)iter.next();
-    			columnModel.addColumn(c);
-    		}
-    	}
+              TableColumn c = (TableColumn)iter.next();
+              if (c.getHeaderValue().toString().toLowerCase().equals(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE))
+              {
+                c.setCellEditor(markerCellEditor);
+              }
+              columnModel.addColumn(c);
+        		}
+          TableColumnModel searchColumnModel = searchTable.getColumnModel();
+          while (searchColumnModel.getColumnCount() > 0) {
+              searchColumnModel.removeColumn(searchColumnModel.getColumn(0));
+          }
+          for (Iterator iter = preferenceModel.getVisibleColumnOrder().iterator();iter.hasNext();) {
+            TableColumn c = (TableColumn)iter.next();
+            searchColumnModel.addColumn(c);
+          }
+      	}
       });
 
     PropertyChangeListener datePrefsChangeListener =
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          LogPanelPreferenceModel model =
-            (LogPanelPreferenceModel) evt.getSource();
+          LogPanelPreferenceModel model = (LogPanelPreferenceModel) evt.getSource();
 
           isoButton.setSelected(model.isUseISO8601Format());
-          simpleTimeButton.setSelected(
-            !model.isUseISO8601Format() && !model.isCustomDateFormat());
+          simpleTimeButton.setSelected(!model.isUseISO8601Format() && !model.isCustomDateFormat());
 
           if (model.getTimeZone() != null) {
             renderer.setTimeZone(model.getTimeZone());
+            searchRenderer.setTimeZone(model.getTimeZone());
           }
           
           if (model.isUseISO8601Format()) {
             renderer.setDateFormatter(new SimpleDateFormat(Constants.ISO8601_PATTERN));
+            searchRenderer.setDateFormatter(new SimpleDateFormat(Constants.ISO8601_PATTERN));
           } else {
       		try {
-            renderer.setDateFormatter(
-              new SimpleDateFormat(model.getDateFormatPattern()));
-            		} catch (IllegalArgumentException iae) {
-            			model.setDefaultDatePatternFormat();
-                        renderer.setDateFormatter(new SimpleDateFormat(Constants.ISO8601_PATTERN));
-            		}
+              renderer.setDateFormatter(new SimpleDateFormat(model.getDateFormatPattern()));
+          } catch (IllegalArgumentException iae) {
+            model.setDefaultDatePatternFormat();
+            renderer.setDateFormatter(new SimpleDateFormat(Constants.ISO8601_PATTERN));
           }
+  		    try {
+              searchRenderer.setDateFormatter(new SimpleDateFormat(model.getDateFormatPattern()));
+          } catch (IllegalArgumentException iae) {
+            model.setDefaultDatePatternFormat();
+            searchRenderer.setDateFormatter(new SimpleDateFormat(Constants.ISO8601_PATTERN));
+          }
+        }
 
-          table.tableChanged(new TableModelEvent(tableModel));
+        table.tableChanged(new TableModelEvent(tableModel));
+        searchTable.tableChanged(new TableModelEvent(searchModel));
         }
       };
 
-    preferenceModel.addPropertyChangeListener(
-      "dateFormatPattern", datePrefsChangeListener);
+    preferenceModel.addPropertyChangeListener("dateFormatPattern", datePrefsChangeListener);
     preferenceModel.addPropertyChangeListener("dateFormatTimeZone", datePrefsChangeListener);
 
     preferenceModel.addPropertyChangeListener("clearTableExpression", new PropertyChangeListener() {
@@ -569,25 +605,25 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         }
     });
 
-    preferenceModel.addPropertyChangeListener(
-      "loggerPrecision",
+    preferenceModel.addPropertyChangeListener("loggerPrecision",
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          LogPanelPreferenceModel model =
-            (LogPanelPreferenceModel) evt.getSource();
+          LogPanelPreferenceModel model = (LogPanelPreferenceModel) evt.getSource();
 
           renderer.setLoggerPrecision(model.getLoggerPrecision());
-
           table.tableChanged(new TableModelEvent(tableModel));
+
+          searchRenderer.setLoggerPrecision(model.getLoggerPrecision());
+          searchTable.tableChanged(new TableModelEvent(searchModel));
         }
       });
 
-    preferenceModel.addPropertyChangeListener(
-      "toolTips",
+    preferenceModel.addPropertyChangeListener("toolTips",
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
           boolean value = ((Boolean) evt.getNewValue()).booleanValue();
-          menuItemToggleToolTips.setSelected(value);
+          searchToggleToolTips.setSelected(value);
+          mainToggleToolTips.setSelected(value);
         }
       });
 
@@ -627,6 +663,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             if (table != null) {
               table.repaint();
             }
+            if (searchTable != null) {
+              searchTable.repaint();
+            }
         }
     });
 
@@ -636,16 +675,29 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             if (table != null) {
               table.repaint();
             }
+            if (searchTable != null) {
+              searchTable.repaint();
+           }
         }
     });
 
     /*
      *End of preferenceModel listeners
      */
-    tableModel = new ChainsawCyclicBufferTableModel(cyclicBufferSize, colorizer);
+    tableModel = new ChainsawCyclicBufferTableModel(cyclicBufferSize, colorizer, "main");
     table = new JSortTable(tableModel);
+
+    markerCellEditor = new MarkerCellEditor();
+    table.setName("main");
     table.setColumnSelectionAllowed(false);
     table.setRowSelectionAllowed(true);
+
+    searchModel = new ChainsawCyclicBufferTableModel(cyclicBufferSize, colorizer, "search");
+    searchTable = new JSortTable(searchModel);
+
+    searchTable.setName("search");
+    searchTable.setColumnSelectionAllowed(false);
+    searchTable.setRowSelectionAllowed(true);
 
     //we've mapped f2, shift f2 and ctrl-f2 to marker-related actions, unmap them from the table
     table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke("F2"), "none");
@@ -656,10 +708,18 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     //we're also mapping ctrl-a to scroll-to-top, unmap from the table
     table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK), "none");
         
+    searchTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke("F2"), "none");
+    searchTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.SHIFT_MASK), "none");
+    searchTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.CTRL_MASK), "none");
+    searchTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK), "none");
+
+    //we're also mapping ctrl-a to scroll-to-top, unmap from the table
+    searchTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK), "none");
+
     //add a listener to update the 'refine focus'
     tableModel.addNewKeyListener(new NewKeyListener() {
 		public void newKeyAdded(NewKeyEvent e) {
-            columnNameKeywordMap.put(e.getKey(), "PROP." + e.getKey());
+          columnNameKeywordMap.put(e.getKey(), "PROP." + e.getKey());
 		}
     });
 
@@ -667,7 +727,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
      * Set the Display rule to use the mediator, the model will add itself as
      * a property change listener and update itself when the rule changes.
      */
-    tableModel.setDisplayRule(ruleMediator);
+    tableModel.setDisplayRule(tableRuleMediator);
+    searchModel.setDisplayRule(searchRuleMediator);
 
     tableModel.addEventCountListener(
       new EventCountListener() {
@@ -742,7 +803,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
      * is a rule itself, and the RuleMediator will automatically listen when
      * it's rule state changes.
      */
-    ruleMediator.setLoggerRule(logTreePanel.getLoggerVisibilityRule());
+    tableRuleMediator.setLoggerRule(logTreePanel.getLoggerVisibilityRule());
+    searchRuleMediator.setLoggerRule(logTreePanel.getLoggerVisibilityRule());
+
     colorizer.setLoggerRule(logTreePanel.getLoggerColorRule());
 
     /*
@@ -779,6 +842,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
           if (table != null) {
             table.repaint();
           }
+          if (searchTable != null) {
+            searchTable.repaint();
+          }
         }
       });
 
@@ -789,16 +855,22 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     table.setRowMargin(0);
     table.getColumnModel().setColumnMargin(0);
     table.setShowGrid(false);
-
-    table.getColumnModel().addColumnModelListener(
-      new ChainsawTableColumnModelListener());
-
+    table.getColumnModel().addColumnModelListener(new ChainsawTableColumnModelListener(table));
     table.setAutoCreateColumnsFromModel(false);
-
-    table.addMouseMotionListener(new TableColumnDetailMouseListener());
-    table.addMouseListener(new TableMarkerListener());
-
+    table.addMouseMotionListener(new TableColumnDetailMouseListener(table, tableModel));
+    table.addMouseListener(new TableMarkerListener(table, tableModel, searchModel));
     table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
+    searchTable.setRowHeight(ChainsawConstants.DEFAULT_ROW_HEIGHT);
+    searchTable.setRowMargin(0);
+    searchTable.getColumnModel().setColumnMargin(0);
+    searchTable.setShowGrid(false);
+    searchTable.getColumnModel().addColumnModelListener(new ChainsawTableColumnModelListener(searchTable));
+    searchTable.setAutoCreateColumnsFromModel(false);
+    searchTable.addMouseMotionListener(new TableColumnDetailMouseListener(searchTable, searchModel));
+    searchTable.addMouseListener(new TableMarkerListener(searchTable, searchModel, tableModel));
+    searchTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
 
     //set valueisadjusting if holding down a key - don't process setdetail events
     table.addKeyListener(
@@ -822,6 +894,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       });
 
     table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    searchTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
     table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
         public void valueChanged(ListSelectionEvent evt) {
@@ -893,57 +966,32 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         }
       });
 
-    renderer = new TableColorizingRenderer(colorizer, applicationPreferenceModel, tableModel, preferenceModel);
+    renderer = new TableColorizingRenderer(colorizer, applicationPreferenceModel, tableModel, preferenceModel, true);
     renderer.setToolTipsVisible(preferenceModel.isToolTips());
 
     table.setDefaultRenderer(Object.class, renderer);
 
+    searchRenderer = new TableColorizingRenderer(colorizer, applicationPreferenceModel, searchModel, preferenceModel, false);
+    searchRenderer.setToolTipsVisible(preferenceModel.isToolTips());
+
+    searchTable.setDefaultRenderer(Object.class, searchRenderer);
+
     /*
      * Throwable popup
      */
-    markerCellEditor = new MarkerCellEditor();
+    table.addMouseListener(new ThrowableDisplayMouseAdapter(table, tableModel));
+    searchTable.addMouseListener(new ThrowableDisplayMouseAdapter(searchTable, searchModel));
 
-    final JDialog detailDialog = new JDialog((JFrame) null, true);
-    Container container = detailDialog.getContentPane();
-    final JEditorPane detailArea = new JEditorPane();
-    JTextComponentFormatter.applySystemFontAndSize(detailArea);
-    detailArea.setEditable(false);
-    Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
-    detailArea.setPreferredSize(new Dimension(screenDimension.width / 2, screenDimension.height / 2));
-    container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
-    container.add(new JScrollPane(detailArea));
-
-    detailDialog.pack();
-
-    table.addMouseListener(new MouseAdapter() {
-        public void mouseClicked(MouseEvent e)
-        {
-            TableColumn column = table.getColumnModel().getColumn(table.columnAtPoint(e.getPoint()));
-            if (!column.getHeaderValue().toString().toUpperCase().equals(ChainsawColumns.getColumnName(ChainsawColumns.INDEX_THROWABLE_COL_NAME))) {
-                return;
-            }
-
-            ExtendedLoggingEvent event = tableModel.getRow(table.getSelectedRow());
-
-            //throwable string representation may be a length-one empty array
-            String[] ti = event.getThrowableStrRep();
-            if (ti != null && ti.length > 0 && (!(ti.length == 1 && ti[0].equals("")))) {
-                 detailDialog.setTitle(table.getColumnName(table.getSelectedColumn()) + " detail...");
-                  StringBuffer buf = new StringBuffer();
-                  buf.append(event.getMessage());
-                  buf.append("\n");
-                  for (int i = 0; i < ti.length; i++) {
-                    buf.append(ti[i]).append("\n    ");
-                  }
-
-                  detailArea.setText(buf.toString());
-                  SwingHelper.invokeOnEDT(new Runnable() {
-                    public void run() {
-                      centerAndSetVisible(detailDialog);
-                    }
-                  });
-                }
+    //select a row in the main table when a row in the search table is selected
+    searchTable.addMouseListener(new MouseAdapter() {
+      public void mouseClicked(MouseEvent e) {
+        LoggingEventWrapper loggingEventWrapper = searchModel.getRow(searchTable.getSelectedRow());
+        if (loggingEventWrapper != null) {
+          int id = new Integer(loggingEventWrapper.getLoggingEvent().getProperty("log4jid")).intValue();
+          //preserve the table's viewble column
+          setSelectedEvent(id);
         }
+      }
     });
 
     /*
@@ -962,13 +1010,15 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         	try {
         	if(table.getColumn(e.getKey())!=null){
                 return;
-            } 
+            }
+            //no need to check search table - we use the same columns
         	} catch (IllegalArgumentException iae) {}
           TableColumn col = new TableColumn(e.getNewModelIndex());
           col.setHeaderValue(e.getKey());
 
           if (preferenceModel.addColumn(col)) {
         	  table.addColumn(col);
+              searchTable.addColumn(col);
         	  preferenceModel.setColumnVisible(e.getKey().toString(), true);
           }
         		}
@@ -981,7 +1031,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     //refilter with a newValue of FALSE means refiltering is complete
     //assuming notification is called on the EDT so we can in the current EDT call update the scroll & selection
     tableModel.addPropertyChangeListener("refilter", new PropertyChangeListener() {
-        private LoggingEvent currentEvent;
+        private LoggingEventWrapper currentEvent;
         public void propertyChange(PropertyChangeEvent evt) {
             //if new value is true, filtering is about to begin
             //if new value is false, filtering is complete
@@ -1143,11 +1193,14 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             }
 		}
     });
-    addPropertyChangeListener(
-      "detailPaneConversionPattern", detailPaneUpdater);
+    addPropertyChangeListener("detailPaneConversionPattern", detailPaneUpdater);
 
-    final JScrollPane detailPane = new JScrollPane(detail);
+    searchPane = new JScrollPane(searchTable);
+    searchPane.getVerticalScrollBar().setUnitIncrement(ChainsawConstants.DEFAULT_ROW_HEIGHT * 2);
+    searchPane.setPreferredSize(new Dimension(900, 50));
 
+    //default detail panel to contain detail panel - if searchResultsVisible is true, when a search if triggered, update detail pane to contain search results
+    detailPane = new JScrollPane(detail);
     detailPane.setPreferredSize(new Dimension(900, 50));
 
     detailPanel.add(detailPane, BorderLayout.CENTER);
@@ -1187,21 +1240,10 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     statusLabelPanel.add(upperPanel, BorderLayout.CENTER);
     eventsAndStatusPanel.add(statusLabelPanel, BorderLayout.NORTH);
 
-    lowerPanel =
-      new JSplitPane(
-        JSplitPane.VERTICAL_SPLIT, eventsAndStatusPanel, detailPanel);
-
-    dividerSize = lowerPanel.getDividerSize();
-    lowerPanel.setDividerLocation(-1);
-
-    lowerPanel.setResizeWeight(1.0);
-    lowerPanel.setBorder(null);
-    lowerPanel.setContinuousLayout(true);
-
     /*
      * Detail panel layout editor
      */
-    final JToolBar detailToolbar = new JToolBar(SwingConstants.HORIZONTAL);
+    detailToolbar = new JToolBar(SwingConstants.HORIZONTAL);
     detailToolbar.setFloatable(false);
 
     final LayoutEditorPane layoutEditorPane = new LayoutEditorPane();
@@ -1295,6 +1337,15 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
     detailPanel.add(detailToolbar, BorderLayout.NORTH);
 
+    lowerPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT, eventsAndStatusPanel, detailPanel);
+
+    dividerSize = lowerPanel.getDividerSize();
+    lowerPanel.setDividerLocation(-1);
+
+    lowerPanel.setResizeWeight(1.0);
+    lowerPanel.setBorder(null);
+    lowerPanel.setContinuousLayout(true);
+
     JPopupMenu editDetailPopupMenu = new JPopupMenu();
 
     editDetailPopupMenu.add(copyToRefineFocusAction);
@@ -1363,52 +1414,64 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     /*
      * Other menu items
      */
-    final JMenuItem menuItemBestFit = new JMenuItem("Best fit column");
-    menuItemBestFit.addActionListener(
+    class BestFit extends JMenuItem {
+      public BestFit() {
+        super("Best fit column");
+    addActionListener(
       new ActionListener() {
         public void actionPerformed(ActionEvent evt) {
           if (currentPoint != null) {
-            int column = table.columnAtPoint(currentPoint);
+            int column = currentTable.columnAtPoint(currentPoint);
             int maxWidth = getMaxColumnWidth(column);
-            table.getColumnModel().getColumn(column).setPreferredWidth(
+            currentTable.getColumnModel().getColumn(column).setPreferredWidth(
               maxWidth);
           }
         }
       });
+      }
+    }
 
-    JMenuItem menuItemColorPanel = new JMenuItem("Color settings...");
-    menuItemColorPanel.addActionListener(
+    class ColorPanel extends JMenuItem {
+      public ColorPanel() {
+        super("Color settings...");
+        setIcon(ChainsawIcons.ICON_PREFERENCES);
+  addActionListener(
       new ActionListener() {
         public void actionPerformed(ActionEvent evt) {
           showColorPreferences();
         }
       });
-    menuItemColorPanel.setIcon(ChainsawIcons.ICON_PREFERENCES);
+      }
+    }
 
-    JMenuItem menuItemLogPanelPreferences =
-      new JMenuItem("Tab Preferences...");
-    menuItemLogPanelPreferences.addActionListener(
+    class LogPanelPreferences extends JMenuItem {
+      public LogPanelPreferences() {
+        super("Tab Preferences...");
+        setIcon(ChainsawIcons.ICON_PREFERENCES);
+    addActionListener(
       new ActionListener() {
         public void actionPerformed(ActionEvent evt) {
           showPreferences();
         }
       });
-    menuItemLogPanelPreferences.setIcon(ChainsawIcons.ICON_PREFERENCES);
+    }
+  }
 
-    final JMenuItem menuItemFocusOn =
-      new JMenuItem("Set 'refine focus' field to value under pointer");
-    menuItemFocusOn.addActionListener(
+    class FocusOn extends JMenuItem {
+      public FocusOn() {
+        super("Set 'refine focus' field to value under pointer");
+    addActionListener(
       new ActionListener() {
         public void actionPerformed(ActionEvent evt) {
           if (currentPoint != null) {
             String operator = "==";
-            int column = table.columnAtPoint(currentPoint);
-            int row = table.rowAtPoint(currentPoint);
-            String colName = table.getColumnName(column).toUpperCase();
+            int column = currentTable.columnAtPoint(currentPoint);
+            int row = currentTable.rowAtPoint(currentPoint);
+            String colName = currentTable.getColumnName(column).toUpperCase();
             String value = "";
 
             if (colName.equalsIgnoreCase(ChainsawConstants.TIMESTAMP_COL_NAME)) {
-            	value = timestampExpressionFormat.format(new Date(table.getValueAt(row, column).toString()));
+            	value = timestampExpressionFormat.format(new Date(currentTable.getValueAt(row, column).toString()));
             } else {
               Object o = table.getValueAt(row, column);
 
@@ -1430,28 +1493,31 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
           }
         }
       });
+      }
+    }
 
-    final JMenuItem menuDefineAddCustomFilter =
-      new JMenuItem("Add value under pointer to 'refine focus' field");
-    menuDefineAddCustomFilter.addActionListener(
+    class DefineAddCustomFilter extends JMenuItem {
+      public DefineAddCustomFilter() {
+        super("Add value under pointer to 'refine focus' field");
+  addActionListener(
       new ActionListener() {
         public void actionPerformed(ActionEvent evt) {
           if (currentPoint != null) {
             String operator = "==";
-            int column = table.columnAtPoint(currentPoint);
-            int row = table.rowAtPoint(currentPoint);
-            String colName = table.getColumnName(column).toUpperCase();
+            int column = currentTable.columnAtPoint(currentPoint);
+            int row = currentTable.rowAtPoint(currentPoint);
+            String colName = currentTable.getColumnName(column).toUpperCase();
             String value = "";
 
             if (colName.equalsIgnoreCase(ChainsawConstants.TIMESTAMP_COL_NAME)) {
               JComponent comp =
-                (JComponent) table.getCellRenderer(row, column);
+                (JComponent) currentTable.getCellRenderer(row, column);
 
               if (comp instanceof JLabel) {
                 value = ((JLabel) comp).getText();
               }
             } else {
-              Object o = table.getValueAt(row, column);
+              Object o = currentTable.getValueAt(row, column);
 
               if (o instanceof String[] && ((String[])o).length > 0) {
                 value = ((String[]) o)[0];
@@ -1470,28 +1536,31 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
           }
         }
       });
+      }
+    }
 
-    final JMenuItem menuBuildColorRule =
-      new JMenuItem("Define color rule for value under pointer");
-    menuBuildColorRule.addActionListener(
+    class BuildColorRule extends JMenuItem {
+      public BuildColorRule() {
+        super("Define color rule for value under pointer");
+      addActionListener(
       new ActionListener() {
         public void actionPerformed(ActionEvent evt) {
           if (currentPoint != null) {
             String operator = "==";
-            int column = table.columnAtPoint(currentPoint);
-            int row = table.rowAtPoint(currentPoint);
-            String colName = table.getColumnName(column).toUpperCase();
+            int column = currentTable.columnAtPoint(currentPoint);
+            int row = currentTable.rowAtPoint(currentPoint);
+            String colName = currentTable.getColumnName(column).toUpperCase();
             String value = "";
 
             if (colName.equalsIgnoreCase(ChainsawConstants.TIMESTAMP_COL_NAME)) {
               JComponent comp =
-                (JComponent) table.getCellRenderer(row, column);
+                (JComponent) currentTable.getCellRenderer(row, column);
 
               if (comp instanceof JLabel) {
                 value = ((JLabel) comp).getText();
               }
             } else {
-              Object o = table.getValueAt(row, column);
+              Object o = currentTable.getValueAt(row, column);
 
               if (o instanceof String[] && ((String[])o).length > 0) {
                 value = ((String[]) o)[0];
@@ -1511,42 +1580,51 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
           }
         }
       });
+      }
+    }
 
-    final JPopupMenu p = new JPopupMenu();
+    final JPopupMenu mainPopup = new JPopupMenu();
+    final JPopupMenu searchPopup = new JPopupMenu();
 
-    final Action clearFocusAction =
-      new AbstractAction("Clear 'refine focus' field") {
+    class ClearFocus extends AbstractAction {
+      public ClearFocus() {
+        super("Clear 'refine focus' field");
+      }
         public void actionPerformed(ActionEvent e) {
           filterText.setText(null);
-          ruleMediator.setRefinementRule(null);
+          tableRuleMediator.setFilterRule(null);
+          searchRuleMediator.setFilterRule(null);
         }
-      };
+      }
 
-    final Action copyAction =
-      new AbstractAction("Copy value under pointer to clipboard") {
+    class Copy extends AbstractAction {
+      public Copy() {
+        super("Copy value under pointer to clipboard");
+      }
+
         public void actionPerformed(ActionEvent e) {
-                      if (currentPoint != null) {
-            int column = table.columnAtPoint(currentPoint);
-            int row = table.rowAtPoint(currentPoint);
-            String colName = table.getColumnName(column).toUpperCase();
+          if (currentPoint != null) {
+            int column = currentTable.columnAtPoint(currentPoint);
+            int row = currentTable.rowAtPoint(currentPoint);
+            String colName = currentTable.getColumnName(column).toUpperCase();
             String value = "";
 
             if (colName.equalsIgnoreCase(ChainsawConstants.TIMESTAMP_COL_NAME)) {
               JComponent comp =
-                (JComponent) table.getCellRenderer(row, column);
+                (JComponent) currentTable.getCellRenderer(row, column);
 
               if (comp instanceof JLabel) {
                 value = ((JLabel) comp).getText();
               }
             } else {
-              Object o = table.getValueAt(row, column);
+              Object o = currentTable.getValueAt(row, column);
               //exception - build message + throwable
               if (o != null) {
                   if (o instanceof String[]) {
                       String[] ti = (String[])o;
                       if (ti.length > 0 && (!(ti.length == 1 && ti[0].equals("")))) {
-                        ExtendedLoggingEvent event = tableModel.getRow(row);
-                        value = event.getMessage().toString();
+                        LoggingEventWrapper loggingEventWrapper = ((ChainsawCyclicBufferTableModel)(currentTable.getModel())).getRow(row);
+                        value = loggingEventWrapper.getLoggingEvent().getMessage().toString();
                         for (int i=0;i<((String[])o).length;i++) {
                             value = value + "\n" + ((String[]) o)[i];
                         }
@@ -1561,8 +1639,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             clipboard.setContents(selection, null);
         }
       }
-      };
-
+      }
     final JMenuItem menuItemToggleDock = new JMenuItem("Undock/dock");
 
     dockingAction =
@@ -1582,28 +1659,34 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     /*
      * Popup definition
      */
-    p.add(menuItemFocusOn);
-    p.add(menuDefineAddCustomFilter);
-    p.add(clearFocusAction);
+    mainPopup.add(new FocusOn());
+    searchPopup.add(new FocusOn());
+    mainPopup.add(new DefineAddCustomFilter());
+    searchPopup.add(new DefineAddCustomFilter());
+    mainPopup.add(new ClearFocus());
+    searchPopup.add(new ClearFocus());
 
-    p.add(new JSeparator());
+    mainPopup.add(new JSeparator());
+    searchPopup.add(new JSeparator());
 
-        final JMenuItem menuItemSearch =
-      new JMenuItem("Search for value under pointer");
-    menuItemSearch.addActionListener(
+    class Search extends JMenuItem {
+      public Search() {
+        super("Search for value under pointer");
+
+    addActionListener(
       new ActionListener() {
         public void actionPerformed(ActionEvent evt) {
           if (currentPoint != null) {
             String operator = "~=";
-            int column = table.columnAtPoint(currentPoint);
-            int row = table.rowAtPoint(currentPoint);
-            String colName = table.getColumnName(column).toUpperCase();
+            int column = currentTable.columnAtPoint(currentPoint);
+            int row = currentTable.rowAtPoint(currentPoint);
+            String colName = currentTable.getColumnName(column).toUpperCase();
             String value = "";
 
             if (colName.equalsIgnoreCase(ChainsawConstants.TIMESTAMP_COL_NAME)) {
-            	value = timestampExpressionFormat.format(new Date(table.getValueAt(row, column).toString()));
+            	value = timestampExpressionFormat.format(new Date(currentTable.getValueAt(row, column).toString()));
             } else {
-              Object o = table.getValueAt(row, column);
+              Object o = currentTable.getValueAt(row, column);
 
               if (o != null) {
                 if (o instanceof String[] && ((String[])o).length > 0) {
@@ -1623,101 +1706,135 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
           }
         }
       });
+      }
+    }
 
-      final Action clearSearchAction =
-        new AbstractAction("Clear search field") {
+     class ClearSearch extends AbstractAction {
+       public ClearSearch() {
+         super("Clear search field");
+       }
           public void actionPerformed(ActionEvent e) {
             findField.setText(null);
             updateFindRule(null);
           }
-        };
+        }
 
-    p.add(menuItemSearch);
-    p.add(clearSearchAction);
-      
-    p.add(new JSeparator());
+    mainPopup.add(new Search());
+    searchPopup.add(new Search());
+    mainPopup.add(new ClearSearch());
+    searchPopup.add(new ClearSearch());
 
-    p.add(menuItemBestFit);
+    mainPopup.add(new JSeparator());
+    searchPopup.add(new JSeparator());
 
-    p.add(new JSeparator());
+    mainPopup.add(new BestFit());
+    searchPopup.add(new BestFit());
 
-    final JMenuItem menuItemDisplayNormalTimes =
-      new JMenuItem("Hide relative times");
-    menuItemDisplayNormalTimes.addActionListener(
+    mainPopup.add(new JSeparator());
+    searchPopup.add(new JSeparator());
+
+    class DisplayNormalTimes extends JMenuItem {
+      public DisplayNormalTimes() {
+        super("Hide relative times");
+  addActionListener(
       new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           if (currentPoint != null) {
-            renderer.setUseNormalTimes();
-            tableModel.reFilter();
-            menuItemDisplayNormalTimes.setEnabled(false);
+            ((TableColorizingRenderer)currentTable.getDefaultRenderer(Object.class)).setUseNormalTimes();
+            ((ChainsawCyclicBufferTableModel)currentTable.getModel()).reFilter();
+            setEnabled(false);
           }
         }
     });
+      }
+    }
 
-    final JMenuItem menuItemDisplayRelativeTimesToRowUnderCursor =
-      new JMenuItem("Show times relative to this event");
-    menuItemDisplayRelativeTimesToRowUnderCursor.addActionListener(
+    class DisplayRelativeTimesToRowUnderCursor extends JMenuItem {
+    public DisplayRelativeTimesToRowUnderCursor() {
+      super("Show times relative to this event");
+      addActionListener(
       new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             if (currentPoint != null) {
-              int row = table.rowAtPoint(currentPoint);
-              LoggingEvent event = tableModel.getRow(row);
-              if (event != null)
+              int row = currentTable.rowAtPoint(currentPoint);
+              ChainsawCyclicBufferTableModel cyclicBufferTableModel = (ChainsawCyclicBufferTableModel) currentTable.getModel();
+              LoggingEventWrapper loggingEventWrapper = cyclicBufferTableModel.getRow(row);
+              if (loggingEventWrapper != null)
               {
-                  renderer.setUseRelativeTimes(event.getTimeStamp());
-                  tableModel.reFilter();
+                  ((TableColorizingRenderer)currentTable.getDefaultRenderer(Object.class)).setUseRelativeTimes(loggingEventWrapper.getLoggingEvent().getTimeStamp());
+                  cyclicBufferTableModel.reFilter();
               }
-              menuItemDisplayNormalTimes.setEnabled(true);
+              setEnabled(true);
             }
         }
       });
+    }
+    }
 
-      final JMenuItem menuItemDisplayRelativeTimesToPreviousRow =
-        new JMenuItem("Show times relative to previous rows");
-      menuItemDisplayRelativeTimesToPreviousRow.addActionListener(
+    class DisplayRelativeTimesToPreviousRow extends JMenuItem {
+      public DisplayRelativeTimesToPreviousRow() {
+        super("Show times relative to previous rows");
+      addActionListener(
         new ActionListener() {
           public void actionPerformed(ActionEvent e) {
               if (currentPoint != null) {
-                renderer.setUseRelativeTimesToPreviousRow();
-                tableModel.reFilter();
-                 menuItemDisplayNormalTimes.setEnabled(true);
+                ((TableColorizingRenderer)currentTable.getDefaultRenderer(Object.class)).setUseRelativeTimesToPreviousRow();
+                ((ChainsawCyclicBufferTableModel)currentTable.getModel()).reFilter();
+                setEnabled(true);
               }
           }
         });
+      }
+    }
 
-    menuItemDisplayNormalTimes.setEnabled(false);
-    p.add(menuItemDisplayRelativeTimesToRowUnderCursor);
-    p.add(menuItemDisplayRelativeTimesToPreviousRow);
-    p.add(menuItemDisplayNormalTimes);
-    p.add(new JSeparator());
+    mainPopup.add(new DisplayRelativeTimesToRowUnderCursor());
+    searchPopup.add(new DisplayRelativeTimesToRowUnderCursor());
+    mainPopup.add(new DisplayRelativeTimesToPreviousRow());
+    searchPopup.add(new DisplayRelativeTimesToPreviousRow());
+    mainPopup.add(new DisplayNormalTimes());
+    searchPopup.add(new DisplayNormalTimes());
+    mainPopup.add(new JSeparator());
+    searchPopup.add(new JSeparator());
 
-    p.add(menuBuildColorRule);
-    p.add(copyAction);
-    p.add(new JSeparator());
-        
-    p.add(menuItemToggleDetails);
-    p.add(menuItemLoggerTree);
-    p.add(menuItemToggleToolTips);
+    mainPopup.add(new BuildColorRule());
+    searchPopup.add(new BuildColorRule());
+    mainPopup.add(new Copy());
+    searchPopup.add(new Copy());
+    mainPopup.add(new JSeparator());
+    searchPopup.add(new JSeparator());
 
-    p.add(new JSeparator());
+    mainPopup.add(menuItemToggleDetails);
+    mainPopup.add(menuItemLoggerTree);
+    mainToggleToolTips = new ToggleToolTips();
+    searchToggleToolTips = new ToggleToolTips();
+    mainPopup.add(mainToggleToolTips);
+    searchPopup.add(searchToggleToolTips);
 
-    p.add(menuItemScrollToTop);
-    p.add(menuItemScrollBottom);
-    p.add(new JSeparator());
+    mainPopup.add(new JSeparator());
+    searchPopup.add(new JSeparator());
 
-    p.add(menuItemToggleDock);
+    mainPopup.add(menuItemScrollToTop);
+    mainPopup.add(menuItemScrollBottom);
+    mainPopup.add(new JSeparator());
 
-    p.add(new JSeparator());
+    mainPopup.add(menuItemToggleDock);
 
-    p.add(menuItemColorPanel);
-    p.add(menuItemLogPanelPreferences);
+    mainPopup.add(new JSeparator());
+    searchPopup.add(new JSeparator());
 
-    final PopupListener popupListener = new PopupListener(p);
+    mainPopup.add(new ColorPanel());
+    searchPopup.add(new ColorPanel());
+    mainPopup.add(new LogPanelPreferences());
+    searchPopup.add(new LogPanelPreferences());
 
-    eventsPane.addMouseListener(popupListener);
-    table.addMouseListener(popupListener);
+    final PopupListener mainTablePopupListener = new PopupListener(mainPopup);
+    eventsPane.addMouseListener(mainTablePopupListener);
+    table.addMouseListener(mainTablePopupListener);
+
+    final PopupListener searchTablePopupListener = new PopupListener(searchPopup);
+    detailPane.addMouseListener(searchTablePopupListener);
   }
-  
+
   /**
    * Accessor
    *
@@ -1808,18 +1925,26 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         }
         final int selectedRow = table.getSelectedRow();
         final int startingRow = table.getRowCount();
-        final ExtendedLoggingEvent selectedEvent;
+        final LoggingEventWrapper selectedEvent;
         if (selectedRow >= 0) {
           selectedEvent = tableModel.getRow(selectedRow);
         } else {
           selectedEvent = null;
         }
 
+        final int startingSearchRow = searchTable.getRowCount();
+
         boolean rowAdded = false;
+        boolean searchRowAdded = false;
 
         int addedRowCount = 0;
+        int searchAddedRowCount = 0;
+
         for (Iterator iter = events.iterator(); iter.hasNext();) {
-          ExtendedLoggingEvent event = new ExtendedLoggingEvent((LoggingEvent) iter.next());
+          //these are actual LoggingEvent instances
+          LoggingEvent event = (LoggingEvent)iter.next();
+          //create two separate loggingEventWrappers (main table and search table), as they have different info on display state
+          LoggingEventWrapper loggingEventWrapper1 = new LoggingEventWrapper(event, tableModel);
             //if the clearTableExpressionRule is not null, evaluate & clear the table if it matches
             if (clearTableExpressionRule != null && clearTableExpressionRule.evaluate(event, null)) {
                 logger.info("clear table expression matched - clearing table - matching event msg - " + event.getMessage());
@@ -1827,16 +1952,26 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             }
 
           updateOtherModels(event);
-
-          boolean isCurrentRowAdded = tableModel.isAddRow(event);
+          boolean isCurrentRowAdded = tableModel.isAddRow(loggingEventWrapper1);
           if (isCurrentRowAdded) {
               addedRowCount++;
           }
           rowAdded = rowAdded || isCurrentRowAdded;
+
+          //create a new loggingEventWrapper via copy constructor to ensure same IDs
+          LoggingEventWrapper loggingEventWrapper2 = new LoggingEventWrapper(loggingEventWrapper1, searchModel);
+          boolean isSearchCurrentRowAdded = searchModel.isAddRow(loggingEventWrapper2);
+          if (isSearchCurrentRowAdded) {
+              searchAddedRowCount++;
+          }
+          searchRowAdded = searchRowAdded || isSearchCurrentRowAdded;
         }
         //fire after adding all events
         if (rowAdded) {
           tableModel.fireTableEvent(startingRow, startingRow + addedRowCount, addedRowCount);
+        }
+        if (searchRowAdded) {
+          searchModel.fireTableEvent(startingSearchRow, startingSearchRow + searchAddedRowCount, searchAddedRowCount);
         }
 
         //tell the model to notify the count listeners
@@ -1846,9 +1981,15 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
           if (tableModel.isSortEnabled()) {
             tableModel.sort();
           }
-          
+
           //always update detail pane (since we may be using a cyclic buffer which is full)
           detailPaneUpdater.setSelectedRow(table.getSelectedRow());
+        }
+
+        if (searchRowAdded) {
+          if (searchModel.isSortEnabled()) {
+            searchModel.sort();
+          }
         }
 
         if (!isScrollToBottom() && selectedEvent != null) {
@@ -1925,12 +2066,25 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                         TableColumn col = (TableColumn)iter.next();
                         columnModel.addColumn(col);
                     }
+
+                  TableColumnModel searchColumnModel = searchTable.getColumnModel();
+                  //remove previous columns
+                  while (searchColumnModel.getColumnCount() > 0) {
+                      searchColumnModel.removeColumn(searchColumnModel.getColumn(0));
+                  }
+                  //add visible column order columns
+                  for (Iterator iter = preferenceModel.getVisibleColumnOrder().iterator();iter.hasNext();) {
+                      TableColumn col = (TableColumn)iter.next();
+                      searchColumnModel.addColumn(col);
+                  }
+
                     preferenceModel.apply(storedPrefs);
                 } else {
                     loadDefaultColumnSettings(event);
                 }
                 //ensure tablemodel cyclic flag is updated
                 tableModel.setCyclic(preferenceModel.isCyclic());
+                searchModel.setCyclic(preferenceModel.isCyclic());
                 //may be panel configs that don't have these values
                 lowerPanel.setDividerLocation(lowerPanelDividerLocation);
                 nameTreeAndMainPanelSplit.setDividerLocation(treeDividerLocation);
@@ -1994,6 +2148,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     	visibleOrder.add(c);
     }
     preferenceModel.setVisibleColumnOrder(visibleOrder);
+    //search table will use same columns as main table
     
     XStream stream = buildXStreamForLogPanelPreference();
     ObjectOutputStream s = null;
@@ -2077,6 +2232,10 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     return preferenceModel.isDetailPaneVisible();
   }
 
+  boolean isSearchResultsVisible() {
+    return preferenceModel.isSearchResultsVisible();
+  }
+
   /**
    * Toggle panel preference for logger tree visibility on or off
    */
@@ -2109,7 +2268,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
    * @return list of LoggingEvents
    */
   List getFilteredEvents() {
-  	return tableModel.getFilteredEvents();  
+  	return tableModel.getFilteredEvents();
   }
   
   List getMatchingEvents(Rule rule) {
@@ -2210,7 +2369,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       if (row > -1) {
         preferenceModel.setScrollToBottom(false);
 
-        table.scrollTo(row, 0);
+        table.scrollToRow(row);
       }
       return row;
   }
@@ -2233,6 +2392,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
     preferenceModel.setCyclic(toggledCyclic);
     tableModel.setCyclic(toggledCyclic);
+    searchModel.setCyclic(toggledCyclic);
   }
 
   /**
@@ -2249,12 +2409,19 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       findRule = null;
       tableModel.updateEventsWithFindRule(null);
       colorizer.setFindRule(null);
+      tableRuleMediator.setFindRule(null);
+      searchRuleMediator.setFindRule(null);
       //reset background color in case we were previously an invalid expression
       findField.setBackground(UIManager.getColor("TextField.background"));
       findField.setToolTipText(
         "Enter expression - right click or ctrl-space for menu");
       currentSearchMatchCount = 0;
+      currentFindRuleText = null;
       statusBar.setSearchMatchCount(currentSearchMatchCount, getIdentifier());
+      //if the preference to show search results is enabled, the find rule is now null - hide search results
+      if (isSearchResultsVisible()) {
+        hideSearchResults();
+      }
     } else {
       //only turn off scrolltobottom when finding something (find not empty)
       preferenceModel.setScrollToBottom(false);
@@ -2268,17 +2435,65 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
           "Enter expression - right click or ctrl-space for menu");
         findRule = ExpressionRule.getRule(ruleText);
         currentSearchMatchCount = tableModel.updateEventsWithFindRule(findRule);
+        searchModel.updateEventsWithFindRule(findRule);
         colorizer.setFindRule(findRule);
+        tableRuleMediator.setFindRule(findRule);
+        searchRuleMediator.setFindRule(findRule);
         //valid expression, reset background color in case we were previously an invalid expression
         findField.setBackground(UIManager.getColor("TextField.background"));
         statusBar.setSearchMatchCount(currentSearchMatchCount, getIdentifier());
+        if (isSearchResultsVisible()) {
+          showSearchResults();
+        }
       } catch (IllegalArgumentException re) {
+        findRule = null;
         findField.setToolTipText(re.getMessage());
         findField.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
         colorizer.setFindRule(null);
+        tableRuleMediator.setFindRule(null);
+        searchRuleMediator.setFindRule(null);
         tableModel.updateEventsWithFindRule(null);
+        searchModel.updateEventsWithFindRule(null);
         currentSearchMatchCount = 0;
         statusBar.setSearchMatchCount(currentSearchMatchCount, getIdentifier());
+        //if the preference to show search results is enabled, the find rule is now null - hide search results
+        if (isSearchResultsVisible()) {
+          hideSearchResults();
+        }
+      }
+    }
+  }
+
+  private void hideSearchResults() {
+    if (searchResultsDisplayed) {
+      detailPanel.removeAll();
+      detailPanel.add(detailToolbar, BorderLayout.NORTH);
+      detailPanel.add(detailPane, BorderLayout.CENTER);
+      detailPanel.invalidate();
+      detailPanel.revalidate();
+      detailPanel.repaint();
+      //if the detail visible pref is not enabled, hide the detail pane
+      searchResultsDisplayed = false;
+      //hide if pref is not enabled
+      if (!isDetailVisible()) {
+        hideDetailPane();
+      }
+    }
+  }
+
+  private void showSearchResults() {
+    if (isSearchResultsVisible() && !searchResultsDisplayed && findRule != null) {
+      //if pref is set, always update detail panel to contain search results
+      detailPanel.removeAll();
+      detailPanel.add(searchPane, BorderLayout.CENTER);
+      detailPanel.invalidate();
+      detailPanel.revalidate();
+      detailPanel.repaint();
+      //if the detail visible pref is not enabled, show the detail pane
+      searchResultsDisplayed = true;
+      //show if pref is not enabled
+      if (!isDetailVisible()) {
+        showDetailPane();
       }
     }
   }
@@ -2294,7 +2509,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
           lowerPanel.setDividerLocation(lastDetailPanelSplitLocation);
       }
       detailPanel.setVisible(true);
-    lowerPanel.repaint();
+      detailPanel.repaint();
+      lowerPanel.repaint();
   }
 
   /**
@@ -2623,6 +2839,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   private void clearModel() {
     previousLastIndex = -1;
     tableModel.clearModel();
+    searchModel.clearModel();
 
     synchronized (detail) {
       detailPaneUpdater.setSelectedRow(-1);
@@ -2681,6 +2898,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                 } catch (IllegalArgumentException iae) {
                   findField.setToolTipText(iae.getMessage());
                   colorizer.setFindRule(null);
+                  tableRuleMediator.setFindRule(null);
+                  searchRuleMediator.setFindRule(null);
                 }
             }
         });
@@ -2751,11 +2970,17 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     String columnOrder = event.getSetting(TABLE_COLUMN_ORDER);
 
     TableColumnModel columnModel = table.getColumnModel();
+    TableColumnModel searchColumnModel = searchTable.getColumnModel();
 
     Map columnNameMap = new HashMap();
+    Map searchColumnNameMap = new HashMap();
 
     for (int i = 0; i < columnModel.getColumnCount(); i++) {
       columnNameMap.put(table.getColumnName(i).toUpperCase(), columnModel.getColumn(i));
+    }
+
+    for (int i = 0; i < searchColumnModel.getColumnCount(); i++) {
+      searchColumnNameMap.put(searchTable.getColumnName(i).toUpperCase(), searchColumnModel.getColumn(i));
     }
 
     int index = 0;
@@ -2774,17 +2999,20 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       if (column != null) {
         sortedColumnList.add(column);
         table.removeColumn(column);
+        searchTable.removeColumn(column);
       }
     }
     preferenceModel.setDetailPaneVisible(event.asBoolean("detailPaneVisible"));
     preferenceModel.setLogTreePanelVisible(event.asBoolean("logTreePanelVisible"));
     preferenceModel.setHighlightSearchMatchText(event.asBoolean("highlightSearchMatchText"));
     preferenceModel.setWrapMessage(event.asBoolean("wrapMessage"));
+    preferenceModel.setSearchResultsVisible(event.asBoolean("searchResultsVisible"));
     //re-add columns to the table in the order provided from the list
     for (Iterator iter = sortedColumnList.iterator(); iter.hasNext();) {
       TableColumn element = (TableColumn) iter.next();
       if (preferenceModel.addColumn(element)) {
           table.addColumn(element);
+          searchTable.addColumn(element);
     	  preferenceModel.setColumnVisible(element.getHeaderValue().toString(), true);
       }
     }
@@ -2806,6 +3034,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             + ", width " + element);
         } else {
           columnModel.getColumn(index).setPreferredWidth(width);
+          searchColumnModel.getColumn(index).setPreferredWidth(width);
         }
 
         index++;
@@ -2850,9 +3079,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     return longestWidth + 5;
   }
 
-  private String getToolTipTextForEvent(ExtendedLoggingEvent event) {
+  private String getToolTipTextForEvent(LoggingEventWrapper loggingEventWrapper) {
     StringBuffer buf = new StringBuffer();
-    buf.append(detailLayout.getHeader()).append(detailLayout.format(event)).append(detailLayout.getFooter());
+    buf.append(detailLayout.getHeader()).append(detailLayout.format(loggingEventWrapper.getLoggingEvent())).append(detailLayout.getFooter());
     return buf.toString();
   }
 
@@ -2907,19 +3136,20 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     }
 
     public void clearAllMarkers() {
-        tableModel.removePropertyFromEvents(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
+      //this will get the properties to be removed from both tables..but
+      tableModel.removePropertyFromEvents(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
     }
 
     public void toggleMarker() {
         int row = table.getSelectedRow();
         if (row != -1) {
-          LoggingEvent event = tableModel.getRow(row);
-          if (event != null) {
-              Object marker = event.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
+          LoggingEventWrapper loggingEventWrapper = tableModel.getRow(row);
+          if (loggingEventWrapper != null) {
+              Object marker = loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
               if (marker == null) {
-                  event.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE, "set");
+                  loggingEventWrapper.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE, "set");
               } else {
-                  event.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
+                  loggingEventWrapper.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
               }
               //if marker -was- null, it no longer is (may need to add the column)
               tableModel.fireRowUpdated(row, (marker == null));
@@ -2936,7 +3166,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         }
     }
 
-    /**
+  /**
    * This class receives notification when the Refine focus text field is
    * updated, where a backgrounh thread periodically wakes up and checks if
    * they have stopped typing yet. This ensures that the filtering of the
@@ -2951,7 +3181,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     private long lastTimeStamp = System.currentTimeMillis();
     private final Thread delayThread;
     private final String defaultToolTip;
-    private String lastFilterText = null;
+    private String lastFilterText = "";
 
     private DelayedFilterTextDocumentListener(final JTextField filterText) {
       super();
@@ -2978,7 +3208,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                   // they stopped typing recently, but have stopped for at least
                   // 1 sample period. lets apply the filter
                   //                logger.debug("Typed something recently applying filter");
-                  if (!(filterText.getText().equals(lastFilterText))) {
+                  if (!(filterText.getText().trim().equals(lastFilterText.trim()))) {
                     lastFilterText = filterText.getText();
                     EventQueue.invokeLater(new Runnable()
                     {
@@ -3042,12 +3272,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       if (filterText.getText().trim().equals("")) {
         //reset background color in case we were previously an invalid expression
         filterText.setBackground(UIManager.getColor("TextField.background"));
-        ruleMediator.setRefinementRule(null);
+        tableRuleMediator.setFilterRule(null);
+        searchRuleMediator.setFilterRule(null);
         filterText.setToolTipText(defaultToolTip);
       } else {
         try {
-          ruleMediator.setRefinementRule(
-            ExpressionRule.getRule(filterText.getText()));
+          tableRuleMediator.setFilterRule(ExpressionRule.getRule(filterText.getText()));
+          searchRuleMediator.setFilterRule(ExpressionRule.getRule(filterText.getText()));
           filterText.setToolTipText(defaultToolTip);
           //valid expression, reset background color in case we were previously an invalid expression
           filterText.setBackground(UIManager.getColor("TextField.background"));
@@ -3061,20 +3292,31 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   }
 
   private final class TableMarkerListener extends MouseAdapter {
+    private JTable markerTable;
+    private EventContainer markerEventContainer;
+    private EventContainer otherMarkerEventContainer;
+
+    private TableMarkerListener(JTable markerTable, EventContainer markerEventContainer, EventContainer otherMarkerEventContainer) {
+      this.markerTable = markerTable;
+      this.markerEventContainer = markerEventContainer;
+      this.otherMarkerEventContainer = otherMarkerEventContainer;
+    }
+    
       public void mouseClicked(MouseEvent evt) {
           if (evt.getClickCount() == 2) {
-              int row = table.rowAtPoint(evt.getPoint());
+              int row = markerTable.rowAtPoint(evt.getPoint());
               if (row != -1) {
-                ExtendedLoggingEvent event = tableModel.getRow(row);
-                if (event != null) {
-                    Object marker = event.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
+                LoggingEventWrapper loggingEventWrapper = markerEventContainer.getRow(row);
+                if (loggingEventWrapper != null) {
+                    Object marker = loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
                     if (marker == null) {
-                        event.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE, "set");
+                        loggingEventWrapper.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE, "set");
                     } else {
-                        event.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
+                        loggingEventWrapper.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
                     }
                     //if marker -was- null, it no longer is (may need to add the column)
-                    tableModel.fireRowUpdated(row, (marker == null));
+                    markerEventContainer.fireRowUpdated(row, (marker == null));
+                    otherMarkerEventContainer.fireRowUpdated(otherMarkerEventContainer.getRowIndex(loggingEventWrapper), (marker == null));
                 }
               }
           }
@@ -3086,8 +3328,12 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
    */
   private final class TableColumnDetailMouseListener extends MouseMotionAdapter {
     private int currentRow = -1;
+    private JTable detailTable;
+    private EventContainer detailEventContainer;
 
-    private TableColumnDetailMouseListener() {
+    private TableColumnDetailMouseListener(JTable detailTable, EventContainer detailEventContainer) {
+      this.detailTable = detailTable;
+      this.detailEventContainer = detailEventContainer;
     }
 
     /**
@@ -3097,9 +3343,10 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
      */
     public void mouseMoved(MouseEvent evt) {
       currentPoint = evt.getPoint();
+      currentTable = detailTable;
 
       if (preferenceModel.isToolTips()) {
-        int row = table.rowAtPoint(evt.getPoint());
+        int row = detailTable.rowAtPoint(evt.getPoint());
 
         if ((row == currentRow) || (row == -1)) {
           return;
@@ -3107,41 +3354,29 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
         currentRow = row;
 
-        ExtendedLoggingEvent event = tableModel.getRow(currentRow);
+        LoggingEventWrapper event = detailEventContainer.getRow(currentRow);
 
         if (event != null) {
           String toolTipText = getToolTipTextForEvent(event);
-          table.setToolTipText(toolTipText);
+          detailTable.setToolTipText(toolTipText);
         }
       } else {
-        table.setToolTipText(null);
+        detailTable.setToolTipText(null);
       }
     }
   }
 
   //if columnmoved or columnremoved callback received, re-apply table's sort index based
   //sort column name
-  private class ChainsawTableColumnModelListener
-    implements TableColumnModelListener {
-    private ChainsawTableColumnModelListener() {
+  private class ChainsawTableColumnModelListener implements TableColumnModelListener {
+    private JSortTable modelListenerTable;
+
+    private ChainsawTableColumnModelListener(JSortTable modelListenerTable) {
+      this.modelListenerTable = modelListenerTable;
     }
 
-    /**
-     * If a new column was added to the display and that column was the marker column,
-     * set the cell editor to the markerCellEditor
-     *
-     * @param e
-     */
     public void columnAdded(TableColumnModelEvent e) {
-      Enumeration enumeration = table.getColumnModel().getColumns();
-
-      while (enumeration.hasMoreElements()) {
-        TableColumn column = (TableColumn) enumeration.nextElement();
-
-        if (column.getHeaderValue().toString().toLowerCase().equals(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE)) {
-          column.setCellEditor(markerCellEditor);
-        }
-      }
+      //no-op
     }
 
     /**
@@ -3150,7 +3385,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
      * @param e
      */
     public void columnRemoved(TableColumnModelEvent e) {
-      table.updateSortedColumn();
+      modelListenerTable.updateSortedColumn();
     }
 
     /**
@@ -3159,7 +3394,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
      * @param e
      */
     public void columnMoved(TableColumnModelEvent e) {
-      table.updateSortedColumn();
+      modelListenerTable.updateSortedColumn();
     }
 
     /**
@@ -3220,14 +3455,14 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         return;
       }
 
-	      ExtendedLoggingEvent event = null;
+	      LoggingEventWrapper loggingEventWrapper = null;
 	      if (force || (selectedRow != -1 && (lastRow != selectedRow))) {
-	        event = tableModel.getRow(selectedRow);
+	        loggingEventWrapper = tableModel.getRow(selectedRow);
 	
-	        if (event != null) {
+	        if (loggingEventWrapper != null) {
 	          final StringBuffer buf = new StringBuffer();
 	          buf.append(detailLayout.getHeader())
-	             .append(detailLayout.format(event)).append(
+	             .append(detailLayout.format(loggingEventWrapper.getLoggingEvent())).append(
 	            detailLayout.getFooter());
 	          if (buf.length() > 0) {
 		          	try {
@@ -3247,7 +3482,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 	        }
 	      }
 	
-	      if (event == null && (lastRow != selectedRow)) {
+	      if (loggingEventWrapper == null && (lastRow != selectedRow)) {
           	try {
           		final Document doc = detail.getEditorKit().createDefaultDocument();
           		detail.getEditorKit().read(new StringReader("<html>Nothing selected</html>"), doc, 0);
@@ -3277,12 +3512,63 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         });
     }
   }
+    private class ThrowableDisplayMouseAdapter extends MouseAdapter {
+      private JTable throwableTable;
+      private EventContainer throwableEventContainer;
+      final JDialog detailDialog;
+      final JEditorPane detailArea;
+      public ThrowableDisplayMouseAdapter(JTable throwableTable, EventContainer throwableEventContainer) {
+        this.throwableTable = throwableTable;
+        this.throwableEventContainer = throwableEventContainer;
+
+        detailDialog = new JDialog((JFrame) null, true);
+        Container container = detailDialog.getContentPane();
+        detailArea = new JEditorPane();
+        JTextComponentFormatter.applySystemFontAndSize(detailArea);
+        detailArea.setEditable(false);
+        Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
+        detailArea.setPreferredSize(new Dimension(screenDimension.width / 2, screenDimension.height / 2));
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+        container.add(new JScrollPane(detailArea));
+
+        detailDialog.pack();
+      }
+        public void mouseClicked(MouseEvent e)
+        {
+            TableColumn column = throwableTable.getColumnModel().getColumn(throwableTable.columnAtPoint(e.getPoint()));
+            if (!column.getHeaderValue().toString().toUpperCase().equals(ChainsawColumns.getColumnName(ChainsawColumns.INDEX_THROWABLE_COL_NAME))) {
+                return;
+            }
+
+            LoggingEventWrapper loggingEventWrapper = throwableEventContainer.getRow(throwableTable.getSelectedRow());
+
+            //throwable string representation may be a length-one empty array
+            String[] ti = loggingEventWrapper.getLoggingEvent().getThrowableStrRep();
+            if (ti != null && ti.length > 0 && (!(ti.length == 1 && ti[0].equals("")))) {
+                 detailDialog.setTitle(throwableTable.getColumnName(throwableTable.getSelectedColumn()) + " detail...");
+                  StringBuffer buf = new StringBuffer();
+                  buf.append(loggingEventWrapper.getLoggingEvent().getMessage());
+                  buf.append("\n");
+                  for (int i = 0; i < ti.length; i++) {
+                    buf.append(ti[i]).append("\n    ");
+                  }
+
+                  detailArea.setText(buf.toString());
+                  SwingHelper.invokeOnEDT(new Runnable() {
+                    public void run() {
+                      centerAndSetVisible(detailDialog);
+                    }
+                  });
+                }
+        }
+    }
 
     private class MarkerCellEditor implements TableCellEditor {
-        JTextField textField = new JTextField();
-        Set cellEditorListeners = new HashSet();
-        private ExtendedLoggingEvent currentEvent;
-        private final Object mutex = new Object();
+      JTable currentTable;
+      JTextField textField = new JTextField();
+      Set cellEditorListeners = new HashSet();
+      private LoggingEventWrapper currentLoggingEventWrapper;
+      private final Object mutex = new Object();
 
         public Object getCellEditorValue()
         {
@@ -3303,12 +3589,18 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         public boolean stopCellEditing()
         {
             if (textField.getText().trim().equals("")) {
-                currentEvent.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
+                currentLoggingEventWrapper.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
             } else {
-                currentEvent.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE, textField.getText());
+                currentLoggingEventWrapper.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE, textField.getText());
             }
-            tableModel.fireRowUpdated(table.getSelectedRow(), true);
-            ChangeEvent event = new ChangeEvent(table);
+            //row should always exist in the main table if it is being edited
+            tableModel.fireRowUpdated(tableModel.getRowIndex(currentLoggingEventWrapper), true);
+            int index = searchModel.getRowIndex(currentLoggingEventWrapper);
+            if (index > -1) {
+              searchModel.fireRowUpdated(index, true);
+            }
+
+            ChangeEvent event = new ChangeEvent(currentTable);
             Set cellEditorListenersCopy;
             synchronized(mutex) {
                 cellEditorListenersCopy = new HashSet(cellEditorListeners);
@@ -3317,6 +3609,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             for (Iterator iter = cellEditorListenersCopy.iterator();iter.hasNext();) {
                 ((CellEditorListener)iter.next()).editingStopped(event);
             }
+            currentLoggingEventWrapper = null;
+            currentTable = null;
+
             return true;
         }
 
@@ -3327,10 +3622,12 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                 cellEditorListenersCopy = new HashSet(cellEditorListeners);
             }
 
-           ChangeEvent event = new ChangeEvent(table);
+           ChangeEvent event = new ChangeEvent(currentTable);
            for (Iterator iter = cellEditorListenersCopy.iterator();iter.hasNext();) {
                ((CellEditorListener)iter.next()).editingCanceled(event);
            }
+          currentLoggingEventWrapper = null;
+          currentTable = null;
         }
 
         public void addCellEditorListener(CellEditorListener l)
@@ -3349,10 +3646,14 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column)
         {
-            currentEvent = tableModel.getRow(row);
-            if (currentEvent != null) {
-                textField.setText(currentEvent.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE));
+          currentTable = table;
+          currentLoggingEventWrapper =((EventContainer) table.getModel()).getRow(row);
+            if (currentLoggingEventWrapper != null) {
+                textField.setText(currentLoggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE));
                 textField.selectAll();
+            }
+            else {
+              textField.setText("");
             }
             return textField;
         }
@@ -3364,8 +3665,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             initializeLists();
         }
 
-        boolean primaryMatches(EventWrapper wrapper) {
-            String millisDelta = wrapper.loggingEvent.getProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
+        boolean primaryMatches(ThumbnailLoggingEventWrapper wrapper) {
+            String millisDelta = wrapper.loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
             if (millisDelta != null && !millisDelta.trim().equals("")) {
                 long millisDeltaLong = Long.parseLong(millisDelta);
                 //arbitrary
@@ -3374,7 +3675,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             return false;
         }
 
-        boolean secondaryMatches(EventWrapper wrapper) {
+        boolean secondaryMatches(ThumbnailLoggingEventWrapper wrapper) {
             //secondary is not used
             return false;
         }
@@ -3385,8 +3686,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
             int i=0;
             for (Iterator iter = tableModel.getFilteredEvents().iterator();iter.hasNext();) {
-                ExtendedLoggingEvent extendedLoggingEvent = (ExtendedLoggingEvent) iter.next();
-                EventWrapper wrapper = new EventWrapper(i, extendedLoggingEvent);
+                LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) iter.next();
+                ThumbnailLoggingEventWrapper wrapper = new ThumbnailLoggingEventWrapper(i, loggingEventWrapper);
                 i++;
                 //only add if there is a color defined
                 if (primaryMatches(wrapper)) {
@@ -3418,7 +3719,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
             //draw all events
             for (Iterator iter = primaryList.iterator();iter.hasNext();) {
-                EventWrapper wrapper = (EventWrapper)iter.next();
+                ThumbnailLoggingEventWrapper wrapper = (ThumbnailLoggingEventWrapper)iter.next();
                     if (primaryMatches(wrapper)) {
                         float ratio = (wrapper.rowNum / (float)rowCount);
         //                System.out.println("error - ratio: " + ratio + ", component height: " + componentHeight);
@@ -3427,7 +3728,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                         int startX = 1;
                         int width = getWidth() - (startX * 2);
                         //max out at 50, min 2...
-                        String millisDelta = wrapper.loggingEvent.getProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
+                        String millisDelta = wrapper.loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
                         long millisDeltaLong = Long.parseLong(millisDelta);
                         long delta = Math.min(ChainsawConstants.MILLIS_DELTA_RENDERING_HEIGHT_MAX, Math.max(0, (long) (millisDeltaLong * ChainsawConstants.MILLIS_DELTA_RENDERING_FACTOR)));
                         float widthMaxMillisDeltaRenderRatio = ((float)width / ChainsawConstants.MILLIS_DELTA_RENDERING_HEIGHT_MAX);
@@ -3452,12 +3753,12 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             });
         }
 
-        boolean primaryMatches(EventWrapper wrapper) {
-            return !wrapper.loggingEvent.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND);
+        boolean primaryMatches(ThumbnailLoggingEventWrapper wrapper) {
+            return !wrapper.loggingEventWrapper.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND);
         }
 
-        boolean secondaryMatches(EventWrapper wrapper) {
-            return wrapper.loggingEvent.isSearchMatch();
+        boolean secondaryMatches(ThumbnailLoggingEventWrapper wrapper) {
+            return wrapper.loggingEventWrapper.isSearchMatch();
         }
 
         private void configureColors() {
@@ -3466,9 +3767,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
             int i=0;
             for (Iterator iter = tableModel.getFilteredEvents().iterator();iter.hasNext();) {
-                ExtendedLoggingEvent extendedLoggingEvent = (ExtendedLoggingEvent) iter.next();
-                extendedLoggingEvent.updateColorRuleColors(colorizer.getBackgroundColor(extendedLoggingEvent), colorizer.getForegroundColor(extendedLoggingEvent));
-                EventWrapper wrapper = new EventWrapper(i, extendedLoggingEvent);
+                LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) iter.next();
+                loggingEventWrapper.updateColorRuleColors(colorizer.getBackgroundColor(loggingEventWrapper.getLoggingEvent()), colorizer.getForegroundColor(loggingEventWrapper.getLoggingEvent()));
+                ThumbnailLoggingEventWrapper wrapper = new ThumbnailLoggingEventWrapper(i, loggingEventWrapper);
                 if (secondaryMatches(wrapper)) {
                     secondaryList.add(wrapper);
                 }
@@ -3503,9 +3804,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
             //draw all non error/warning/marker events
             for (Iterator iter = primaryList.iterator();iter.hasNext();) {
-                EventWrapper wrapper = (EventWrapper)iter.next();
-                if (!wrapper.loggingEvent.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
-                    if (wrapper.loggingEvent.getLevel().toInt() < Level.WARN.toInt() && wrapper.loggingEvent.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE) == null) {
+                ThumbnailLoggingEventWrapper wrapper = (ThumbnailLoggingEventWrapper)iter.next();
+                if (!wrapper.loggingEventWrapper.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
+                    if (wrapper.loggingEventWrapper.getLoggingEvent().getLevel().toInt() < Level.WARN.toInt() && wrapper.loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE) == null) {
                         float ratio = (wrapper.rowNum / (float)rowCount);
         //                System.out.println("error - ratio: " + ratio + ", component height: " + componentHeight);
                         int verticalLocation = (int) (componentHeight * ratio) + topOffset;
@@ -3513,7 +3814,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                         int startX = 1;
                         int width = getWidth() - (startX * 2);
 
-                        drawEvent(wrapper.loggingEvent.getColorRuleBackground(), verticalLocation, eventHeight, g, startX, width);
+                        drawEvent(wrapper.loggingEventWrapper.getColorRuleBackground(), verticalLocation, eventHeight, g, startX, width);
         //                System.out.println("painting error - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
                     }
                 }
@@ -3521,9 +3822,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
             //draw warnings, error, fatal & markers last (full width)
             for (Iterator iter = primaryList.iterator();iter.hasNext();) {
-                EventWrapper wrapper = (EventWrapper)iter.next();
-                if (!wrapper.loggingEvent.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
-                    if (wrapper.loggingEvent.getLevel().toInt() >= Level.WARN.toInt() || wrapper.loggingEvent.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE) != null) {
+                ThumbnailLoggingEventWrapper wrapper = (ThumbnailLoggingEventWrapper)iter.next();
+                if (!wrapper.loggingEventWrapper.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
+                    if (wrapper.loggingEventWrapper.getLoggingEvent().getLevel().toInt() >= Level.WARN.toInt() || wrapper.loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE) != null) {
                         float ratio = (wrapper.rowNum / (float)rowCount);
         //                System.out.println("error - ratio: " + ratio + ", component height: " + componentHeight);
                         int verticalLocation = (int) (componentHeight * ratio) + topOffset;
@@ -3536,14 +3837,14 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                         eventHeight = Math.min(maxEventHeight, eventHeight + 3);
 //                            eventHeight = maxEventHeight;
 
-                        drawEvent(wrapper.loggingEvent.getColorRuleBackground(), (verticalLocation - eventHeight + 1), eventHeight, g, startX, width);
+                        drawEvent(wrapper.loggingEventWrapper.getColorRuleBackground(), (verticalLocation - eventHeight + 1), eventHeight, g, startX, width);
     //                System.out.println("painting error - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
                     }
                 }
             }
 
             for (Iterator iter = secondaryList.iterator();iter.hasNext();) {
-                EventWrapper wrapper = (EventWrapper)iter.next();
+                ThumbnailLoggingEventWrapper wrapper = (ThumbnailLoggingEventWrapper)iter.next();
                 float ratio = (wrapper.rowNum / (float)rowCount);
 //                System.out.println("warning - ratio: " + ratio + ", component height: " + componentHeight);
                 int verticalLocation = (int) (componentHeight * ratio) + topOffset;
@@ -3570,9 +3871,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
               public void mouseMoved(MouseEvent e) {
                 if (preferenceModel.isThumbnailBarToolTips()) {
                     int yPosition = e.getPoint().y;
-                    EventWrapper event = getEventWrapperAtPosition(yPosition);
+                    ThumbnailLoggingEventWrapper event = getEventWrapperAtPosition(yPosition);
                     if (event != null) {
-                        setToolTipText(getToolTipTextForEvent(event.loggingEvent));
+                        setToolTipText(getToolTipTextForEvent(event.loggingEventWrapper));
                     }
                 } else {
                     setToolTipText(null);
@@ -3584,10 +3885,10 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                 public void mouseClicked(MouseEvent e)
                 {
                     int yPosition = e.getPoint().y;
-                    EventWrapper event = getEventWrapperAtPosition(yPosition);
+                    ThumbnailLoggingEventWrapper event = getEventWrapperAtPosition(yPosition);
 //                    System.out.println("rowToSelect: " + rowToSelect + ", closestRow: " + event.loggingEvent.getProperty("log4jid"));
                     if (event != null) {
-                        int id = new Integer(event.loggingEvent.getProperty("log4jid")).intValue();
+                        int id = Integer.parseInt(event.loggingEventWrapper.getLoggingEvent().getProperty("log4jid"));
                         setSelectedEvent(id);
                     }
                 }
@@ -3610,8 +3911,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                     if (e.getType() == TableModelEvent.INSERT) {
 //                        System.out.println("insert - current warnings: " + warnings.size() + ", errors: " + errors.size() + ", first row: " + firstRow + ", last row: " + lastRow);
                         for (int i=firstRow;i<lastRow;i++) {
-                            ExtendedLoggingEvent event = (ExtendedLoggingEvent)displayedEvents.get(i);
-                            EventWrapper wrapper = new EventWrapper(i, event);
+                            LoggingEventWrapper event = (LoggingEventWrapper)displayedEvents.get(i);
+                            ThumbnailLoggingEventWrapper wrapper = new ThumbnailLoggingEventWrapper(i, event);
                             if (secondaryMatches(wrapper)) {
                                 secondaryList.add(wrapper);
 //                                System.out.println("added warning: " + i + " - " + event.getLevel());
@@ -3629,14 +3930,14 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                         //find each eventwrapper with an id in the deleted range and remove it...
 //                        System.out.println("delete- current warnings: " + warnings.size() + ", errors: " + errors.size() + ", first row: " + firstRow + ", last row: " + lastRow + ", displayed event count: " + displayedEvents.size() );
                         for (Iterator iter = secondaryList.iterator();iter.hasNext();) {
-                            EventWrapper wrapper = (EventWrapper)iter.next();
+                            ThumbnailLoggingEventWrapper wrapper = (ThumbnailLoggingEventWrapper)iter.next();
                             if ((wrapper.rowNum >= firstRow) && (wrapper.rowNum <= lastRow)) {
 //                                System.out.println("deleting find: " + wrapper);
                                 iter.remove();
                             }
                         }
                         for (Iterator iter = primaryList.iterator();iter.hasNext();) {
-                            EventWrapper wrapper = (EventWrapper)iter.next();
+                            ThumbnailLoggingEventWrapper wrapper = (ThumbnailLoggingEventWrapper)iter.next();
                             if ((wrapper.rowNum >= firstRow) && (wrapper.rowNum <= lastRow)) {
 //                                System.out.println("deleting error: " + wrapper);
                                 iter.remove();
@@ -3649,14 +3950,14 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 //                        System.out.println("update - about to delete old warnings in range: " + firstRow + " to " + lastRow + ", current warnings: " + warnings.size() + ", errors: " + errors.size());
                         //find each eventwrapper with an id in the deleted range and remove it...
                         for (Iterator iter = secondaryList.iterator();iter.hasNext();) {
-                            EventWrapper wrapper = (EventWrapper)iter.next();
+                            ThumbnailLoggingEventWrapper wrapper = (ThumbnailLoggingEventWrapper)iter.next();
                             if ((wrapper.rowNum >= firstRow) && (wrapper.rowNum <= lastRow)) {
 //                                System.out.println("update - deleting warning: " + wrapper);
                                 iter.remove();
                             }
                         }
                         for (Iterator iter = primaryList.iterator();iter.hasNext();) {
-                            EventWrapper wrapper = (EventWrapper)iter.next();
+                            ThumbnailLoggingEventWrapper wrapper = (ThumbnailLoggingEventWrapper)iter.next();
                             if ((wrapper.rowNum >= firstRow) && (wrapper.rowNum <= lastRow)) {
 //                                System.out.println("update - deleting error: " + wrapper);
                                 iter.remove();
@@ -3665,8 +3966,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 //                        System.out.println("update - after deleting old warnings in range: " + firstRow + " to " + lastRow + ", new warnings: " + warnings.size() + ", errors: " + errors.size());
                         //NOTE: for update, we need to do i<= lastRow
                         for (int i=firstRow;i<=lastRow;i++) {
-                            ExtendedLoggingEvent event = (ExtendedLoggingEvent)displayedEvents.get(i);
-                            EventWrapper wrapper = new EventWrapper(i, event);
+                            LoggingEventWrapper event = (LoggingEventWrapper)displayedEvents.get(i);
+                            ThumbnailLoggingEventWrapper wrapper = new ThumbnailLoggingEventWrapper(i, event);
 //                                System.out.println("update - adding error: " + i + ", event: " + event.getMessage());
                             //only add event to thumbnail if there is a color
                             if (primaryMatches(wrapper)) {
@@ -3695,15 +3996,15 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             });
         }
 
-        abstract boolean primaryMatches(EventWrapper wrapper);
+        abstract boolean primaryMatches(ThumbnailLoggingEventWrapper wrapper);
 
-        abstract boolean secondaryMatches(EventWrapper wrapper);
+        abstract boolean secondaryMatches(ThumbnailLoggingEventWrapper wrapper);
         /**
          * Get event wrapper - may be null
          * @param yPosition
          * @return event wrapper or null
          */
-        protected EventWrapper getEventWrapperAtPosition(int yPosition) {
+        protected ThumbnailLoggingEventWrapper getEventWrapperAtPosition(int yPosition) {
             int rowCount = table.getRowCount();
 
             Point offsets = getScrollBarOffsets();
@@ -3725,15 +4026,15 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             float ratio = (float) yPosition / height;
             int rowToSelect = Math.round(rowCount * ratio);
     //                    System.out.println("rowCount: " + rowCount + ", height: " + height + ", clickLocation: " + clickLocation + ", ratio: " + ratio + ", rowToSelect: " + rowToSelect);
-            EventWrapper event = getClosestRow(rowToSelect);
+            ThumbnailLoggingEventWrapper event = getClosestRow(rowToSelect);
             return event;
         }
 
-        private EventWrapper getClosestRow(int rowToSelect) {
-            EventWrapper closestRow = null;
+        private ThumbnailLoggingEventWrapper getClosestRow(int rowToSelect) {
+            ThumbnailLoggingEventWrapper closestRow = null;
             int rowDelta = Integer.MAX_VALUE;
             for (Iterator iter = secondaryList.iterator();iter.hasNext();) {
-                EventWrapper event = (EventWrapper) iter.next();
+                ThumbnailLoggingEventWrapper event = (ThumbnailLoggingEventWrapper) iter.next();
                 int newRowDelta = Math.abs(rowToSelect - event.rowNum);
                 if (newRowDelta < rowDelta) {
                     closestRow = event;
@@ -3741,7 +4042,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                 }
             }
             for (Iterator iter = primaryList.iterator();iter.hasNext();) {
-                EventWrapper event = (EventWrapper) iter.next();
+                ThumbnailLoggingEventWrapper event = (ThumbnailLoggingEventWrapper) iter.next();
                 int newRowDelta = Math.abs(rowToSelect - event.rowNum);
                 if (newRowDelta < rowDelta) {
                     closestRow = event;
@@ -3794,16 +4095,16 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         }
     }
 
-    class EventWrapper {
+    class ThumbnailLoggingEventWrapper {
         int rowNum;
-        ExtendedLoggingEvent loggingEvent;
-        public EventWrapper(int rowNum, ExtendedLoggingEvent loggingEvent) {
+        LoggingEventWrapper loggingEventWrapper;
+        public ThumbnailLoggingEventWrapper(int rowNum, LoggingEventWrapper loggingEventWrapper) {
             this.rowNum = rowNum;
-            this.loggingEvent = loggingEvent;
+            this.loggingEventWrapper = loggingEventWrapper;
         }
 
         public String toString() {
-            return "event - rownum: " + rowNum + ", level: " + loggingEvent.getLevel();
+            return "event - rownum: " + rowNum + ", level: " + loggingEventWrapper.getLoggingEvent().getLevel();
         }
 
         public boolean equals(Object o) {
@@ -3814,9 +4115,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                 return false;
             }
 
-            EventWrapper that = (EventWrapper) o;
+            ThumbnailLoggingEventWrapper that = (ThumbnailLoggingEventWrapper) o;
 
-            if (loggingEvent != null ? !loggingEvent.equals(that.loggingEvent) : that.loggingEvent != null) {
+            if (loggingEventWrapper != null ? !loggingEventWrapper.equals(that.loggingEventWrapper) : that.loggingEventWrapper != null) {
                 return false;
             }
 
@@ -3824,7 +4125,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         }
 
         public int hashCode() {
-            return loggingEvent != null ? loggingEvent.hashCode() : 0;
+            return loggingEventWrapper != null ? loggingEventWrapper.hashCode() : 0;
         }
     }
 
@@ -4054,4 +4355,16 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             }
         }
     }
+
+  class ToggleToolTips extends JCheckBoxMenuItem {
+    public ToggleToolTips() {
+      super("Show ToolTips", new ImageIcon(ChainsawIcons.TOOL_TIP));
+  addActionListener(
+    new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        preferenceModel.setToolTips(isSelected());
+      }
+    });
+    }
+  }
 }

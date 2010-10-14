@@ -303,7 +303,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
     		  }}).start();
       } else {
         String oldURL = getFileURL();
-        if (oldURL != null) {
+        if (oldURL != null && oldURL.indexOf("://") > -1) {
             int index = oldURL.indexOf("://");
             String lastPart = oldURL.substring(index + "://".length());
             int passEndIndex = lastPart.indexOf("@");

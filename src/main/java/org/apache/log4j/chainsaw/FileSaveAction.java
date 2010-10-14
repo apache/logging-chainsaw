@@ -41,7 +41,6 @@ import javax.swing.KeyStroke;
 
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.helpers.LogLog;
-import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.xml.XMLLayout;
 
 
@@ -117,9 +116,9 @@ class FileSaveAction extends AbstractAction {
       }
       Iterator iter = v.iterator();
       while (iter.hasNext()) {
-        LoggingEvent event = (LoggingEvent) iter.next();
-        layout.setLocationInfo(event.getThrowableInformation() != null);
-        writer.write(layout.format(event));
+        LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) iter.next();
+        layout.setLocationInfo(loggingEventWrapper.getLoggingEvent().getThrowableInformation() != null);
+        writer.write(layout.format(loggingEventWrapper.getLoggingEvent()));
       }
     } catch (IOException ioe) {
       LogLog.warn("Unable to save file", ioe);

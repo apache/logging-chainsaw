@@ -21,7 +21,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -206,10 +205,6 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
         {
           public void mouseClicked(MouseEvent e)
           {
-            if (
-              (e.getClickCount() == 1)
-                && ((e.getModifiers() & InputEvent.BUTTON1_MASK) > 0))
-            {
               int i = columnList.locationToIndex(e.getPoint());
 
               if (i >= 0)
@@ -217,7 +212,6 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
                 Object column = columnListModel.get(i);
                 preferenceModel.toggleColumn(((TableColumn)column));
               }
-            }
           }
         });
       columnList.setCellRenderer(cellRenderer);
@@ -537,6 +531,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
     private final JCheckBox loggerTreePanel =
       new JCheckBox("Show Logger Tree");
     private final JCheckBox wrapMessage = new JCheckBox("Wrap message field (display multi-line rows) ");
+    private final JCheckBox searchResultsVisible = new JCheckBox("Display search results in details panel ");
     private final JCheckBox highlightSearchMatchText = new JCheckBox("Highlight search match text ");
     private final JCheckBox scrollToBottom =
       new JCheckBox("Scroll to bottom (view tracks with new events)");
@@ -582,7 +577,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
       add(scrollToBottom);
       add(wrapMessage);
       add(highlightSearchMatchText);
-
+      add(searchResultsVisible);
       add(showMillisDeltaAsGap);
       JPanel clearPanel = new JPanel(new BorderLayout());
       clearPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -597,6 +592,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
       toolTips.setSelected(preferenceModel.isToolTips());
       thumbnailBarToolTips.setSelected(preferenceModel.isThumbnailBarToolTips());
       detailPanelVisible.setSelected(preferenceModel.isDetailPaneVisible());
+      searchResultsVisible.setSelected(preferenceModel.isSearchResultsVisible());
       loggerTreePanel.setSelected(preferenceModel.isLogTreePanelVisible());
     }
 
@@ -614,6 +610,16 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
         };
 
         wrapMessage.addActionListener(wrapMessageListener);
+
+        ActionListener searchResultsVisibleListener = new ActionListener()
+        {
+            public void actionPerformed(ActionEvent e)
+            {
+                preferenceModel.setSearchResultsVisible(searchResultsVisible.isSelected());
+            }
+        };
+
+        searchResultsVisible.addActionListener(searchResultsVisibleListener);
 
         ActionListener highlightSearchMatchTextListener = new ActionListener()
         {
@@ -634,6 +640,16 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
               wrapMessage.setSelected(value);
             }
           });
+
+      preferenceModel.addPropertyChangeListener(
+        "searchResultsVisible", new PropertyChangeListener()
+        {
+          public void propertyChange(PropertyChangeEvent evt)
+          {
+            boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+            searchResultsVisible.setSelected(value);
+          }
+        });
 
         preferenceModel.addPropertyChangeListener(
           "highlightSearchMatchText", new PropertyChangeListener()

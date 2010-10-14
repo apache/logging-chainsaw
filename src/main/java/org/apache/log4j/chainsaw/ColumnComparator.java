@@ -43,12 +43,12 @@ public class ColumnComparator implements Comparator {
   public int compare(Object o1, Object o2) {
     int sort = 1;
 
-    if (o1 instanceof LoggingEvent && o2 instanceof LoggingEvent) {
+    if (o1 instanceof LoggingEventWrapper && o2 instanceof LoggingEventWrapper) {
 
 //		TODO not everything catered for here yet...
 
-      LoggingEvent e1 = (LoggingEvent) o1;
-      LoggingEvent e2 = (LoggingEvent) o2;
+      LoggingEvent e1 = ((LoggingEventWrapper) o1).getLoggingEvent();
+      LoggingEvent e2 = ((LoggingEventWrapper) o2).getLoggingEvent();
 
       switch (index + 1) {
       case ChainsawColumns.INDEX_LEVEL_COL_NAME:

@@ -88,9 +88,11 @@ public class LogPanelPreferenceModel implements Serializable{
   private boolean highlightSearchMatchText;
   private String hiddenExpression;
   private String clearTableExpression;
-  //default to cyclic mode
-  private boolean cyclic = true;
+  //default to cyclic mode off
+  private boolean cyclic = false;
   private boolean showMillisDeltaAsGap;
+  //default search results to visible
+  private boolean searchResultsVisible = true;
 
     /**
    * Returns an <b>unmodifiable</b> list of the columns.
@@ -248,7 +250,7 @@ public class LogPanelPreferenceModel implements Serializable{
     setDetailPaneVisible(model.isDetailPaneVisible());
     setLogTreePanelVisible(model.isLogTreePanelVisible());
     setVisibleColumnOrder(model.getVisibleColumnOrder());
-
+    setSearchResultsVisible(model.isSearchResultsVisible());
     // we have to copy the list, because getColumns() is unmodifiable
     setColumns(model.getColumns());
     
@@ -289,6 +291,16 @@ public class LogPanelPreferenceModel implements Serializable{
   public void setLevelIcons(boolean levelIcons) {
     this.levelIcons = levelIcons;
     propertySupport.firePropertyChange("levelIcons", !levelIcons, levelIcons);
+  }
+
+  public void setSearchResultsVisible(boolean searchResultsVisible) {
+    boolean oldValue = this.searchResultsVisible;
+    this.searchResultsVisible = searchResultsVisible;
+    propertySupport.firePropertyChange("searchResultsVisible", oldValue, searchResultsVisible);
+  }
+
+  public boolean isSearchResultsVisible() {
+    return searchResultsVisible;
   }
 
   /**

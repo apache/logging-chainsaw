@@ -55,6 +55,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -84,6 +85,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+
 import org.apache.log4j.Appender;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Level;
@@ -209,7 +211,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
    * the Menu bar
    */
   public LogUI() {
-    super("Chainsaw v2 - Log Viewer");
+    super("Chainsaw");
     setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
     if (ChainsawIcons.WINDOW_ICON != null) {
@@ -2105,8 +2107,8 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         Iterator iter2 = panel.getMatchingEvents(rule).iterator();
 
         while (iter2.hasNext()) {
-          LoggingEvent e = (LoggingEvent) iter2.next();
-          list.add(e);
+          LoggingEventWrapper e = (LoggingEventWrapper) iter2.next();
+          list.add(e.getLoggingEvent());
         }
       }
 
@@ -2133,7 +2135,11 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             try {
               // we temporarily swap the TCCL so that plugins can find resources
               Thread.currentThread().setContextClassLoader(classLoader);
-              DOMConfigurator.configure(url);
+              try {
+                DOMConfigurator.configure(url);
+              } catch (Exception e) {
+                logger.warn("Unable to load configuration URL: " + url, e);
+              }
             }finally{
                 // now switch it back...
                 Thread.currentThread().setContextClassLoader(previousTCCL);

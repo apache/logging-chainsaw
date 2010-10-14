@@ -66,7 +66,9 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   //cyclic field used internally in this class, but not exposed via the eventcontainer
   private boolean cyclic = true;
   private int cyclicBufferSize = DEFAULT_CAPACITY;
+  //original list of LoggingEventWrapper instances
   List unfilteredList;
+  //filtered list of LoggingEventWrapper instances
   List filteredList;
   private boolean currentSortAscending;
   private int currentSortColumn;
@@ -80,18 +82,20 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   private final LoggerNameModel loggerNameModelDelegate = new LoggerNameModelSupport();
   private final Object mutex = new Object();
 
-  //because we may be using a cyclic buffer, if an ID is not provided in the property, 
+  //because we may be using a cyclic buffer, if an ID is not provided in the property,
   //use and increment this row counter as the ID for each received row
   int uniqueRow;
   private final Set uniquePropertyKeys = new HashSet();
   private Rule displayRule;
   private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
   private RuleColorizer colorizer;
+  private final String tableModelName;
 
-    public ChainsawCyclicBufferTableModel(int cyclicBufferSize, RuleColorizer colorizer) {
+    public ChainsawCyclicBufferTableModel(int cyclicBufferSize, RuleColorizer colorizer, String tableModelName) {
     propertySupport.addPropertyChangeListener("cyclic", new ModelChanger());
     this.cyclicBufferSize = cyclicBufferSize;
     this.colorizer = colorizer;
+    this.tableModelName = tableModelName;
 
     unfilteredList = new CyclicBufferList(cyclicBufferSize);
     filteredList = new CyclicBufferList(cyclicBufferSize);
@@ -116,10 +120,10 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     Iterator iter = unfilteredCopy.iterator();
 
     while (iter.hasNext()) {
-      LoggingEvent event = (LoggingEvent) iter.next();
+      LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) iter.next();
 
-      if (rule.evaluate(event, null)) {
-        list.add(event);
+      if (rule.evaluate(loggingEventWrapper.getLoggingEvent(), null)) {
+        list.add(loggingEventWrapper);
       }
     }
 
@@ -135,27 +139,27 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
             previousSize = filteredList.size();
             filteredList.clear();
             if (displayRule == null) {
-                LoggingEvent lastEvent = null;
+                LoggingEventWrapper lastEvent = null;
                 for (Iterator iter = unfilteredList.iterator();iter.hasNext();) {
-                    ExtendedLoggingEvent e = (ExtendedLoggingEvent)iter.next();
-                    e.setDisplayed(true);
-                    updateEventMillisDelta(e, lastEvent);
-                    filteredList.add(e);
-                    lastEvent = e;
+                    LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper)iter.next();
+                    loggingEventWrapper.setDisplayed(true);
+                    updateEventMillisDelta(loggingEventWrapper, lastEvent);
+                    filteredList.add(loggingEventWrapper);
+                    lastEvent = loggingEventWrapper;
                 }
             } else {
                 Iterator iter = unfilteredList.iterator();
-                LoggingEvent lastEvent = null;
+                LoggingEventWrapper lastEvent = null;
                 while (iter.hasNext()) {
-                  ExtendedLoggingEvent e = (ExtendedLoggingEvent) iter.next();
+                  LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) iter.next();
 
-                  if (displayRule.evaluate(e, null)) {
-                    e.setDisplayed(true);
-                    filteredList.add(e);
-                    updateEventMillisDelta(e, lastEvent);
-                    lastEvent = e;
+                  if (displayRule.evaluate(loggingEventWrapper.getLoggingEvent(), null)) {
+                    loggingEventWrapper.setDisplayed(true);
+                    filteredList.add(loggingEventWrapper);
+                    updateEventMillisDelta(loggingEventWrapper, lastEvent);
+                    lastEvent = loggingEventWrapper;
                   } else {
-                    e.setDisplayed(false);
+                    loggingEventWrapper.setDisplayed(false);
                   }
                 }
             }
@@ -200,25 +204,25 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     }
       if (searchForward) {
         for (int i = startLocation; i < filteredListCopy.size(); i++) {
-          if (rule.evaluate((LoggingEvent) filteredListCopy.get(i), null)) {
+          if (rule.evaluate(((LoggingEventWrapper) filteredListCopy.get(i)).getLoggingEvent(), null)) {
             return i;
           }
         }
         //if there was no match, start at row zero and go to startLocation
         for (int i = 0; i < startLocation; i++) {
-          if (rule.evaluate((LoggingEvent) filteredListCopy.get(i), null)) {
+          if (rule.evaluate(((LoggingEventWrapper) filteredListCopy.get(i)).getLoggingEvent(), null)) {
             return i;
           }
         }
       } else {
         for (int i = startLocation; i > -1; i--) {
-          if (rule.evaluate((LoggingEvent) filteredListCopy.get(i), null)) {
+          if (rule.evaluate(((LoggingEventWrapper) filteredListCopy.get(i)).getLoggingEvent(), null)) {
             return i;
           }
         }
         //if there was no match, start at row list.size() - 1 and go to startLocation
         for (int i = filteredListCopy.size() - 1; i > startLocation; i--) {
-          if (rule.evaluate((LoggingEvent) filteredListCopy.get(i), null)) {
+          if (rule.evaluate(((LoggingEventWrapper) filteredListCopy.get(i)).getLoggingEvent(), null)) {
             return i;
           }
         }
@@ -240,6 +244,12 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
    */
   public boolean addLoggerName(String loggerName) {
     return loggerNameModelDelegate.addLoggerName(loggerName);
+  }
+
+  public String toString() {
+    return "ChainsawCyclicBufferTableModel{" +
+        "name='" + tableModelName + '\'' +
+        '}';
   }
 
   public void reset() {
@@ -317,9 +327,9 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
           sort = (sortEnabled && filteredListSize > 0);
         if (sort) {
             //reset display (used to ensure row height is updated)
-            LoggingEvent lastEvent = null;
+            LoggingEventWrapper lastEvent = null;
             for (Iterator iter = filteredList.iterator();iter.hasNext();) {
-                ExtendedLoggingEvent e = (ExtendedLoggingEvent)iter.next();
+                LoggingEventWrapper e = (LoggingEventWrapper)iter.next();
                 e.setDisplayed(true);
                 updateEventMillisDelta(e, lastEvent);
                 lastEvent = e;
@@ -388,9 +398,9 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   	}
   }
   
-  public int getRowIndex(LoggingEvent e) {
+  public int getRowIndex(LoggingEventWrapper loggingEventWrapper) {
     synchronized (mutex) {
-      return filteredList.indexOf(e);
+      return filteredList.indexOf(loggingEventWrapper);
     }
   }
 
@@ -403,16 +413,16 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
             unfilteredListCopy = new ArrayList(unfilteredList);
         }
         for (int i=0;i<filteredListCopy.size();i++) {
-            LoggingEvent event = (LoggingEvent)filteredListCopy.get(i);
-            Object result = event.removeProperty(propName);
+            LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper)filteredListCopy.get(i);
+            Object result = loggingEventWrapper.removeProperty(propName);
             if (result != null) {
                 fireRowUpdated(i, false);
             }
         }
         //now remove the event from all events
         for (Iterator iter = unfilteredListCopy.iterator();iter.hasNext();) {
-            LoggingEvent event = (LoggingEvent)iter.next();
-            event.removeProperty(propName);
+            LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper)iter.next();
+            loggingEventWrapper.removeProperty(propName);
         }
     }
 
@@ -423,9 +433,9 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
             unfilteredListCopy = new ArrayList(unfilteredList);
         }
         for (Iterator iter = unfilteredListCopy.iterator();iter.hasNext();) {
-            ExtendedLoggingEvent extendedLoggingEvent = (ExtendedLoggingEvent) iter.next();
-            extendedLoggingEvent.evaluateSearchRule(findRule);
-            if (extendedLoggingEvent.isSearchMatch()) {
+            LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) iter.next();
+            loggingEventWrapper.evaluateSearchRule(findRule);
+            if (loggingEventWrapper.isSearchMatch()) {
                 count++;
             }
         }
@@ -439,7 +449,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         }
         if (searchForward) {
           for (int i = startLocation; i < filteredListCopy.size(); i++) {
-            ExtendedLoggingEvent event = (ExtendedLoggingEvent)filteredListCopy.get(i);
+            LoggingEventWrapper event = (LoggingEventWrapper)filteredListCopy.get(i);
             if (!event.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND) ||
                     !event.getColorRuleForeground().equals(ChainsawConstants.COLOR_DEFAULT_FOREGROUND)) {
                 return i;
@@ -447,7 +457,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
           }
           //searching forward, no colorized event was found - now start at row zero and go to startLocation
           for (int i = 0; i < startLocation; i++) {
-            ExtendedLoggingEvent event = (ExtendedLoggingEvent)filteredListCopy.get(i);
+            LoggingEventWrapper event = (LoggingEventWrapper)filteredListCopy.get(i);
             if (!event.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND) ||
                     !event.getColorRuleForeground().equals(ChainsawConstants.COLOR_DEFAULT_FOREGROUND)) {
                 return i;
@@ -455,7 +465,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
           }
         } else {
           for (int i = startLocation; i > -1; i--) {
-              ExtendedLoggingEvent event = (ExtendedLoggingEvent)filteredListCopy.get(i);
+              LoggingEventWrapper event = (LoggingEventWrapper)filteredListCopy.get(i);
               if (!event.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND) ||
                       !event.getColorRuleForeground().equals(ChainsawConstants.COLOR_DEFAULT_FOREGROUND)) {
                   return i;
@@ -463,7 +473,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
           }
           //searching backward, no colorized event was found - now start at list.size() - 1 and go to startLocation
           for (int i = filteredListCopy.size() - 1; i > startLocation; i--) {
-              ExtendedLoggingEvent event = (ExtendedLoggingEvent)filteredListCopy.get(i);
+              LoggingEventWrapper event = (LoggingEventWrapper)filteredListCopy.get(i);
               if (!event.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND) ||
                       !event.getColorRuleForeground().equals(ChainsawConstants.COLOR_DEFAULT_FOREGROUND)) {
                   return i;
@@ -482,10 +492,10 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
       return (String) columnNames.get(column);
   }
 
-  public ExtendedLoggingEvent getRow(int row) {
+  public LoggingEventWrapper getRow(int row) {
     synchronized (mutex) {
       if (row < filteredList.size() && row > -1) {
-        return (ExtendedLoggingEvent) filteredList.get(row);
+        return (LoggingEventWrapper) filteredList.get(row);
       }
     }
 
@@ -503,7 +513,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
 
     synchronized (mutex) {
       if (rowIndex < filteredList.size() && rowIndex > -1) {
-        event = (LoggingEvent) filteredList.get(rowIndex);
+        event = ((LoggingEventWrapper) filteredList.get(rowIndex)).getLoggingEvent();
       }
     }
 
@@ -590,20 +600,21 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     return "";
   }
 
-  public boolean isAddRow(ExtendedLoggingEvent e) {
-    e.updateColorRuleColors(colorizer.getBackgroundColor(e), colorizer.getForegroundColor(e));
+  public boolean isAddRow(LoggingEventWrapper loggingEventWrapper) {
+    loggingEventWrapper.updateColorRuleColors(colorizer.getBackgroundColor(loggingEventWrapper.getLoggingEvent()), colorizer.getForegroundColor(loggingEventWrapper.getLoggingEvent()));
     Rule findRule = colorizer.getFindRule();
     if (findRule != null) {
-      e.evaluateSearchRule(colorizer.getFindRule());
+      loggingEventWrapper.evaluateSearchRule(colorizer.getFindRule());
     }
 
     boolean rowAdded = false;
 
-    Object id = e.getProperty(Constants.LOG4J_ID_KEY);
+    Object id = loggingEventWrapper.getLoggingEvent().getProperty(Constants.LOG4J_ID_KEY);
 
+    //only set the property if it doesn't already exist
     if (id == null) {
       id = new Integer(++uniqueRow);
-      e.setProperty(Constants.LOG4J_ID_KEY, id.toString());
+      loggingEventWrapper.setProperty(Constants.LOG4J_ID_KEY, id.toString());
     }
 
     /**
@@ -620,48 +631,48 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
             }
         }
         int unfilteredSize = unfilteredList.size();
-        LoggingEvent lastEvent = null;
+        LoggingEventWrapper lastLoggingEventWrapper = null;
         if (unfilteredSize > 0) {
-            lastEvent = (LoggingEvent) unfilteredList.get(unfilteredSize - 1);
+            lastLoggingEventWrapper = (LoggingEventWrapper) unfilteredList.get(unfilteredSize - 1);
         }
-        unfilteredList.add(e);
-        if ((displayRule == null) || (displayRule.evaluate(e, null))) {
-            e.setDisplayed(true);
-            updateEventMillisDelta(e, lastEvent);
-            filteredList.add(e);
+        unfilteredList.add(loggingEventWrapper);
+        if ((displayRule == null) || (displayRule.evaluate(loggingEventWrapper.getLoggingEvent(), null))) {
+            loggingEventWrapper.setDisplayed(true);
+            updateEventMillisDelta(loggingEventWrapper, lastLoggingEventWrapper);
+            filteredList.add(loggingEventWrapper);
             rowAdded = true;
         } else {
-            e.setDisplayed(false);
+            loggingEventWrapper.setDisplayed(false);
         }
     }
 
-    checkForNewColumn(e);
+    checkForNewColumn(loggingEventWrapper);
 
     return rowAdded;
   }
 
-    private void updateEventMillisDelta(ExtendedLoggingEvent e, LoggingEvent lastEvent) {
-      if (lastEvent != null) {
-        e.setPreviousDisplayedEventTimestamp(lastEvent.getTimeStamp());
+    private void updateEventMillisDelta(LoggingEventWrapper loggingEventWrapper, LoggingEventWrapper lastLoggingEventWrapper) {
+      if (lastLoggingEventWrapper != null) {
+        loggingEventWrapper.setPreviousDisplayedEventTimestamp(lastLoggingEventWrapper.getLoggingEvent().getTimeStamp());
       } else {
         //delta to same event = 0
-        e.setPreviousDisplayedEventTimestamp(e.getTimeStamp());
+        loggingEventWrapper.setPreviousDisplayedEventTimestamp(loggingEventWrapper.getLoggingEvent().getTimeStamp());
       }
     }
 
-   private void checkForNewColumn(ExtendedLoggingEvent e)
+   private void checkForNewColumn(LoggingEventWrapper loggingEventWrapper)
    {
       /**
        * Is this a new Property key we haven't seen before?  Remember that now MDC has been merged
        * into the Properties collection
        */
-      boolean newColumn = uniquePropertyKeys.addAll(e.getPropertyKeySet());
+      boolean newColumn = uniquePropertyKeys.addAll(loggingEventWrapper.getPropertyKeySet());
 
       if (newColumn) {
         /**
          * If so, we should add them as columns and notify listeners.
          */
-        for (Iterator iter = e.getPropertyKeySet().iterator(); iter.hasNext();) {
+        for (Iterator iter = loggingEventWrapper.getPropertyKeySet().iterator(); iter.hasNext();) {
           String key = iter.next().toString().toUpperCase();
 
           //add all keys except the 'log4jid' key (columnNames is all-caps)
@@ -670,7 +681,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
             logger.debug("Adding col '" + key + "', columnNames=" + columnNames);
             fireNewKeyColumnAdded(
               new NewKeyEvent(
-                this, columnNames.indexOf(key), key, e.getProperty(key)));
+                this, columnNames.indexOf(key), key, loggingEventWrapper.getLoggingEvent().getProperty(key)));
           }
         }
       }
@@ -701,19 +712,19 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   }
 
     public void fireRowUpdated(int row, boolean checkForNewColumns) {
-        ExtendedLoggingEvent event = getRow(row);
-        if (event != null)
+        LoggingEventWrapper loggingEventWrapper = getRow(row);
+        if (loggingEventWrapper != null)
         {
-            event.updateColorRuleColors(colorizer.getBackgroundColor(event), colorizer.getForegroundColor(event));
+            loggingEventWrapper.updateColorRuleColors(colorizer.getBackgroundColor(loggingEventWrapper.getLoggingEvent()), colorizer.getForegroundColor(loggingEventWrapper.getLoggingEvent()));
             Rule findRule = colorizer.getFindRule();
             if (findRule != null) {
-              event.evaluateSearchRule(colorizer.getFindRule());
+              loggingEventWrapper.evaluateSearchRule(colorizer.getFindRule());
             }
 
             fireTableRowsUpdated(row, row);
             if (checkForNewColumns) {
                 //row may have had a column added..if so, make sure a column is added
-                checkForNewColumn(event);
+                checkForNewColumn(loggingEventWrapper);
             }
         }
     }
@@ -844,13 +855,8 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
 
                   for (Iterator iter = unfilteredList.iterator();
                       iter.hasNext();) {
-                    LoggingEvent e = (LoggingEvent) iter.next();
-                    newUnfilteredList.add(e);
-
-                    Object o =
-                      e.getProperty(
-                        e.getProperty(Constants.LOG4J_ID_KEY));
-
+                    LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) iter.next();
+                    newUnfilteredList.add(loggingEventWrapper);
                     monitor.setProgress(index++);
                   }
 

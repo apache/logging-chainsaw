@@ -38,7 +38,10 @@ public class ChainsawConstants {
   public static final Color COLOR_DEFAULT_BACKGROUND = new Color(255,255,255);
   public static final Color COLOR_DEFAULT_FOREGROUND = Color.BLACK;
 
-  public static final int DEFAULT_ROW_HEIGHT = 20;
+  //top, bottom left and right border are all 2
+  public static final int TABLE_BORDER_WIDTH = 2;
+  //JTable defines its default height as 16, plus top & bottom borders
+  public static final int DEFAULT_ROW_HEIGHT = 16 + (TABLE_BORDER_WIDTH * 2);
   public static final Color FIND_LOGGER_BACKGROUND = new Color(213, 226, 235);
   public static final Color FIND_LOGGER_FOREGROUND = Color.BLACK;
 

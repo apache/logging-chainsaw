@@ -22,7 +22,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 
@@ -43,24 +42,8 @@ public class JSortTable extends JTable implements MouseListener {
   private String sortedColumn;
   private int lastSelectedColumn = -1;
 
-  public JSortTable() {
-    super();
-    initSortHeader();
-  }
   public JSortTable(SortTableModel model) {
     super(model);
-    initSortHeader();
-  }
-
-  public JSortTable(SortTableModel model, TableColumnModel colModel) {
-    super(model, colModel);
-    initSortHeader();
-  }
-
-  public JSortTable(
-    SortTableModel model, TableColumnModel colModel,
-    ListSelectionModel selModel) {
-    super(model, colModel, selModel);
     initSortHeader();
   }
 
@@ -108,7 +91,7 @@ public class JSortTable extends JTable implements MouseListener {
   }
 
   //Allow synchronous updates if already on the EDT
-  public void scrollTo(final int row, final int col) {
+  private void scrollTo(final int row, final int col) {
     final int currentRow = getSelectedRow();
     SwingHelper.invokeOnEDT(new Runnable() {
       public void run() {

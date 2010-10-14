@@ -70,7 +70,6 @@ import org.apache.log4j.chainsaw.color.RuleColorizer;
 import org.apache.log4j.chainsaw.icons.LevelIconFactory;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.rule.Rule;
-import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.LoggingEventFieldResolver;
 
 
@@ -97,7 +96,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private boolean useRelativeTimesToFixedTime = false;
   private long relativeTimestampBase;
 
-  private static int borderWidth = 2;
+  private static int borderWidth = ChainsawConstants.TABLE_BORDER_WIDTH;
 
   private final Color borderColor;
 
@@ -116,15 +115,18 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private EventContainer eventContainer;
   private LogPanelPreferenceModel logPanelPreferenceModel;
   private SimpleAttributeSet insetAttributeSet;
+  private boolean colorizeSearch;
 
-    /**
+  /**
    * Creates a new TableColorizingRenderer object.
    */
   public TableColorizingRenderer(RuleColorizer colorizer, ApplicationPreferenceModel applicationPreferenceModel,
-                                 EventContainer eventContainer, LogPanelPreferenceModel logPanelPreferenceModel) {
+                                 EventContainer eventContainer, LogPanelPreferenceModel logPanelPreferenceModel,
+                                 boolean colorizeSearch) {
     this.applicationPreferenceModel = applicationPreferenceModel;
     this.logPanelPreferenceModel = logPanelPreferenceModel;
     this.eventContainer = eventContainer;
+    this.colorizeSearch = colorizeSearch;
     multiLinePanel.setLayout(new BoxLayout(multiLinePanel, BoxLayout.Y_AXIS));
     generalPanel.setLayout(new BoxLayout(generalPanel, BoxLayout.Y_AXIS));
     levelPanel.setLayout(new BoxLayout(levelPanel, BoxLayout.Y_AXIS));
@@ -176,27 +178,26 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     final JTable table, Object value, boolean isSelected, boolean hasFocus,
     int row, int col) {
     EventContainer container = (EventContainer) table.getModel();
-    ExtendedLoggingEvent loggingEvent = container.getRow(row);
-    value = formatField(value, row, loggingEvent);
+    LoggingEventWrapper loggingEventWrapper = container.getRow(row);
+    value = formatField(value, row, loggingEventWrapper);
     TableColumn tableColumn = table.getColumnModel().getColumn(col);
     int width = tableColumn.getWidth();
-
     JLabel label = (JLabel)super.getTableCellRendererComponent(table, value,
         isSelected, hasFocus, row, col);
     //chainsawcolumns uses one-based indexing
     int colIndex = tableColumn.getModelIndex() + 1;
 
     //no event, use default renderer
-    if (loggingEvent == null) {
+    if (loggingEventWrapper == null) {
         return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
     }
     long delta = 0;
     if (row > 0) {
-        LoggingEvent previous = eventContainer.getRow(row - 1);
-        delta = Math.min(ChainsawConstants.MILLIS_DELTA_RENDERING_HEIGHT_MAX, Math.max(0, (long) ((loggingEvent.getTimeStamp() - previous.getTimeStamp()) * ChainsawConstants.MILLIS_DELTA_RENDERING_FACTOR)));
+        LoggingEventWrapper previous = eventContainer.getRow(row - 1);
+        delta = Math.min(ChainsawConstants.MILLIS_DELTA_RENDERING_HEIGHT_MAX, Math.max(0, (long) ((loggingEventWrapper.getLoggingEvent().getTimeStamp() - previous.getLoggingEvent().getTimeStamp()) * ChainsawConstants.MILLIS_DELTA_RENDERING_FACTOR)));
     }
 
-    Map matches = loggingEvent.getSearchMatches();
+    Map matches = loggingEventWrapper.getSearchMatches();
 
     JComponent component;
     switch (colIndex) {
@@ -329,8 +330,8 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
               textPane.setBorder(getMiddleBorder(isSelected, 0));
             }
         }
-        int currentMarkerHeight = loggingEvent.getMarkerHeight();
-        int currentMsgHeight = loggingEvent.getMsgHeight();
+        int currentMarkerHeight = loggingEventWrapper.getMarkerHeight();
+        int currentMsgHeight = loggingEventWrapper.getMsgHeight();
         int newRowHeight = ChainsawConstants.DEFAULT_ROW_HEIGHT;
         boolean setHeight = false;
 
@@ -355,15 +356,15 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         }
 
         if (colIndex == ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME) {
-            loggingEvent.setMarkerHeight(newRowHeight);
-            if (newRowHeight != currentMarkerHeight && newRowHeight >= loggingEvent.getMsgHeight()) {
+            loggingEventWrapper.setMarkerHeight(newRowHeight);
+            if (newRowHeight != currentMarkerHeight && newRowHeight >= loggingEventWrapper.getMsgHeight()) {
                 setHeight = true;
             }
         }
 
         if (colIndex == ChainsawColumns.INDEX_MESSAGE_COL_NAME) {
-            loggingEvent.setMsgHeight(newRowHeight);
-            if (newRowHeight != currentMsgHeight && newRowHeight >= loggingEvent.getMarkerHeight()) {
+            loggingEventWrapper.setMsgHeight(newRowHeight);
+            if (newRowHeight != currentMsgHeight && newRowHeight >= loggingEventWrapper.getMarkerHeight()) {
                 setHeight = true;
             }
         }
@@ -398,7 +399,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
 
     //remaining entries are properties
     default:
-        Set propertySet = loggingEvent.getPropertyKeySet();
+        Set propertySet = loggingEventWrapper.getPropertyKeySet();
         String headerName = tableColumn.getHeaderValue().toString().toLowerCase();
         String thisProp = null;
         //find the property in the property set...case-sensitive
@@ -412,7 +413,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         if (thisProp != null) {
             String propKey = LoggingEventFieldResolver.PROP_FIELD + thisProp.toUpperCase();
             Set propKeyMatches = (Set)matches.get(propKey);
-            singleLineTextPane.setText(loggingEvent.getProperty(thisProp));
+            singleLineTextPane.setText(loggingEventWrapper.getLoggingEvent().getProperty(thisProp));
             setHighlightAttributesInternal(propKeyMatches, (StyledDocument) singleLineTextPane.getDocument());
         } else {
             singleLineTextPane.setText("");
@@ -426,12 +427,17 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     Color foreground;
     Rule loggerRule = colorizer.getLoggerRule();
     //use logger colors in table instead of event colors if event passes logger rule
-    if (loggerRule != null && loggerRule.evaluate(loggingEvent, null)) {
+    if (loggerRule != null && loggerRule.evaluate(loggingEventWrapper.getLoggingEvent(), null)) {
         background = applicationPreferenceModel.getSearchBackgroundColor();
         foreground = applicationPreferenceModel.getSearchForegroundColor();
     } else {
-        background = loggingEvent.isSearchMatch()?applicationPreferenceModel.getSearchBackgroundColor():loggingEvent.getBackground();
-        foreground = loggingEvent.isSearchMatch()?applicationPreferenceModel.getSearchForegroundColor():loggingEvent.getForeground();
+        if (colorizeSearch) {
+          background = loggingEventWrapper.isSearchMatch()?applicationPreferenceModel.getSearchBackgroundColor():loggingEventWrapper.getBackground();
+          foreground = loggingEventWrapper.isSearchMatch()?applicationPreferenceModel.getSearchForegroundColor():loggingEventWrapper.getForeground();
+        } else {
+          background = loggingEventWrapper.getBackground();
+          foreground = loggingEventWrapper.getForeground();
+        }
     }
 
     /**
@@ -566,7 +572,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
    * @param renderingRow
    * @return formatted object
    */
-  private Object formatField(Object field, int renderingRow, ExtendedLoggingEvent loggingEvent) {
+  private Object formatField(Object field, int renderingRow, LoggingEventWrapper loggingEventWrapper) {
     if (!(field instanceof Date)) {
       return (field == null ? "" : field);
     }
@@ -576,7 +582,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         return "" + (((Date)field).getTime() - relativeTimestampBase);
     }
     if (useRelativeTimesToPrevious) {
-        return loggingEvent.getProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
+        return loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
     }
 
     return dateFormatInUse.format((Date) field);

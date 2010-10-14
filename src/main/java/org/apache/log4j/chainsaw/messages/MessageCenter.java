@@ -45,10 +45,10 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.TTCCLayout;
 import org.apache.log4j.chainsaw.ChainsawConstants;
+import org.apache.log4j.chainsaw.LoggingEventWrapper;
 import org.apache.log4j.chainsaw.PopupListener;
 import org.apache.log4j.chainsaw.SmallButton;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
-import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.varia.ListModelAppender;
 
 
@@ -242,7 +242,7 @@ public class MessageCenter {
     public Component getListCellRendererComponent(
       JList list, Object value, int index, boolean isSelected,
       boolean cellHasFocus) {
-      value = layout.format((LoggingEvent) value);
+      value = layout.format(((LoggingEventWrapper) value).getLoggingEvent());
 
       Component c =
         super.getListCellRendererComponent(
