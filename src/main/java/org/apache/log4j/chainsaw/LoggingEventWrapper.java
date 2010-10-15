@@ -82,28 +82,20 @@ public class LoggingEventWrapper {
 
   public void setProperty(String propName, String propValue) {
     loggingEvent.setProperty(propName, propValue);
-    if (propName.equals(Constants.LOG4J_ID_KEY)) {
-      id = Integer.parseInt(propValue);
-    }
-    if (!propName.equals(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE)) {
-      eventContainer.reFilter();
+    if (id == 0) {
+      if (propName.equals(Constants.LOG4J_ID_KEY)) {
+        id = Integer.parseInt(propValue);
+      }
     }
     if (syncWrapper != null && !propName.equals(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE)) {
       syncWrapper.getLoggingEvent().setProperty(propName, propValue);
-      EventContainer syncWrapperEventContainer = syncWrapper.eventContainer;
-      syncWrapperEventContainer.reFilter();
     }
   }
 
   public Object removeProperty(String propName) {
     Object result = loggingEvent.removeProperty(propName);
-    if (!propName.equals(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE)) {
-      eventContainer.reFilter();
-    }
     if (syncWrapper != null && !propName.equals(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE)) {
       syncWrapper.getLoggingEvent().removeProperty(propName);
-      EventContainer syncWrapperEventContainer = syncWrapper.eventContainer;
-      syncWrapperEventContainer.reFilter();
     }
     return result;
   }
@@ -170,9 +162,6 @@ public class LoggingEventWrapper {
   public void setDisplayed(boolean b) {
     markerHeight = DEFAULT_HEIGHT;
     msgHeight = DEFAULT_HEIGHT;
-    if (!b) {
-      setProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE, "");
-    }
   }
 
   public void setPreviousDisplayedEventTimestamp(long previousDisplayedEventTimeStamp) {

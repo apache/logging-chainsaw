@@ -70,6 +70,10 @@ public class RuleMediator extends AbstractRule {
     return true;
   }
 
+  public boolean isFindRuleRequired() {
+    return findRuleRequired;
+  }
+  
   public void setFilterRule(Rule r) {
     Rule oldFilterRule = this.filterRule;
     this.filterRule = r;

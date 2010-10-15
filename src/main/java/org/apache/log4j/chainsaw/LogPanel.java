@@ -727,8 +727,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
      * Set the Display rule to use the mediator, the model will add itself as
      * a property change listener and update itself when the rule changes.
      */
-    tableModel.setDisplayRule(tableRuleMediator);
-    searchModel.setDisplayRule(searchRuleMediator);
+    tableModel.setRuleMediator(tableRuleMediator);
+    searchModel.setRuleMediator(searchRuleMediator);
 
     tableModel.addEventCountListener(
       new EventCountListener() {

@@ -86,12 +86,12 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   //use and increment this row counter as the ID for each received row
   int uniqueRow;
   private final Set uniquePropertyKeys = new HashSet();
-  private Rule displayRule;
+  private Rule ruleMediator;
   private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
   private RuleColorizer colorizer;
   private final String tableModelName;
 
-    public ChainsawCyclicBufferTableModel(int cyclicBufferSize, RuleColorizer colorizer, String tableModelName) {
+  public ChainsawCyclicBufferTableModel(int cyclicBufferSize, RuleColorizer colorizer, String tableModelName) {
     propertySupport.addPropertyChangeListener("cyclic", new ModelChanger());
     this.cyclicBufferSize = cyclicBufferSize;
     this.colorizer = colorizer;
@@ -106,12 +106,18 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
    */
   public void propertyChange(PropertyChangeEvent evt) {
     if (evt.getSource() instanceof Rule) {
-      reFilter();
+      if (evt.getSource() == ruleMediator && evt.getPropertyName().equals("findRule")) {
+        if (((RuleMediator) evt.getSource()).isFindRuleRequired()) {
+          //only refilter if find rule is required
+          reFilter();
+        }
+      } else {
+        reFilter();
+      }
     }
   }
 
   public List getMatchingEvents(Rule rule) {
-
     List list = new ArrayList();
     List unfilteredCopy;
     synchronized (mutex) {
@@ -138,7 +144,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
             propertySupport.firePropertyChange("refilter", Boolean.FALSE, Boolean.TRUE);
             previousSize = filteredList.size();
             filteredList.clear();
-            if (displayRule == null) {
+            if (ruleMediator == null) {
                 LoggingEventWrapper lastEvent = null;
                 for (Iterator iter = unfilteredList.iterator();iter.hasNext();) {
                     LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper)iter.next();
@@ -153,7 +159,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
                 while (iter.hasNext()) {
                   LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) iter.next();
 
-                  if (displayRule.evaluate(loggingEventWrapper.getLoggingEvent(), null)) {
+                  if (ruleMediator.evaluate(loggingEventWrapper.getLoggingEvent(), null)) {
                     loggingEventWrapper.setDisplayed(true);
                     filteredList.add(loggingEventWrapper);
                     updateEventMillisDelta(loggingEventWrapper, lastEvent);
@@ -302,17 +308,16 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
    *
    * In any case, the model ensures the Filtered list is made up to date in a separate thread.
    */
-  public void setDisplayRule(Rule displayRule) {
-    if (this.displayRule != null) {
-      this.displayRule.removePropertyChangeListener(this);
+  public void setRuleMediator(RuleMediator ruleMediator) {
+    if (this.ruleMediator != null) {
+      this.ruleMediator.removePropertyChangeListener(this);
     }
 
-    this.displayRule = displayRule;
+    this.ruleMediator = ruleMediator;
 
-    if (this.displayRule != null) {
-      this.displayRule.addPropertyChangeListener(this);
+    if (this.ruleMediator != null) {
+      this.ruleMediator.addPropertyChangeListener(this);
     }
-
     reFilter();
   }
 
@@ -636,7 +641,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
             lastLoggingEventWrapper = (LoggingEventWrapper) unfilteredList.get(unfilteredSize - 1);
         }
         unfilteredList.add(loggingEventWrapper);
-        if ((displayRule == null) || (displayRule.evaluate(loggingEventWrapper.getLoggingEvent(), null))) {
+        if ((ruleMediator == null) || (ruleMediator.evaluate(loggingEventWrapper.getLoggingEvent(), null))) {
             loggingEventWrapper.setDisplayed(true);
             updateEventMillisDelta(loggingEventWrapper, lastLoggingEventWrapper);
             filteredList.add(loggingEventWrapper);

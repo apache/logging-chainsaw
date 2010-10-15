@@ -145,10 +145,10 @@ public interface EventContainer extends SortTableModel, LoggerNameModel {
    */
   void reFilter();
   /**
-   * Sets the DisplayFilter in operation
-   * @param displayRule
+   * Sets the RuleMediator in operation
+   * @param ruleMediator
    */
-  void setDisplayRule(Rule displayRule);
+  void setRuleMediator(RuleMediator ruleMediator);
 
   /**
    * Returns the index of the LoggingEventWrapper
