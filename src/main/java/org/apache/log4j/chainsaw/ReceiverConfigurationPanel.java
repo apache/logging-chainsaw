@@ -424,6 +424,7 @@ class ReceiverConfigurationPanel extends JPanel {
 
     private void seedLogFileFormatComboBoxModel()
     {
+        logFileFormatComboBoxModel.addElement("MESSAGE");
         logFileFormatComboBoxModel.addElement("%p %t %c - %m%n");
         logFileFormatComboBoxModel.addElement("LEVEL THREAD LOGGER - MESSAGE");
         logFileFormatComboBoxModel.addElement("%d{ABSOLUTE} %-5p [%c{1}] %m%n");

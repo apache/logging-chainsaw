@@ -606,14 +606,6 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   }
 
   public boolean isAddRow(LoggingEventWrapper loggingEventWrapper) {
-    loggingEventWrapper.updateColorRuleColors(colorizer.getBackgroundColor(loggingEventWrapper.getLoggingEvent()), colorizer.getForegroundColor(loggingEventWrapper.getLoggingEvent()));
-    Rule findRule = colorizer.getFindRule();
-    if (findRule != null) {
-      loggingEventWrapper.evaluateSearchRule(colorizer.getFindRule());
-    }
-
-    boolean rowAdded = false;
-
     Object id = loggingEventWrapper.getLoggingEvent().getProperty(Constants.LOG4J_ID_KEY);
 
     //only set the property if it doesn't already exist
@@ -621,6 +613,14 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
       id = new Integer(++uniqueRow);
       loggingEventWrapper.setProperty(Constants.LOG4J_ID_KEY, id.toString());
     }
+
+    loggingEventWrapper.updateColorRuleColors(colorizer.getBackgroundColor(loggingEventWrapper.getLoggingEvent()), colorizer.getForegroundColor(loggingEventWrapper.getLoggingEvent()));
+    Rule findRule = colorizer.getFindRule();
+    if (findRule != null) {
+      loggingEventWrapper.evaluateSearchRule(colorizer.getFindRule());
+    }
+
+    boolean rowAdded = false;
 
     /**
          * If we're in cyclic mode and over budget on the size, the addition of a new event will
