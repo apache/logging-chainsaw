@@ -260,7 +260,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   private Rule clearTableExpressionRule;
   private int lowerPanelDividerLocation;
   private EventContainer searchModel;
-  private JSortTable searchTable;
+  private final JSortTable searchTable;
   private TableColorizingRenderer searchRenderer;
   private ToggleToolTips mainToggleToolTips;
   private ToggleToolTips searchToggleToolTips;
@@ -270,6 +270,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   private TableCellEditor markerCellEditor;
   private JToolBar detailToolbar;
   private boolean searchResultsDisplayed;
+  private ColorizedEventAndSearchMatchThumbnail colorizedEventAndSearchMatchThumbnail;
 
   /**
    * Creates a new LogPanel object.  If a LogPanel with this identifier has
@@ -841,12 +842,23 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       "colorrule",
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          if (table != null) {
-            table.repaint();
+          for (Iterator iter = tableModel.getAllEvents().iterator();iter.hasNext();) {
+            LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper)iter.next();
+            loggingEventWrapper.updateColorRuleColors(colorizer.getBackgroundColor(loggingEventWrapper.getLoggingEvent()), colorizer.getForegroundColor(loggingEventWrapper.getLoggingEvent()));
           }
-          if (searchTable != null) {
-            searchTable.repaint();
-          }
+
+          for (Iterator iter = searchModel.getAllEvents().iterator();iter.hasNext();) {
+             LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper)iter.next();
+             loggingEventWrapper.updateColorRuleColors(colorizer.getBackgroundColor(loggingEventWrapper.getLoggingEvent()), colorizer.getForegroundColor(loggingEventWrapper.getLoggingEvent()));
+           }
+          colorizedEventAndSearchMatchThumbnail.configureColors();
+          lowerPanel.invalidate();
+          lowerPanel.revalidate();
+          lowerPanel.repaint();
+
+          searchTable.invalidate();
+          searchTable.revalidate();
+          searchTable.repaint();
         }
       });
 
@@ -1222,7 +1234,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     JPanel rightThumbNailPanel = new JPanel();
     rightThumbNailPanel.setLayout(new BoxLayout(rightThumbNailPanel, BoxLayout.Y_AXIS));
     rightThumbNailPanel.add(Box.createVerticalStrut(scrollBarWidth.intValue()));
-    rightThumbNailPanel.add(new ColorizedEventAndSearchMatchThumbnail());
+    colorizedEventAndSearchMatchThumbnail = new ColorizedEventAndSearchMatchThumbnail();
+    rightThumbNailPanel.add(colorizedEventAndSearchMatchThumbnail);
     rightThumbNailPanel.add(Box.createVerticalStrut(scrollBarWidth.intValue()));
     rightPanel.add(rightThumbNailPanel);
     //set thumbnail width to be a bit narrower than scrollbar width
@@ -3775,15 +3788,11 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         }
     }
 
+  //a listener receiving color updates needs to call configureColors on this class
     private class ColorizedEventAndSearchMatchThumbnail extends AbstractEventMatchThumbnail {
         public ColorizedEventAndSearchMatchThumbnail() {
             super();
             configureColors();
-            colorizer.addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    configureColors();
-                }
-            });
         }
 
         boolean primaryMatches(ThumbnailLoggingEventWrapper wrapper) {
@@ -3801,7 +3810,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             int i=0;
             for (Iterator iter = tableModel.getFilteredEvents().iterator();iter.hasNext();) {
                 LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) iter.next();
-                loggingEventWrapper.updateColorRuleColors(colorizer.getBackgroundColor(loggingEventWrapper.getLoggingEvent()), colorizer.getForegroundColor(loggingEventWrapper.getLoggingEvent()));
                 ThumbnailLoggingEventWrapper wrapper = new ThumbnailLoggingEventWrapper(i, loggingEventWrapper);
                 if (secondaryMatches(wrapper)) {
                     secondaryList.add(wrapper);
