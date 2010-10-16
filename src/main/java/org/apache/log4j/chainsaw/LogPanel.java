@@ -54,9 +54,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1482,7 +1484,11 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             String value = "";
 
             if (colName.equalsIgnoreCase(ChainsawConstants.TIMESTAMP_COL_NAME)) {
-            	value = timestampExpressionFormat.format(new Date(currentTable.getValueAt(row, column).toString()));
+              try {
+                value = timestampExpressionFormat.parse(currentTable.getValueAt(row, column).toString()).toString();
+              } catch (ParseException e) {
+                e.printStackTrace();
+              }
             } else {
               Object o = table.getValueAt(row, column);
 
@@ -1695,7 +1701,11 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             String value = "";
 
             if (colName.equalsIgnoreCase(ChainsawConstants.TIMESTAMP_COL_NAME)) {
-            	value = timestampExpressionFormat.format(new Date(currentTable.getValueAt(row, column).toString()));
+              try {
+                value = timestampExpressionFormat.parse(currentTable.getValueAt(row, column).toString()).toString();
+              } catch (ParseException e) {
+                e.printStackTrace();
+              }
             } else {
               Object o = currentTable.getValueAt(row, column);
 
@@ -1874,18 +1884,17 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   }
   
   private void scrollToBottom() {
+    //run this in an invokeLater block to ensure this action is enqueued to the end of the EDT
     EventQueue.invokeLater(new Runnable()
     {
-        public void run()
-        {
-            int scrollRow = tableModel.getRowCount() - 1;
+        public void run() {
+          int scrollRow = tableModel.getRowCount() - 1;
             table.scrollToRow(scrollRow);
         }
     });
   }
 
-  public void scrollToTop()
-  {
+  public void scrollToTop() {
       EventQueue.invokeLater(new Runnable() {
           public void run() {
               if (tableModel.getRowCount() > 1) {
@@ -2023,8 +2032,12 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
    */
   public void loadSettings(LoadSettingsEvent event) {
 
-    File xmlFile = new File(SettingsManager.getInstance()
-                .getSettingsDirectory(), URLEncoder.encode(identifier) + ".xml");
+    File xmlFile = null;
+    try {
+      xmlFile = new File(SettingsManager.getInstance().getSettingsDirectory(), URLEncoder.encode(identifier, "UTF-8") + ".xml");
+    } catch (UnsupportedEncodingException e) {
+      e.printStackTrace();
+    }
 
     if (xmlFile.exists()) {
         XStream stream = buildXStreamForLogPanelPreference();
@@ -2147,8 +2160,14 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
    * @see LogPanelPreferenceModel
    */
   public void saveSettings(SaveSettingsEvent event) {
-      File xmlFile = new File(SettingsManager.getInstance()
-              .getSettingsDirectory(), URLEncoder.encode(identifier) + ".xml");
+    File xmlFile = null;
+    try {
+      xmlFile = new File(SettingsManager.getInstance().getSettingsDirectory(), URLEncoder.encode(identifier, "UTF-8") + ".xml");
+    } catch (UnsupportedEncodingException e) {
+      e.printStackTrace();
+      //unable to save..just return
+      return;
+    }
 
     preferenceModel.setHiddenLoggers(new HashSet(logTreePanel.getHiddenSet()));
     preferenceModel.setHiddenExpression(logTreePanel.getHiddenExpression());
@@ -3999,9 +4018,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                     }
                     invalidate();
                     repaint();
-                    if (isScrollToBottom()) {
-                        scrollToBottom();
-                    }
+                    //run this in an invokeLater block to ensure this action is enqueued to the end of the EDT
+                    EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                      if (isScrollToBottom()) {
+                          scrollToBottom();
+                      }
+                    }});
                 }
             });
         }

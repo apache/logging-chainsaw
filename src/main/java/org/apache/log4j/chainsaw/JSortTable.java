@@ -92,9 +92,9 @@ public class JSortTable extends JTable implements MouseListener {
 
   //Allow synchronous updates if already on the EDT
   private void scrollTo(final int row, final int col) {
-    final int currentRow = getSelectedRow();
     SwingHelper.invokeOnEDT(new Runnable() {
       public void run() {
+        final int currentRow = getSelectedRow();
         if ((row > -1) && (row < getRowCount())) {
           try {
             //get the requested row off of the bottom and top of the screen by making the 5 rows around the requested row visible
