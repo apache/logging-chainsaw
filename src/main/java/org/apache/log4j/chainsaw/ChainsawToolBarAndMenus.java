@@ -18,9 +18,7 @@
 package org.apache.log4j.chainsaw;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -36,7 +34,6 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -49,7 +46,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
-import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
@@ -72,12 +68,9 @@ import org.apache.log4j.chainsaw.receivers.ReceiversHelper;
  */
 class ChainsawToolBarAndMenus implements ChangeListener {
   private final SmallToggleButton showReceiversButton;
-  private final JTextField findField;
   private final Action changeModelAction;
   private final Action clearAction;
   private final Action toggleWelcomeVisibleAction;
-  private final Action findNextAction;
-  private final Action findPreviousAction;
   private final Action findPreviousColorizedEventAction;
   private final Action findNextColorizedEventAction;
   private final Action findNextMarkerAction;
@@ -122,7 +115,6 @@ class ChainsawToolBarAndMenus implements ChangeListener {
   private final SmallToggleButton toggleCyclicButton = new SmallToggleButton();
   private final Action[] logPanelSpecificActions;
   private final JMenu activeTabMenu = new JMenu("Current tab");
-  private final JPanel findPanel;
 
     ChainsawToolBarAndMenus(final LogUI logui) {
     this.logui = logui;
@@ -131,9 +123,6 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     fileMenu = new FileMenu(logui);
     toggleWelcomeVisibleAction = toggleWelcomeVisibleAction();
     changeModelAction = createChangeModelAction();
-    findField = new JTextField();
-    findNextAction = getFindNextAction();
-    findPreviousAction = getFindPreviousAction();
     findNextMarkerAction = createFindNextMarkerAction();
     findPreviousColorizedEventAction = getFindPreviousColorizedEventAction();
     findNextColorizedEventAction = getFindNextColorizedEventAction();
@@ -153,28 +142,13 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     showReceiversAction = createShowReceiversAction();
     showReceiversButton = new SmallToggleButton(showReceiversAction);
 
-    findPanel = new JPanel();
-    findPanel.setLayout(new BoxLayout(findPanel, BoxLayout.X_AXIS));
-
-    Dimension findSize = new Dimension(260, 22);
-    Dimension findPanelSize = new Dimension(310, 30);
-    findPanel.setPreferredSize(findPanelSize);
-    findPanel.setMaximumSize(findPanelSize);
-    findPanel.setMinimumSize(findPanelSize);
-
-    findField.setPreferredSize(findSize);
-    findField.setMaximumSize(findSize);
-    findField.setMinimumSize(findSize);
-    findPanel.setAlignmentY(Component.CENTER_ALIGNMENT);
-    findField.setAlignmentY(Component.CENTER_ALIGNMENT);
-
     toggleDetailPaneAction = createToggleDetailPaneAction();
     createMenuBar();
     createToolbar();
 
     logPanelSpecificActions =
       new Action[] {
-        pauseAction, findNextAction, findPreviousAction, findNextColorizedEventAction, findPreviousColorizedEventAction,
+        pauseAction, findNextColorizedEventAction, findPreviousColorizedEventAction,
         findNextMarkerAction, findPreviousMarkerAction,
         toggleMarkerAction, clearAllMarkersAction, scrollToTopAction, clearAction,
         fileMenu.getFileSaveAction(), toggleDetailPaneAction,
@@ -817,39 +791,6 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     clearButton.setText("");
     toolbar.addSeparator();
 
-    JButton findNextButton = new SmallButton(findNextAction);
-    findNextButton.setText("");
-    findNextButton.getActionMap().put(
-      findNextAction.getValue(Action.NAME), findNextAction);
-    findNextButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-      (KeyStroke) findNextAction.getValue(Action.ACCELERATOR_KEY),
-      findNextAction.getValue(Action.NAME));
-
-    JButton findPreviousButton = new SmallButton(findPreviousAction);
-    findPreviousButton.setText("");
-    findPreviousButton.getActionMap().put(
-      findPreviousAction.getValue(Action.NAME), findPreviousAction);
-    findPreviousButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-      (KeyStroke) findPreviousAction.getValue(Action.ACCELERATOR_KEY),
-      findPreviousAction.getValue(Action.NAME));
-
-    JLabel searchLabel = new JLabel("Search:");
-    searchLabel.setDisplayedMnemonic('j');
-    searchLabel.setFont(searchLabel.getFont().deriveFont(Font.BOLD));
-    findPanel.add(searchLabel);
-    findPanel.add(Box.createHorizontalStrut(3));
-    findPanel.add(findField);
-    findPanel.add(Box.createRigidArea(new Dimension(5, 0)));
-    searchLabel.setLabelFor(findField);
-
-
-    toolbar.add(findPanel);
-    toolbar.addSeparator(new Dimension(7, 5));
-    toolbar.add(findNextButton);
-    toolbar.add(findPreviousButton);
-
-    toolbar.addSeparator();
-
     showReceiversButton.setText(null);
     toolbar.add(showReceiversButton);
 
@@ -907,17 +848,6 @@ class ChainsawToolBarAndMenus implements ChangeListener {
 
     if (logPanel == null) {
       activateLogPanelActions = false;
-      findField.setEnabled(false);
-      findPanel.removeAll();
-      JLabel searchLabel = new JLabel("Search:");
-      searchLabel.setDisplayedMnemonic('j');
-      searchLabel.setFont(searchLabel.getFont().deriveFont(Font.BOLD));
-      findPanel.add(searchLabel);
-      findPanel.add(Box.createHorizontalStrut(3));
-
-      findPanel.add(findField);
-      findPanel.add(Box.createRigidArea(new Dimension(5, 0)));
-      searchLabel.setLabelFor(findField);
       activeTabMenu.setEnabled(false);
       toggleWelcomeVisibleAction.setEnabled(true);
       detailPaneButton.setSelected(false);
@@ -925,17 +855,6 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     } else {
       activeTabMenu.setEnabled(true);
       fileMenu.getFileSaveAction().setEnabled(true);
-      findPanel.removeAll();
-      JLabel searchLabel = new JLabel("Search:");
-      searchLabel.setDisplayedMnemonic('j');
-
-      searchLabel.setFont(searchLabel.getFont().deriveFont(Font.BOLD));
-      findPanel.add(searchLabel);
-      findPanel.add(Box.createHorizontalStrut(3));
-      findPanel.add(logPanel.getFindTextField());
-      findPanel.add(Box.createRigidArea(new Dimension(5, 0)));
-      searchLabel.setLabelFor(logPanel.getFindTextField());
-
       pauseButton.getModel().setSelected(logPanel.isPaused());
       toggleCyclicButton.setSelected(logPanel.isCyclic());
       logui.getStatusBar().setPaused(logPanel.isPaused(), logPanel.getIdentifier());
@@ -944,10 +863,6 @@ class ChainsawToolBarAndMenus implements ChangeListener {
       toggleLogTreeMenuItem.setSelected(logPanel.isLogTreeVisible());
       toggleScrollToBottomMenuItem.setSelected(logPanel.isScrollToBottom());
     }
-
-    findPanel.invalidate();
-    findPanel.revalidate();
-    findPanel.repaint();
 
     for (int i = 0; i < logPanelSpecificActions.length; i++) {
       logPanelSpecificActions[i].setEnabled(activateLogPanelActions);
@@ -964,52 +879,6 @@ class ChainsawToolBarAndMenus implements ChangeListener {
         element.setSelected(false);
       }
     }
-  }
-
-  private Action getFindNextAction() {
-    final Action action =
-      new AbstractAction("Find next") {
-        public void actionPerformed(ActionEvent e) {
-          LogPanel p = logui.getCurrentLogPanel();
-
-          if (p != null) {
-            p.findNext();
-          }
-        }
-      };
-
-    //    action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_F));
-    action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F3"));
-    action.putValue(
-      Action.SHORT_DESCRIPTION,
-      "Find the next occurrence of the rule from the current row");
-    action.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.DOWN));
-
-    return action;
-  }
-
-  private Action getFindPreviousAction() {
-    final Action action =
-      new AbstractAction("Find previous") {
-        public void actionPerformed(ActionEvent e) {
-          LogPanel p = logui.getCurrentLogPanel();
-
-          if (p != null) {
-            p.findPrevious();
-          }
-        }
-      };
-
-    //    action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_F));
-    action.putValue(
-      Action.ACCELERATOR_KEY,
-      KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_MASK));
-    action.putValue(
-      Action.SHORT_DESCRIPTION,
-      "Find the previous occurrence of the rule from the current row");
-    action.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.UP));
-
-    return action;
   }
 
     private Action getFindNextColorizedEventAction() {

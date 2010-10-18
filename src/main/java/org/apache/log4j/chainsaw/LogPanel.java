@@ -27,6 +27,8 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
@@ -61,8 +63,6 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.EventObject;
 import java.util.HashMap;
@@ -243,8 +243,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   private Rule findRule;
   private String currentFindRuleText;
   private Rule findMarkerRule;
-  private final JPanel findPanel;
-  private JTextField findField;
   private final int dividerSize;
   static final String TABLE_COLUMN_ORDER = "table.columns.order";
   static final String TABLE_COLUMN_WIDTHS = "table.columns.widths";
@@ -254,6 +252,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   private final DateFormat timestampExpressionFormat = new SimpleDateFormat(Constants.TIMESTAMP_RULE_FORMAT);
   private final Logger logger = LogManager.getLogger(LogPanel.class);
   private AutoFilterComboBox filterCombo;
+  private AutoFilterComboBox findCombo;
   private JScrollPane eventsPane;
   private int currentSearchMatchCount;
   private ApplicationPreferenceModel applicationPreferenceModel;
@@ -287,12 +286,16 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     logger.debug("creating logpanel for " + identifier);
 
     setLayout(new BorderLayout());
-    findPanel = new JPanel();
-    findPanel.setLayout(new BoxLayout(findPanel, BoxLayout.X_AXIS));
-    Dimension findPanelSize = new Dimension(310, 30);
-    findPanel.setPreferredSize(findPanelSize);
-    findPanel.setMaximumSize(findPanelSize);
-    findPanel.setMinimumSize(findPanelSize);
+
+    String prototypeValue = "1231231231231231231231";
+
+    filterCombo = new AutoFilterComboBox();
+    filterCombo.setPrototypeDisplayValue(prototypeValue);
+    buildCombo(filterCombo, true);
+
+    findCombo = new AutoFilterComboBox();
+    findCombo.setPrototypeDisplayValue(prototypeValue);
+    buildCombo(findCombo, false);
 
     final Map columnNameKeywordMap = new HashMap();
     columnNameKeywordMap.put(ChainsawConstants.CLASS_COL_NAME, LoggingEventFieldResolver.CLASS_FIELD);
@@ -792,7 +795,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         public void propertyChange(PropertyChangeEvent evt)
         {
             if (evt.getPropertyName().equals("searchExpression")) {
-                findField.setText(evt.getNewValue().toString());
+                findCombo.setSelectedItem(evt.getNewValue().toString());
                 findNext();
             }
         }
@@ -846,11 +849,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper)iter.next();
             loggingEventWrapper.updateColorRuleColors(colorizer.getBackgroundColor(loggingEventWrapper.getLoggingEvent()), colorizer.getForegroundColor(loggingEventWrapper.getLoggingEvent()));
           }
-
-          for (Iterator iter = searchModel.getAllEvents().iterator();iter.hasNext();) {
-             LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper)iter.next();
-             loggingEventWrapper.updateColorRuleColors(colorizer.getBackgroundColor(loggingEventWrapper.getLoggingEvent()), colorizer.getForegroundColor(loggingEventWrapper.getLoggingEvent()));
-           }
+//          no need to update searchmodel events since tablemodel and searchmodel share all events, and color rules aren't different between the two
+//          if that changes, un-do the color syncing in loggingeventwrapper & re-enable this code
+//
+//          for (Iterator iter = searchModel.getAllEvents().iterator();iter.hasNext();) {
+//             LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper)iter.next();
+//             loggingEventWrapper.updateColorRuleColors(colorizer.getBackgroundColor(loggingEventWrapper.getLoggingEvent()), colorizer.getForegroundColor(loggingEventWrapper.getLoggingEvent()));
+//           }
           colorizedEventAndSearchMatchThumbnail.configureColors();
           lowerPanel.invalidate();
           lowerPanel.revalidate();
@@ -1092,90 +1097,90 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     /*
      * Upper panel definition
      */
-    JPanel upperPanel = new JPanel(new BorderLayout());
+    JPanel upperPanel = new JPanel();
+    upperPanel.setLayout(new BoxLayout(upperPanel, BoxLayout.X_AXIS));
     upperPanel.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 0));
 
     final JLabel filterLabel = new JLabel("Refine focus on: ");
     filterLabel.setFont(filterLabel.getFont().deriveFont(Font.BOLD));
     filterLabel.setDisplayedMnemonic('k');
+    filterLabel.setLabelFor(filterCombo);
 
-    JPanel upperLeftPanel = new JPanel();
-    upperLeftPanel.setLayout(new BoxLayout(upperLeftPanel, BoxLayout.X_AXIS));
-    upperLeftPanel.setAlignmentY(Component.CENTER_ALIGNMENT);
-    upperLeftPanel.setAlignmentY(Component.CENTER_ALIGNMENT);
+    upperPanel.add(filterLabel);
 
-    upperLeftPanel.add(filterLabel);
-
-    //add (hopefully useful) default filters
-    Vector filterExpressionVector = new Vector();
-    filterExpressionVector.add("LEVEL == TRACE");
-    filterExpressionVector.add("LEVEL >= DEBUG");
-    filterExpressionVector.add("LEVEL >= INFO");
-    filterExpressionVector.add("LEVEL >= WARN");
-    filterExpressionVector.add("LEVEL >= ERROR");
-    filterExpressionVector.add("LEVEL == FATAL");
-    
-    filterCombo = new AutoFilterComboBox(filterExpressionVector);
-    final JTextField filterText =(JTextField) filterCombo.getEditor().getEditorComponent();
-    filterText.getDocument().addDocumentListener(new DelayedFilterTextDocumentListener(filterText));
-    filterText.setToolTipText("Enter an expression, press enter to add to list");
-    filterText.addKeyListener(new ExpressionRuleContext(filterModel, filterText));
-
-    if (filterCombo.getEditor().getEditorComponent() instanceof JTextField) {
-      filterCombo.addActionListener(
-        new AbstractAction() {
-          public void actionPerformed(ActionEvent e) {
-            if (e.getActionCommand().equals("comboBoxEdited")) {
-              try {
-                //verify the expression is valid
-                  Object item = filterCombo.getSelectedItem();
-                  if (item != null && !item.toString().trim().equals("")) {
-                    ExpressionRule.getRule(item.toString());
-                    //add entry as first row of the combo box
-                    filterCombo.insertItemAt(item, 0);
-                  }
-                //valid expression, reset background color in case we were previously an invalid expression
-                filterText.setBackground(UIManager.getColor("TextField.background"));
-              } catch (IllegalArgumentException iae) {
-                  //don't add expressions that aren't valid
-                  //invalid expression, change background of the field
-                  filterText.setToolTipText(iae.getMessage());
-                  filterText.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
-                return;
-              }
-            }
-          }
-        });
-    }
-      upperPanel.add(filterCombo, BorderLayout.CENTER);
-      filterLabel.setLabelFor(filterCombo);
-
-    upperPanel.add(upperLeftPanel, BorderLayout.WEST);
-
-    JPanel upperRightPanel =
-      new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+    upperPanel.add(filterCombo);
 
     //Adding a button to clear filter expressions which are currently remembered by Chainsaw...
-    final JButton clearButton = new JButton(" Clear expression ");
-    clearButton.setToolTipText("Click here to remove the selected expression from the list");
-    clearButton.addActionListener(
+    final JButton removeFilterButton = new JButton(" Remove ");
+    final JTextField filterText =(JTextField) filterCombo.getEditor().getEditorComponent();
+    removeFilterButton.setToolTipText("Click here to remove the selected expression from the list");
+    removeFilterButton.addActionListener(
             new AbstractAction() {
                 public void actionPerformed(ActionEvent e){
                 	Object selectedItem = filterCombo.getSelectedItem();
-                    if (e.getSource() == clearButton && selectedItem != null && !selectedItem.toString().trim().equals("")){
-                        //don't just remove the entry from the store, clear the refine focus field
-                        filterText.setText(null);
+                    if (e.getSource() == removeFilterButton && selectedItem != null && !selectedItem.toString().trim().equals("")){
+                        //don't just remove the entry from the store, clear the field
                         int index = filterCombo.getSelectedIndex();
+                        filterText.setText(null);
                         filterCombo.setSelectedIndex(-1);
                         filterCombo.removeItemAt(index);
                     }
                 }
             }
     );
+    upperPanel.add(removeFilterButton);
 
-    upperRightPanel.add(clearButton);
+    final JLabel findLabel = new JLabel("Search: ");
+    findLabel.setFont(filterLabel.getFont().deriveFont(Font.BOLD));
+    findLabel.setDisplayedMnemonic('j');
+    findLabel.setLabelFor(findCombo);
 
-    upperPanel.add(upperRightPanel, BorderLayout.EAST);
+    upperPanel.add(findLabel);
+
+    upperPanel.add(findCombo);
+
+    Action findNextAction = getFindNextAction();
+    Action findPreviousAction = getFindPreviousAction();
+    //add up & down search
+    JButton findNextButton = new SmallButton(findNextAction);
+    findNextButton.setText("");
+    findNextButton.getActionMap().put(
+      findNextAction.getValue(Action.NAME), findNextAction);
+    findNextButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+      (KeyStroke) findNextAction.getValue(Action.ACCELERATOR_KEY),
+      findNextAction.getValue(Action.NAME));
+
+    JButton findPreviousButton = new SmallButton(findPreviousAction);
+    findPreviousButton.setText("");
+    findPreviousButton.getActionMap().put(
+      findPreviousAction.getValue(Action.NAME), findPreviousAction);
+    findPreviousButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+      (KeyStroke) findPreviousAction.getValue(Action.ACCELERATOR_KEY),
+      findPreviousAction.getValue(Action.NAME));
+
+    upperPanel.add(findNextButton);
+
+    upperPanel.add(findPreviousButton);
+
+    //Adding a button to clear filter expressions which are currently remembered by Chainsaw...
+    final JButton removeFindButton = new JButton(" Remove ");
+    final JTextField findText =(JTextField) findCombo.getEditor().getEditorComponent();
+    removeFindButton.setToolTipText("Click here to remove the selected expression from the list");
+    removeFindButton.addActionListener(
+            new AbstractAction() {
+                public void actionPerformed(ActionEvent e){
+                	Object selectedItem = findCombo.getSelectedItem();
+                    if (e.getSource() == removeFindButton && selectedItem != null && !selectedItem.toString().trim().equals("")){
+                        //don't just remove the entry from the store, clear the field
+                        int index = findCombo.getSelectedIndex();
+                        findText.setText(null);
+                        findCombo.setSelectedIndex(-1);
+                        findCombo.removeItemAt(index);
+                    }
+                }
+            }
+    );
+    upperPanel.add(removeFindButton);
 
     /*
      * Detail pane definition
@@ -1312,7 +1317,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                 //no-op empty searches
                 return;
             }
-            findField.setText("msg ~= '" + selectedText + "'");
+            findCombo.setSelectedItem("msg ~= '" + selectedText + "'");
             findNext();
         }
     };
@@ -1732,7 +1737,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             }
 
             if (columnNameKeywordMap.containsKey(colName)) {
-              findField.setText(
+              findCombo.setSelectedItem(
                 columnNameKeywordMap.get(colName).toString() + " " + operator
                 + " '" + value + "'");
               findNext();
@@ -1748,7 +1753,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
          super("Clear search field");
        }
           public void actionPerformed(ActionEvent e) {
-            findField.setText(null);
+            findCombo.setSelectedItem(null);
             updateFindRule(null);
           }
         }
@@ -1867,6 +1872,87 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
     final PopupListener searchTablePopupListener = new PopupListener(searchPopup);
     detailPane.addMouseListener(searchTablePopupListener);
+  }
+
+    private Action getFindNextAction() {
+    final Action action =
+      new AbstractAction("Find next") {
+        public void actionPerformed(ActionEvent e) {
+          findNext();
+        }
+      };
+
+    //    action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_F));
+    action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F3"));
+    action.putValue(
+      Action.SHORT_DESCRIPTION,
+      "Find the next occurrence of the rule from the current row");
+    action.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.DOWN));
+
+    return action;
+  }
+
+  private Action getFindPreviousAction() {
+    final Action action =
+      new AbstractAction("Find previous") {
+        public void actionPerformed(ActionEvent e) {
+            findPrevious();
+        }
+      };
+
+    //    action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_F));
+    action.putValue(
+      Action.ACCELERATOR_KEY,
+      KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_MASK));
+    action.putValue(
+      Action.SHORT_DESCRIPTION,
+      "Find the previous occurrence of the rule from the current row");
+    action.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.UP));
+
+    return action;
+  }
+
+  private  void buildCombo(final JComboBox combo, boolean isFiltering) {
+    //add (hopefully useful) default filters
+    combo.addItem("LEVEL == TRACE");
+    combo.addItem("LEVEL >= DEBUG");
+    combo.addItem("LEVEL >= INFO");
+    combo.addItem("LEVEL >= WARN");
+    combo.addItem("LEVEL >= ERROR");
+    combo.addItem("LEVEL == FATAL");
+
+    final JTextField filterText =(JTextField) combo.getEditor().getEditorComponent();
+    if (isFiltering) {
+      filterText.getDocument().addDocumentListener(new DelayedTextDocumentListener(filterText));
+    }
+    filterText.setToolTipText("Enter an expression, press enter to add to list");
+    filterText.addKeyListener(new ExpressionRuleContext(filterModel, filterText));
+
+    if (combo.getEditor().getEditorComponent() instanceof JTextField) {
+      combo.addActionListener(
+        new AbstractAction() {
+          public void actionPerformed(ActionEvent e) {
+            if (e.getActionCommand().equals("comboBoxEdited")) {
+              try {
+                //verify the expression is valid
+                  Object item = combo.getSelectedItem();
+                  if (item != null && !item.toString().trim().equals("")) {
+                    ExpressionRule.getRule(item.toString());
+                    //add entry as first row of the combo box
+                    combo.insertItemAt(item, 0);
+                  }
+                //valid expression, reset background color in case we were previously an invalid expression
+                filterText.setBackground(UIManager.getColor("TextField.background"));
+              } catch (IllegalArgumentException iae) {
+                  //don't add expressions that aren't valid
+                  //invalid expression, change background of the field
+                  filterText.setToolTipText(iae.getMessage());
+                  filterText.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
+              }
+            }
+          }
+        });
+    }
   }
 
   /**
@@ -2080,6 +2166,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                     Object item = savedVector.get(i);
                     //insert each row at index zero (so last row in vector will be row zero)
                     filterCombo.insertItemAt(item, 0);
+                    findCombo.insertItemAt(item, 0);
                 }
                 if (versionNumber > 1) {
                     //update prefModel columns to include defaults
@@ -2212,7 +2299,11 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         //this is a version number written to the file to identify that there is a Vector serialized after this
         s.writeInt(LOG_PANEL_SERIALIZATION_VERSION_NUMBER);
         //don't write filterexpressionvector, write the combobox's model's backing vector
-        s.writeObject(filterCombo.getModelData());
+        Vector combinedVector = new Vector();
+        combinedVector.addAll(filterCombo.getModelData());
+        combinedVector.addAll(findCombo.getModelData());
+        //duplicates will be removed when loaded..
+        s.writeObject(combinedVector);
     } catch (Exception ex) {
         ex.printStackTrace();
         // TODO need to log this..
@@ -2342,18 +2433,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   	final int row = table.getSelectedRow();
     setDocked(false);
     externalPanel.removeAll();
-    findPanel.removeAll();
-
-    JLabel searchLabel = new JLabel("Search:");
-    searchLabel.setDisplayedMnemonic('j');
-
-    searchLabel.setFont(searchLabel.getFont().deriveFont(Font.BOLD));
-    findPanel.add(searchLabel);
-    findPanel.add(Box.createHorizontalStrut(3));
-
-    findPanel.add(findField);
-    findPanel.add(Box.createRigidArea(new Dimension(5, 0)));
-    searchLabel.setLabelFor(findField);
 
     externalPanel.add(undockedToolbar, BorderLayout.NORTH);
     externalPanel.add(nameTreeAndMainPanelSplit, BorderLayout.CENTER);
@@ -2455,8 +2534,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       tableRuleMediator.setFindRule(null);
       searchRuleMediator.setFindRule(null);
       //reset background color in case we were previously an invalid expression
-      findField.setBackground(UIManager.getColor("TextField.background"));
-      findField.setToolTipText(
+      findCombo.setBackground(UIManager.getColor("TextField.background"));
+      findCombo.setToolTipText(
         "Enter expression - right click or ctrl-space for menu");
       currentSearchMatchCount = 0;
       currentFindRuleText = null;
@@ -2474,7 +2553,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       }
       currentFindRuleText = ruleText;
       try {
-        findField.setToolTipText(
+        findCombo.setToolTipText(
           "Enter expression - right click or ctrl-space for menu");
         findRule = ExpressionRule.getRule(ruleText);
         currentSearchMatchCount = tableModel.updateEventsWithFindRule(findRule);
@@ -2483,15 +2562,15 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         tableRuleMediator.setFindRule(findRule);
         searchRuleMediator.setFindRule(findRule);
         //valid expression, reset background color in case we were previously an invalid expression
-        findField.setBackground(UIManager.getColor("TextField.background"));
+        findCombo.setBackground(UIManager.getColor("TextField.background"));
         statusBar.setSearchMatchCount(currentSearchMatchCount, getIdentifier());
         if (isSearchResultsVisible()) {
           showSearchResults();
         }
       } catch (IllegalArgumentException re) {
         findRule = null;
-        findField.setToolTipText(re.getMessage());
-        findField.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
+        findCombo.setToolTipText(re.getMessage());
+        findCombo.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
         colorizer.setFindRule(null);
         tableRuleMediator.setFindRule(null);
         searchRuleMediator.setFindRule(null);
@@ -2510,8 +2589,19 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   private void hideSearchResults() {
     if (searchResultsDisplayed) {
       detailPanel.removeAll();
+      JPanel leftSpacePanel = new JPanel();
+      Integer scrollBarWidth = (Integer) UIManager.get("ScrollBar.width");
+      leftSpacePanel.setPreferredSize(new Dimension(scrollBarWidth.intValue() -4, -1));
+
+      JPanel rightSpacePanel = new JPanel();
+      rightSpacePanel.setPreferredSize(new Dimension(scrollBarWidth.intValue() -4, -1));
+
       detailPanel.add(detailToolbar, BorderLayout.NORTH);
       detailPanel.add(detailPane, BorderLayout.CENTER);
+
+      detailPanel.add(leftSpacePanel, BorderLayout.WEST);
+      detailPanel.add(rightSpacePanel, BorderLayout.EAST);
+ 
       detailPanel.invalidate();
       detailPanel.revalidate();
       detailPanel.repaint();
@@ -2744,91 +2834,15 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       toggleScrollToBottomButton.setText("");
       toolbar.add(toggleScrollToBottomButton);
       toolbar.addSeparator();
-    
-    findField = new JTextField();
-    Dimension findSize = new Dimension(260, 22);
-    findField.setPreferredSize(findSize);
-    findField.setMaximumSize(findSize);
-    findField.setMinimumSize(findSize);
-    findPanel.setAlignmentY(Component.CENTER_ALIGNMENT);
-    findField.setAlignmentY(Component.CENTER_ALIGNMENT);
-    findField.addActionListener(new ActionListener(){
+
+    findCombo.addActionListener(new ActionListener(){
         public void actionPerformed(ActionEvent e) {
-            findNext();
+          //comboboxchanged event received when text is modified in the field..when enter is pressed, it's comboboxedited
+          if (e.getActionCommand().equalsIgnoreCase("comboBoxEdited")) {
+              findNext();
+          }
         }
     });
-    findField.addKeyListener(
-      new ExpressionRuleContext(filterModel, findField));
-
-    final Action undockedFindNextAction =
-      new AbstractAction() {
-        public void actionPerformed(ActionEvent e) {
-          findNext();
-        }
-      };
-
-    undockedFindNextAction.putValue(Action.NAME, "Find next");
-    undockedFindNextAction.putValue(
-      Action.SHORT_DESCRIPTION,
-      "Find the next search occurrence");
-    undockedFindNextAction.putValue(
-      Action.SMALL_ICON, new ImageIcon(ChainsawIcons.DOWN));
-
-    SmallButton undockedFindNextButton =
-      new SmallButton(undockedFindNextAction);
-
-    undockedFindNextButton.setAction(undockedFindNextAction);
-    undockedFindNextButton.setText("");
-    undockedFindNextButton.getActionMap().put(
-      undockedFindNextAction.getValue(Action.NAME), undockedFindNextAction);
-    undockedFindNextButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-      KeyStroke.getKeyStroke("F3"),
-      undockedFindNextAction.getValue(Action.NAME));
-
-    final Action undockedFindPreviousAction =
-      new AbstractAction() {
-        public void actionPerformed(ActionEvent e) {
-          findPrevious();
-        }
-      };
-
-    undockedFindPreviousAction.putValue(Action.NAME, "Find previous");
-    undockedFindPreviousAction.putValue(
-      Action.SHORT_DESCRIPTION,
-      "Find the previous search occurrence");
-    undockedFindPreviousAction.putValue(
-      Action.SMALL_ICON, new ImageIcon(ChainsawIcons.UP));
-
-    SmallButton undockedFindPreviousButton =
-      new SmallButton(undockedFindPreviousAction);
-
-    undockedFindPreviousButton.setAction(undockedFindPreviousAction);
-    undockedFindPreviousButton.setText("");
-    undockedFindPreviousButton.getActionMap().put(
-      undockedFindPreviousAction.getValue(Action.NAME),
-      undockedFindPreviousAction);
-    undockedFindPreviousButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-            KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_MASK),
-      undockedFindPreviousAction.getValue(Action.NAME));
-
-    Dimension findPanelSize = new Dimension(310, 30);
-    findPanel.setPreferredSize(findPanelSize);
-    findPanel.setMaximumSize(findPanelSize);
-    findPanel.setMinimumSize(findPanelSize);
-    findField.setPreferredSize(findSize);
-    findField.setMaximumSize(findSize);
-    findField.setMinimumSize(findSize);
-    findPanel.setAlignmentY(Component.CENTER_ALIGNMENT);
-    findField.setAlignmentY(Component.CENTER_ALIGNMENT);
-    
-    toolbar.add(findPanel);
-    toolbar.addSeparator(new Dimension(7, 5));
-      
-    toolbar.add(undockedFindNextButton);
-    toolbar.add(undockedFindPreviousButton);
-
-    toolbar.addSeparator();
-
     Action redockAction =
       new AbstractAction("", ChainsawIcons.ICON_DOCK) {
         public void actionPerformed(ActionEvent arg0) {
@@ -2927,7 +2941,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
    *
    */
   public void findNext() {
-    updateFindRule(findField.getText());
+    Object item = findCombo.getSelectedItem();
+    updateFindRule(item == null ? null: item.toString());
 
     if (findRule != null) {
         EventQueue.invokeLater(new Runnable() {
@@ -2943,10 +2958,10 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
                   if (nextRow > -1) {
                     table.scrollToRow(nextRow);
-                    findField.setToolTipText("Enter an expression");
+                    findCombo.setToolTipText("Enter an expression");
                   }
                 } catch (IllegalArgumentException iae) {
-                  findField.setToolTipText(iae.getMessage());
+                  findCombo.setToolTipText(iae.getMessage());
                   colorizer.setFindRule(null);
                   tableRuleMediator.setFindRule(null);
                   searchRuleMediator.setFindRule(null);
@@ -2962,7 +2977,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
    *
    */
   public void findPrevious() {
-    updateFindRule(findField.getText());
+    Object item = findCombo.getSelectedItem();
+    updateFindRule(item == null ? null: item.toString());
 
     if (findRule != null) {
         EventQueue.invokeLater(new Runnable() {
@@ -2977,10 +2993,10 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
                     if (previousRow > -1) {
                         table.scrollToRow(previousRow);
-                        findField.setToolTipText("Enter an expression");
+                        findCombo.setToolTipText("Enter an expression");
                     }
                 } catch (IllegalArgumentException iae) {
-                  findField.setToolTipText(iae.getMessage());
+                  findCombo.setToolTipText(iae.getMessage());
                 }
             }
         });
@@ -3098,10 +3114,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       repaint();
     }
 
-  public JTextField getFindTextField() {
-    return findField;
-  }
-
   /**
    * Iterate over all values in the column and return the longest width
    *
@@ -3217,26 +3229,26 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     }
 
   /**
-   * This class receives notification when the Refine focus text field is
-   * updated, where a backgrounh thread periodically wakes up and checks if
+   * This class receives notification when the Refine focus or find field is
+   * updated, where a background thread periodically wakes up and checks if
    * they have stopped typing yet. This ensures that the filtering of the
    * model is not done for every single character typed.
    *
    * @author Paul Smith psmith
    */
-  private final class DelayedFilterTextDocumentListener
+  private final class DelayedTextDocumentListener
     implements DocumentListener {
     private static final long CHECK_PERIOD = 1000;
-    private final JTextField filterText;
+    private final JTextField textField;
     private long lastTimeStamp = System.currentTimeMillis();
     private final Thread delayThread;
     private final String defaultToolTip;
-    private String lastFilterText = "";
+    private String lastText = "";
 
-    private DelayedFilterTextDocumentListener(final JTextField filterText) {
+    private DelayedTextDocumentListener(final JTextField textFeld) {
       super();
-      this.filterText = filterText;
-      this.defaultToolTip = filterText.getToolTipText();
+      this.textField = textFeld;
+      this.defaultToolTip = textFeld.getToolTipText();
 
       this.delayThread =
         new Thread(
@@ -3258,13 +3270,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                   // they stopped typing recently, but have stopped for at least
                   // 1 sample period. lets apply the filter
                   //                logger.debug("Typed something recently applying filter");
-                  if (!(filterText.getText().trim().equals(lastFilterText.trim()))) {
-                    lastFilterText = filterText.getText();
+                  if (!(textFeld.getText().trim().equals(lastText.trim()))) {
+                    lastText = textFeld.getText();
                     EventQueue.invokeLater(new Runnable()
                     {
                         public void run()
                         {
-                            setFilter();
+                          setFilter();
                         }
                     });
                   }
@@ -3319,23 +3331,45 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
      * Update refinement rule based on the entered expression.
      */
     private void setFilter() {
-      if (filterText.getText().trim().equals("")) {
+      if (textField.getText().trim().equals("")) {
         //reset background color in case we were previously an invalid expression
-        filterText.setBackground(UIManager.getColor("TextField.background"));
+        textField.setBackground(UIManager.getColor("TextField.background"));
         tableRuleMediator.setFilterRule(null);
         searchRuleMediator.setFilterRule(null);
-        filterText.setToolTipText(defaultToolTip);
+        textField.setToolTipText(defaultToolTip);
       } else {
         try {
-          tableRuleMediator.setFilterRule(ExpressionRule.getRule(filterText.getText()));
-          searchRuleMediator.setFilterRule(ExpressionRule.getRule(filterText.getText()));
-          filterText.setToolTipText(defaultToolTip);
+          tableRuleMediator.setFilterRule(ExpressionRule.getRule(textField.getText()));
+          searchRuleMediator.setFilterRule(ExpressionRule.getRule(textField.getText()));
+          textField.setToolTipText(defaultToolTip);
           //valid expression, reset background color in case we were previously an invalid expression
-          filterText.setBackground(UIManager.getColor("TextField.background"));
+          textField.setBackground(UIManager.getColor("TextField.background"));
         } catch (IllegalArgumentException iae) {
           //invalid expression, change background of the field
-          filterText.setToolTipText(iae.getMessage());
-          filterText.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
+          textField.setToolTipText(iae.getMessage());
+          textField.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
+        }
+      }
+    }
+
+    private void setFind() {
+      if (textField.getText().trim().equals("")) {
+        //reset background color in case we were previously an invalid expression
+        textField.setBackground(UIManager.getColor("TextField.background"));
+        tableRuleMediator.setFindRule(null);
+        searchRuleMediator.setFindRule(null);
+        textField.setToolTipText(defaultToolTip);
+      } else {
+        try {
+          tableRuleMediator.setFindRule(ExpressionRule.getRule(textField.getText()));
+          searchRuleMediator.setFindRule(ExpressionRule.getRule(textField.getText()));
+          textField.setToolTipText(defaultToolTip);
+          //valid expression, reset background color in case we were previously an invalid expression
+          textField.setBackground(UIManager.getColor("TextField.background"));
+        } catch (IllegalArgumentException iae) {
+          //invalid expression, change background of the field
+          textField.setToolTipText(iae.getMessage());
+          textField.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
         }
       }
     }
@@ -4142,7 +4176,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         }
     }
 
-    static class AutoFilterComboBox extends JComboBox {
+    class AutoFilterComboBox extends JComboBox {
         private boolean bypassFiltering;
         private List allEntries = new ArrayList();
         private List displayedEntries = new ArrayList();
@@ -4151,13 +4185,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         private final JTextField textField = new JTextField();
         private String lastTextToMatch;
 
-        public AutoFilterComboBox(Collection entries) {
-            if (entries != null) {
-                for (Iterator iter=entries.iterator();iter.hasNext();) {
-                    Object nextObject = iter.next();
-                    model.addElement(nextObject);
-                }
-            }
+        public AutoFilterComboBox() {
             setModel(model);
             setEditor(new AutoFilterEditor());
             ((JTextField)getEditor().getEditorComponent()).getDocument().addDocumentListener(new AutoFilterDocumentListener());
@@ -4290,6 +4318,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                 //assuming removal is from displayed list..remove from full list
                 Object obj = displayedEntries.get(index);
                 allEntries.remove(obj);
+                displayedEntries.remove(obj);
                 fireContentsChanged(this, 0, displayedEntries.size());
                 bypassFiltering = false;
                 refilter();

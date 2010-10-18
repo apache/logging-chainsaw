@@ -108,9 +108,17 @@ public class LoggingEventWrapper {
     if (backgroundColor != null && foregroundColor != null) {
       this.colorRuleBackground = backgroundColor;
       this.colorRuleForeground = foregroundColor;
+      if (syncWrapper != null) {
+        syncWrapper.colorRuleBackground = this.colorRuleBackground;
+        syncWrapper.colorRuleForeground = this.colorRuleForeground;
+      }
     } else {
       this.colorRuleBackground = ChainsawConstants.COLOR_DEFAULT_BACKGROUND;
       this.colorRuleForeground = ChainsawConstants.COLOR_DEFAULT_FOREGROUND;
+      if (syncWrapper != null) {
+        syncWrapper.colorRuleBackground = this.colorRuleBackground;
+        syncWrapper.colorRuleForeground = this.colorRuleForeground;
+      }
     }
   }
 
