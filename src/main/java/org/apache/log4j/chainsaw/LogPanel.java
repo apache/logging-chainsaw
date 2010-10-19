@@ -23,12 +23,9 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
@@ -1107,8 +1104,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     filterLabel.setLabelFor(filterCombo);
 
     upperPanel.add(filterLabel);
-
+    upperPanel.add(Box.createHorizontalStrut(3));
     upperPanel.add(filterCombo);
+    upperPanel.add(Box.createHorizontalStrut(3));
 
     //Adding a button to clear filter expressions which are currently remembered by Chainsaw...
     final JButton removeFilterButton = new JButton(" Remove ");
@@ -1129,6 +1127,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             }
     );
     upperPanel.add(removeFilterButton);
+    //add some space between refine focus and search sections of the panel
+    upperPanel.add(Box.createHorizontalStrut(25));
 
     final JLabel findLabel = new JLabel("Search: ");
     findLabel.setFont(filterLabel.getFont().deriveFont(Font.BOLD));
@@ -1136,8 +1136,10 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     findLabel.setLabelFor(findCombo);
 
     upperPanel.add(findLabel);
+    upperPanel.add(Box.createHorizontalStrut(3));
 
     upperPanel.add(findCombo);
+    upperPanel.add(Box.createHorizontalStrut(3));
 
     Action findNextAction = getFindNextAction();
     Action findPreviousAction = getFindPreviousAction();
@@ -1161,7 +1163,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     upperPanel.add(findNextButton);
 
     upperPanel.add(findPreviousButton);
-
+    upperPanel.add(Box.createHorizontalStrut(3));
+    
     //Adding a button to clear filter expressions which are currently remembered by Chainsaw...
     final JButton removeFindButton = new JButton(" Remove ");
     final JTextField findText =(JTextField) findCombo.getEditor().getEditorComponent();
@@ -1871,7 +1874,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     table.addMouseListener(mainTablePopupListener);
 
     final PopupListener searchTablePopupListener = new PopupListener(searchPopup);
-    detailPane.addMouseListener(searchTablePopupListener);
+    searchPane.addMouseListener(searchTablePopupListener);
+    searchTable.addMouseListener(searchTablePopupListener);
   }
 
     private Action getFindNextAction() {
@@ -4209,7 +4213,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                 return;
             }
             lastTextToMatch = textToMatch;
-            displayedEntries.clear();
             bypassFiltering = true;
                 model.removeAllElements();
                 List entriesCopy = new ArrayList(allEntries);
@@ -4289,7 +4292,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                 bypassFiltering = true;
                 allEntries.add(obj);
                 displayedEntries.add(obj);
-                fireIntervalAdded(this, displayedEntries.size() - 1, displayedEntries.size() -1);
+                fireIntervalAdded(this, displayedEntries.size() - 1, displayedEntries.size());
                 bypassFiltering = false;
             }
 
@@ -4319,7 +4322,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                 Object obj = displayedEntries.get(index);
                 allEntries.remove(obj);
                 displayedEntries.remove(obj);
-                fireContentsChanged(this, 0, displayedEntries.size());
+                fireIntervalRemoved(this, index, index);
                 bypassFiltering = false;
                 refilter();
             }
@@ -4346,19 +4349,25 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                 return null;
             }
 
-
             public void removeAllElements() {
                 bypassFiltering = true;
-                displayedEntries.clear();
-                fireContentsChanged(this, 0, displayedEntries.size());
+                int displayedEntrySize = displayedEntries.size();
+                if (displayedEntrySize > 0) {
+                  displayedEntries.clear();
+                  //if firecontentschaned is used, the combobox resizes..use fireintervalremoved instead, which doesn't do that..
+                  fireIntervalRemoved(this, 0, displayedEntrySize - 1);
+                }
                 bypassFiltering = false;
             }
 
             public void showAllElements() {
+              //first remove whatever is there and fire necessary events then add events
+                removeAllElements();
                 bypassFiltering = true;
-                displayedEntries.clear();
                 displayedEntries.addAll(allEntries);
-                fireContentsChanged(this, 0, displayedEntries.size());
+                if (displayedEntries.size() > 0) {
+                  fireIntervalAdded(this, 0, displayedEntries.size() - 1);
+                }
                 bypassFiltering = false;
             }
         }
