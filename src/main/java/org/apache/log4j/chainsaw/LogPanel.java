@@ -4219,7 +4219,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                 for (Iterator iter = entriesCopy.iterator();iter.hasNext();) {
                     String thisEntry = iter.next().toString();
                     if (thisEntry.toLowerCase().contains(textToMatch.toLowerCase())) {
-                        displayedEntries.add(thisEntry);
                         model.addElement(thisEntry);
                     }
                 }
@@ -4286,13 +4285,16 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
             public void addElement(Object obj) {
                 //assuming add is to displayed list...add to full list (only if not a dup)
-                if (allEntries.contains(obj)) {
-                    return;
-                }
                 bypassFiltering = true;
-                allEntries.add(obj);
+
+              boolean entryExists = !allEntries.contains(obj);
+              if (entryExists) {
+                  allEntries.add(obj);
+                }
                 displayedEntries.add(obj);
-                fireIntervalAdded(this, displayedEntries.size() - 1, displayedEntries.size());
+                if (!entryExists) {
+                  fireIntervalAdded(this, displayedEntries.size() - 1, displayedEntries.size());
+                }
                 bypassFiltering = false;
             }
 
