@@ -267,6 +267,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   private JToolBar detailToolbar;
   private boolean searchResultsDisplayed;
   private ColorizedEventAndSearchMatchThumbnail colorizedEventAndSearchMatchThumbnail;
+  private EventTimeDeltaMatchThumbnail eventTimeDeltaMatchThumbnail;
 
   /**
    * Creates a new LogPanel object.  If a LogPanel with this identifier has
@@ -854,11 +855,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 //             loggingEventWrapper.updateColorRuleColors(colorizer.getBackgroundColor(loggingEventWrapper.getLoggingEvent()), colorizer.getForegroundColor(loggingEventWrapper.getLoggingEvent()));
 //           }
           colorizedEventAndSearchMatchThumbnail.configureColors();
-          lowerPanel.invalidate();
           lowerPanel.revalidate();
           lowerPanel.repaint();
 
-          searchTable.invalidate();
           searchTable.revalidate();
           searchTable.repaint();
         }
@@ -1258,7 +1257,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     JPanel leftThumbNailPanel = new JPanel();
     leftThumbNailPanel.setLayout(new BoxLayout(leftThumbNailPanel, BoxLayout.Y_AXIS));
     leftThumbNailPanel.add(Box.createVerticalStrut(scrollBarWidth.intValue()));
-    leftThumbNailPanel.add(new EventTimeDeltaMatchThumbnail());
+    eventTimeDeltaMatchThumbnail = new EventTimeDeltaMatchThumbnail();
+    leftThumbNailPanel.add(eventTimeDeltaMatchThumbnail);
     leftThumbNailPanel.add(Box.createVerticalStrut(scrollBarWidth.intValue()));
     leftPanel.add(leftThumbNailPanel);
 
@@ -2606,7 +2606,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       detailPanel.add(leftSpacePanel, BorderLayout.WEST);
       detailPanel.add(rightSpacePanel, BorderLayout.EAST);
  
-      detailPanel.invalidate();
       detailPanel.revalidate();
       detailPanel.repaint();
       //if the detail visible pref is not enabled, hide the detail pane
@@ -2630,7 +2629,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       rightSpacePanel.setPreferredSize(new Dimension(scrollBarWidth.intValue() -4, -1));
       detailPanel.add(leftSpacePanel, BorderLayout.WEST);
       detailPanel.add(rightSpacePanel, BorderLayout.EAST);
-      detailPanel.invalidate();
       detailPanel.revalidate();
       detailPanel.repaint();
       //if the detail visible pref is not enabled, show the detail pane
@@ -3749,7 +3747,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
     private class EventTimeDeltaMatchThumbnail extends AbstractEventMatchThumbnail {
         public EventTimeDeltaMatchThumbnail() {
-            super();
+            super("timedelta");
             initializeLists();
         }
 
@@ -3782,7 +3780,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                     primaryList.add(wrapper);
                 }
             }
-            invalidate();
+            revalidate();
             repaint();
         }
 
@@ -3829,7 +3827,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   //a listener receiving color updates needs to call configureColors on this class
     private class ColorizedEventAndSearchMatchThumbnail extends AbstractEventMatchThumbnail {
         public ColorizedEventAndSearchMatchThumbnail() {
-            super();
+            super("colors");
             configureColors();
         }
 
@@ -3858,7 +3856,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                     primaryList.add(wrapper);
                 }
             }
-            invalidate();
+            revalidate();
             repaint();
         }
 
@@ -3940,7 +3938,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         protected List secondaryList = new ArrayList();
         protected final int maxEventHeight = 6;
 
-        AbstractEventMatchThumbnail() {
+        AbstractEventMatchThumbnail(final String name) {
             super();
             addMouseMotionListener(new MouseMotionAdapter() {
               public void mouseMoved(MouseEvent e) {
@@ -4062,7 +4060,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                         }
 //                        System.out.println("update - new warnings: " + warnings.size() + ", errors: " + errors.size());
                     }
-                    invalidate();
+                    revalidate();
                     repaint();
                     //run this in an invokeLater block to ensure this action is enqueued to the end of the EDT
                     EventQueue.invokeLater(new Runnable() {

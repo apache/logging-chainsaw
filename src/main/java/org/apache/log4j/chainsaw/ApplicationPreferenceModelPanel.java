@@ -183,18 +183,20 @@ public static void main(String[] args) {
 
       //Nimbus has major issues with colors in tables..just remove it from the list..
       //only use this if nimbus was found..
-      UIManager.LookAndFeelInfo[] newLookAndFeels = new UIManager.LookAndFeelInfo[lookAndFeels.length - 1];
+      UIManager.LookAndFeelInfo[] newLookAndFeels = new UIManager.LookAndFeelInfo[lookAndFeels.length];
       boolean useNewLookAndFeels = false;
       int j = 0;
       for (int i=0;i<lookAndFeels.length;i++) {
-          if (!lookAndFeels[i].getClassName().toLowerCase().contains("nimbus")) {
-              newLookAndFeels[j++] = lookAndFeels[i];
-          } else {
-              useNewLookAndFeels = true;
-          }
+        if (lookAndFeels[i].getClassName().toLowerCase().contains("nimbus")) {
+            useNewLookAndFeels = true;
+        } else {
+            newLookAndFeels[j++] = lookAndFeels[i];
+        }
       }
       if (useNewLookAndFeels) {
-          lookAndFeels = newLookAndFeels;
+          UIManager.LookAndFeelInfo[] replacedLookAndFeels = new UIManager.LookAndFeelInfo[lookAndFeels.length - 1];
+          System.arraycopy(newLookAndFeels, 0, replacedLookAndFeels, 0, newLookAndFeels.length - 1);
+          lookAndFeels = replacedLookAndFeels;
       }
 
       setupComponents();

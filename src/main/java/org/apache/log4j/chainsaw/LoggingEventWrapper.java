@@ -61,19 +61,6 @@ public class LoggingEventWrapper {
     this.syncWrapper = loggingEventWrapper;
     this.eventContainer = eventContainer;
     loggingEventWrapper.syncWrapper = this;
-    Map theseProperties = loggingEvent.getProperties();
-
-    LoggingEvent thatLoggingEvent = syncWrapper.getLoggingEvent();
-    Map syncEventPropertiesCopy = new HashMap(thatLoggingEvent.getProperties());
-    for (Iterator iter = syncEventPropertiesCopy.entrySet().iterator();iter.hasNext();) {
-      Map.Entry entry = (Map.Entry)iter.next();
-      thatLoggingEvent.removeProperty(entry.getKey().toString());
-    }
-
-    for (Iterator iter = theseProperties.entrySet().iterator();iter.hasNext();) {
-      Map.Entry entry = (Map.Entry)iter.next();
-      thatLoggingEvent.setProperty(entry.getKey().toString(), entry.getValue().toString());
-    }
   }
 
   public LoggingEvent getLoggingEvent() {
