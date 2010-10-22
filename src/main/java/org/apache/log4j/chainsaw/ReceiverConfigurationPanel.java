@@ -214,6 +214,7 @@ class ReceiverConfigurationPanel extends JPanel {
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 1;
         c.gridy = 0;
+        c.insets = new Insets(0, 0, 0, 10);
         okButton = new JButton(" OK ");
         panel.add(okButton, c);
 

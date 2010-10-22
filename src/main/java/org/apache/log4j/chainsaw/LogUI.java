@@ -282,11 +282,11 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         model.setBypassConfigurationURL(configurationURLAppArg);
     }
 
-    applyLookAndFeel(model.getLookAndFeelClassName());
     EventQueue.invokeLater(new Runnable()
     {
         public void run()
         {
+            loadLookAndFeelUsingPluginClassLoader(model.getLookAndFeelClassName());
             createChainsawGUI(model, null);
         }
     });
@@ -484,7 +484,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     SettingsManager.getInstance().configure(new ApplicationPreferenceModelSaver(model));
 
     cyclicBufferSize = model.getCyclicBufferSize();
-    applyLookAndFeel(model.getLookAndFeelClassName());
 
     handler = new ChainsawAppenderHandler(appender);
     handler.addEventBatchListener(new NewTabEventBatchReceiver());
@@ -501,12 +500,11 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
     SettingsManager.getInstance().configure(new ApplicationPreferenceModelSaver(model));
 
-    applyLookAndFeel(model.getLookAndFeelClassName());
-
     EventQueue.invokeLater(new Runnable()
     {
         public void run()
         {
+            loadLookAndFeelUsingPluginClassLoader(model.getLookAndFeelClassName());
             createChainsawGUI(model, null);
             getApplicationPreferenceModel().apply(model);
             activateViewer();
@@ -1853,6 +1851,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       UIManager.setLookAndFeel(lookAndFeelClassName);
 
     } catch (Exception e) {
+      e.printStackTrace();
     }
   }
 
@@ -2147,6 +2146,22 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         }
         ensureChainsawAppenderHandlerAdded();
     }
+
+  private static void loadLookAndFeelUsingPluginClassLoader(String lookAndFeelClassName) {
+      ClassLoader classLoader = PluginClassLoaderFactory.getInstance().getClassLoader();
+      ClassLoader previousTCCL = Thread.currentThread().getContextClassLoader();
+          try {
+            // we temporarily swap the TCCL so that plugins can find resources
+            Thread.currentThread().setContextClassLoader(classLoader);
+            UIManager.setLookAndFeel(lookAndFeelClassName);
+            UIManager.getLookAndFeelDefaults().put("ClassLoader", classLoader);
+          } catch (Exception e) {
+            e.printStackTrace();
+          } finally{
+              // now switch it back...
+              Thread.currentThread().setContextClassLoader(previousTCCL);
+          }
+  }
 
     /**
      * Makes sure that the LoggerRepository has the ChainsawAppenderHandler
