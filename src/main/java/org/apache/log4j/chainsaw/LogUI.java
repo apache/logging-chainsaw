@@ -798,11 +798,11 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     });
 
     KeyStroke ksRight =
-      KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, Event.CTRL_MASK);
+      KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
     KeyStroke ksLeft =
-      KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, Event.CTRL_MASK);
+      KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
     KeyStroke ksGotoLine =
-      KeyStroke.getKeyStroke(KeyEvent.VK_G,  Event.CTRL_MASK);
+      KeyStroke.getKeyStroke(KeyEvent.VK_G,  Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
 
     getTabbedPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
       ksRight, "MoveRight");

@@ -706,19 +706,19 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     //we've mapped f2, shift f2 and ctrl-f2 to marker-related actions, unmap them from the table
     table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke("F2"), "none");
     table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.SHIFT_MASK), "none");
-    table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.CTRL_MASK), "none");
-    table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK), "none");
+    table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "none");
+    table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | InputEvent.SHIFT_MASK), "none");
 
     //we're also mapping ctrl-a to scroll-to-top, unmap from the table
-    table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK), "none");
+    table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_A, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "none");
         
     searchTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke("F2"), "none");
     searchTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.SHIFT_MASK), "none");
-    searchTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.CTRL_MASK), "none");
-    searchTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK), "none");
+    searchTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "none");
+    searchTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | InputEvent.SHIFT_MASK), "none");
 
     //we're also mapping ctrl-a to scroll-to-top, unmap from the table
-    searchTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK), "none");
+    searchTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_A, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "none");
 
     //add a listener to update the 'refine focus'
     tableModel.addNewKeyListener(new NewKeyListener() {
@@ -1099,8 +1099,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
     final JLabel filterLabel = new JLabel("Refine focus on: ");
     filterLabel.setFont(filterLabel.getFont().deriveFont(Font.BOLD));
-    filterLabel.setDisplayedMnemonic('k');
-    filterLabel.setLabelFor(filterCombo);
 
     upperPanel.add(filterLabel);
     upperPanel.add(Box.createHorizontalStrut(3));
@@ -1129,10 +1127,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     //add some space between refine focus and search sections of the panel
     upperPanel.add(Box.createHorizontalStrut(25));
 
-    final JLabel findLabel = new JLabel("Search: ");
+    final JLabel findLabel = new JLabel("Find: ");
     findLabel.setFont(filterLabel.getFont().deriveFont(Font.BOLD));
-    findLabel.setDisplayedMnemonic('j');
-    findLabel.setLabelFor(findCombo);
 
     upperPanel.add(findLabel);
     upperPanel.add(Box.createHorizontalStrut(3));
@@ -1183,6 +1179,53 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             }
     );
     upperPanel.add(removeFindButton);
+
+    //define search and refine focus selection and clear actions
+    Action findFocusAction = new AbstractAction() {
+      public void actionPerformed(ActionEvent actionEvent) {
+        findCombo.requestFocus();
+      }
+    };
+
+    Action filterFocusAction = new AbstractAction() {
+      public void actionPerformed(ActionEvent actionEvent) {
+        filterCombo.requestFocus();
+      }
+    };
+
+    Action findClearAction = new AbstractAction() {
+      public void actionPerformed(ActionEvent actionEvent) {
+        findCombo.setSelectedIndex(-1);
+        findNext();
+      }
+    };
+
+    Action filterClearAction = new AbstractAction() {
+      public void actionPerformed(ActionEvent actionEvent) {
+        setRefineFocusText("");
+        filterCombo.refilter();
+      }
+    };
+
+    //now add them to the action and input maps for the logpanel
+        KeyStroke ksFindFocus =
+      KeyStroke.getKeyStroke(KeyEvent.VK_F, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+    KeyStroke ksFilterFocus =
+      KeyStroke.getKeyStroke(KeyEvent.VK_R, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+        KeyStroke ksFindClear =
+      KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.SHIFT_MASK |Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+    KeyStroke ksFilterClear =
+      KeyStroke.getKeyStroke(KeyEvent.VK_R,  InputEvent.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+
+    getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksFindFocus, "FindFocus");
+    getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksFilterFocus, "FilterFocus");
+    getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksFindClear, "FindClear");
+    getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksFilterClear, "FilterClear");
+
+    getActionMap().put("FindFocus", findFocusAction);
+    getActionMap().put("FilterFocus", filterFocusAction);
+    getActionMap().put("FindClear", findClearAction);
+    getActionMap().put("FilterClear", filterClearAction);
 
     /*
      * Detail pane definition
@@ -2767,7 +2810,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       dockToggleLogTreeAction.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_T));
       dockToggleLogTreeAction.putValue(
         Action.ACCELERATOR_KEY,
-        KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.ALT_MASK));
+        KeyStroke.getKeyStroke(KeyEvent.VK_T, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
       dockToggleLogTreeAction.putValue(
         Action.SMALL_ICON, new ImageIcon(ChainsawIcons.WINDOW_ICON));
 
@@ -2797,7 +2840,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
     final SmallButton dockClearButton = new SmallButton(undockedClearAction);
     dockClearButton.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-      KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, InputEvent.CTRL_MASK),
+      KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()),
       undockedClearAction.getValue(Action.NAME));
     dockClearButton.getActionMap().put(
       undockedClearAction.getValue(Action.NAME), undockedClearAction);
@@ -2827,7 +2870,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       });
 
       toggleScrollToBottomButton.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-  	      KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.CTRL_MASK),
+  	      KeyStroke.getKeyStroke(KeyEvent.VK_B, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()),
   	      dockToggleScrollToBottomAction.getValue(Action.NAME));
   	    toggleScrollToBottomButton.getActionMap().put(
   	      dockToggleScrollToBottomAction.getValue(Action.NAME), dockToggleScrollToBottomAction);

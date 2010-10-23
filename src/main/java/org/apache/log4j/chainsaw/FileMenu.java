@@ -21,8 +21,8 @@
 */
 package org.apache.log4j.chainsaw;
 
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.net.URL;
 import java.util.Iterator;
@@ -75,7 +75,7 @@ class FileMenu extends JMenu {
 
       loadLog4JAction.putValue(
         Action.ACCELERATOR_KEY,
-        KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK));
+        KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
       loadLog4JAction.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_L));
       loadLog4JAction.putValue(Action.SHORT_DESCRIPTION, "Loads events from a local XMLLayout-formatted file ");
       loadLog4JAction.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.FILE_OPEN));
@@ -112,7 +112,7 @@ class FileMenu extends JMenu {
 
     exitAction.putValue(
       Action.ACCELERATOR_KEY,
-      KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.ALT_MASK));
+      KeyStroke.getKeyStroke(KeyEvent.VK_X, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
     exitAction.putValue(Action.SHORT_DESCRIPTION, "Exits the Application");
     exitAction.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_X));
     exitAction.putValue(Action.NAME, "Exit");

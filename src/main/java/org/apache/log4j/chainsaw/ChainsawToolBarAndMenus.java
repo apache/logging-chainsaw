@@ -20,6 +20,7 @@ package org.apache.log4j.chainsaw;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -213,7 +214,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_T));
     action.putValue(
       Action.ACCELERATOR_KEY,
-      KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.ALT_MASK));
+      KeyStroke.getKeyStroke(KeyEvent.VK_T, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
     action.putValue(
       Action.SMALL_ICON, new ImageIcon(ChainsawIcons.WINDOW_ICON));
 
@@ -238,7 +239,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
      action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_B));
      action.putValue(
        Action.ACCELERATOR_KEY,
-       KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.CTRL_MASK));
+       KeyStroke.getKeyStroke(KeyEvent.VK_B, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
      action.putValue(
        Action.SMALL_ICON, new ImageIcon(ChainsawIcons.SCROLL_TO_BOTTOM));
 
@@ -258,7 +259,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
       action.putValue(Action.SHORT_DESCRIPTION, "Scroll to top");
       action.putValue("enabled", Boolean.TRUE);
       action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_T));
-      action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_A,  InputEvent.CTRL_MASK));
+      action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_A,  Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 
       return action;
     }
@@ -312,7 +313,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
       action.putValue(Action.SHORT_DESCRIPTION, "Toggle marker for selected row");
       action.putValue("enabled", Boolean.TRUE);
       action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_T));
-      action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F2,  InputEvent.CTRL_MASK));
+      action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F2,  Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 
       return action;
     }
@@ -330,7 +331,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
       action.putValue(Action.SHORT_DESCRIPTION, "Removes all markers");
       action.putValue("enabled", Boolean.TRUE);
       action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_R));
-      action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F2,  InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK));
+      action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F2,  Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | InputEvent.SHIFT_MASK));
 
       return action;
     }
@@ -376,7 +377,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_C));
     action.putValue(
       Action.ACCELERATOR_KEY,
-      KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, InputEvent.CTRL_MASK));
+      KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
     action.putValue(
       Action.SHORT_DESCRIPTION, "Removes all the events from the current view");
     action.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.DELETE));
@@ -696,7 +697,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_D));
     action.putValue(
       Action.ACCELERATOR_KEY,
-      KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.ALT_MASK));
+      KeyStroke.getKeyStroke(KeyEvent.VK_D, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
     action.putValue(Action.SHORT_DESCRIPTION, "Hides/Shows the Detail Pane");
     action.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.INFO));
 
@@ -753,14 +754,14 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     detailPaneButton.getActionMap().put(
       toggleDetailPaneAction.getValue(Action.NAME), toggleDetailPaneAction);
     detailPaneButton.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-      KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.ALT_MASK),
+      KeyStroke.getKeyStroke(KeyEvent.VK_D, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()),
       toggleDetailPaneAction.getValue(Action.NAME));
 
     logTreePaneButton.setAction(toggleLogTreeAction);
     logTreePaneButton.getActionMap().put(
       toggleLogTreeAction.getValue(Action.NAME), toggleLogTreeAction);
     logTreePaneButton.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-      KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.ALT_MASK),
+      KeyStroke.getKeyStroke(KeyEvent.VK_T, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()),
       toggleLogTreeAction.getValue(Action.NAME));
     logTreePaneButton.setText(null);
 
@@ -768,7 +769,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     scrollToBottomButton.getActionMap().put(
       toggleScrollToBottomAction.getValue(Action.NAME), toggleScrollToBottomAction);
     scrollToBottomButton.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-      KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.CTRL_MASK),
+      KeyStroke.getKeyStroke(KeyEvent.VK_B, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()),
       toggleScrollToBottomAction.getValue(Action.NAME));
     scrollToBottomButton.setText(null);
 
@@ -894,7 +895,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
         action.putValue(Action.SHORT_DESCRIPTION, "Searches for the next colorized event from the current location");
         action.putValue("enabled", Boolean.TRUE);
         action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_N));
-        action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK));
+        action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 
       return action;
     }
@@ -913,7 +914,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
         action.putValue(Action.SHORT_DESCRIPTION, "Searches for the next colorized event from the current location");
         action.putValue("enabled", Boolean.TRUE);
         action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_P));
-        action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK));
+        action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 
       return action;
     }

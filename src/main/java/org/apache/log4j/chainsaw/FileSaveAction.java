@@ -17,8 +17,8 @@
 
 package org.apache.log4j.chainsaw;
 
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
@@ -66,7 +66,7 @@ class FileSaveAction extends AbstractAction {
 
     putValue(
       Action.ACCELERATOR_KEY,
-      KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
+      KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
     putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_S));
     putValue(
       Action.SHORT_DESCRIPTION, "Saves displayed events for the current tab");

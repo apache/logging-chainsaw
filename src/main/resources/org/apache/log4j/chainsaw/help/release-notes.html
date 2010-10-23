@@ -10,13 +10,18 @@
 <b>NOTE:</b> The mechanism and format used to persist settings in Chainsaw is subject to change.  If you are experiencing problems displaying events in Chainsaw, please delete everything in the $user.dir/.chainsaw directory and restart Chainsaw.
 <br>
 <h1>2.1</h1>
-<h2>20 Sep 2010</h2>
+<h2>22 Oct 2010</h2>
 <ul>
-<li>Changed 'Wrap message field' preference default to true</li>
+<li>Updated keyboard shortcuts to use system-specific option (Apple command key, Windows control key)</li>
+<li>Adding new find and refine-focus key accelerators (Option-F focuses on Find field, option-R focuses on refine focus field</li>
 </ul>
 <h2>13 Oct 2010</h2>
 <ul>
 <li>Added log panel preference to display search results in the detail panel.  When the preference is enabled and a search is performed, the matching rows are displayed in a table in the details panel.  Clicking on a row in that table selects the row in the main event table.</li>
+</ul>
+<h2>22 Sep 2010</h2>
+<ul>
+<li>Changed 'Wrap message field' preference default to true</li>
 </ul>
 <h2>15 Sep 2010</h2>
 <ul>
@@ -72,7 +77,7 @@
 </ul>
 <h2>13 Jun 2010</h2>
 <ul>
-<li>When mouse is moved into the thumbnail bar, event details for the closest event w/a color rule or search match is displayed as a tooltip (enabled by default, configurable via Tab Preferences dialog, Visuals section).</li>
+<li>When mouse is moved into the thumbnail bar, event details for the closest event w/a color rule or find match is displayed as a tooltip (enabled by default, configurable via Tab Preferences dialog, Visuals section).</li>
 <li>If the 'You have no Receivers defined' dialog is displayed, a configuration URL is provided and the 'don't show me this again' checkbox is selected, the provided configuration URL is set as the Auto Config URL in application-wide preferences and used from then on when Chainsaw starts.</li>
 <li>Added ability to ignore a (possibly compound) expression, similar to ignoring loggers (available in the logger tree below hidden loggers).  Ignored expression is persisted on a per-tab basis.</li>
 </ul>
@@ -103,11 +108,11 @@
 </ul>
 <h2>11 May 2010</h2>
 <ul>
-<li>Added search and alternating row color global preferences (updated from color settings window)</li>
+<li>Added find and alternating row color global preferences (updated from color settings window)</li>
 </ul>
 <h2>9 May 2010</h2>
 <ul>
-<li>Added preference to display matching search text in the table as bold (on by default)</li>
+<li>Added preference to display matching find text in the table as bold (on by default)</li>
 </ul>
 <h2>2 May 2010</h2>
 <ul>
@@ -119,13 +124,13 @@
 </ul>
 <h2>7 Apr 2010</h2>
 <ul>
-<li>Forward and backward search, as well as forward and backward next-color search now wrap.</li>
-<li>Added display of matching search count in status bar.</li>
+<li>Forward and backward find, as well as forward and backward next-color find now wrap.</li>
+<li>Added display of matching find count in status bar.</li>
 </ul>
 <h2>6 Apr 2010</h2>
 <ul>
 <li>Added default color rule support (ability to assign a tab's color rules as the default color rules for new tabs).  Default color rules can be applied to pre-existing tabs via the 'apply a tabs colors' drop down box in the color rule dialog.</li>
-<li>Pressing enter in the search box now initiates a search.</li>
+<li>Pressing enter in the find box now initiates a find.</li>
 <li>Updated thumbnail rendering logic to display warnings, errors, fatal events and events with markers more prominently than other events.</li>
 </ul>
 <h2>3 Apr 2010</h2>
@@ -146,7 +151,7 @@ just creates a text file containing the xml events.
 <h2>1 Apr 2010</h2>
 <ul>
 <li>Updated thumbnail bar to display all events with a defined color (will include the default color rules for marker, warning, error & fatal events).</li>
-<li>Added search matches to thumbnail bar (will display black in the left half of the row if the row matches the search expression).</li>
+<li>Added find matches to thumbnail bar (will display black in the left half of the row if the row matches the find expression).</li>
 <li>Added ctrl-n to go to next colorized event, ctrl-p to go to previous colorized event.</li>
 </ul>
 <h2>27 Mar 2010</h2>
@@ -172,8 +177,6 @@ Changed 'default' detail pane layout to hide some fields, added 'full' detail pa
 <li>
 New color rule: any row with a value in the 'log4j.marker' field will display as light green
 </li>
-<li>
-Added keyboard mnemonics to search field (alt-j) and refine focus field (alt-k), added shortcuts to Welcome page</li>
 </ul>
 <h2>16 Mar 2010</h2>
 <ul>
@@ -209,7 +212,7 @@ LogPanel context menu now provides 'Show times relative to this row' and 'Hide r
 <h2>22 Feb 2010</h2>
 <ul>
 <li>Implemented marker support (ability to add notes to rows).  Double click a row to toggle on or off a default note, or click in a row to define a custom note.  Navigate between markers with F2/Shift F2.
-    If you want to use these markers to colorize or build custom search expressions, use the column key PROP.log4j.marker.
+    If you want to use these markers to colorize or build custom find expressions, use the column key PROP.log4j.marker.
     Markers are saved and reloaded through the file-save as and file-load log4j file menus.
 </li>
 <li>Auto-configuration URL field now remembers the 10 most recent configuration files and provides a 'browse' button to load a configuration file without typing the URL.
