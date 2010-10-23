@@ -194,8 +194,8 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
       				fireTableDataChanged();
       			}
 	      	notifyCountListeners();
-            //post refilter with newValue of FALSE (filtering is complete) (enqueue on EDT, don't run now)
-            EventQueue.invokeLater(new Runnable() {
+            //post refilter with newValue of FALSE (filtering is complete)
+            SwingHelper.invokeOnEDT(new Runnable() {
                 public void run() {
                     propertySupport.firePropertyChange("refilter", Boolean.TRUE, Boolean.FALSE);
                 }
