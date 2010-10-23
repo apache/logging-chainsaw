@@ -197,6 +197,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         return rendererComponent;
       }
       basicComponent = (JLabel)rendererComponent;
+      basicComponent.setFont(levelTextPane.getFont());
       setBasicComponentBorder(basicComponent, isSelected, table, col);
     }
     long delta = 0;
@@ -382,6 +383,23 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         }
         textPaneContainer.add(textPane, BorderLayout.SOUTH);
 
+        if (delta == 0 || !logPanelPreferenceModel.isShowMillisDeltaAsGap()) {
+          if (col == 0) {
+            textPane.setBorder(getLeftBorder(isSelected, delta));
+          } else if (col == table.getColumnCount() - 1) {
+            textPane.setBorder(getRightBorder(isSelected, delta));
+          } else {
+            textPane.setBorder(getMiddleBorder(isSelected, delta));
+          }
+        } else {
+            if (col == 0) {
+              textPane.setBorder(getLeftBorder(isSelected, 0));
+            } else if (col == table.getColumnCount() - 1) {
+              textPane.setBorder(getRightBorder(isSelected, 0));
+            } else {
+              textPane.setBorder(getMiddleBorder(isSelected, 0));
+            }
+        }
         int currentMarkerHeight = loggingEventWrapper.getMarkerHeight();
         int currentMsgHeight = loggingEventWrapper.getMsgHeight();
         int newRowHeight = ChainsawConstants.DEFAULT_ROW_HEIGHT;
@@ -425,13 +443,13 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         }
 
         component = textPaneContainer;
-        setComponentBorder(component, isSelected, table, col, delta);
       }
         break;
     case ChainsawColumns.INDEX_LEVEL_COL_NAME:
       if (levelUseIcons) {
         if (basic) {
           basicComponent.setText("");
+          basicComponent.setIcon((Icon)iconMap.get(value.toString()));
           if (!toolTipsVisible) {
             basicComponent.setToolTipText(value.toString());
           }
@@ -464,8 +482,6 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         }
       }
       if (basic) {
-        basicComponent.setForeground(label.getForeground());
-        basicComponent.setBackground(label.getBackground());
         component = basicComponent;
       } else {
         levelTextPane.setForeground(label.getForeground());
