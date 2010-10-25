@@ -303,7 +303,7 @@ public class ColorPanel extends JPanel
       JPanel panel = new JPanel();
       panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 
-      JLabel defineSearchColorsLabel = new JLabel("Search colors");
+      JLabel defineSearchColorsLabel = new JLabel("Find colors");
 
       panel.add(defineSearchColorsLabel);
 

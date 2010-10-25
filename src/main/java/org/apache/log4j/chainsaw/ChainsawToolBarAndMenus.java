@@ -274,7 +274,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
            }
          };
 
-       action.putValue(Action.SHORT_DESCRIPTION, "Searches for the next marker from the current location");
+       action.putValue(Action.SHORT_DESCRIPTION, "Find the next marker from the current location");
        action.putValue("enabled", Boolean.TRUE);
        action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_N));
        action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F2"));
@@ -292,7 +292,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
           }
         };
 
-      action.putValue(Action.SHORT_DESCRIPTION, "Searches for the previous marker from the current location");
+      action.putValue(Action.SHORT_DESCRIPTION, "Find the previous marker from the current location");
       action.putValue("enabled", Boolean.TRUE);
       action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_P));
       action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F2,  InputEvent.SHIFT_MASK));
@@ -892,7 +892,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
             }
           }
         };
-        action.putValue(Action.SHORT_DESCRIPTION, "Searches for the next colorized event from the current location");
+        action.putValue(Action.SHORT_DESCRIPTION, "Find the next colorized event from the current location");
         action.putValue("enabled", Boolean.TRUE);
         action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_N));
         action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
@@ -911,7 +911,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
             }
           }
         };
-        action.putValue(Action.SHORT_DESCRIPTION, "Searches for the next colorized event from the current location");
+        action.putValue(Action.SHORT_DESCRIPTION, "Find the next colorized event from the current location");
         action.putValue("enabled", Boolean.TRUE);
         action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_P));
         action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));

@@ -829,7 +829,7 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
       action.putValue(Action.NAME, "Find next");
       action.putValue(
         Action.SHORT_DESCRIPTION,
-        "Search using the selected node");
+        "Find using the selected node");
       action.setEnabled(false);
 
       return action;
@@ -941,10 +941,10 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
           }
         };
 
-      action.putValue(Action.NAME, "Clear search field");
+      action.putValue(Action.NAME, "Clear find field");
       action.putValue(
         Action.SHORT_DESCRIPTION,
-        "Clear the search field");
+        "Clear the find field");
       action.setEnabled(false);
 
       return action;
@@ -1238,7 +1238,7 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
     {
       focusOnAction.putValue(Action.NAME, "Focus On...");
       hideAction.putValue(Action.NAME, "Ignore...");
-      findNextAction.putValue(Action.NAME, "Search for...");
+      findNextAction.putValue(Action.NAME, "Find...");
       setRefineFocusAction.putValue(Action.NAME, "Set refine focus field");
       updateRefineFocusAction.putValue(Action.NAME, "Add to refine focus field");
       defineColorRuleForLoggerAction.putValue(Action.NAME, "Define color rule");
@@ -1247,7 +1247,7 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
     {
       focusOnAction.putValue(Action.NAME, "Focus On '" + logger + "'");
       hideAction.putValue(Action.NAME, "Ignore '" + logger + "'");
-      findNextAction.putValue(Action.NAME, "Search for '" + logger + "'");
+      findNextAction.putValue(Action.NAME, "Find '" + logger + "'");
       setRefineFocusAction.putValue(Action.NAME, "Set refine focus field to '" + logger + "'");
       updateRefineFocusAction.putValue(Action.NAME, "Add '" + logger + "' to 'refine focus' field");
       defineColorRuleForLoggerAction.putValue(Action.NAME, "Define color rule for '" + logger + "'");

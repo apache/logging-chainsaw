@@ -531,8 +531,8 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
     private final JCheckBox loggerTreePanel =
       new JCheckBox("Show Logger Tree");
     private final JCheckBox wrapMessage = new JCheckBox("Wrap message field (display multi-line rows) ");
-    private final JCheckBox searchResultsVisible = new JCheckBox("Display search results in details panel ");
-    private final JCheckBox highlightSearchMatchText = new JCheckBox("Highlight search match text ");
+    private final JCheckBox searchResultsVisible = new JCheckBox("Display find results in details panel ");
+    private final JCheckBox highlightSearchMatchText = new JCheckBox("Highlight find match text ");
     private final JCheckBox scrollToBottom =
       new JCheckBox("Scroll to bottom (view tracks with new events)");
     private final JCheckBox showMillisDeltaAsGap =

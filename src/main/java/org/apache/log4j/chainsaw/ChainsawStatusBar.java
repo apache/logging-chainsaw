@@ -104,7 +104,7 @@ public class ChainsawStatusBar extends JPanel {
     searchMatchLabel.setToolTipText("<# viewable events>:<# total events>");
     searchMatchLabel.setMinimumSize(
     new Dimension(
-    searchMatchLabel.getFontMetrics(eventCountLabel.getFont()).stringWidth("Search matches: 999999999999") + 5,
+    searchMatchLabel.getFontMetrics(eventCountLabel.getFont()).stringWidth("Find matches: 999999999999") + 5,
             (int) searchMatchLabel.getPreferredSize().getHeight()));
 
     receivedConnectionlabel.setBorder(statusBarComponentBorder);
@@ -273,7 +273,7 @@ public class ChainsawStatusBar extends JPanel {
           if (searchMatchCount == 0) {
             searchMatchLabel.setText("");
           } else {
-            searchMatchLabel.setText("Search matches: " + searchMatchCount);
+            searchMatchLabel.setText("Find matches: " + searchMatchCount);
           }
       }
   }

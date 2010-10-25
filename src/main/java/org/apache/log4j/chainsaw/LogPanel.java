@@ -79,6 +79,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ComboBoxEditor;
+import javax.swing.ComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -288,12 +289,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     String prototypeValue = "1231231231231231231231";
 
     filterCombo = new AutoFilterComboBox();
-    filterCombo.setPrototypeDisplayValue(prototypeValue);
-    buildCombo(filterCombo, true);
-
     findCombo = new AutoFilterComboBox();
+
+    filterCombo.setPrototypeDisplayValue(prototypeValue);
+    buildCombo(filterCombo, true, findCombo.model);
+
     findCombo.setPrototypeDisplayValue(prototypeValue);
-    buildCombo(findCombo, false);
+    buildCombo(findCombo, false, filterCombo.model);
 
     final Map columnNameKeywordMap = new HashMap();
     columnNameKeywordMap.put(ChainsawConstants.CLASS_COL_NAME, LoggingEventFieldResolver.CLASS_FIELD);
@@ -1105,20 +1107,28 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     upperPanel.add(filterCombo);
     upperPanel.add(Box.createHorizontalStrut(3));
 
+    final JTextField filterText =(JTextField) filterCombo.getEditor().getEditorComponent();
+    final JTextField findText =(JTextField) findCombo.getEditor().getEditorComponent();
+
+
     //Adding a button to clear filter expressions which are currently remembered by Chainsaw...
     final JButton removeFilterButton = new JButton(" Remove ");
-    final JTextField filterText =(JTextField) filterCombo.getEditor().getEditorComponent();
+
     removeFilterButton.setToolTipText("Click here to remove the selected expression from the list");
     removeFilterButton.addActionListener(
             new AbstractAction() {
                 public void actionPerformed(ActionEvent e){
                 	Object selectedItem = filterCombo.getSelectedItem();
                     if (e.getSource() == removeFilterButton && selectedItem != null && !selectedItem.toString().trim().equals("")){
-                        //don't just remove the entry from the store, clear the field
-                        int index = filterCombo.getSelectedIndex();
-                        filterText.setText(null);
-                        filterCombo.setSelectedIndex(-1);
-                        filterCombo.removeItemAt(index);
+                      //don't just remove the entry from the store, clear the field
+                      int index = filterCombo.getSelectedIndex();
+                      filterText.setText(null);
+                      filterCombo.setSelectedIndex(-1);
+                      filterCombo.removeItemAt(index);
+                      if (!(findCombo.getSelectedItem() != null && findCombo.getSelectedItem().equals(selectedItem))) {
+                        //now remove the entry from the other model
+                        ((AutoFilterComboBox.AutoFilterComboBoxModel)findCombo.getModel()).removeElement(selectedItem);
+                      }
                     }
                 }
             }
@@ -1162,18 +1172,21 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     
     //Adding a button to clear filter expressions which are currently remembered by Chainsaw...
     final JButton removeFindButton = new JButton(" Remove ");
-    final JTextField findText =(JTextField) findCombo.getEditor().getEditorComponent();
     removeFindButton.setToolTipText("Click here to remove the selected expression from the list");
     removeFindButton.addActionListener(
             new AbstractAction() {
                 public void actionPerformed(ActionEvent e){
                 	Object selectedItem = findCombo.getSelectedItem();
                     if (e.getSource() == removeFindButton && selectedItem != null && !selectedItem.toString().trim().equals("")){
-                        //don't just remove the entry from the store, clear the field
-                        int index = findCombo.getSelectedIndex();
-                        findText.setText(null);
-                        findCombo.setSelectedIndex(-1);
-                        findCombo.removeItemAt(index);
+                      //don't just remove the entry from the store, clear the field
+                      int index = findCombo.getSelectedIndex();
+                      findText.setText(null);
+                      findCombo.setSelectedIndex(-1);
+                      findCombo.removeItemAt(index);
+                      if (!(filterCombo.getSelectedItem() != null && filterCombo.getSelectedItem().equals(selectedItem))) {
+                        //now remove the entry from the other model if it wasn't selected
+                        ((AutoFilterComboBox.AutoFilterComboBoxModel)filterCombo.getModel()).removeElement(selectedItem);
+                      }
                     }
                 }
             }
@@ -1796,7 +1809,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
      class ClearSearch extends AbstractAction {
        public ClearSearch() {
-         super("Clear search field");
+         super("Clear find field");
        }
           public void actionPerformed(ActionEvent e) {
             findCombo.setSelectedItem(null);
@@ -1959,7 +1972,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     return action;
   }
 
-  private  void buildCombo(final JComboBox combo, boolean isFiltering) {
+  private  void buildCombo(final AutoFilterComboBox combo, boolean isFiltering, final AutoFilterComboBox.AutoFilterComboBoxModel otherModel) {
     //add (hopefully useful) default filters
     combo.addItem("LEVEL == TRACE");
     combo.addItem("LEVEL >= DEBUG");
@@ -1987,6 +2000,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                     ExpressionRule.getRule(item.toString());
                     //add entry as first row of the combo box
                     combo.insertItemAt(item, 0);
+                    otherModel.insertElementAt(item, 0);
                   }
                 //valid expression, reset background color in case we were previously an invalid expression
                 filterText.setBackground(UIManager.getColor("TextField.background"));
