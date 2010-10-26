@@ -233,7 +233,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   private final RuleMediator tableRuleMediator = new RuleMediator(false);
   private final RuleMediator searchRuleMediator = new RuleMediator(true);
   private final EventDetailLayout detailLayout = new EventDetailLayout();
-  private double lastDetailPanelSplitLocation = DEFAULT_DETAIL_SPLIT_LOCATION;
   private double lastLogTreePanelSplitLocation = DEFAULT_LOG_TREE_SPLIT_LOCATION;
   private Point currentPoint;
   private JTable currentTable;
@@ -269,6 +268,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   private boolean searchResultsDisplayed;
   private ColorizedEventAndSearchMatchThumbnail colorizedEventAndSearchMatchThumbnail;
   private EventTimeDeltaMatchThumbnail eventTimeDeltaMatchThumbnail;
+  private boolean isDetailPanelVisible;
 
   /**
    * Creates a new LogPanel object.  If a LogPanel with this identifier has
@@ -2268,9 +2268,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                     loadDefaultColumnSettings(event);
                 }
                 //ensure tablemodel cyclic flag is updated
+                //may be panel configs that don't have these values
                 tableModel.setCyclic(preferenceModel.isCyclic());
                 searchModel.setCyclic(preferenceModel.isCyclic());
-                //may be panel configs that don't have these values
                 lowerPanel.setDividerLocation(lowerPanelDividerLocation);
                 nameTreeAndMainPanelSplit.setDividerLocation(treeDividerLocation);
                 detailLayout.setConversionPattern(conversionPattern);
@@ -2296,9 +2296,12 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             }
         }
     } else {
+        //not setting lower panel divider location here - will do that after the UI is visible
         loadDefaultColumnSettings(event);
     }
-
+    //ensure tablemodel cyclic flag is updated
+    tableModel.setCyclic(preferenceModel.isCyclic());
+    searchModel.setCyclic(preferenceModel.isCyclic());
     logTreePanel.ignore(preferenceModel.getHiddenLoggers());
     logTreePanel.setHiddenExpression(preferenceModel.getHiddenExpression());
     if (preferenceModel.getClearTableExpression() != null) {
@@ -2347,12 +2350,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     	FileWriter w = new FileWriter(xmlFile);
     	s = stream.createObjectOutputStream(w);
     	s.writeObject(preferenceModel);
-        if (lowerPanelDividerLocation == 0) {
-            //pick a reasonable default
-            s.writeInt((int) (lowerPanel.getSize().height * DEFAULT_DETAIL_SPLIT_LOCATION));
-        } else {
-            s.writeInt(lowerPanelDividerLocation);
-        }
+      if (isDetailPanelVisible) {
+        //use current size
+        s.writeInt(lowerPanel.getDividerLocation());
+      } else {
+        //use size when last hidden
+        s.writeInt(lowerPanelDividerLocation);
+      }
     	s.writeInt(nameTreeAndMainPanelSplit.getDividerLocation());
     	s.writeObject(detailLayout.getConversionPattern());
     	s.writeObject(undockedFrame.getLocation());
@@ -2701,34 +2705,33 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
    * Display the detail pane, using the last known divider location
    */
   private void showDetailPane() {
-    lowerPanel.setDividerSize(dividerSize);
-      if (lowerPanelDividerLocation != 0) {
-          lowerPanel.setDividerLocation(lowerPanelDividerLocation);
+    if (!isDetailPanelVisible) {
+      lowerPanel.setDividerSize(dividerSize);
+      if (lowerPanelDividerLocation == 0) {
+        lowerPanel.setDividerLocation(DEFAULT_DETAIL_SPLIT_LOCATION);
+        lowerPanelDividerLocation = lowerPanel.getDividerLocation();
       } else {
-          lowerPanel.setDividerLocation(lastDetailPanelSplitLocation);
+        lowerPanel.setDividerLocation(lowerPanelDividerLocation);
       }
       detailPanel.setVisible(true);
       detailPanel.repaint();
       lowerPanel.repaint();
+      isDetailPanelVisible = true;
+    }
   }
 
   /**
    * Hide the detail pane, holding the current divider location for later use
    */
   private void hideDetailPane() {
-    int currentSize = lowerPanel.getHeight() - lowerPanel.getDividerSize();
-
-    if (currentSize > 0) {
-      lastDetailPanelSplitLocation =
-        (double) lowerPanel.getDividerLocation() / currentSize;
-     }
-     if (lowerPanel.getDividerLocation() > 0) {
-        lowerPanelDividerLocation = lowerPanel.getDividerLocation();
-     }
-
+    //may be called not currently visible on initial setup to ensure panel is not visible..only update divider location if hiding when currently visible
+    if (isDetailPanelVisible) {
+      lowerPanelDividerLocation = lowerPanel.getDividerLocation();
+    }
     lowerPanel.setDividerSize(0);
     detailPanel.setVisible(false);
     lowerPanel.repaint();
+    isDetailPanelVisible = false;
   }
 
   /**

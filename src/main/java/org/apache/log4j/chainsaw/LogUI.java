@@ -286,8 +286,11 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     {
         public void run()
         {
-            loadLookAndFeelUsingPluginClassLoader(model.getLookAndFeelClassName());
-            createChainsawGUI(model, null);
+          String lookAndFeelClassName = model.getLookAndFeelClassName();
+          if (lookAndFeelClassName != null && !(lookAndFeelClassName.trim().equals(""))) {
+            loadLookAndFeelUsingPluginClassLoader(lookAndFeelClassName);
+          }
+          createChainsawGUI(model, null);
         }
     });
   }
@@ -1040,12 +1043,10 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       initializationLock.notifyAll();
     }
 
-    
-    
     if (
       noReceiversDefined
         && applicationPreferenceModel.isShowNoReceiverWarning()) {
-      EventQueue.invokeLater(new Runnable() {
+      SwingHelper.invokeOnEDT(new Runnable() {
           public void run() {
               showReceiverConfigurationPanel();
           }
