@@ -188,17 +188,8 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     int colIndex = tableColumn.getModelIndex() + 1;
 
     //no event, use default renderer
-
-    JLabel basicComponent = null;
-    boolean basic = (!wrap && !highlightSearchMatchText && !logPanelPreferenceModel.isShowMillisDeltaAsGap());
-    if (basic || loggingEventWrapper == null) {
-      Component rendererComponent = super.getTableCellRendererComponent(table, value, false, false, row, col);
-      if (!(rendererComponent instanceof JLabel) || loggingEventWrapper == null) {
-        return rendererComponent;
-      }
-      basicComponent = (JLabel)rendererComponent;
-      basicComponent.setFont(levelTextPane.getFont());
-      setBasicComponentBorder(basicComponent, isSelected, table, col);
+    if (loggingEventWrapper == null) {
+        return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
     }
     long delta = 0;
     if (row > 0) {
@@ -212,9 +203,6 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     switch (colIndex) {
     case ChainsawColumns.INDEX_THROWABLE_COL_NAME:
       if (value instanceof String[] && ((String[])value).length > 0){
-        if (basic) {
-          basicComponent.setText(((String[])value)[0]);
-        } else {
           Style tabStyle = singleLineTextPane.getLogicalStyle();
           StyleConstants.setTabSet(tabStyle, tabs);
           //set the 1st tab at position 3
@@ -227,20 +215,11 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
           } else {
               singleLineTextPane.setText(((String[])value)[0]);
           }
-        }
       } else {
-        if (basic) {
-          basicComponent.setText("");
-        } else {
-          singleLineTextPane.setText("");
-        }
+        singleLineTextPane.setText("");
       }
-      if (basic) {
-        component = basicComponent;
-      } else {
-        layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
-        component = generalPanel;
-      }
+      layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
+      component = generalPanel;
       break;
     case ChainsawColumns.INDEX_LOGGER_COL_NAME:
       String logger = value.toString();
@@ -252,88 +231,49 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
           break;
         }
       }
-      if (basic) {
-        basicComponent.setText(logger.substring(startPos + 1));
-        component = basicComponent;
-      } else {
         singleLineTextPane.setText(logger.substring(startPos + 1));
         setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.LOGGER_FIELD), (StyledDocument) singleLineTextPane.getDocument());
         layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
         component = generalPanel;
-      }
       break;
     case ChainsawColumns.INDEX_ID_COL_NAME:
-      if (basic) {
-        basicComponent.setText(value.toString());
-        component = basicComponent;
-      } else {
         singleLineTextPane.setText(value.toString());
         setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.PROP_FIELD + "LOG4JID"), (StyledDocument) singleLineTextPane.getDocument());
         layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
         component = generalPanel;
-      }
         break;
     case ChainsawColumns.INDEX_CLASS_COL_NAME:
-      if (basic) {
-        basicComponent.setText(value.toString());
-        component = basicComponent;
-      } else {
         singleLineTextPane.setText(value.toString());
         setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.CLASS_FIELD), (StyledDocument) singleLineTextPane.getDocument());
         layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
         component = generalPanel;
-      }
         break;
     case ChainsawColumns.INDEX_FILE_COL_NAME:
-      if (basic) {
-        basicComponent.setText(value.toString());
-        component = basicComponent;
-      } else {
         singleLineTextPane.setText(value.toString());
         setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.FILE_FIELD), (StyledDocument) singleLineTextPane.getDocument());
         layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
         component = generalPanel;
-      }
         break;
     case ChainsawColumns.INDEX_LINE_COL_NAME:
-      if (basic) {
-        basicComponent.setText(value.toString());
-        component = basicComponent;
-      } else {
         singleLineTextPane.setText(value.toString());
         setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.LINE_FIELD), (StyledDocument) singleLineTextPane.getDocument());
         layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
         component = generalPanel;
-      }
         break;
     case ChainsawColumns.INDEX_NDC_COL_NAME:
-      if (basic) {
-        basicComponent.setText(value.toString());
-        component = basicComponent;
-      } else {
         singleLineTextPane.setText(value.toString());
         setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.NDC_FIELD), (StyledDocument) singleLineTextPane.getDocument());
         layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
         component = generalPanel;
-      }
         break;
     case ChainsawColumns.INDEX_THREAD_COL_NAME:
-      if (basic) {
-        basicComponent.setText(value.toString());
-        component = basicComponent;
-      } else {
         singleLineTextPane.setText(value.toString());
         setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.THREAD_FIELD), (StyledDocument) singleLineTextPane.getDocument());
         layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
         component = generalPanel;
-      }
         break;
     case ChainsawColumns.INDEX_TIMESTAMP_COL_NAME:
         //timestamp matches contain the millis..not the display text..just highlight if we have a match for the timestamp field
-      if (basic) {
-        basicComponent.setText(value.toString());
-        component = basicComponent;
-      } else {
         Set timestampMatches = (Set)matches.get(LoggingEventFieldResolver.TIMESTAMP_FIELD);
         if (timestampMatches != null && timestampMatches.size() > 0) {
             singleLineTextPane.setText(value.toString());
@@ -343,26 +283,16 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         }
         layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
         component = generalPanel;
-      }
         break;
     case ChainsawColumns.INDEX_METHOD_COL_NAME:
-      if (basic) {
-        basicComponent.setText(value.toString());
-        component = basicComponent;
-      } else {
         singleLineTextPane.setText(value.toString());
         setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.METHOD_FIELD), (StyledDocument) singleLineTextPane.getDocument());
         layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
         component = generalPanel;
-      }
         break;
     case ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME:
     case ChainsawColumns.INDEX_MESSAGE_COL_NAME:
         String thisString = value.toString().trim();
-      if (basic) {
-        basicComponent.setText(thisString);
-        component = basicComponent;
-      } else {
         JTextPane textPane = wrap ? multiLineTextPane : singleLineTextPane;
         JComponent textPaneContainer = wrap ? multiLinePanel : generalPanel;
         textPane.setText(thisString);
@@ -443,52 +373,28 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         }
 
         component = textPaneContainer;
-      }
         break;
     case ChainsawColumns.INDEX_LEVEL_COL_NAME:
       if (levelUseIcons) {
-        if (basic) {
-          basicComponent.setText("");
-          basicComponent.setIcon((Icon)iconMap.get(value.toString()));
-          if (!toolTipsVisible) {
-            basicComponent.setToolTipText(value.toString());
-          }
-        } else {
-          levelTextPane.setText("");
-          levelTextPane.insertIcon((Icon) iconMap.get(value.toString()));
-          if (!toolTipsVisible) {
-            levelTextPane.setToolTipText(value.toString());
-          }
+        levelTextPane.setText("");
+        levelTextPane.insertIcon((Icon) iconMap.get(value.toString()));
+        if (!toolTipsVisible) {
+          levelTextPane.setToolTipText(value.toString());
         }
       } else {
-        if (basic) {
-          basicComponent.setText(value.toString());
-          if (!toolTipsVisible) {
-              basicComponent.setToolTipText(null);
-          }
-        } else {
-          levelTextPane.setText(value.toString());
-          setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.LEVEL_FIELD), (StyledDocument) levelTextPane.getDocument());
-          if (!toolTipsVisible) {
-              levelTextPane.setToolTipText(null);
-          }
+        levelTextPane.setText(value.toString());
+        setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.LEVEL_FIELD), (StyledDocument) levelTextPane.getDocument());
+        if (!toolTipsVisible) {
+            levelTextPane.setToolTipText(null);
         }
       }
       if (toolTipsVisible) {
-        if (basic) {
-          basicComponent.setToolTipText(label.getToolTipText());
-        } else {
           levelTextPane.setToolTipText(label.getToolTipText());
-        }
       }
-      if (basic) {
-        component = basicComponent;
-      } else {
-        levelTextPane.setForeground(label.getForeground());
-        levelTextPane.setBackground(label.getBackground());
-        layoutRenderingPanel(levelPanel, levelTextPane, delta, isSelected, width, col, table);
-        component = levelPanel;
-      }
+      levelTextPane.setForeground(label.getForeground());
+      levelTextPane.setBackground(label.getBackground());
+      layoutRenderingPanel(levelPanel, levelTextPane, delta, isSelected, width, col, table);
+      component = levelPanel;
       break;
 
     //remaining entries are properties
@@ -507,26 +413,13 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         if (thisProp != null) {
             String propKey = LoggingEventFieldResolver.PROP_FIELD + thisProp.toUpperCase();
             Set propKeyMatches = (Set)matches.get(propKey);
-            String propertyValue = loggingEventWrapper.getLoggingEvent().getProperty(thisProp);
-          if (basic) {
-            basicComponent.setText(propertyValue);
-          } else {
-            singleLineTextPane.setText(propertyValue);
+            singleLineTextPane.setText(loggingEventWrapper.getLoggingEvent().getProperty(thisProp));
             setHighlightAttributesInternal(propKeyMatches, (StyledDocument) singleLineTextPane.getDocument());
-          }
         } else {
-          if (basic) {
-            basicComponent.setText("");
-          } else {
             singleLineTextPane.setText("");
-          }
         }
-      if (basic) {
-        component = basicComponent;
-      } else {
         layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
         component = generalPanel;
-      }
         break;
     }
 
@@ -561,40 +454,16 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     component.setForeground(foreground);
 
     //update the background & foreground of the jtextpane using styles
-    if (!basic) {
-      if (multiLineTextPane != null)
-      {
-          updateColors(multiLineTextPane, background, foreground);
-      }
-      updateColors(levelTextPane, background, foreground);
-      updateColors(singleLineTextPane, background, foreground);
+    if (multiLineTextPane != null)
+    {
+        updateColors(multiLineTextPane, background, foreground);
     }
+    updateColors(levelTextPane, background, foreground);
+    updateColors(singleLineTextPane, background, foreground);
+
     return component;
   }
 
-  private void setBasicComponentBorder(JComponent component, boolean isSelected, JTable table, int col) {
-    setComponentBorder(component, isSelected, table, col, 0);
-  }
-
-  private void setComponentBorder(JComponent component, boolean isSelected, JTable table, int col, long delta) {
-    if (delta == 0 || !logPanelPreferenceModel.isShowMillisDeltaAsGap()) {
-      if (col == 0) {
-        component.setBorder(getLeftBorder(isSelected, delta));
-      } else if (col == table.getColumnCount() - 1) {
-        component.setBorder(getRightBorder(isSelected, delta));
-      } else {
-        component.setBorder(getMiddleBorder(isSelected, delta));
-      }
-    } else {
-        if (col == 0) {
-          component.setBorder(getLeftBorder(isSelected, 0));
-        } else if (col == table.getColumnCount() - 1) {
-          component.setBorder(getRightBorder(isSelected, 0));
-        } else {
-          component.setBorder(getMiddleBorder(isSelected, 0));
-        }
-      }
-  }
     private void layoutRenderingPanel(JComponent container, JComponent bottomComponent, long delta, boolean isSelected,
                                       int width, int col, JTable table) {
         container.removeAll();
