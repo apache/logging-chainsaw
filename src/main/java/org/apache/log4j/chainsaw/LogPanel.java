@@ -1918,7 +1918,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     mainPopup.add(menuItemToggleDock);
 
     mainPopup.add(new JSeparator());
-    searchPopup.add(new JSeparator());
 
     mainPopup.add(new ColorPanel());
     searchPopup.add(new ColorPanel());

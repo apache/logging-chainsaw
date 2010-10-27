@@ -67,7 +67,6 @@ public class PluginClassLoaderFactory {
      */
     private static final ClassLoader create(File pluginDirectory) {
         if(pluginDirectory == null || !pluginDirectory.exists() || !pluginDirectory.canRead()) {
-         System.err.println("pluginDirectory cannot be null, and it must exist and must be readable, using the normal Classloader");
          return PluginClassLoaderFactory.class.getClassLoader();
         }
         

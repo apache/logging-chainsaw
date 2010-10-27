@@ -68,6 +68,7 @@ import org.apache.log4j.chainsaw.ApplicationPreferenceModel;
 import org.apache.log4j.chainsaw.ChainsawConstants;
 import org.apache.log4j.chainsaw.ExpressionRuleContext;
 import org.apache.log4j.chainsaw.filter.FilterModel;
+import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.rule.ColorRule;
 import org.apache.log4j.rule.ExpressionRule;
@@ -190,14 +191,24 @@ public class ColorPanel extends JPanel
     searchTable.getColumnModel().getColumn(1).setPreferredWidth(80);
     searchTable.getColumnModel().getColumn(0).setMaxWidth(80);
     searchTable.getColumnModel().getColumn(1).setMaxWidth(80);
-    configureSingleEntryColorTable(searchTable);
+    //building color choosers needs to be done on the EDT
+    SwingHelper.invokeOnEDT(new Runnable() {
+      public void run() {
+        configureSingleEntryColorTable(searchTable);
+      }
+    });
 
     alternatingColorTable.sizeColumnsToFit(0);
     alternatingColorTable.getColumnModel().getColumn(0).setPreferredWidth(80);
     alternatingColorTable.getColumnModel().getColumn(1).setPreferredWidth(80);
     alternatingColorTable.getColumnModel().getColumn(0).setMaxWidth(80);
     alternatingColorTable.getColumnModel().getColumn(1).setMaxWidth(80);
-    configureSingleEntryColorTable(alternatingColorTable);
+    //building color choosers needs to be done on the EDT
+    SwingHelper.invokeOnEDT(new Runnable() {
+      public void run() {
+        configureSingleEntryColorTable(alternatingColorTable);
+      }
+    });
 
     configureTable();
 
