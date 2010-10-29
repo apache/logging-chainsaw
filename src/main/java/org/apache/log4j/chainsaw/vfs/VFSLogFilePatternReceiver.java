@@ -302,7 +302,20 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
     	  		  });
     		  }}).start();
       } else {
+        //starts with protocol:/  but not protocol://
         String oldURL = getFileURL();
+        if (oldURL != null && oldURL.indexOf(":/") > -1 && oldURL.indexOf("://") == -1) {
+          int index = oldURL.indexOf(":/");
+          String lastPart = oldURL.substring(index + ":/".length());
+          int passEndIndex = lastPart.indexOf("@");
+          if (passEndIndex > -1) { //we have a username/password
+              setHost(oldURL.substring(0, index + ":/".length()));
+              setPath(lastPart.substring(passEndIndex + 1));
+          }
+          vfsReader = new VFSReader();
+          new Thread(vfsReader).start();
+        }
+        //starts with protocol://
         if (oldURL != null && oldURL.indexOf("://") > -1) {
             int index = oldURL.indexOf("://");
             String lastPart = oldURL.substring(index + "://".length());
