@@ -20,10 +20,10 @@ package org.apache.log4j.chainsaw.helper;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.FileDialog;
 import java.awt.Frame;
 import java.awt.Toolkit;
-import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
@@ -38,6 +38,7 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 
 /**
  * A collection of standard utility methods for use within Swing.
@@ -109,7 +110,14 @@ public final class SwingHelper {
   public static File promptForFile(Container parent, String defaultPath, String title) {
         if (SwingHelper.isMacOSX()) {
             //use filedialog on mac
-            FileDialog fileDialog = new FileDialog((Frame)null, title);
+            Component root = SwingUtilities.getRoot(parent);
+            Frame frame = null;
+            if (root instanceof Frame) {
+              frame = (Frame) root;
+            }
+
+            FileDialog fileDialog = new FileDialog(frame, title);
+            fileDialog.setModal(true);
             if (defaultPath != null) {
               fileDialog.setDirectory(defaultPath);
             }
@@ -118,7 +126,11 @@ public final class SwingHelper {
             if (fileString == null) {
               return null;
             }
+          if (fileDialog.getDirectory() != null) {
+            return new File(fileDialog.getDirectory(), fileString);
+          } else {
             return new File(fileString);
+          }
           } else {
 
                 JFileChooser chooser;

@@ -21,7 +21,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Event;
 import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.Point;
@@ -1463,9 +1462,118 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             new ActionListener() {
               public void actionPerformed(ActionEvent e) {
                 dialog.setVisible(false);
-              }
-            });
 
+            applicationPreferenceModel.setShowNoReceiverWarning(!receiverConfigurationPanel.isDontWarnMeAgain());
+            //using this config next time - stop all plugins
+            if (receiverConfigurationPanel.isDontWarnMeAgain()) {
+                List plugins = pluginRegistry.getPlugins();
+                for (Iterator iter = plugins.iterator();iter.hasNext();) {
+                    Plugin plugin = (Plugin)iter.next();
+                    //don't stop ZeroConfPlugin if it is registered
+                    if (!plugin.getName().toLowerCase().contains("zeroconf")) {
+                      pluginRegistry.stopPlugin(plugin.getName());
+                    }
+                }
+            }
+            URL configURL = null;
+
+            if (receiverConfigurationPanel.getModel().isNetworkReceiverMode()) {
+              int port = receiverConfigurationPanel.getModel().getNetworkReceiverPort();
+
+              try {
+                Class receiverClass = receiverConfigurationPanel.getModel().getNetworkReceiverClass();
+                Receiver networkReceiver = (Receiver) receiverClass.newInstance();
+                networkReceiver.setName(receiverClass.getSimpleName() + "-" + port);
+
+                Method portMethod =
+                  networkReceiver.getClass().getMethod(
+                    "setPort", new Class[] { int.class });
+                portMethod.invoke(
+                  networkReceiver, new Object[] { new Integer(port) });
+
+                networkReceiver.setThreshold(Level.TRACE);
+
+                pluginRegistry.addPlugin(networkReceiver);
+                networkReceiver.activateOptions();
+                receiversPanel.updateReceiverTreeInDispatchThread();
+                //setting config URL here ensures we have the receiver panel auto-saved config loaded
+                if (receiverConfigurationPanel.isDontWarnMeAgain()) {
+                    configURL = receiverConfigurationPanel.getModel().getSavedConfigToLoad();
+                }
+              } catch (Exception e3) {
+                MessageCenter.getInstance().getLogger().error(
+                  "Error creating Receiver", e3);
+                MessageCenter.getInstance().getLogger().info(
+                  "An error occurred creating your Receiver");
+              }
+            } else if (receiverConfigurationPanel.getModel().isLoadConfig() ||
+                    receiverConfigurationPanel.getModel().isLoadSavedConfigs()) {
+              if (receiverConfigurationPanel.getModel().isLoadSavedConfigs()) {
+                  configURL = receiverConfigurationPanel.getModel().getSavedConfigToLoad();
+              } else {
+                  configURL = receiverConfigurationPanel.getModel().getConfigToLoad();
+              }
+            } else if (receiverConfigurationPanel.getModel().isLogFileReceiverConfig()) {
+              try {
+                  URL fileURL = receiverConfigurationPanel.getModel().getLogFileURL();
+                  if (fileURL != null) {
+                      VFSLogFilePatternReceiver fileReceiver = new VFSLogFilePatternReceiver();
+                      fileReceiver.setName(fileURL.getFile());
+                      fileReceiver.setAutoReconnect(true);
+                      fileReceiver.setContainer(LogUI.this);
+                      fileReceiver.setAppendNonMatches(true);
+                      fileReceiver.setFileURL(fileURL.toURI().toString());
+                      fileReceiver.setTailing(true);
+                      if (receiverConfigurationPanel.getModel().isPatternLayoutLogFormat()) {
+                          fileReceiver.setLogFormat(LogFilePatternLayoutBuilder.getLogFormatFromPatternLayout(receiverConfigurationPanel.getModel().getLogFormat()));
+                      } else {
+                          fileReceiver.setLogFormat(receiverConfigurationPanel.getModel().getLogFormat());
+                      }
+                      fileReceiver.setTimestampFormat(receiverConfigurationPanel.getModel().getLogFormatTimestampFormat());
+                      fileReceiver.setThreshold(Level.TRACE);
+
+                      pluginRegistry.addPlugin(fileReceiver);
+                      fileReceiver.activateOptions();
+                      receiversPanel.updateReceiverTreeInDispatchThread();
+                      if (receiverConfigurationPanel.isDontWarnMeAgain()) {
+                          configURL = receiverConfigurationPanel.getModel().getSavedConfigToLoad();
+                      }
+                  }
+              } catch (Exception e2) {
+                  MessageCenter.getInstance().getLogger().error(
+                    "Error creating Receiver", e2);
+                  MessageCenter.getInstance().getLogger().info(
+                    "An error occurred creating your Receiver");
+              }
+            }
+              if (configURL != null) {
+                MessageCenter.getInstance().getLogger().debug(
+                  "Initialiazing Log4j with " + configURL.toExternalForm());
+                final URL finalURL = configURL;
+                new Thread(
+                  new Runnable() {
+                    public void run() {
+                      if (receiverConfigurationPanel.isDontWarnMeAgain()) {
+                          applicationPreferenceModel.setConfigurationURL(finalURL.toExternalForm());
+                      } else {
+                          try {
+                              if (new File(finalURL.toURI()).exists()) {
+                                  loadConfigurationUsingPluginClassLoader(finalURL);
+                              }
+                          }
+                          catch (URISyntaxException e) {
+                              //ignore
+                          }
+                      }
+
+                      receiversPanel.updateReceiverTreeInDispatchThread();
+                    }
+                  }).start();
+              }
+          }
+        });
+
+          receiverConfigurationPanel.setDialog(dialog);
           dialog.getContentPane().add(receiverConfigurationPanel);
 
           dialog.pack();
@@ -1476,114 +1584,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             (screenSize.height / 2) - (dialog.getHeight() / 2));
 
           dialog.setVisible(true);
-          applicationPreferenceModel.setShowNoReceiverWarning(!receiverConfigurationPanel.isDontWarnMeAgain());
-          //using this config next time - stop all plugins
-          if (receiverConfigurationPanel.isDontWarnMeAgain()) {
-              List plugins = pluginRegistry.getPlugins();
-              for (Iterator iter = plugins.iterator();iter.hasNext();) {
-                  Plugin plugin = (Plugin)iter.next();
-                  //don't stop ZeroConfPlugin if it is registered
-                  if (!plugin.getName().toLowerCase().contains("zeroconf")) {
-                    pluginRegistry.stopPlugin(plugin.getName());
-                  }
-              }
-          }
-          URL configURL = null;
-
-          if (receiverConfigurationPanel.getModel().isNetworkReceiverMode()) {
-            int port = receiverConfigurationPanel.getModel().getNetworkReceiverPort();
-
-            try {
-              Class receiverClass = receiverConfigurationPanel.getModel().getNetworkReceiverClass();
-              Receiver networkReceiver = (Receiver) receiverClass.newInstance();
-              networkReceiver.setName(receiverClass.getSimpleName() + "-" + port);
-
-              Method portMethod =
-                networkReceiver.getClass().getMethod(
-                  "setPort", new Class[] { int.class });
-              portMethod.invoke(
-                networkReceiver, new Object[] { new Integer(port) });
-
-              networkReceiver.setThreshold(Level.TRACE);
-
-              pluginRegistry.addPlugin(networkReceiver);
-              networkReceiver.activateOptions();
-              receiversPanel.updateReceiverTreeInDispatchThread();
-              //setting config URL here ensures we have the receiver panel auto-saved config loaded
-              if (receiverConfigurationPanel.isDontWarnMeAgain()) {
-                  configURL = receiverConfigurationPanel.getModel().getSavedConfigToLoad();
-              }
-            } catch (Exception e) {
-              MessageCenter.getInstance().getLogger().error(
-                "Error creating Receiver", e);
-              MessageCenter.getInstance().getLogger().info(
-                "An error occurred creating your Receiver");
-            }
-          } else if (receiverConfigurationPanel.getModel().isLoadConfig() ||
-                  receiverConfigurationPanel.getModel().isLoadSavedConfigs()) {
-            if (receiverConfigurationPanel.getModel().isLoadSavedConfigs()) {
-                configURL = receiverConfigurationPanel.getModel().getSavedConfigToLoad();
-            } else {
-                configURL = receiverConfigurationPanel.getModel().getConfigToLoad();
-            }
-          } else if (receiverConfigurationPanel.getModel().isLogFileReceiverConfig()) {
-            try {
-                URL fileURL = receiverConfigurationPanel.getModel().getLogFileURL();
-                if (fileURL != null) {
-                    VFSLogFilePatternReceiver fileReceiver = new VFSLogFilePatternReceiver();
-                    fileReceiver.setName(fileURL.getFile());
-                    fileReceiver.setAutoReconnect(true);
-                    fileReceiver.setContainer(LogUI.this);
-                    fileReceiver.setAppendNonMatches(true);
-                    fileReceiver.setFileURL(fileURL.toURI().toString());
-                    fileReceiver.setTailing(true);
-                    if (receiverConfigurationPanel.getModel().isPatternLayoutLogFormat()) {
-                        fileReceiver.setLogFormat(LogFilePatternLayoutBuilder.getLogFormatFromPatternLayout(receiverConfigurationPanel.getModel().getLogFormat()));
-                    } else {
-                        fileReceiver.setLogFormat(receiverConfigurationPanel.getModel().getLogFormat());
-                    }
-                    fileReceiver.setTimestampFormat(receiverConfigurationPanel.getModel().getLogFormatTimestampFormat());
-                    fileReceiver.setThreshold(Level.TRACE);
-
-                    pluginRegistry.addPlugin(fileReceiver);
-                    fileReceiver.activateOptions();
-                    receiversPanel.updateReceiverTreeInDispatchThread();
-                    if (receiverConfigurationPanel.isDontWarnMeAgain()) {
-                        configURL = receiverConfigurationPanel.getModel().getSavedConfigToLoad();
-                    }
-                }
-            } catch (Exception e) {
-                MessageCenter.getInstance().getLogger().error(
-                  "Error creating Receiver", e);
-                MessageCenter.getInstance().getLogger().info(
-                  "An error occurred creating your Receiver");
-            }
-          }
-            if (configURL != null) {
-              MessageCenter.getInstance().getLogger().debug(
-                "Initialiazing Log4j with " + configURL.toExternalForm());
-              final URL finalURL = configURL;
-              new Thread(
-                new Runnable() {
-                  public void run() {
-                    if (receiverConfigurationPanel.isDontWarnMeAgain()) {
-                        applicationPreferenceModel.setConfigurationURL(finalURL.toExternalForm());
-                    } else {
-                        try {
-                            if (new File(finalURL.toURI()).exists()) {
-                                loadConfigurationUsingPluginClassLoader(finalURL);
-                            }
-                        }
-                        catch (URISyntaxException e) {
-                            //ignore
-                        }
-                    }
-
-                    receiversPanel.updateReceiverTreeInDispatchThread();
-                  }
-                }).start();
-            }
-
         }
       });
   }

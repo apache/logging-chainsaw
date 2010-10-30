@@ -18,7 +18,9 @@ package org.apache.log4j.chainsaw;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -111,8 +113,10 @@ class ReceiverConfigurationPanel extends JPanel {
 
     //set by LogUI to handle hiding of the dialog
     private ActionListener completionActionListener;
+    //used as frame for file open dialogs
+    private Container dialog;
 
-    ReceiverConfigurationPanel() {
+  ReceiverConfigurationPanel() {
         setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
         setLayout(new GridBagLayout());
 
@@ -363,8 +367,8 @@ class ReceiverConfigurationPanel extends JPanel {
         panel.add(new JLabel(" Log file format type "), c);
 
         DefaultComboBoxModel comboBoxModel = new DefaultComboBoxModel();
-        comboBoxModel.addElement("PatternLayout format");
         comboBoxModel.addElement("LogFilePatternReceiver LogFormat");
+        comboBoxModel.addElement("PatternLayout format");
 
         logFileFormatTypeComboBox = new JComboBox(comboBoxModel);
         logFileFormatTypeComboBox.setOpaque(false);
@@ -553,15 +557,25 @@ class ReceiverConfigurationPanel extends JPanel {
      * or null if they cancelled.
      */
     private URL browseConfig() throws MalformedURLException {
-        File selectedFile = SwingHelper.promptForFile(this, null, "Choose a Chainsaw configuration file");
+        //hiding and showing the dialog to avoid focus issues with 2 dialogs
+        dialog.setVisible(false);
+        File selectedFile = SwingHelper.promptForFile(dialog, null, "Choose a Chainsaw configuration file");
+        URL result = null;
         if (selectedFile == null) {
-            return null;
+            result = null;
         }
-
-        if (!selectedFile.exists() || !selectedFile.canRead()) {
-            return null;
+        if (selectedFile != null && (!selectedFile.exists() || !selectedFile.canRead())) {
+            result = null;
         }
-        return selectedFile.toURI().toURL();
+        if (selectedFile != null) {
+          result = selectedFile.toURI().toURL();
+        }
+        EventQueue.invokeLater(new Runnable() {
+          public void run() {
+            dialog.setVisible(true);
+          }
+        });
+        return result;
     }
 
     /**
@@ -569,17 +583,25 @@ class ReceiverConfigurationPanel extends JPanel {
      * or null if they cancelled.
      */
     private URL browseLogFile() throws MalformedURLException {
-
-        File selectedFile = SwingHelper.promptForFile(this, null, "Select a log file");
+        //hiding and showing the dialog to avoid focus issues with 2 dialogs
+        dialog.setVisible(false);
+        File selectedFile = SwingHelper.promptForFile(dialog, null, "Select a log file");
+        URL result = null;
         if (selectedFile == null) {
-            return null;
+            result = null;
         }
-
-        if (!selectedFile.exists() || !selectedFile.canRead()) {
-            return null;
+        if (selectedFile != null && (!selectedFile.exists() || !selectedFile.canRead())) {
+            result = null;
         }
-
-        return selectedFile.toURI().toURL();
+        if (selectedFile != null) {
+          result = selectedFile.toURI().toURL();
+        }
+        EventQueue.invokeLater(new Runnable() {
+          public void run() {
+            dialog.setVisible(true);
+          }
+        });
+        return result;
     }
 
     public static void main(String[] args) {
@@ -599,7 +621,11 @@ class ReceiverConfigurationPanel extends JPanel {
         return dontwarnIfNoReceiver.isSelected();
     }
 
-    /**
+  public void setDialog(Container dialog) {
+    this.dialog = dialog;
+  }
+
+  /**
      * This class represents the model of the chosen options the user
      * has configured.
      *
