@@ -40,7 +40,6 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -58,6 +57,7 @@ import javax.swing.tree.TreeModel;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.chainsaw.osx.OSXIntegration;
 
 
@@ -509,7 +509,7 @@ public static void main(String[] args) {
 
       p6.add(configURLPanel);
 
-      JButton browseButton = new JButton(" Browse ");
+      JButton browseButton = new JButton(" Open File... ");
       browseButton.addActionListener(new ActionListener()
       {
           public void actionPerformed(ActionEvent e)
@@ -552,7 +552,7 @@ public static void main(String[] args) {
                   File currentConfigurationPath = new File(selectedItem.toString()).getParentFile();
                   if (currentConfigurationPath != null) {
                       defaultPath = currentConfigurationPath.getPath();
-                      //JFileChooser constructor will not navigate to this location unless we remove the prefixing protocol and slash
+                      //FileDialog will not navigate to this location unless we remove the prefixing protocol and slash
                       //at least on winxp
                       if (defaultPath.toLowerCase().startsWith("file:\\")) {
                           defaultPath = defaultPath.substring("file:\\".length());
@@ -560,14 +560,11 @@ public static void main(String[] args) {
                   }
               }
           }
-
-          JFileChooser chooser = new JFileChooser(defaultPath);
-          int result = chooser.showOpenDialog(ApplicationPreferenceModelPanel.this);
-          if (JFileChooser.APPROVE_OPTION == result) {
-              File f = chooser.getSelectedFile();
+      File selectedFile = SwingHelper.promptForFile(this, defaultPath, "Select a Chainsaw configuration file");
+      if (selectedFile != null) {
               try
               {
-                  String newConfigurationFile = f.toURI().toURL().toExternalForm();
+                  String newConfigurationFile = selectedFile.toURI().toURL().toExternalForm();
                   if (!committedPreferenceModel.getConfigurationURLs().contains(newConfigurationFile)) {
                     configurationURL.addItem(newConfigurationFile);
                   }
@@ -575,7 +572,7 @@ public static void main(String[] args) {
               }
               catch (MalformedURLException e1)
               {
-                  e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                  e1.printStackTrace();
               }
           }
       }

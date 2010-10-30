@@ -29,6 +29,7 @@ import java.awt.event.FocusListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -37,7 +38,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -45,13 +45,13 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.net.SocketReceiver;
 import org.apache.log4j.net.UDPReceiver;
@@ -210,20 +210,24 @@ class ReceiverConfigurationPanel extends JPanel {
         dontwarnIfNoReceiver = new JCheckBox("Always start Chainsaw with this configuration");
         panel.add(dontwarnIfNoReceiver, c);
 
+        okButton = new JButton(" OK ");
+        cancelButton = new JButton(" Cancel ");
+
+        List okCancelButtons = SwingHelper.orderOKCancelButtons(okButton, cancelButton);
+
         c = new GridBagConstraints();
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 1;
         c.gridy = 0;
         c.insets = new Insets(0, 0, 0, 10);
-        okButton = new JButton(" OK ");
-        panel.add(okButton, c);
+        panel.add((JButton)okCancelButtons.get(0), c);
 
         c = new GridBagConstraints();
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 2;
         c.gridy = 0;
-        cancelButton = new JButton(" Cancel ");
-        panel.add(cancelButton, c);
+        panel.add((JButton)okCancelButtons.get(1), c);
+
         cancelButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent e)
@@ -308,7 +312,7 @@ class ReceiverConfigurationPanel extends JPanel {
 
     private JPanel buildLogFileReceiverPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
-        browseLogFileButton = new JButton(new AbstractAction(" Find a log file ") {
+        browseLogFileButton = new JButton(new AbstractAction(" Open File... ") {
             public void actionPerformed(ActionEvent e) {
                 try {
 
@@ -465,7 +469,7 @@ class ReceiverConfigurationPanel extends JPanel {
                 }
             });
 
-        browseForAnExistingConfigurationButton = new JButton(new AbstractAction(" Find an existing configuration ") {
+        browseForAnExistingConfigurationButton = new JButton(new AbstractAction(" Open File... ") {
                     public void actionPerformed(ActionEvent e) {
                         try {
 
@@ -549,39 +553,15 @@ class ReceiverConfigurationPanel extends JPanel {
      * or null if they cancelled.
      */
     private URL browseConfig() throws MalformedURLException {
-
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle("Use an existing configuration file...");
-        chooser.setDialogType(JFileChooser.OPEN_DIALOG);
-        chooser.setFileFilter(new FileFilter() {
-                public boolean accept(File f) {
-
-                    return f.isDirectory() ||
-                    f.getName().endsWith(".properties") ||
-                    f.getName().endsWith(".xml");
-                }
-
-                public String getDescription() {
-
-                    return "Log4j Configuration file";
-                }
-            });
-
-        chooser.showOpenDialog(this);
-
-        File selectedFile = chooser.getSelectedFile();
-
+        File selectedFile = SwingHelper.promptForFile(this, null, "Choose a Chainsaw configuration file");
         if (selectedFile == null) {
-
             return null;
         }
 
         if (!selectedFile.exists() || !selectedFile.canRead()) {
-
             return null;
         }
-
-        return chooser.getSelectedFile().toURI().toURL();
+        return selectedFile.toURI().toURL();
     }
 
     /**
@@ -590,13 +570,7 @@ class ReceiverConfigurationPanel extends JPanel {
      */
     private URL browseLogFile() throws MalformedURLException {
 
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle("Browse for a log file...");
-        chooser.setDialogType(JFileChooser.OPEN_DIALOG);
-        chooser.showOpenDialog(this);
-
-        File selectedFile = chooser.getSelectedFile();
-
+        File selectedFile = SwingHelper.promptForFile(this, null, "Select a log file");
         if (selectedFile == null) {
             return null;
         }
@@ -605,7 +579,7 @@ class ReceiverConfigurationPanel extends JPanel {
             return null;
         }
 
-        return chooser.getSelectedFile().toURI().toURL();
+        return selectedFile.toURI().toURL();
     }
 
     public static void main(String[] args) {

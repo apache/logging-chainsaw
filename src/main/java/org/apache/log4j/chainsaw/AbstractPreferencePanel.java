@@ -23,6 +23,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.util.Enumeration;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -42,6 +43,7 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 /**
  * Some basic plumbing for Preference related dialogs.
@@ -106,14 +108,12 @@ public abstract class AbstractPreferencePanel extends JPanel
   
     add(mainPanel, BorderLayout.CENTER);
   
-  
-
-  
     Box buttonBox = Box.createHorizontalBox();
+    List buttons = SwingHelper.orderOKCancelButtons(okButton, cancelButton);
     buttonBox.add(Box.createHorizontalGlue());
-    buttonBox.add(okButton);
+    buttonBox.add((JButton)buttons.get(0));
     buttonBox.add(Box.createHorizontalStrut(10));
-    buttonBox.add(cancelButton);
+    buttonBox.add((JButton)buttons.get(1));
   
     add(buttonBox, BorderLayout.SOUTH);
   

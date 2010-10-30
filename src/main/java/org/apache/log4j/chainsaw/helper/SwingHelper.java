@@ -18,11 +18,17 @@
 package org.apache.log4j.chainsaw.helper;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FileDialog;
+import java.awt.Frame;
 import java.awt.Toolkit;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -30,6 +36,7 @@ import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.KeyStroke;
 
 /**
@@ -82,4 +89,54 @@ public final class SwingHelper {
       EventQueue.invokeLater(runnable);
     }
   }
+
+  public static boolean isMacOSX() {
+    return System.getProperty("os.name").toLowerCase().startsWith("mac os x");
+  }
+
+  public static List orderOKCancelButtons(JButton okButton, JButton cancelButton) {
+    List result = new ArrayList();
+    if (isMacOSX()) {
+      result.add(cancelButton);
+      result.add(okButton);
+    } else {
+      result.add(okButton);
+      result.add(cancelButton);
+    }
+    return result;
+  }
+
+  public static File promptForFile(Container parent, String defaultPath, String title) {
+        if (SwingHelper.isMacOSX()) {
+            //use filedialog on mac
+            FileDialog fileDialog = new FileDialog((Frame)null, title);
+            if (defaultPath != null) {
+              fileDialog.setDirectory(defaultPath);
+            }
+            fileDialog.setVisible(true);
+            String fileString = fileDialog.getFile();
+            if (fileString == null) {
+              return null;
+            }
+            return new File(fileString);
+          } else {
+
+                JFileChooser chooser;
+                if (defaultPath != null) {
+                  chooser = new JFileChooser(defaultPath);
+                } else {
+                  chooser = new JFileChooser();
+                }
+
+                chooser.setDialogTitle(title);
+
+                chooser.setAcceptAllFileFilterUsed(true);
+
+                int i = chooser.showOpenDialog(parent);
+                if (i != JFileChooser.APPROVE_OPTION) {
+                    return null;
+                }
+            return chooser.getSelectedFile();
+        }
+    }
 }

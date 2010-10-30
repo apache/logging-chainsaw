@@ -27,11 +27,10 @@ import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.AbstractAction;
-import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.filechooser.FileFilter;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.chainsaw.prefs.MRUFileList;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.spi.Decoder;
@@ -57,8 +56,6 @@ class FileLoadAction extends AbstractAction {
 
     private LogUI parent;
 
-    private JFileChooser chooser = null;
-
     private boolean remoteURL = false;
 
     public FileLoadAction(LogUI parent, Decoder decoder, String title,
@@ -81,35 +78,13 @@ class FileLoadAction extends AbstractAction {
         String name = "";
         URL url = null;
 
-        if (!remoteURL) {
-            if (chooser == null) {
-                chooser = new JFileChooser();
-
-                chooser.setDialogTitle("Load Events from XML file...");
-
-                chooser.setAcceptAllFileFilterUsed(true);
-
-                chooser.setFileFilter(new FileFilter() {
-                    public boolean accept(File f) {
-                        return (f.getName().toLowerCase().endsWith(".xml") || f.getName().toLowerCase().endsWith(".zip")
-                                || f.isDirectory());
-                    }
-
-                    public String getDescription() {
-                        return "XML files (*.xml), ZIP files (*.zip)";
-                    }
-                });
-            }
-
-            int i = chooser.showOpenDialog(parent);
-            if (i != JFileChooser.APPROVE_OPTION) {
-                return;
-            }
-            File selectedFile = chooser.getSelectedFile();
-
+      if (!remoteURL) {
             try {
+              File selectedFile = SwingHelper.promptForFile(parent, null, "Load Events from XML file or zipped XML file...");
+              if (selectedFile != null) {
                 url = selectedFile.toURI().toURL();
                 name = selectedFile.getName();
+              }
             } catch (Exception ex) {
                 // TODO: handle exception
             }
