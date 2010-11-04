@@ -25,6 +25,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
@@ -33,6 +34,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
@@ -64,12 +66,14 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
   private final LogPanelPreferenceModel preferenceModel;
   private final ModifiableListModel columnListModel = new ModifiableListModel();
   private static final Logger logger = LogManager.getLogger(LogPanelPreferencePanel.class);
+  private ApplicationPreferenceModel appPreferenceModel;
 
   //~ Constructors ============================================================
 
-  public LogPanelPreferencePanel(LogPanelPreferenceModel model)
+  public LogPanelPreferencePanel(LogPanelPreferenceModel model, ApplicationPreferenceModel appModel)
   {
     preferenceModel = model;
+    appPreferenceModel = appModel;
     initComponents();
 
     getOkButton().addActionListener(new ActionListener()
@@ -100,7 +104,8 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
   {
     JFrame f = new JFrame("Preferences Panel Test Bed");
     LogPanelPreferenceModel model = new LogPanelPreferenceModel();
-    LogPanelPreferencePanel panel = new LogPanelPreferencePanel(model);
+    ApplicationPreferenceModel appModel = new ApplicationPreferenceModel();
+    LogPanelPreferencePanel panel = new LogPanelPreferencePanel(model, appModel);
     f.getContentPane().add(panel);
 
     model.addPropertyChangeListener(new PropertyChangeListener()
@@ -214,9 +219,21 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
               }
           }
         });
+      JButton setAsDefaultsButton = new JButton("Use selected columns as default visible columns");
+      setAsDefaultsButton.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent actionEvent) {
+          List selectedColumns = new ArrayList();
+          for (int i = 0;i<columnListModel.getSize();i++) {
+            if (preferenceModel.isColumnVisible((TableColumn) columnListModel.get(i))) {
+              selectedColumns.add(((TableColumn)columnListModel.get(i)).getHeaderValue());
+            }
+          }
+          appPreferenceModel.setDefaultColumnNames(selectedColumns);
+        }
+      });
       columnList.setCellRenderer(cellRenderer);
       columnBox.add(new JScrollPane(columnList));
-
+      columnBox.add(setAsDefaultsButton);
       add(columnBox);
       add(Box.createVerticalGlue());
     }

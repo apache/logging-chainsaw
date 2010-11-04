@@ -227,7 +227,8 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   private final JSplitPane nameTreeAndMainPanelSplit;
   private final LoggerNameTreePanel logTreePanel;
   private final LogPanelPreferenceModel preferenceModel = new LogPanelPreferenceModel();
-  private final LogPanelPreferencePanel logPanelPreferencesPanel = new LogPanelPreferencePanel(preferenceModel);
+  private ApplicationPreferenceModel applicationPreferenceModel;
+  private final LogPanelPreferencePanel logPanelPreferencesPanel;
   private final FilterModel filterModel = new FilterModel();
   private final RuleColorizer colorizer = new RuleColorizer();
   private final RuleMediator tableRuleMediator = new RuleMediator(false);
@@ -252,7 +253,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   private AutoFilterComboBox findCombo;
   private JScrollPane eventsPane;
   private int currentSearchMatchCount;
-  private ApplicationPreferenceModel applicationPreferenceModel;
   private Rule clearTableExpressionRule;
   private int lowerPanelDividerLocation;
   private EventContainer searchModel;
@@ -278,10 +278,11 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
    * @param identifier used to load and save settings
    */
   public LogPanel(final ChainsawStatusBar statusBar, final String identifier, int cyclicBufferSize,
-                  Map allColorizers, ApplicationPreferenceModel applicationPreferenceModel) {
+                  Map allColorizers, final ApplicationPreferenceModel applicationPreferenceModel) {
     this.identifier = identifier;
     this.statusBar = statusBar;
     this.applicationPreferenceModel = applicationPreferenceModel;
+    this.logPanelPreferencesPanel = new LogPanelPreferencePanel(preferenceModel, applicationPreferenceModel);
     logger.debug("creating logpanel for " + identifier);
 
     setLayout(new BorderLayout());
@@ -1034,9 +1035,12 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
           col.setHeaderValue(e.getKey());
 
           if (preferenceModel.addColumn(col)) {
-        	  table.addColumn(col);
-              searchTable.addColumn(col);
-        	  preferenceModel.setColumnVisible(e.getKey().toString(), true);
+            if (preferenceModel.isColumnVisible(col) || !applicationPreferenceModel.isDefaultColumnsSet() || applicationPreferenceModel.isDefaultColumnsSet() &&
+                applicationPreferenceModel.getDefaultColumnNames().contains(col.getHeaderValue())) {
+              table.addColumn(col);
+                searchTable.addColumn(col);
+          	  preferenceModel.setColumnVisible(e.getKey().toString(), true);
+            }
           }
         		}
         	});
@@ -3138,9 +3142,12 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     for (Iterator iter = sortedColumnList.iterator(); iter.hasNext();) {
       TableColumn element = (TableColumn) iter.next();
       if (preferenceModel.addColumn(element)) {
-          table.addColumn(element);
-          searchTable.addColumn(element);
-    	  preferenceModel.setColumnVisible(element.getHeaderValue().toString(), true);
+          if (!applicationPreferenceModel.isDefaultColumnsSet() || applicationPreferenceModel.isDefaultColumnsSet() &&
+              applicationPreferenceModel.getDefaultColumnNames().contains(element.getHeaderValue())) {
+            table.addColumn(element);
+            searchTable.addColumn(element);
+            preferenceModel.setColumnVisible(element.getHeaderValue().toString(), true);
+          }
       }
     }
 

@@ -19,6 +19,8 @@ package org.apache.log4j.chainsaw;
 import java.awt.Color;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.UIManager;
@@ -71,8 +73,10 @@ public class ApplicationPreferenceModel {
      */
     private boolean okToRemoveSecurityManager = false;
     private static final int CONFIGURATION_URL_ENTRY_COUNT = 10;
+    private List defaultColumnNames = new ArrayList();
+    private boolean defaultColumnsSet;
 
-    /**
+  /**
      * @param listener
      */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -226,6 +230,9 @@ public class ApplicationPreferenceModel {
       if (alternatingForeground != null && alternatingBackground != null) {
         setAlternatingBackgroundColor(alternatingBackground);
         setAlternatingForegroundColor(alternatingForeground);
+      }
+      if (model.isDefaultColumnsSet()) {
+        setDefaultColumnNames(model.getDefaultColumnNames());
       }
     }
 
@@ -497,4 +504,18 @@ public class ApplicationPreferenceModel {
         this.okToRemoveSecurityManager = okToRemoveSecurityManager;
         firePropertyChange("okToRemoveSecurityManager", oldValue, this.okToRemoveSecurityManager);
 	}
+
+  public void setDefaultColumnNames(List defaultColumnNames) {
+    defaultColumnsSet = true;
+    this.defaultColumnNames.clear();
+    this.defaultColumnNames.addAll(defaultColumnNames);
+  }
+
+  public boolean isDefaultColumnsSet() {
+    return defaultColumnsSet;
+  }
+
+  public List getDefaultColumnNames() {
+    return defaultColumnNames;
+  }
 }
