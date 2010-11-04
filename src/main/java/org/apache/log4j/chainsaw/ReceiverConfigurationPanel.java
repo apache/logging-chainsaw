@@ -236,7 +236,7 @@ class ReceiverConfigurationPanel extends JPanel {
         {
             public void actionPerformed(ActionEvent e)
             {
-                panelModel.setCancelled();
+                panelModel.setCancelled(true);
                 completionActionListener.actionPerformed(new ActionEvent(this, -1, "cancelled"));
             }
         });
@@ -245,6 +245,10 @@ class ReceiverConfigurationPanel extends JPanel {
         {
             public void actionPerformed(ActionEvent e)
             {
+                panelModel.setCancelled(false);
+                if (logFileFormatComboBox.getSelectedItem() != null && !(logFileFormatComboBox.getSelectedItem().toString().trim().equals(""))) {
+                  panelModel.setLogFormat(logFileFormatComboBox.getSelectedItem().toString());
+                }
                 completionActionListener.actionPerformed(new ActionEvent(this, -1, "cancelled"));
             }
         });
@@ -392,6 +396,7 @@ class ReceiverConfigurationPanel extends JPanel {
         logFileFormatComboBox = new JComboBox(logFileFormatComboBoxModel);
         logFileFormatComboBox.setEditable(true);
         logFileFormatComboBox.setOpaque(false);
+        logFileFormatComboBox.setSelectedIndex(0);
 
         c = new GridBagConstraints();
         c.gridx = 1;
@@ -632,10 +637,12 @@ class ReceiverConfigurationPanel extends JPanel {
      */
     class PanelModel {
 
-        private File file;
-        private boolean cancelled;
+    private File file;
+    //default to cancelled
+    private boolean cancelled = true;
+    private String lastLogFormat;
 
-        public PanelModel(){
+    public PanelModel(){
             file = new File(SettingsManager.getInstance().getSettingsDirectory(), "receiver-config.xml");
         }
 
@@ -665,29 +672,6 @@ class ReceiverConfigurationPanel extends JPanel {
 
         boolean isLogFileReceiverConfig() {
             return !cancelled && logFileReceiverRadioButton.isSelected();
-        }
-
-        public Object[] getRememberedConfigs() {
-
-            Object[] urls = new Object[existingConfigurationComboBoxModel.getSize()];
-
-            for (int i = 0; i < existingConfigurationComboBoxModel.getSize(); i++) {
-                urls[i] = existingConfigurationComboBoxModel.getElementAt(i);
-            }
-
-            return urls;
-        }
-
-        public void setRememberedConfigs(final Object[] configs) {
-            SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        existingConfigurationComboBoxModel.removeAllElements();
-
-                        for (int i = 0; i < configs.length; i++) {
-                            existingConfigurationComboBoxModel.addElement(configs[i]);
-                        }
-                    }
-                });
         }
 
         URL getConfigToLoad() {
@@ -727,6 +711,9 @@ class ReceiverConfigurationPanel extends JPanel {
         }
 
         String getLogFormat() {
+            if (cancelled) {
+              return lastLogFormat;
+            }
             Object item = logFileFormatComboBox.getSelectedItem();
             if (item != null) {
                 return item.toString();
@@ -748,22 +735,16 @@ class ReceiverConfigurationPanel extends JPanel {
             return null;
         }
 
-        public void setRememberedLayouts(Object[] layouts)
+        public void setCancelled(boolean cancelled)
         {
-            //TODO: implement
-            //add an entry to the logformat, formattype and timestamp fields
-
+            this.cancelled = cancelled;
         }
 
-        public Object[] getRememberedLayouts()
-        {
-            //TODO: implement
-            return new Object[0];
-        }
-
-        public void setCancelled()
-        {
-            cancelled = true;
+        public void setLogFormat(String lastLogFormat) {
+          this.lastLogFormat = lastLogFormat;
+          logFileFormatComboBoxModel.removeElement(lastLogFormat);
+          logFileFormatComboBoxModel.insertElementAt(lastLogFormat, 0);
+          logFileFormatComboBox.setSelectedIndex(0);
         }
     }
 }

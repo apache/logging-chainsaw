@@ -204,8 +204,9 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
   private PluginRegistry pluginRegistry;
   //map of tab names to rulecolorizers
   private Map allColorizers = new HashMap();
+  private ReceiverConfigurationPanel receiverConfigurationPanel = new ReceiverConfigurationPanel();
 
-    /**
+  /**
    * Constructor which builds up all the visual elements of the frame including
    * the Menu bar
    */
@@ -713,6 +714,9 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     RuleColorizer colorizer = new RuleColorizer();
     colorizer.loadColorSettings(ChainsawConstants.DEFAULT_COLOR_RULE_NAME);
     allColorizers.put(ChainsawConstants.DEFAULT_COLOR_RULE_NAME, colorizer);
+    if (event.getSetting("SavedConfig.logFormat") != null) {
+      receiverConfigurationPanel.getModel().setLogFormat(event.getSetting("SavedConfig.logFormat"));
+    }
   }
 
   /**
@@ -729,6 +733,9 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     event.saveSetting(LogUI.MAIN_WINDOW_HEIGHT, getHeight());
     RuleColorizer colorizer = (RuleColorizer) allColorizers.get(ChainsawConstants.DEFAULT_COLOR_RULE_NAME);
     colorizer.saveColorSettings(ChainsawConstants.DEFAULT_COLOR_RULE_NAME);
+    if (receiverConfigurationPanel.getModel().getLogFormat() != null ) {
+      event.saveSetting("SavedConfig.logFormat", receiverConfigurationPanel.getModel().getLogFormat());
+    }
   }
 
   /**
@@ -1397,58 +1404,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
    * Displays a dialog which will provide options for selecting a configuratino
    */
   private void showReceiverConfigurationPanel() {
-    final ReceiverConfigurationPanel receiverConfigurationPanel =
-      new ReceiverConfigurationPanel();
-
-    final SettingsListener sl =
-      new SettingsListener() {
-        public void loadSettings(LoadSettingsEvent event) {
-          if (event.getSetting("SavedConfigs.Size") != null) {
-              int configSize = event.asInt("SavedConfigs.Size");
-              Object[] configs = new Object[configSize];
-
-              for (int i = 0; i < configSize; i++) {
-                configs[i] = event.getSetting("SavedConfigs." + i);
-              }
-
-              receiverConfigurationPanel.getModel().setRememberedConfigs(configs);
-          }
-
-          if (event.getSetting("SavedLayouts.Size") != null) {
-              int layoutSize = event.asInt("SavedLayouts.Size");
-              Object[] layouts = new Object[layoutSize];
-
-              for (int i = 0; i < layoutSize; i++) {
-                layouts[i] = event.getSetting("SavedLayouts." + i);
-              }
-              receiverConfigurationPanel.getModel().setRememberedLayouts(layouts);
-          }
-        }
-
-        public void saveSettings(SaveSettingsEvent event) {
-          Object[] configs = receiverConfigurationPanel.getModel().getRememberedConfigs();
-          event.saveSetting("SavedConfigs.Size", configs.length);
-
-          for (int i = 0; i < configs.length; i++) {
-            event.saveSetting("SavedConfigs." + i, configs[i].toString());
-          }
-          Object[] layouts = receiverConfigurationPanel.getModel().getRememberedLayouts();
-          event.saveSetting("SavedLayouts.Size", layouts.length);
-
-          for (int i = 0; i < layouts.length; i++) {
-            //the layout is an object, not a string (containing timestamp format, pattern & pattern type)
-            event.saveSetting("SavedLayouts." + i, layouts[i]);
-          }
-        }
-      };
-
-    /**
-         * This listener sets up the NoReciversWarningPanel and loads saves the
-         * configs/logfiles
-         */
-    getSettingsManager().addSettingsListener(sl);
-    getSettingsManager().configure(sl);
-
     SwingUtilities.invokeLater(
       new Runnable() {
         public void run() {
