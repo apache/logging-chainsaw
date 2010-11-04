@@ -80,7 +80,7 @@ class FileLoadAction extends AbstractAction {
 
       if (!remoteURL) {
             try {
-              File selectedFile = SwingHelper.promptForFile(parent, null, "Load Events from XML file or zipped XML file...");
+              File selectedFile = SwingHelper.promptForFile(parent, null, "Load Events from XML file or zipped XML file...", true);
               if (selectedFile != null) {
                 url = selectedFile.toURI().toURL();
                 name = selectedFile.getName();

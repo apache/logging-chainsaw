@@ -46,7 +46,6 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
-import javax.swing.SwingUtilities;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
@@ -93,6 +92,7 @@ class ReceiverConfigurationPanel extends JPanel {
     //don't warn again widgets
     private JCheckBox dontwarnIfNoReceiver;
 
+    private JButton saveButton;
     private JButton okButton;
     private JButton cancelButton;
 
@@ -214,6 +214,14 @@ class ReceiverConfigurationPanel extends JPanel {
         dontwarnIfNoReceiver = new JCheckBox("Always start Chainsaw with this configuration");
         panel.add(dontwarnIfNoReceiver, c);
 
+        saveButton = new JButton(" Save configuration as... ");
+        c = new GridBagConstraints();
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = 1;
+        c.gridy = 0;
+        c.insets = new Insets(0, 0, 0, 10);
+        panel.add(saveButton, c);
+
         okButton = new JButton(" OK ");
         cancelButton = new JButton(" Cancel ");
 
@@ -221,14 +229,14 @@ class ReceiverConfigurationPanel extends JPanel {
 
         c = new GridBagConstraints();
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridx = 1;
+        c.gridx = 2;
         c.gridy = 0;
         c.insets = new Insets(0, 0, 0, 10);
         panel.add((JButton)okCancelButtons.get(0), c);
 
         c = new GridBagConstraints();
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridx = 2;
+        c.gridx = 3;
         c.gridy = 0;
         panel.add((JButton)okCancelButtons.get(1), c);
 
@@ -249,10 +257,27 @@ class ReceiverConfigurationPanel extends JPanel {
                 if (logFileFormatComboBox.getSelectedItem() != null && !(logFileFormatComboBox.getSelectedItem().toString().trim().equals(""))) {
                   panelModel.setLogFormat(logFileFormatComboBox.getSelectedItem().toString());
                 }
-                completionActionListener.actionPerformed(new ActionEvent(this, -1, "cancelled"));
+                completionActionListener.actionPerformed(new ActionEvent(this, -1, "ok"));
             }
         });
-        return panel;
+
+      saveButton.addActionListener(new ActionListener()
+      {
+          public void actionPerformed(ActionEvent e)
+          {
+            try {
+                URL url = browseFile("Choose a path and file name to save", false);
+                if (url != null) {
+                  File file = new File(url.toURI());
+                  panelModel.setSaveConfigFile(file);
+                }
+            } catch (Exception ex) {
+                logger.error(
+                    "Error browsing for log file", ex);
+            }
+          }
+      });
+      return panel;
     }
 
     private JPanel buildBottomDescriptionPanel() {
@@ -323,8 +348,7 @@ class ReceiverConfigurationPanel extends JPanel {
         browseLogFileButton = new JButton(new AbstractAction(" Open File... ") {
             public void actionPerformed(ActionEvent e) {
                 try {
-
-                    URL url = browseLogFile();
+                    URL url = browseFile("Select a log file", true);
                     if (url != null) {
                         String item = url.toURI().toString();
                         logFileURLTextField.setText(item);
@@ -564,7 +588,7 @@ class ReceiverConfigurationPanel extends JPanel {
     private URL browseConfig() throws MalformedURLException {
         //hiding and showing the dialog to avoid focus issues with 2 dialogs
         dialog.setVisible(false);
-        File selectedFile = SwingHelper.promptForFile(dialog, null, "Choose a Chainsaw configuration file");
+        File selectedFile = SwingHelper.promptForFile(dialog, null, "Choose a Chainsaw configuration file", true);
         URL result = null;
         if (selectedFile == null) {
             result = null;
@@ -587,10 +611,10 @@ class ReceiverConfigurationPanel extends JPanel {
      * Returns the URL chosen by the user for a Configuration file
      * or null if they cancelled.
      */
-    private URL browseLogFile() throws MalformedURLException {
+    private URL browseFile(String title, boolean loadDialog) throws MalformedURLException {
         //hiding and showing the dialog to avoid focus issues with 2 dialogs
         dialog.setVisible(false);
-        File selectedFile = SwingHelper.promptForFile(dialog, null, "Select a log file");
+        File selectedFile = SwingHelper.promptForFile(dialog, null, title, loadDialog);
         URL result = null;
         if (selectedFile == null) {
             result = null;
@@ -641,6 +665,7 @@ class ReceiverConfigurationPanel extends JPanel {
     //default to cancelled
     private boolean cancelled = true;
     private String lastLogFormat;
+    private File saveConfigFile;
 
     public PanelModel(){
             file = new File(SettingsManager.getInstance().getSettingsDirectory(), "receiver-config.xml");
@@ -666,7 +691,6 @@ class ReceiverConfigurationPanel extends JPanel {
         }
 
         boolean isLoadSavedConfigs() {
-
             return !cancelled && useAutoSavedConfigRadioButton.isSelected();
         }
 
@@ -693,6 +717,14 @@ class ReceiverConfigurationPanel extends JPanel {
                 logger.error("Error loading saved configurations by Chainsaw", e);
             }
             return null;
+        }
+
+        File getSaveConfigFile() {
+          return saveConfigFile;
+        }
+
+        void setSaveConfigFile(File file) {
+          this.saveConfigFile = file;
         }
 
         URL getLogFileURL() {
@@ -746,5 +778,9 @@ class ReceiverConfigurationPanel extends JPanel {
           logFileFormatComboBoxModel.insertElementAt(lastLogFormat, 0);
           logFileFormatComboBox.setSelectedIndex(0);
         }
-    }
+
+        public boolean isCancelled() {
+          return cancelled;
+        }
+  }
 }

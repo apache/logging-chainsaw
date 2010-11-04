@@ -22,17 +22,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import java.beans.BeanInfo;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.io.File;
-import java.io.FileOutputStream;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -62,13 +57,6 @@ import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.DocumentBuilder;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -95,8 +83,6 @@ import org.apache.log4j.plugins.PluginRegistry;
 import org.apache.log4j.plugins.Receiver;
 import org.apache.log4j.spi.LoggerRepository;
 import org.apache.log4j.spi.LoggerRepositoryEx;
-import org.w3c.dom.Element;
-import org.w3c.dom.Document;
 
 
 /**
@@ -642,80 +628,8 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
     */
 
   public void saveSettings(SaveSettingsEvent event){
-      List fullPluginList = pluginRegistry.getPlugins();
-      List pluginList = new ArrayList();
-      for (Iterator iter = fullPluginList.iterator();iter.hasNext();) {
-          Plugin thisPlugin = (Plugin)iter.next();
-          if (thisPlugin instanceof Receiver) {
-              pluginList.add(thisPlugin);
-          }
-      }
-      //remove everything that isn't a receiver..otherwise, we'd create an empty config file
-      try {
-          if (pluginList.size() > 0) {
-              //we programmatically register the ZeroConf plugin in the plugin registry
-              File file = new File(SettingsManager.getInstance().getSettingsDirectory(), "receiver-config.xml");
-              DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-              factory.setNamespaceAware(true);
-              DocumentBuilder builder = factory.newDocumentBuilder();
-              Document document = builder.newDocument();
-              Element rootElement = document.createElementNS("http://jakarta.apache.org/log4j/", "configuration");
-              rootElement.setPrefix("log4j");
-              rootElement.setAttribute("xmlns:log4j", "http://jakarta.apache.org/log4j/");
-              rootElement.setAttribute("debug", "true");
-
-              for (int i = 0; i < pluginList.size(); i++) {
-                  Receiver receiver;
-
-                  if (pluginList.get(i) instanceof Receiver) {
-                      receiver = (Receiver) pluginList.get(i);
-                  } else {
-                      continue;
-                  }
-
-                  Element pluginElement = document.createElement("plugin");
-                  pluginElement.setAttribute("name", receiver.getName());
-                  pluginElement.setAttribute("class", receiver.getClass().getName());
-
-                  BeanInfo beanInfo = Introspector.getBeanInfo(receiver.getClass());
-                  List list = new ArrayList(Arrays.asList(beanInfo.getPropertyDescriptors()));
-
-                  for (int j = 0; j < list.size(); j++) {
-                      PropertyDescriptor d = (PropertyDescriptor) list.get(j);
-                      //don't serialize the loggerRepository property for subclasses of componentbase..
-                      //easier to change this than tweak componentbase right now..
-                      if (d.getReadMethod().getName().equals("getLoggerRepository")) {
-                          continue;
-                      }
-                      Object o = d.getReadMethod().invoke(receiver, new Object[] {} );
-                      if (o != null) {
-                          Element paramElement = document.createElement("param");
-                          paramElement.setAttribute("name", d.getName());
-                          paramElement.setAttribute("value", o.toString());
-                          pluginElement.appendChild(paramElement);
-                      }
-                  }
-
-                  rootElement.appendChild(pluginElement);
-
-              }
-
-              TransformerFactory transformerFactory = TransformerFactory.newInstance();
-              Transformer transformer = transformerFactory.newTransformer();
-              transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-              transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-              DOMSource source = new DOMSource(rootElement);
-              FileOutputStream stream = new FileOutputStream(file);
-              StreamResult result = new StreamResult(stream);
-              transformer.transform(source, result);
-              stream.close();
-          }
-
-      } catch (Exception e) {
-          e.printStackTrace();
-          logger.error("Error while writing receiver configurations to the configuration file");
-      }
-
+     File file = new File(SettingsManager.getInstance().getSettingsDirectory(), "receiver-config.xml");
+     ReceiversHelper.getInstance().saveReceiverConfiguration(file);
   }
 
   /**

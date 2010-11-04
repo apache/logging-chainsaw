@@ -107,7 +107,7 @@ public final class SwingHelper {
     return result;
   }
 
-  public static File promptForFile(Container parent, String defaultPath, String title) {
+  public static File promptForFile(Container parent, String defaultPath, String title, boolean loadDialog) {
         if (SwingHelper.isMacOSX()) {
             //use filedialog on mac
             Component root = SwingUtilities.getRoot(parent);
@@ -118,6 +118,7 @@ public final class SwingHelper {
 
             FileDialog fileDialog = new FileDialog(frame, title);
             fileDialog.setModal(true);
+            fileDialog.setMode(loadDialog ? FileDialog.LOAD : FileDialog.SAVE);
             if (defaultPath != null) {
               fileDialog.setDirectory(defaultPath);
             }
@@ -144,7 +145,13 @@ public final class SwingHelper {
 
                 chooser.setAcceptAllFileFilterUsed(true);
 
-                int i = chooser.showOpenDialog(parent);
+                int i;
+                if (loadDialog) {
+                  i = chooser.showOpenDialog(parent);
+                } else {
+                  i = chooser.showSaveDialog(parent);
+                }
+
                 if (i != JFileChooser.APPROVE_OPTION) {
                     return null;
                 }

@@ -106,6 +106,7 @@ import org.apache.log4j.chainsaw.prefs.MRUFileListPreferenceSaver;
 import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SettingsListener;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
+import org.apache.log4j.chainsaw.receivers.ReceiversHelper;
 import org.apache.log4j.chainsaw.receivers.ReceiversPanel;
 import org.apache.log4j.chainsaw.vfs.VFSLogFilePatternReceiver;
 import org.apache.log4j.net.SocketNodeEventListener;
@@ -1418,16 +1419,17 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
               public void actionPerformed(ActionEvent e) {
                 dialog.setVisible(false);
 
+            if (receiverConfigurationPanel.getModel().isCancelled()) {
+              return;
+            }
             applicationPreferenceModel.setShowNoReceiverWarning(!receiverConfigurationPanel.isDontWarnMeAgain());
-            //using this config next time - stop all plugins
-            if (receiverConfigurationPanel.isDontWarnMeAgain()) {
-                List plugins = pluginRegistry.getPlugins();
-                for (Iterator iter = plugins.iterator();iter.hasNext();) {
-                    Plugin plugin = (Plugin)iter.next();
-                    //don't stop ZeroConfPlugin if it is registered
-                    if (!plugin.getName().toLowerCase().contains("zeroconf")) {
-                      pluginRegistry.stopPlugin(plugin.getName());
-                    }
+            //remove existing plugins
+            List plugins = pluginRegistry.getPlugins();
+            for (Iterator iter = plugins.iterator();iter.hasNext();) {
+                Plugin plugin = (Plugin)iter.next();
+                //don't stop ZeroConfPlugin if it is registered
+                if (!plugin.getName().toLowerCase().contains("zeroconf")) {
+                  pluginRegistry.stopPlugin(plugin.getName());
                 }
             }
             URL configURL = null;
@@ -1525,6 +1527,10 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                     }
                   }).start();
               }
+                File saveConfigFile = receiverConfigurationPanel.getModel().getSaveConfigFile();
+                if (saveConfigFile != null) {
+                  ReceiversHelper.getInstance().saveReceiverConfiguration(saveConfigFile);
+                }
           }
         });
 

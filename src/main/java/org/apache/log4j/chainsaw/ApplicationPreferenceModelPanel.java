@@ -560,7 +560,7 @@ public static void main(String[] args) {
                   }
               }
           }
-      File selectedFile = SwingHelper.promptForFile(this, defaultPath, "Select a Chainsaw configuration file");
+      File selectedFile = SwingHelper.promptForFile(this, defaultPath, "Select a Chainsaw configuration file", true);
       if (selectedFile != null) {
               try
               {
