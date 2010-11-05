@@ -1453,23 +1453,14 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                 pluginRegistry.addPlugin(networkReceiver);
                 networkReceiver.activateOptions();
                 receiversPanel.updateReceiverTreeInDispatchThread();
-                //setting config URL here ensures we have the receiver panel auto-saved config loaded
-                if (receiverConfigurationPanel.isDontWarnMeAgain()) {
-                    configURL = receiverConfigurationPanel.getModel().getSavedConfigToLoad();
-                }
               } catch (Exception e3) {
                 MessageCenter.getInstance().getLogger().error(
                   "Error creating Receiver", e3);
                 MessageCenter.getInstance().getLogger().info(
                   "An error occurred creating your Receiver");
               }
-            } else if (receiverConfigurationPanel.getModel().isLoadConfig() ||
-                    receiverConfigurationPanel.getModel().isLoadSavedConfigs()) {
-              if (receiverConfigurationPanel.getModel().isLoadSavedConfigs()) {
-                  configURL = receiverConfigurationPanel.getModel().getSavedConfigToLoad();
-              } else {
+            } else if (receiverConfigurationPanel.getModel().isLoadConfig()) {
                   configURL = receiverConfigurationPanel.getModel().getConfigToLoad();
-              }
             } else if (receiverConfigurationPanel.getModel().isLogFileReceiverConfig()) {
               try {
                   URL fileURL = receiverConfigurationPanel.getModel().getLogFileURL();
@@ -1492,9 +1483,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                       pluginRegistry.addPlugin(fileReceiver);
                       fileReceiver.activateOptions();
                       receiversPanel.updateReceiverTreeInDispatchThread();
-                      if (receiverConfigurationPanel.isDontWarnMeAgain()) {
-                          configURL = receiverConfigurationPanel.getModel().getSavedConfigToLoad();
-                      }
                   }
               } catch (Exception e2) {
                   MessageCenter.getInstance().getLogger().error(
@@ -1503,6 +1491,19 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                     "An error occurred creating your Receiver");
               }
             }
+              if (configURL == null && receiverConfigurationPanel.isDontWarnMeAgain()) {
+                //use the saved config file as the config URL if defined
+                if (receiverConfigurationPanel.getModel().getSaveConfigFile() != null) {
+                  try {
+                    configURL = receiverConfigurationPanel.getModel().getSaveConfigFile().toURI().toURL();
+                  } catch (MalformedURLException e1) {
+                    e1.printStackTrace();
+                  }
+                } else {
+                  //no saved config defined but don't warn me is checked - use default config
+                  configURL = receiverConfigurationPanel.getModel().getDefaultConfigFileURL();
+                }
+              }
               if (configURL != null) {
                 MessageCenter.getInstance().getLogger().debug(
                   "Initialiazing Log4j with " + configURL.toExternalForm());

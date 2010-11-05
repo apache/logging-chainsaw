@@ -97,6 +97,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
   final Action pauseReceiverButtonAction;
   final Action playReceiverButtonAction;
   final Action shutdownReceiverButtonAction;
+  final Action saveReceiversButtonAction;
   final Action restartReceiverButtonAction;
   private final Action showReceiverHelpAction;
   private final Action startAllAction;
@@ -279,6 +280,25 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
       Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_S));
 
     shutdownReceiverButtonAction.setEnabled(false);
+
+    saveReceiversButtonAction =
+      new AbstractAction() {
+          public void actionPerformed(ActionEvent e) {
+            saveReceivers();
+          }
+        };
+
+    saveReceiversButtonAction.putValue(
+      Action.SHORT_DESCRIPTION,
+      "Save the current receiver configuration");
+    saveReceiversButtonAction.putValue(Action.NAME, "Save receivers");
+
+    saveReceiversButtonAction.putValue(
+      Action.SMALL_ICON, new ImageIcon(ChainsawIcons.FILE_SAVE_AS));
+    saveReceiversButtonAction.putValue(
+      Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_V));
+
+
     restartReceiverButtonAction =
         new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
@@ -408,6 +428,13 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
       		element.addSocketNodeEventListener(listener);
     	}
      }
+  }
+
+  private void saveReceivers() {
+    File saveConfigFile = SwingHelper.promptForFile(this, null, "Save receiver configuration XML file", false);
+    if (saveConfigFile != null) {
+      ReceiversHelper.getInstance().saveReceiverConfiguration(saveConfigFile);
+    }
   }
 
   protected ReceiversTreeModel getReceiverTreeModel() {
@@ -774,6 +801,8 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
       add(pauseReceiverButtonAction);
       add(restartReceiverButtonAction);
       add(shutdownReceiverButtonAction);
+      add(saveReceiversButtonAction);
+
       addSeparator();
 
       final Receiver r = getCurrentlySelectedReceiver();
@@ -846,6 +875,10 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
         new SmallButton(shutdownReceiverButtonAction);
       shutdownReceiverButton.setText(null);
 
+      SmallButton saveReceiversButton =
+        new SmallButton(saveReceiversButtonAction);
+      saveReceiversButton.setText(null);
+
       SmallButton restartAllButton = new SmallButton(startAllAction);
       restartAllButton.setText(null);
       
@@ -862,6 +895,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
 
       add(restartReceiverButton);
       add(shutdownReceiverButton);
+      add(saveReceiversButton);
 
       addSeparator();
 

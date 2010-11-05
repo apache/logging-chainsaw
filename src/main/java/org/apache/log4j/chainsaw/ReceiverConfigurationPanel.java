@@ -100,7 +100,6 @@ class ReceiverConfigurationPanel extends JPanel {
     private JRadioButton logFileReceiverRadioButton;
     private JRadioButton networkReceiverRadioButton;
     private JRadioButton useExistingConfigurationRadioButton;
-    private JRadioButton useAutoSavedConfigRadioButton;
     private ButtonGroup buttonGroup;
 
     private JPanel lowerPanel;
@@ -157,15 +156,6 @@ class ReceiverConfigurationPanel extends JPanel {
         c.gridx = 0;
         c.gridy = yPos++;
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(0, 0, 0, 0);
-        useAutoSavedConfigRadioButton = new JRadioButton(" Use auto-saved configuration from $HOME/.chainsaw/receiver-config.xml ");
-        buttonGroup.add(useAutoSavedConfigRadioButton);
-        add(useAutoSavedConfigRadioButton, c);
-
-        c = new GridBagConstraints();
-        c.gridx = 0;
-        c.gridy = yPos++;
-        c.fill = GridBagConstraints.HORIZONTAL;
         c.insets = new Insets(10, 10, 10, 0);
         add(lowerPanel, c);
         
@@ -197,7 +187,6 @@ class ReceiverConfigurationPanel extends JPanel {
         logFileReceiverRadioButton.addActionListener(al);
         networkReceiverRadioButton.addActionListener(al);
         useExistingConfigurationRadioButton.addActionListener(al);
-        useAutoSavedConfigRadioButton.addActionListener(al);
 
         buttonGroup.setSelected(logFileReceiverRadioButton.getModel(), true);
         updateEnabledState(logFileReceiverRadioButton);
@@ -690,10 +679,6 @@ class ReceiverConfigurationPanel extends JPanel {
             return !cancelled && useExistingConfigurationRadioButton.isSelected();
         }
 
-        boolean isLoadSavedConfigs() {
-            return !cancelled && useAutoSavedConfigRadioButton.isSelected();
-        }
-
         boolean isLogFileReceiverConfig() {
             return !cancelled && logFileReceiverRadioButton.isSelected();
         }
@@ -710,7 +695,7 @@ class ReceiverConfigurationPanel extends JPanel {
             }
         }
 
-        URL getSavedConfigToLoad() {
+        URL getDefaultConfigFileURL() {
             try {
                 return file.toURI().toURL();
             } catch (MalformedURLException e) {
