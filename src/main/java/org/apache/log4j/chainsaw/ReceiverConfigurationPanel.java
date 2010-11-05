@@ -30,6 +30,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 
@@ -74,6 +75,10 @@ class ReceiverConfigurationPanel extends JPanel {
     private DefaultComboBoxModel networkReceiverClassNameComboBoxModel;
     private DefaultComboBoxModel networkReceiverPortComboBoxModel;
 
+    //log4j config receiver widgets
+    private JButton browseLog4jConfigButton;
+    private JTextField log4jConfigURLTextField;
+
     //logfile receiver widgets
     private JButton browseLogFileButton;
     private JComboBox logFileFormatTypeComboBox;
@@ -97,6 +102,7 @@ class ReceiverConfigurationPanel extends JPanel {
     private JButton cancelButton;
 
     //radiobutton widgets
+    private JRadioButton log4jConfigReceiverRadioButton;
     private JRadioButton logFileReceiverRadioButton;
     private JRadioButton networkReceiverRadioButton;
     private JRadioButton useExistingConfigurationRadioButton;
@@ -106,6 +112,7 @@ class ReceiverConfigurationPanel extends JPanel {
 
     private final JPanel networkReceiverPanel = buildNetworkReceiverPanel();
     private final JPanel logFileReceiverPanel = buildLogFileReceiverPanel();
+    private final JPanel log4jConfigReceiverPanel = buildLog4jConfigReceiverPanel();
     private final JPanel useExistingConfigurationPanel = buildUseExistingConfigurationPanel();
     private final JPanel dontWarnAndOKPanel = buildDontWarnAndOKPanel();
     private final JPanel bottomDescriptionPanel = buildBottomDescriptionPanel();
@@ -135,6 +142,14 @@ class ReceiverConfigurationPanel extends JPanel {
         logFileReceiverRadioButton = new JRadioButton(" Load and tail events from a regular text log file ");
         buttonGroup.add(logFileReceiverRadioButton);
         add(logFileReceiverRadioButton, c);
+
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = yPos++;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        log4jConfigReceiverRadioButton = new JRadioButton(" Use log4j.xml fileappender configuration ");
+        buttonGroup.add(log4jConfigReceiverRadioButton);
+        add(log4jConfigReceiverRadioButton, c);
 
         c = new GridBagConstraints();
         c.gridx = 0;
@@ -185,6 +200,7 @@ class ReceiverConfigurationPanel extends JPanel {
             };
 
         logFileReceiverRadioButton.addActionListener(al);
+        log4jConfigReceiverRadioButton.addActionListener(al);
         networkReceiverRadioButton.addActionListener(al);
         useExistingConfigurationRadioButton.addActionListener(al);
 
@@ -328,6 +344,52 @@ class ReceiverConfigurationPanel extends JPanel {
         c.gridx = 1;
         c.gridy = 0;
         panel.add(networkReceiverPortComboBox, c);
+
+        return panel;
+    }
+
+    private JPanel buildLog4jConfigReceiverPanel() {
+        log4jConfigURLTextField = new JTextField();
+        browseLog4jConfigButton = new JButton(new AbstractAction(" Open File... ") {
+                    public void actionPerformed(ActionEvent e) {
+                        try {
+
+                            URL url = browseConfig();
+
+                            if (url != null) {
+                                log4jConfigURLTextField.setText(url.toExternalForm());
+                            }
+                        } catch (Exception ex) {
+                            logger.error(
+                                "Error browsing for log4j config file", ex);
+                        }
+                    }
+                });
+
+        browseLog4jConfigButton.setToolTipText(
+            "Shows a File Open dialog to allow you to find a log4j configuration file");
+        JPanel panel = new JPanel(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridwidth = 2;
+        c.anchor = GridBagConstraints.LINE_START;
+        c.insets = new Insets(0, 0, 5, 0);
+        panel.add(browseLog4jConfigButton, c);
+
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 1;
+        c.insets = new Insets(0, 5, 0, 5);
+        panel.add(new JLabel(" log4j configuration file URL "), c);
+
+        c = new GridBagConstraints();
+        c.gridx = 1;
+        c.gridy = 1;
+        c.weightx = 0.5;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(log4jConfigURLTextField, c);
+
 
         return panel;
     }
@@ -566,6 +628,9 @@ class ReceiverConfigurationPanel extends JPanel {
         if (component == logFileReceiverRadioButton) {
             lowerPanel.add(logFileReceiverPanel, BorderLayout.NORTH);
         }
+        if (component == log4jConfigReceiverRadioButton) {
+            lowerPanel.add(log4jConfigReceiverPanel, BorderLayout.NORTH);
+        }
         lowerPanel.revalidate();
         lowerPanel.repaint();
     }
@@ -683,6 +748,10 @@ class ReceiverConfigurationPanel extends JPanel {
             return !cancelled && logFileReceiverRadioButton.isSelected();
         }
 
+        boolean isLog4jConfig() {
+            return !cancelled && log4jConfigReceiverRadioButton.isSelected();
+        }
+
         URL getConfigToLoad() {
 
             try
@@ -767,5 +836,17 @@ class ReceiverConfigurationPanel extends JPanel {
         public boolean isCancelled() {
           return cancelled;
         }
+
+    public File getLog4jConfigFile() {
+      try {
+        URL newConfigurationURL = new URL(log4jConfigURLTextField.getText());
+        return new File(newConfigurationURL.toURI());
+      } catch (URISyntaxException e) {
+        e.printStackTrace();
+      } catch (MalformedURLException e) {
+        e.printStackTrace();
+      }
+      return null;
+    }
   }
 }

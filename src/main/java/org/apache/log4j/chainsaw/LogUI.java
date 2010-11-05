@@ -84,6 +84,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.AppenderSkeleton;
@@ -126,6 +127,7 @@ import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.RepositorySelector;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.apache.log4j.xml.XMLDecoder;
+import org.xml.sax.SAXException;
 
 
 /**
@@ -1458,6 +1460,47 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                   "Error creating Receiver", e3);
                 MessageCenter.getInstance().getLogger().info(
                   "An error occurred creating your Receiver");
+              }
+            } else if (receiverConfigurationPanel.getModel().isLog4jConfig()) {
+              File log4jConfigFile = receiverConfigurationPanel.getModel().getLog4jConfigFile();
+              if (log4jConfigFile != null) {
+                try {
+                  Map entries = LogFilePatternLayoutBuilder.getAppenderConfiguration(log4jConfigFile);
+                  for (Iterator iter = entries.entrySet().iterator();iter.hasNext();) {
+                    try {
+                      Map.Entry entry = (Map.Entry)iter.next();
+                      String name = (String) entry.getKey();
+                      Map values = (Map) entry.getValue();
+                      //values: conversion, file
+                      String conversionPattern = values.get("conversion").toString();
+                      File file = new File(values.get("file").toString());
+                      URL fileURL = file.toURI().toURL();
+                      String timestampFormat = LogFilePatternLayoutBuilder.getTimeStampFormat(conversionPattern);
+                      String receiverPattern = LogFilePatternLayoutBuilder.getLogFormatFromPatternLayout(conversionPattern);
+                      VFSLogFilePatternReceiver fileReceiver = new VFSLogFilePatternReceiver();
+                      fileReceiver.setName(name);
+                      fileReceiver.setAutoReconnect(true);
+                      fileReceiver.setContainer(LogUI.this);
+                      fileReceiver.setAppendNonMatches(true);
+                      fileReceiver.setFileURL(fileURL.toURI().toString());
+                      fileReceiver.setTailing(true);
+                      fileReceiver.setLogFormat(receiverPattern);
+                      fileReceiver.setTimestampFormat(timestampFormat);
+                      fileReceiver.setThreshold(Level.TRACE);
+                      pluginRegistry.addPlugin(fileReceiver);
+                      fileReceiver.activateOptions();
+                      receiversPanel.updateReceiverTreeInDispatchThread();
+                    } catch (URISyntaxException e1) {
+                      e1.printStackTrace();
+                    }
+                  }
+                } catch (IOException e1) {
+                  e1.printStackTrace();
+                } catch (ParserConfigurationException e1) {
+                  e1.printStackTrace();
+                } catch (SAXException e1) {
+                  e1.printStackTrace();
+                }
               }
             } else if (receiverConfigurationPanel.getModel().isLoadConfig()) {
                   configURL = receiverConfigurationPanel.getModel().getConfigToLoad();
