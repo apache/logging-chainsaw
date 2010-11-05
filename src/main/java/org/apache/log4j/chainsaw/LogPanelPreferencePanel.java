@@ -233,6 +233,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
       });
       columnList.setCellRenderer(cellRenderer);
       columnBox.add(new JScrollPane(columnList));
+      columnBox.add(Box.createVerticalStrut(5));
       columnBox.add(setAsDefaultsButton);
       add(columnBox);
       add(Box.createVerticalGlue());
@@ -553,7 +554,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
     private final JCheckBox scrollToBottom =
       new JCheckBox("Scroll to bottom (view tracks with new events)");
     private final JCheckBox showMillisDeltaAsGap =
-      new JCheckBox("Display timestamp delta between displayed events as space between rows");
+      new JCheckBox("Display timestamp delta between events as row gap");
     private final JCheckBox toolTips =
       new JCheckBox("Show Event Detail Tooltips");
     private final JCheckBox thumbnailBarToolTips =

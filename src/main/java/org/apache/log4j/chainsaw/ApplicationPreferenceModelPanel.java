@@ -170,11 +170,11 @@ public static void main(String[] args) {
   }
 
     public class VisualsPrefPanel extends BasicPrefPanel {
-    private final JRadioButton topPlacement = new JRadioButton("Top");
-    private final JRadioButton bottomPlacement = new JRadioButton("Bottom");
-    private final JCheckBox statusBar = new JCheckBox("Show Status bar");
-    private final JCheckBox toolBar = new JCheckBox("Show Toolbar");
-    private final JCheckBox receivers = new JCheckBox("Show Receivers");
+    private final JRadioButton topPlacement = new JRadioButton(" Top         ");
+    private final JRadioButton bottomPlacement = new JRadioButton(" Bottom         ");
+    private final JCheckBox statusBar = new JCheckBox(" Show Status bar ");
+    private final JCheckBox toolBar = new JCheckBox(" Show Toolbar ");
+    private final JCheckBox receivers = new JCheckBox(" Show Receivers ");
     private UIManager.LookAndFeelInfo[] lookAndFeels = UIManager.getInstalledLookAndFeels();
     private final ButtonGroup lookAndFeelGroup = new ButtonGroup();
 
@@ -306,12 +306,9 @@ public static void main(String[] args) {
       setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
       JPanel tabPlacementBox = new JPanel();
-      tabPlacementBox.setLayout(
-        new BoxLayout(tabPlacementBox, BoxLayout.Y_AXIS));
+      tabPlacementBox.setLayout(new BoxLayout(tabPlacementBox, BoxLayout.Y_AXIS));
 
-      tabPlacementBox.setBorder(
-        BorderFactory.createTitledBorder(
-          BorderFactory.createEtchedBorder(), "Tab Placement"));
+      tabPlacementBox.setBorder(BorderFactory.createTitledBorder(" Tab Placement "));
 
       ButtonGroup tabPlacementGroup = new ButtonGroup();
 
@@ -337,13 +334,11 @@ public static void main(String[] args) {
 
       JPanel lfPanel = new JPanel();
       lfPanel.setLayout(new BoxLayout(lfPanel, BoxLayout.Y_AXIS));
-      lfPanel.setBorder(
-        BorderFactory.createTitledBorder(
-          BorderFactory.createEtchedBorder(), "Look & Feel"));
+      lfPanel.setBorder(BorderFactory.createTitledBorder(" Look & Feel "));
 
       for (int i = 0; i < lookAndFeels.length; i++) {
         final UIManager.LookAndFeelInfo lfInfo = lookAndFeels[i];
-        final JRadioButton lfItem = new JRadioButton(lfInfo.getName());
+        final JRadioButton lfItem = new JRadioButton(" " + lfInfo.getName() + " ");
         lfItem.setName(lfInfo.getClassName());
         lfItem.addActionListener(
           new ActionListener() {
@@ -359,7 +354,7 @@ public static void main(String[] args) {
       try {
         final Class gtkLF =
           Class.forName("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
-        final JRadioButton lfIGTK = new JRadioButton("GTK+ 2.0");
+        final JRadioButton lfIGTK = new JRadioButton(" GTK+ 2.0 ");
         lfIGTK.addActionListener(
           new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -418,14 +413,14 @@ public static void main(String[] args) {
    */
   public class GeneralAllPrefPanel extends BasicPrefPanel {
     private final JCheckBox showNoReceiverWarning =
-      new JCheckBox("Prompt me on startup if there are no Receivers defined");
-    private final JCheckBox showSplash = new JCheckBox("Show Splash screen at startup");
+      new JCheckBox(" Prompt me on startup if there are no Receivers defined ");
+    private final JCheckBox showSplash = new JCheckBox(" Show Splash screen at startup ");
     private final JSlider responsiveSlider =
       new JSlider(SwingConstants.HORIZONTAL, 1, 4, 2);
-    private final JCheckBox confirmExit = new JCheckBox("Confirm Exit");
+    private final JCheckBox confirmExit = new JCheckBox(" Confirm Exit ");
     Dictionary sliderLabelMap = new Hashtable();
     
-    private final JCheckBox okToRemoveSecurityManager = new JCheckBox("Ok to remove SecurityManager");
+    private final JCheckBox okToRemoveSecurityManager = new JCheckBox(" Ok to remove SecurityManager ");
 
     public GeneralAllPrefPanel() {
       super("General");
@@ -449,7 +444,7 @@ public static void main(String[] args) {
       p.add(showNoReceiverWarning);
       p.add(Box.createHorizontalGlue());
 
-      confirmExit.setToolTipText("Is set, you will be prompted to confirm the exit Chainsaw");
+      confirmExit.setToolTipText("If set, you prompt to confirm Chainsaw exit");
       okToRemoveSecurityManager.setToolTipText("You will need to tick this to be able to load Receivers/Plugins that require external dependancies.");
       setupInitialValues();
       setupListeners();
@@ -459,7 +454,7 @@ public static void main(String[] args) {
 
       JPanel p1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-      p1.add(new JLabel("Tab name/event routing expression"));
+      p1.add(new JLabel(" Tab name/event routing expression "));
       p1.add(Box.createHorizontalStrut(5));
       p1.add(identifierExpression);
       add(p1);
@@ -483,24 +478,24 @@ public static void main(String[] args) {
 
       JPanel p4 = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-      p4.add(new JLabel("ToolTip Display (millis)"));
+      p4.add(new JLabel(" ToolTip Display (millis) "));
       p4.add(Box.createHorizontalStrut(5));
       p4.add(toolTipDisplayMillis);
       add(p4);
 
       JPanel p5 = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-      p5.add(new JLabel("Cyclic buffer size"));
+      p5.add(new JLabel(" Cyclic buffer size "));
       p5.add(Box.createHorizontalStrut(5));
       p5.add(cyclicBufferSize);
       p5.add(Box.createHorizontalStrut(5));
-      p5.add(new JLabel("Cyclic buffer size change will take effect on Chainsaw restart"));
+      p5.add(new JLabel(" (effective on restart) "));
       add(p5);
 
       Box p6 = new Box(BoxLayout.Y_AXIS);
 
       Box configURLPanel = new Box(BoxLayout.X_AXIS);
-      JLabel configLabel = new JLabel("Auto Config URL");
+      JLabel configLabel = new JLabel(" Auto Config URL ");
       configURLPanel.add(configLabel);
       configURLPanel.add(Box.createHorizontalStrut(5));
 
@@ -585,9 +580,7 @@ public static void main(String[] args) {
       responsiveSlider.setPaintLabels(true);
       responsiveSlider.setPaintTrack(true);
 
-      responsiveSlider.setBorder(
-        BorderFactory.createTitledBorder(
-          BorderFactory.createEtchedBorder(), "Responsiveness"));
+      responsiveSlider.setBorder(BorderFactory.createTitledBorder(" Responsiveness "));
 
       //            responsiveSlider.setAlignmentY(0);
       //            responsiveSlider.setAlignmentX(0);
@@ -740,10 +733,10 @@ public static void main(String[] args) {
     }
 
     private void setupInitialValues() {
-      sliderLabelMap.put(new Integer(1), new JLabel("Fastest"));
-      sliderLabelMap.put(new Integer(2), new JLabel("Fast"));
-      sliderLabelMap.put(new Integer(3), new JLabel("Medium"));
-      sliderLabelMap.put(new Integer(4), new JLabel("Slow"));
+      sliderLabelMap.put(new Integer(1), new JLabel(" Fastest "));
+      sliderLabelMap.put(new Integer(2), new JLabel(" Fast "));
+      sliderLabelMap.put(new Integer(3), new JLabel(" Medium "));
+      sliderLabelMap.put(new Integer(4), new JLabel(" Slow "));
 
       //          
       showNoReceiverWarning.setSelected(

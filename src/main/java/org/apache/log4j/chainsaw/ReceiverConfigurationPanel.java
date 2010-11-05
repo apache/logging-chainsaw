@@ -133,7 +133,7 @@ class ReceiverConfigurationPanel extends JPanel {
         c.gridx = 0;
         c.gridy = yPos++;
         c.fill = GridBagConstraints.HORIZONTAL;
-        logFileReceiverRadioButton = new JRadioButton("Load and tail events from a regular text log file");
+        logFileReceiverRadioButton = new JRadioButton(" Load and tail events from a regular text log file ");
         buttonGroup.add(logFileReceiverRadioButton);
         add(logFileReceiverRadioButton, c);
 
@@ -141,7 +141,7 @@ class ReceiverConfigurationPanel extends JPanel {
         c.gridx = 0;
         c.gridy = yPos++;
         c.fill = GridBagConstraints.HORIZONTAL;
-        networkReceiverRadioButton = new JRadioButton("Receive events from the network");
+        networkReceiverRadioButton = new JRadioButton(" Receive events from the network ");
         buttonGroup.add(networkReceiverRadioButton);
         add(networkReceiverRadioButton, c);
 
@@ -149,7 +149,7 @@ class ReceiverConfigurationPanel extends JPanel {
         c.gridx = 0;
         c.gridy = yPos++;
         c.fill = GridBagConstraints.HORIZONTAL;
-        useExistingConfigurationRadioButton = new JRadioButton("Use an existing Chainsaw configuration file...");
+        useExistingConfigurationRadioButton = new JRadioButton(" Use an existing Chainsaw configuration file ");
         buttonGroup.add(useExistingConfigurationRadioButton);
         add(useExistingConfigurationRadioButton, c);
 
@@ -158,7 +158,7 @@ class ReceiverConfigurationPanel extends JPanel {
         c.gridy = yPos++;
         c.fill = GridBagConstraints.HORIZONTAL;
         c.insets = new Insets(0, 0, 0, 0);
-        useAutoSavedConfigRadioButton = new JRadioButton("Use auto-saved configuration from $HOME/.chainsaw/receiver-config.xml");
+        useAutoSavedConfigRadioButton = new JRadioButton(" Use auto-saved configuration from $HOME/.chainsaw/receiver-config.xml ");
         buttonGroup.add(useAutoSavedConfigRadioButton);
         add(useAutoSavedConfigRadioButton, c);
 
@@ -211,7 +211,7 @@ class ReceiverConfigurationPanel extends JPanel {
         c.gridy = 0;
         c.weightx = 1.0;
         c.anchor = GridBagConstraints.LINE_START;
-        dontwarnIfNoReceiver = new JCheckBox("Always start Chainsaw with this configuration");
+        dontwarnIfNoReceiver = new JCheckBox(" Always start Chainsaw with this configuration ");
         panel.add(dontwarnIfNoReceiver, c);
 
         saveButton = new JButton(" Save configuration as... ");
@@ -287,7 +287,7 @@ class ReceiverConfigurationPanel extends JPanel {
         StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
         doc.setParagraphAttributes(0, doc.getLength(), center, false);
 
-        descriptionTextPane.setText("An example configuration file is available from the Welcome tab");
+        descriptionTextPane.setText(" An example configuration file is available from the Welcome tab ");
         descriptionTextPane.setEditable(false);
         descriptionTextPane.setOpaque(false);
         descriptionTextPane.setFont(getFont());
@@ -455,7 +455,7 @@ class ReceiverConfigurationPanel extends JPanel {
         c.gridx = 0;
         c.gridy = 5;
         c.gridwidth=5;
-        c.insets = new Insets(5, 5, 0, 5);
+        c.insets = new Insets(15, 5, 0, 5);
         panel.add(new JLabel("<html> See PatternLayout or LogFilePatternReceiver JavaDoc for details </html>"), c);
         return panel;
     }
