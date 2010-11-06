@@ -366,6 +366,16 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     undockedFrame.setSize(new Dimension(1024, 768));
     undockedFrame.pack();
 
+    preferenceModel.addPropertyChangeListener(
+      "scrollToBottom",
+      new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+          boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+          if (value) {
+            scrollToBottom();
+          }
+        }
+      });
     /*
      * Menus on which the preferencemodels rely
      */
