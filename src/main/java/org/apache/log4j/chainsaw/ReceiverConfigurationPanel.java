@@ -139,17 +139,17 @@ class ReceiverConfigurationPanel extends JPanel {
         c.gridx = 0;
         c.gridy = yPos++;
         c.fill = GridBagConstraints.HORIZONTAL;
-        logFileReceiverRadioButton = new JRadioButton(" Load and tail events from a regular text log file ");
-        buttonGroup.add(logFileReceiverRadioButton);
-        add(logFileReceiverRadioButton, c);
+        log4jConfigReceiverRadioButton = new JRadioButton(" Use fileappender entries from a log4j config file ");
+        buttonGroup.add(log4jConfigReceiverRadioButton);
+        add(log4jConfigReceiverRadioButton, c);
 
         c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = yPos++;
         c.fill = GridBagConstraints.HORIZONTAL;
-        log4jConfigReceiverRadioButton = new JRadioButton(" Use log4j.xml fileappender configuration ");
-        buttonGroup.add(log4jConfigReceiverRadioButton);
-        add(log4jConfigReceiverRadioButton, c);
+        logFileReceiverRadioButton = new JRadioButton(" Process a log file ");
+        buttonGroup.add(logFileReceiverRadioButton);
+        add(logFileReceiverRadioButton, c);
 
         c = new GridBagConstraints();
         c.gridx = 0;
@@ -163,7 +163,7 @@ class ReceiverConfigurationPanel extends JPanel {
         c.gridx = 0;
         c.gridy = yPos++;
         c.fill = GridBagConstraints.HORIZONTAL;
-        useExistingConfigurationRadioButton = new JRadioButton(" Use an existing Chainsaw configuration file ");
+        useExistingConfigurationRadioButton = new JRadioButton(" Use a Chainsaw config file ");
         buttonGroup.add(useExistingConfigurationRadioButton);
         add(useExistingConfigurationRadioButton, c);
 
@@ -204,8 +204,8 @@ class ReceiverConfigurationPanel extends JPanel {
         networkReceiverRadioButton.addActionListener(al);
         useExistingConfigurationRadioButton.addActionListener(al);
 
-        buttonGroup.setSelected(logFileReceiverRadioButton.getModel(), true);
-        updateEnabledState(logFileReceiverRadioButton);
+        buttonGroup.setSelected(log4jConfigReceiverRadioButton.getModel(), true);
+        updateEnabledState(log4jConfigReceiverRadioButton);
     }
 
     private JPanel buildDontWarnAndOKPanel() {
