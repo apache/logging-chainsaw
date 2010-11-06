@@ -24,7 +24,6 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -120,11 +119,12 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
   private final Action editLoggerAction;
   private final JButton editLoggerButton = new SmallButton();
   private final Action expandAction;
-  private final Action findNextAction;
+  private final Action findAction;
   private final Action clearFindNextAction;
   private final Action defineColorRuleForLoggerAction;
   private final Action setRefineFocusAction;
   private final Action updateRefineFocusAction;
+  private final Action updateFindAction;
   private final JButton expandButton = new SmallButton();
   private final Action focusOnAction;
   private final Action clearRefineFocusAction;
@@ -270,12 +270,13 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
     toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.X_AXIS));
 
     expandAction = createExpandAction();
-    findNextAction = createFindNextAction();
+    findAction = createFindNextAction();
     clearFindNextAction = createClearFindNextAction();
     defineColorRuleForLoggerAction = createDefineColorRuleForLoggerAction();
     clearRefineFocusAction = createClearRefineFocusAction();
     setRefineFocusAction = createSetRefineFocusAction();
     updateRefineFocusAction = createUpdateRefineFocusAction();
+    updateFindAction = createUpdateFindAction();
     editLoggerAction = createEditLoggerAction();
     closeAction = createCloseAction();
     collapseAction = createCollapseAction();
@@ -873,6 +874,38 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
       return action;
     }
 
+  private Action createUpdateFindAction()
+  {
+    Action action = new AbstractAction()
+      {
+        public void actionPerformed(ActionEvent e)
+        {
+          updateFindUsingCurrentlySelectedNode();
+        }
+      };
+
+    action.putValue(Action.NAME, "Update 'find' to include selected logger");
+    action.putValue(
+      Action.SHORT_DESCRIPTION,
+      "Add selected node to 'find' field");
+    action.setEnabled(false);
+
+    return action;
+  }
+
+  private void updateFindUsingCurrentlySelectedNode()
+  {
+      String selectedLogger = getCurrentlySelectedLoggerName();
+      TreePath[] paths = logTree.getSelectionPaths();
+
+      if (paths == null)
+      {
+        return;
+      }
+      String currentFindText = logPanel.getFindText();
+      logPanel.setFindText(currentFindText + " || logger ~= " + selectedLogger);
+  }
+
     private void updateRefineFocusUsingCurrentlySelectedNode()
     {
         String selectedLogger = getCurrentlySelectedLoggerName();
@@ -1116,12 +1149,12 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
       {
         return;
       }
-      visibilityRuleDelegate.firePropertyChange("searchExpression", null, "logger like '^" + selectedLogger + ".*'");
+      logPanel.setFindText("logger like '^" + selectedLogger + ".*'");
   }
 
   private void clearFindNext()
   {
-      visibilityRuleDelegate.firePropertyChange("searchExpression", null, "");
+      logPanel.setFindText("");
   }
 
   private void clearRefineFocus()
@@ -1238,18 +1271,20 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
     {
       focusOnAction.putValue(Action.NAME, "Focus On...");
       hideAction.putValue(Action.NAME, "Ignore...");
-      findNextAction.putValue(Action.NAME, "Find...");
+      findAction.putValue(Action.NAME, "Find...");
       setRefineFocusAction.putValue(Action.NAME, "Set refine focus field");
       updateRefineFocusAction.putValue(Action.NAME, "Add to refine focus field");
+      updateFindAction.putValue(Action.NAME, "Add to find field");
       defineColorRuleForLoggerAction.putValue(Action.NAME, "Define color rule");
     }
     else
     {
       focusOnAction.putValue(Action.NAME, "Focus On '" + logger + "'");
       hideAction.putValue(Action.NAME, "Ignore '" + logger + "'");
-      findNextAction.putValue(Action.NAME, "Find '" + logger + "'");
+      findAction.putValue(Action.NAME, "Find '" + logger + "'");
       setRefineFocusAction.putValue(Action.NAME, "Set refine focus field to '" + logger + "'");
       updateRefineFocusAction.putValue(Action.NAME, "Add '" + logger + "' to 'refine focus' field");
+      updateFindAction.putValue(Action.NAME, "Add '" + logger + "' to 'find' field");
       defineColorRuleForLoggerAction.putValue(Action.NAME, "Define color rule for '" + logger + "'");
     }
 
@@ -1298,11 +1333,12 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
           }
 
           expandAction.setEnabled(path != null);
-          findNextAction.setEnabled(path != null);
+          findAction.setEnabled(path != null);
           clearFindNextAction.setEnabled(true);
           defineColorRuleForLoggerAction.setEnabled(path != null);
           setRefineFocusAction.setEnabled(path != null);
           updateRefineFocusAction.setEnabled(path != null);
+          updateFindAction.setEnabled(path != null);
           clearRefineFocusAction.setEnabled(true);
 
           if (currentlySelectedLoggerName != null)
@@ -1632,7 +1668,8 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
       add(updateRefineFocusAction);
       add(clearRefineFocusAction);
       addSeparator();
-      add(findNextAction);
+      add(findAction);
+      add(updateFindAction);
       add(clearFindNextAction);
 
       addSeparator();

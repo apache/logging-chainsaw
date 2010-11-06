@@ -179,7 +179,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     int row, int col) {
     EventContainer container = (EventContainer) table.getModel();
     LoggingEventWrapper loggingEventWrapper = container.getRow(row);
-    value = formatField(value, row, loggingEventWrapper);
+    value = formatField(value, loggingEventWrapper);
     TableColumn tableColumn = table.getColumnModel().getColumn(col);
     int width = tableColumn.getWidth();
     JLabel label = (JLabel)super.getTableCellRendererComponent(table, value,
@@ -569,10 +569,9 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
    *
    * @param field object
    *
-   * @param renderingRow
    * @return formatted object
    */
-  private Object formatField(Object field, int renderingRow, LoggingEventWrapper loggingEventWrapper) {
+  private Object formatField(Object field, LoggingEventWrapper loggingEventWrapper) {
     if (!(field instanceof Date)) {
       return (field == null ? "" : field);
     }

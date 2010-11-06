@@ -265,16 +265,22 @@ public class ColorPanel extends JPanel
         public void actionPerformed(ActionEvent e)
           {
               tableModel.getDataVector().clear();
-              RuleColorizer sourceColorizer = (RuleColorizer) allLogPanelColorizers.get(loadPanelColorizersComboBox.getSelectedItem().toString());
-              colorizer.setRules(sourceColorizer.getRules());
-              updateColors();
+              Object selectedItem = loadPanelColorizersComboBox.getSelectedItem();
+              if (selectedItem != null) {
+                RuleColorizer sourceColorizer = (RuleColorizer) allLogPanelColorizers.get(selectedItem.toString());
+                colorizer.setRules(sourceColorizer.getRules());
+                updateColors();
+              }
           }
       };
         
       loadPanelColorizersComboBox.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent e) {
-              String selectedColorizerName = loadPanelColorizersComboBox.getSelectedItem().toString();
-              copyRulesAction.setEnabled(!(noTab.equals(selectedColorizerName)));
+              Object selectedItem = loadPanelColorizersComboBox.getSelectedItem();
+              if (selectedItem != null) {
+                String selectedColorizerName = selectedItem.toString();
+                copyRulesAction.setEnabled(!(noTab.equals(selectedColorizerName)));
+              }
           }
       });
 
