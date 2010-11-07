@@ -1032,7 +1032,12 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     getSettingsManager().addSettingsListener(this);
     getSettingsManager().addSettingsListener(MRUFileListPreferenceSaver.getInstance());
     getSettingsManager().addSettingsListener(receiversPanel);
-    getSettingsManager().loadSettings();
+    try {
+      //if an uncaught exception is thrown, allow the UI to continue to load
+      getSettingsManager().loadSettings();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
     //app preferences have already been loaded (and configuration url possibly set to blank if being overridden)
     //but we need a listener so the settings will be saved on exit (added after loadsettings was called)
     getSettingsManager().addSettingsListener(new ApplicationPreferenceModelSaver(applicationPreferenceModel));
