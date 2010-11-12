@@ -431,7 +431,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         background = applicationPreferenceModel.getSearchBackgroundColor();
         foreground = applicationPreferenceModel.getSearchForegroundColor();
     } else {
-        if (colorizeSearch) {
+        if (colorizeSearch && !applicationPreferenceModel.isBypassSearchColors()) {
           background = loggingEventWrapper.isSearchMatch()?applicationPreferenceModel.getSearchBackgroundColor():loggingEventWrapper.getBackground();
           foreground = loggingEventWrapper.isSearchMatch()?applicationPreferenceModel.getSearchForegroundColor():loggingEventWrapper.getForeground();
         } else {

@@ -75,6 +75,7 @@ public class ApplicationPreferenceModel {
     private static final int CONFIGURATION_URL_ENTRY_COUNT = 10;
     private List defaultColumnNames = new ArrayList();
     private boolean defaultColumnsSet;
+    private boolean bypassSearchColors = false;
 
   /**
      * @param listener
@@ -234,6 +235,7 @@ public class ApplicationPreferenceModel {
       if (model.isDefaultColumnsSet()) {
         setDefaultColumnNames(model.getDefaultColumnNames());
       }
+      setBypassSearchColors(model.isBypassSearchColors());
     }
 
     //use a lighter version of search color as the delta color
@@ -517,5 +519,13 @@ public class ApplicationPreferenceModel {
 
   public List getDefaultColumnNames() {
     return defaultColumnNames;
+  }
+
+  public void setBypassSearchColors(boolean bypassSearchColors) {
+    this.bypassSearchColors = bypassSearchColors;
+  }
+
+  public boolean isBypassSearchColors() {
+    return bypassSearchColors;
   }
 }

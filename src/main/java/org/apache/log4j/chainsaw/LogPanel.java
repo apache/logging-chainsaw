@@ -1772,7 +1772,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
           if (currentPoint != null) {
             ((TableColorizingRenderer)currentTable.getDefaultRenderer(Object.class)).setUseNormalTimes();
             ((ChainsawCyclicBufferTableModel)currentTable.getModel()).reFilter();
-            setEnabled(false);
+            setEnabled(true);
           }
         }
     });
@@ -4280,6 +4280,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         private String lastTextToMatch;
 
         public AutoFilterComboBox() {
+            textField.setPreferredSize(getPreferredSize());
             setModel(model);
             setEditor(new AutoFilterEditor());
             ((JTextField)getEditor().getEditorComponent()).getDocument().addDocumentListener(new AutoFilterDocumentListener());

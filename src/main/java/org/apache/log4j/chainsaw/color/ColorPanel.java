@@ -46,6 +46,7 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -113,8 +114,9 @@ public class ColorPanel extends JPanel
   private Vector alternatingColorDataVector;
   private Vector alternatingColorDataVectorEntry;
   private ApplicationPreferenceModel applicationPreferenceModel;
+  private JCheckBox bypassSearchColorsCheckBox;
 
-    public ColorPanel(final RuleColorizer currentLogPanelColorizer, final FilterModel filterModel,
+  public ColorPanel(final RuleColorizer currentLogPanelColorizer, final FilterModel filterModel,
                       final Map allLogPanelColorizers, final ApplicationPreferenceModel applicationPreferenceModel) {
     super(new BorderLayout());
 
@@ -229,6 +231,9 @@ public class ColorPanel extends JPanel
     southPanel.add(Box.createVerticalStrut(5));
     southPanel.add(Box.createVerticalStrut(5));
     JPanel searchAndAlternatingColorPanel = buildSearchAndAlternatingColorPanel();
+    JPanel bypassSearchColorsPanel = buildBypassSearchColorsPanel();
+    bypassSearchColorsCheckBox.setSelected(applicationPreferenceModel.isBypassSearchColors());
+
     JPanel globalLabelPanel = new JPanel();
     globalLabelPanel.setLayout(new BoxLayout(globalLabelPanel, BoxLayout.X_AXIS));
     JLabel globalLabel = new JLabel("Global colors:");
@@ -236,6 +241,7 @@ public class ColorPanel extends JPanel
     globalLabelPanel.add(Box.createHorizontalGlue());
     southPanel.add(globalLabelPanel);
     southPanel.add(searchAndAlternatingColorPanel);
+    southPanel.add(bypassSearchColorsPanel);
     southPanel.add(Box.createVerticalStrut(5));
     JPanel closePanel = buildClosePanel();
     southPanel.add(closePanel);
@@ -314,6 +320,15 @@ public class ColorPanel extends JPanel
       searchDataVectorEntry.set(1, applicationPreferenceModel.getSearchForegroundColor());
       alternatingColorDataVectorEntry.set(0, applicationPreferenceModel.getAlternatingColorBackgroundColor());
       alternatingColorDataVectorEntry.set(1, applicationPreferenceModel.getAlternatingColorForegroundColor());
+  }
+
+  public JPanel buildBypassSearchColorsPanel() {
+    JPanel panel = new JPanel();
+    panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+
+    bypassSearchColorsCheckBox = new JCheckBox("Don't use a search color for matching rows");
+    panel.add(bypassSearchColorsCheckBox);
+    return panel;
   }
 
   public JPanel buildSearchAndAlternatingColorPanel() {
@@ -533,6 +548,7 @@ public class ColorPanel extends JPanel
           applyRules(currentRuleSet, colorizer);
           saveSearchColors();
           saveAlternatingColors();
+          saveBypassFlag();
         }
       });
 
@@ -564,6 +580,10 @@ public class ColorPanel extends JPanel
       applicationPreferenceModel.setAlternatingBackgroundColor((Color)thisVector.get(0));
       Color alternatingColorForegroundColor = (Color) thisVector.get(1);
       applicationPreferenceModel.setAlternatingForegroundColor(alternatingColorForegroundColor);
+  }
+
+  private void saveBypassFlag() {
+    applicationPreferenceModel.setBypassSearchColors(bypassSearchColorsCheckBox.isSelected());
   }
 
   JPanel buildUpDownPanel() {
