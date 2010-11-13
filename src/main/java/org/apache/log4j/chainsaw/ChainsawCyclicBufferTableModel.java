@@ -440,7 +440,8 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         for (Iterator iter = unfilteredListCopy.iterator();iter.hasNext();) {
             LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) iter.next();
             loggingEventWrapper.evaluateSearchRule(findRule);
-            if (loggingEventWrapper.isSearchMatch()) {
+            //return the count of visible search matches
+            if (loggingEventWrapper.isSearchMatch() && loggingEventWrapper.isDisplayed()) {
                 count++;
             }
         }
@@ -489,7 +490,20 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
       return -1;
     }
 
-    public int getColumnCount() {
+  public int getSearchMatchCount() {
+    int searchMatchCount = 0;
+    synchronized(mutex) {
+      for (Iterator iter = filteredList.iterator();iter.hasNext();) {
+        LoggingEventWrapper wrapper = (LoggingEventWrapper) iter.next();
+        if (wrapper.isSearchMatch() && wrapper.isDisplayed()) {
+          searchMatchCount++;
+        }
+      }
+    }
+    return searchMatchCount;
+  }
+
+  public int getColumnCount() {
     return columnNames.size();
   }
 

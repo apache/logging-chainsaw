@@ -175,4 +175,11 @@ public interface EventContainer extends SortTableModel, LoggerNameModel {
    * @return
    */
   int findColoredRow(int currentRow, boolean forward);
+
+  /**
+   * Return the visible search match count
+   *
+   * @return
+   */
+  int getSearchMatchCount();
 }

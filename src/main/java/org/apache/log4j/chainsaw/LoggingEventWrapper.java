@@ -48,18 +48,16 @@ public class LoggingEventWrapper {
   //a Map of event fields to Sets of string matches (can be used to render matches differently)
   Map eventMatches = new HashMap();
   private LoggingEventWrapper syncWrapper;
-  private EventContainer eventContainer;
+  private boolean displayed;
 
-  public LoggingEventWrapper(LoggingEvent loggingEvent, EventContainer eventContainer) {
+  public LoggingEventWrapper(LoggingEvent loggingEvent) {
     this.loggingEvent = loggingEvent;
-    this.eventContainer = eventContainer;
   }
 
-  public LoggingEventWrapper(LoggingEventWrapper loggingEventWrapper, EventContainer eventContainer) {
+  public LoggingEventWrapper(LoggingEventWrapper loggingEventWrapper) {
     this.loggingEvent = loggingEventWrapper.getLoggingEvent();
     this.id = loggingEventWrapper.id;
     this.syncWrapper = loggingEventWrapper;
-    this.eventContainer = eventContainer;
     loggingEventWrapper.syncWrapper = this;
   }
 
@@ -157,10 +155,15 @@ public class LoggingEventWrapper {
   public void setDisplayed(boolean b) {
     markerHeight = DEFAULT_HEIGHT;
     msgHeight = DEFAULT_HEIGHT;
+    displayed = b;
   }
 
   public void setPreviousDisplayedEventTimestamp(long previousDisplayedEventTimeStamp) {
     setProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE, String.valueOf(loggingEvent.getTimeStamp() - previousDisplayedEventTimeStamp));
+  }
+
+  public boolean isDisplayed() {
+    return displayed;
   }
 
   public boolean equals(Object o) {

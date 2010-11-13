@@ -2154,7 +2154,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
           //these are actual LoggingEvent instances
           LoggingEvent event = (LoggingEvent)iter.next();
           //create two separate loggingEventWrappers (main table and search table), as they have different info on display state
-          LoggingEventWrapper loggingEventWrapper1 = new LoggingEventWrapper(event, tableModel);
+          LoggingEventWrapper loggingEventWrapper1 = new LoggingEventWrapper(event);
             //if the clearTableExpressionRule is not null, evaluate & clear the table if it matches
             if (clearTableExpressionRule != null && clearTableExpressionRule.evaluate(event, null)) {
                 logger.info("clear table expression matched - clearing table - matching event msg - " + event.getMessage());
@@ -2169,7 +2169,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
           rowAdded = rowAdded || isCurrentRowAdded;
 
           //create a new loggingEventWrapper via copy constructor to ensure same IDs
-          LoggingEventWrapper loggingEventWrapper2 = new LoggingEventWrapper(loggingEventWrapper1, searchModel);
+          LoggingEventWrapper loggingEventWrapper2 = new LoggingEventWrapper(loggingEventWrapper1);
           boolean isSearchCurrentRowAdded = searchModel.isAddRow(loggingEventWrapper2);
           if (isSearchCurrentRowAdded) {
               searchAddedRowCount++;
@@ -3453,17 +3453,29 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         tableRuleMediator.setFilterRule(null);
         searchRuleMediator.setFilterRule(null);
         textField.setToolTipText(defaultToolTip);
+        if (findRule != null) {
+          currentSearchMatchCount=tableModel.getSearchMatchCount();
+          statusBar.setSearchMatchCount(currentSearchMatchCount, getIdentifier());
+        }
       } else {
         try {
           tableRuleMediator.setFilterRule(ExpressionRule.getRule(textField.getText()));
           searchRuleMediator.setFilterRule(ExpressionRule.getRule(textField.getText()));
           textField.setToolTipText(defaultToolTip);
+          if (findRule != null) {
+            currentSearchMatchCount=tableModel.getSearchMatchCount();
+            statusBar.setSearchMatchCount(currentSearchMatchCount, getIdentifier());
+          }
           //valid expression, reset background color in case we were previously an invalid expression
           textField.setBackground(UIManager.getColor("TextField.background"));
         } catch (IllegalArgumentException iae) {
           //invalid expression, change background of the field
           textField.setToolTipText(iae.getMessage());
           textField.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
+          if (findRule != null) {
+            currentSearchMatchCount=tableModel.getSearchMatchCount();
+            statusBar.setSearchMatchCount(currentSearchMatchCount, getIdentifier());
+          }
         }
       }
     }
