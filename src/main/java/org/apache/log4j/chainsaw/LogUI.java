@@ -290,6 +290,19 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         public void run()
         {
           String lookAndFeelClassName = model.getLookAndFeelClassName();
+          if (lookAndFeelClassName == null || lookAndFeelClassName.trim().equals("")) {
+              String osName = System.getProperty("os.name");
+              if (osName.toLowerCase().startsWith("mac")) {
+                  //no need to assign look and feel
+              } else if (osName.toLowerCase().startsWith("windows")) {
+                  lookAndFeelClassName = "com.sun.java.swing.plaf.windows.WindowsLookAndFeel";
+                  model.setLookAndFeelClassName(lookAndFeelClassName);
+              } else if (osName.toLowerCase().startsWith("linux")) {
+                  lookAndFeelClassName = "com.sun.java.swing.plaf.gtk.GTKLookAndFeel";
+                  model.setLookAndFeelClassName(lookAndFeelClassName);
+              }
+          }
+
           if (lookAndFeelClassName != null && !(lookAndFeelClassName.trim().equals(""))) {
             loadLookAndFeelUsingPluginClassLoader(lookAndFeelClassName);
           }
@@ -709,9 +722,16 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
   public void loadSettings(LoadSettingsEvent event) {
     setLocation(
       event.asInt(LogUI.MAIN_WINDOW_X), event.asInt(LogUI.MAIN_WINDOW_Y));
-    setSize(
-      event.asInt(LogUI.MAIN_WINDOW_WIDTH),
-      event.asInt(LogUI.MAIN_WINDOW_HEIGHT));
+      int width = event.asInt(LogUI.MAIN_WINDOW_WIDTH);
+      int height = event.asInt(LogUI.MAIN_WINDOW_HEIGHT);
+      if (width == -1 && height == -1) {
+          width = Toolkit.getDefaultToolkit().getScreenSize().width;
+          height = Toolkit.getDefaultToolkit().getScreenSize().height;
+          setSize(width, height);
+          setExtendedState(getExtendedState() | MAXIMIZED_BOTH);
+      } else {
+          setSize(width, height);
+      }
 
     getToolBarAndMenus().stateChange();
     RuleColorizer colorizer = new RuleColorizer();
