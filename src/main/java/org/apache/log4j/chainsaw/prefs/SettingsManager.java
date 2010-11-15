@@ -79,7 +79,7 @@ public final class SettingsManager {
      * Returns the singleton instance of the SettingsManager
      * @return settings manager
      */
-    public static final SettingsManager getInstance() {
+    public static SettingsManager getInstance() {
         return instance;
     }
 

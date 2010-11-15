@@ -74,14 +74,6 @@ public final class HelpManager {
     }
 
     /**
-     * @return URL
-     */
-    public final URL getHelpURL() {
-
-        return helpURL;
-    }
-
-    /**
      * The current Help URL that should be displayed, and is
      * a PropertyChangeListener supported property.
      *
@@ -90,7 +82,7 @@ public final class HelpManager {
      * of the event will be null)
      * @param helpURL
      */
-    public final void setHelpURL(URL helpURL) {
+    public void setHelpURL(URL helpURL) {
         this.helpURL = helpURL;
         firePropertyChange("helpURL", null, this.helpURL);
     }

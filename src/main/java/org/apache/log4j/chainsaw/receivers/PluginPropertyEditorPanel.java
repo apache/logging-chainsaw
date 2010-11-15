@@ -18,7 +18,6 @@ package org.apache.log4j.chainsaw.receivers;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.BeanInfo;

@@ -17,7 +17,6 @@
 
 package org.apache.log4j.chainsaw;
 
-import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;

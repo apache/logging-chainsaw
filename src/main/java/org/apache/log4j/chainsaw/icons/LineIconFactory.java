@@ -48,7 +48,7 @@ public final class LineIconFactory {
   private LineIconFactory() {
   }
 
-  public static final Icon createExpandIcon() {
+  public static Icon createExpandIcon() {
       int size = 8;
       int xOffSet = 0;
       int yOffSet = 0;
@@ -80,7 +80,7 @@ public final class LineIconFactory {
 
     return null;
   }
-  public static final Icon createCollapseIcon() {
+  public static Icon createCollapseIcon() {
       int size = 8;
       int xOffSet = 0;
       int yOffSet = 0;
@@ -109,11 +109,11 @@ public final class LineIconFactory {
     return null;
   }
 
-  public static final Icon createCloseIcon() {
+  public static Icon createCloseIcon() {
     return new CloseIcon(8, 0, 0);
   }
 
-  public static final Icon createBlankIcon() {
+  public static Icon createBlankIcon() {
     return new BlankIcon(16);
   }
 

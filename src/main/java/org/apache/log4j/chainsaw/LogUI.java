@@ -84,7 +84,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.AppenderSkeleton;
@@ -127,7 +126,6 @@ import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.RepositorySelector;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.apache.log4j.xml.XMLDecoder;
-import org.xml.sax.SAXException;
 
 
 /**
@@ -1815,8 +1813,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
     if (selectedTab instanceof LogPanel) {
       return (LogPanel) selectedTab;
-    } else {
-      //      System.out.println(selectedTab);
     }
 
     return null;
@@ -1852,33 +1848,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       return null;
     } else {
       return getTabbedPane().getTitleAt(index);
-    }
-  }
-
-  /**
-   * Changes the currently used Look And Feel of the App
-   *
-   * @param lookAndFeelClassName
-   *                    The FQN of the LookANdFeel
-   */
-  private static void applyLookAndFeel(String lookAndFeelClassName) {
-    UIManager.put("swing.boldMetal", Boolean.FALSE);
-    if (
-      UIManager.getLookAndFeel().getClass().getName().equals(
-          lookAndFeelClassName)) {
-      return;
-    }
-
-    if (
-      (lookAndFeelClassName == null) || lookAndFeelClassName.trim().equals("")) {
-      lookAndFeelClassName = UIManager.getSystemLookAndFeelClassName();
-    }
-
-    try {
-      UIManager.setLookAndFeel(lookAndFeelClassName);
-
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 

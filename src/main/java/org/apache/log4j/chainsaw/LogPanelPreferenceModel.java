@@ -33,8 +33,6 @@ import java.util.Properties;
 
 import javax.swing.table.TableColumn;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.helpers.Constants;
 
@@ -46,7 +44,6 @@ import org.apache.log4j.helpers.Constants;
 public class LogPanelPreferenceModel implements Serializable{
   public static final String ISO8601 = "ISO8601";
   public static final Collection DATE_FORMATS;
-  private static final Logger logger = LogManager.getLogger(LogPanelPreferenceModel.class);
 
  private static final long serialVersionUID = 7526472295622776147L;
   static {

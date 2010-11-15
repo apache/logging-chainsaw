@@ -16,7 +16,6 @@
  */
 package org.apache.log4j.chainsaw.zeroconf;
 
-import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -27,7 +26,6 @@ public class ZeroConfPreferenceModel {
     private List monitoredZones = new ArrayList();
     private Set autoConnectDevices = new HashSet();
     
-    private transient PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
 //   TODO expose addPropertyChangeListener
     
     public void addAutoConnectDevice(String deviceName) {

@@ -159,7 +159,6 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
   private final LogPanel logPanel;
   private final RuleColorizer colorizer;
   private Rule ignoreExpressionRule;
-  private FilterModel filterModel;
   private boolean expandRootLatch = false;
   private String currentlySelectedLoggerName;
 
@@ -177,7 +176,6 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
     this.preferenceModel = preferenceModel;
     this.logPanel = logPanel;
     this.colorizer = colorizer;
-    this.filterModel = filterModel;
 
     setLayout(new BorderLayout());
     ignoreExpressionEntryField.setPreferredSize(new Dimension(300, 150));
@@ -1830,11 +1828,6 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
         public void firePropertyChange(String propertyName, Object oldVal, Object newVal)
         {
             super.firePropertyChange(propertyName, oldVal, newVal);
-        }
-
-        public void firePropertyChange(PropertyChangeEvent evt)
-        {
-            super.firePropertyChange(evt);
         }
     }
 

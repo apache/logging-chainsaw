@@ -18,7 +18,6 @@ package org.apache.log4j.chainsaw.zeroconf;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -36,7 +35,6 @@ import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 import javax.swing.AbstractAction;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -44,7 +42,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
@@ -92,8 +89,6 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
 public class ZeroConfPlugin extends GUIPluginSkeleton {
 
     private static final Logger LOG = Logger.getLogger(ZeroConfPlugin.class);
-
-    private static final Icon DEVICE_DISCOVERED_ICON = new ImageIcon(ChainsawIcons.ANIM_RADIO_TOWER);
 
     private ZeroConfDeviceModel discoveredDevices = new ZeroConfDeviceModel();
 
@@ -223,21 +218,6 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         }
 
         //now add each appender constant
-    }
-
-    /**
-     * Sets the icon of this parent container (a JTabbedPane, we hope
-     *
-     */
-    private void setIconIfNeeded() {
-        Container container = this.getParent();
-        if(container instanceof JTabbedPane) {
-            JTabbedPane tabbedPane = (JTabbedPane) container;
-            Icon icon = discoveredDevices.getRowCount()==0?null:DEVICE_DISCOVERED_ICON;
-            tabbedPane.setIconAt(tabbedPane.indexOfTab(getName()), icon);
-        }else {
-            LOG.warn("Parent is not a TabbedPane, not setting icon: " + container.getClass().getName());
-        }
     }
 
     /**

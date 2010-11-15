@@ -23,10 +23,7 @@ import java.util.List;
 import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
-import javax.swing.ImageIcon;
 import javax.swing.table.AbstractTableModel;
-
-import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 
 public class ZeroConfDeviceModel extends AbstractTableModel implements ServiceListener {
 

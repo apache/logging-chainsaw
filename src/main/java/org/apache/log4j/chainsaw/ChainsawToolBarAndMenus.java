@@ -251,7 +251,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
         new AbstractAction("Scroll to top") {
           public void actionPerformed(ActionEvent e) {
             if (logui.getCurrentLogPanel() != null) {
-              logui.getCurrentLogPanel().scrollToTop();;
+              logui.getCurrentLogPanel().scrollToTop();
             }
           }
         };

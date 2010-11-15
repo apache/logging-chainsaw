@@ -177,7 +177,6 @@ public class EventDetailLayout extends Layout {
    * @return new LoggingEvent
    */
   private static LoggingEvent copyForHTML(LoggingEvent event) {
-    String fqnCategory = escape(event.getFQNOfLoggerClass());
     Logger logger = Logger.getLogger(event.getLoggerName());
     String threadName = event.getThreadName();
     Object msg = escape(event.getMessage().toString());

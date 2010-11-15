@@ -55,7 +55,6 @@ public class FileDnDTarget implements DropTargetListener{
 
     protected int acceptableActions = DnDConstants.ACTION_COPY;
 
-    private DropTarget dropTarget;
     private List fileList;
 
     private JComponent guiTarget;
@@ -68,7 +67,6 @@ public class FileDnDTarget implements DropTargetListener{
      */
     public FileDnDTarget(JComponent c) {
         this.guiTarget = c;
-        dropTarget = new DropTarget(this.guiTarget, this);
     }
     
     public void addDropTargetToComponent(JComponent c){

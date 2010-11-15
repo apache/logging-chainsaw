@@ -33,7 +33,6 @@ import javax.swing.tree.MutableTreeNode;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.apache.log4j.chainsaw.helper.SwingHelper;
 
 
 /**
@@ -185,10 +184,6 @@ outerFor:
       new Comparator() {
         public int compare(Object o1, Object o2) {
           return o1.toString().compareToIgnoreCase(o2.toString());
-        }
-
-        public boolean equals(Object obj) {
-          return false;
         }
       };
 

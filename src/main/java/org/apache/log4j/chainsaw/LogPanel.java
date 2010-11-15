@@ -3851,7 +3851,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
     private class EventTimeDeltaMatchThumbnail extends AbstractEventMatchThumbnail {
         public EventTimeDeltaMatchThumbnail() {
-            super("timedelta");
+            super();
             initializeLists();
         }
 
@@ -3931,7 +3931,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   //a listener receiving color updates needs to call configureColors on this class
     private class ColorizedEventAndSearchMatchThumbnail extends AbstractEventMatchThumbnail {
         public ColorizedEventAndSearchMatchThumbnail() {
-            super("colors");
+            super();
             configureColors();
         }
 
@@ -4042,7 +4042,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         protected List secondaryList = new ArrayList();
         protected final int maxEventHeight = 6;
 
-        AbstractEventMatchThumbnail(final String name) {
+        AbstractEventMatchThumbnail() {
             super();
             addMouseMotionListener(new MouseMotionAdapter() {
               public void mouseMoved(MouseEvent e) {

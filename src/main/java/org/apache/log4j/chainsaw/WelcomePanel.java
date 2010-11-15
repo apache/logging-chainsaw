@@ -20,7 +20,6 @@ package org.apache.log4j.chainsaw;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.net.URL;
@@ -36,7 +35,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
@@ -64,7 +62,6 @@ public class WelcomePanel extends JPanel {
 
     if (helpURL != null) {
       textInfo.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
-      Font font = UIManager.getFont("Label.font");
 
       JScrollPane pane = new JScrollPane(textInfo);
       pane.setBorder(null);

@@ -133,7 +133,7 @@ public class LogFilePatternLayoutBuilder
             } else if (converter instanceof FileLocationPatternConverter) {
                 buffer.append("FILE");
             } else if (converter instanceof PropertiesPatternConverter) {
-                PropertiesPatternConverter propertiesConverter = (PropertiesPatternConverter) converter;
+//                PropertiesPatternConverter propertiesConverter = (PropertiesPatternConverter) converter;
 //                String option = propertiesConverter.getOption();
 //                if (option != null && option.length() > 0) {
 //                    buffer.append("PROP(" + option + ")");

@@ -309,10 +309,8 @@ public class ColorPanel extends JPanel
       }
       for (Iterator iter = allLogPanelColorizers.entrySet().iterator();iter.hasNext();) {
           Map.Entry entry = (Map.Entry)iter.next();
-          if (!entry.getValue().equals(currentLogPanelColorizer)) {
-              if (logPanelColorizersModel.getIndexOf(entry.getKey()) == -1) {
-                logPanelColorizersModel.addElement(entry.getKey());
-              }
+          if (!entry.getValue().equals(currentLogPanelColorizer) && (logPanelColorizersModel.getIndexOf(entry.getKey()) == -1)) {
+              logPanelColorizersModel.addElement(entry.getKey());
           }
       }
       //update search and alternating colors, since they may have changed from another color panel

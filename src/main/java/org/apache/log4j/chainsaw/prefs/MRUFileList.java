@@ -33,7 +33,6 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
 public class MRUFileList{
 
     private static MRUFileList log4jList = new MRUFileList();
-    private static MRUFileList jdk14List = new MRUFileList();
     private static final int DEFAULT_MRU_SIZE = 5;
     
     private List fileList = new ArrayList();

@@ -18,7 +18,6 @@ package org.apache.log4j.chainsaw;
 
 import java.awt.Color;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -67,10 +66,8 @@ public class LoggingEventWrapper {
 
   public void setProperty(String propName, String propValue) {
     loggingEvent.setProperty(propName, propValue);
-    if (id == 0) {
-      if (propName.equals(Constants.LOG4J_ID_KEY)) {
-        id = Integer.parseInt(propValue);
-      }
+    if (id == 0 && propName.equals(Constants.LOG4J_ID_KEY)) {
+      id = Integer.parseInt(propValue);
     }
     if (syncWrapper != null && !propName.equals(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE)) {
       syncWrapper.getLoggingEvent().setProperty(propName, propValue);

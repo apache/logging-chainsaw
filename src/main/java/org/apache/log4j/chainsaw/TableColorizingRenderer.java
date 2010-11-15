@@ -22,11 +22,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import java.awt.font.FontRenderContext;
-import java.awt.font.LineBreakMeasurer;
-import java.awt.font.TextLayout;
-import java.text.AttributedCharacterIterator;
-import java.text.AttributedString;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -443,11 +438,9 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     /**
      * Colourize background based on row striping if the event still has default foreground and background color
      */
-    if (background.equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND) && foreground.equals(ChainsawConstants.COLOR_DEFAULT_FOREGROUND)) {
-      if ((row % 2) != 0) {
-        background = applicationPreferenceModel.getAlternatingColorBackgroundColor();
-        foreground = applicationPreferenceModel.getAlternatingColorForegroundColor();
-      }
+    if (background.equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND) && foreground.equals(ChainsawConstants.COLOR_DEFAULT_FOREGROUND) && (row % 2) != 0) {
+      background = applicationPreferenceModel.getAlternatingColorBackgroundColor();
+      foreground = applicationPreferenceModel.getAlternatingColorForegroundColor();
     }
 
     component.setBackground(background);
@@ -630,6 +623,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     useRelativeTimesToPrevious = false;
   }
 
+  /*
    private int calculateHeight(String string, int width, Map paramMap) {
      if (string.trim().length() == 0) {
          return ChainsawConstants.DEFAULT_ROW_HEIGHT;
@@ -646,6 +640,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
      }
      return Math.max(ChainsawConstants.DEFAULT_ROW_HEIGHT, (int) height);
     }
+    */
 
     private void setHighlightAttributesInternal(Object matchSet, StyledDocument styledDocument) {
         if (!highlightSearchMatchText) {
