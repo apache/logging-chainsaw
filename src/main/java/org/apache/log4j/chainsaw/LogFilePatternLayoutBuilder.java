@@ -32,6 +32,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.log4j.chainsaw.messages.MessageCenter;
 import org.apache.log4j.helpers.OptionConverter;
 import org.apache.log4j.pattern.ClassNamePatternConverter;
 import org.apache.log4j.pattern.DatePatternConverter;
@@ -255,14 +256,14 @@ public class LogFilePatternLayoutBuilder
               Node appenderChild = appenderChildren.item(j);
               if (appenderChild.getNodeName().equals("param") && appenderChild.hasAttributes()) {
                 Node fileNameNode = appenderChild.getAttributes().getNamedItem("name");
-                if (fileNameNode != null && fileNameNode.getNodeValue().equals("file")) {
+                if (fileNameNode != null && fileNameNode.getNodeValue().toLowerCase().equals("file")) {
                   Node fileValueNode = appenderChild.getAttributes().getNamedItem("value");
                   if (fileValueNode != null) {
                     entry.put("file", fileValueNode.getNodeValue());
                   }
                 }
               }
-              if (appenderChild.getNodeName().equals("layout") && appenderChild.hasAttributes()) {
+              if (appenderChild.getNodeName().toLowerCase().equals("layout") && appenderChild.hasAttributes()) {
                 NamedNodeMap layoutAttributes = appenderChild.getAttributes();
                 Node layoutNode = layoutAttributes.getNamedItem("class");
                 if (layoutNode != null && layoutNode.getNodeValue() != null && layoutNode.getNodeValue().equals("org.apache.log4j.PatternLayout")) {
@@ -271,7 +272,7 @@ public class LogFilePatternLayoutBuilder
                     Node layoutChild = layoutChildren.item(k);
                     if (layoutChild.getNodeName().equals("param") && layoutChild.hasAttributes()) {
                       Node layoutName = layoutChild.getAttributes().getNamedItem("name");
-                      if (layoutName != null && layoutName.getNodeValue() != null && layoutName.getNodeValue().equals("ConversionPattern")) {
+                      if (layoutName != null && layoutName.getNodeValue() != null && layoutName.getNodeValue().toLowerCase().equals("conversionpattern")) {
                         Node conversionValue = layoutChild.getAttributes().getNamedItem("value");
                         if (conversionValue != null) {
                           entry.put("conversion", conversionValue.getNodeValue());
@@ -289,6 +290,7 @@ public class LogFilePatternLayoutBuilder
     } finally {
       stream.close();
     }
+    MessageCenter.getInstance().getLogger().info("getXMLFileAppenderConfiguration for file: " + file + ", result: " + result);
     return result;
   }
 }

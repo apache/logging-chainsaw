@@ -314,9 +314,8 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
           }
           vfsReader = new VFSReader();
           new Thread(vfsReader).start();
-        }
+        } else if (oldURL != null && oldURL.indexOf("://") > -1) {
         //starts with protocol://
-        if (oldURL != null && oldURL.indexOf("://") > -1) {
             int index = oldURL.indexOf("://");
             String lastPart = oldURL.substring(index + "://".length());
             int passEndIndex = lastPart.indexOf("@");
@@ -403,6 +402,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
 
                         //fileobject was created above, release it and construct a new one
                         if (fileObject != null) {
+                            fileObject.getFileSystem().getFileSystemManager().closeFileSystem(fileObject.getFileSystem());
                             fileObject.close();
                             fileObject = null;
                         }
@@ -433,15 +433,6 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                                 lastFilePointer = rac.getFilePointer();
                                 lastFileSize = fileObject.getContent().getSize();
                                 rac.close();
-                            }
-                            try {
-                                //release file so it can be externally deleted/renamed if necessary
-                                fileObject.close();
-                                fileObject = null;
-                            }
-                            catch (IOException e)
-                            {
-                                getLogger().debug(getPath() + " - unable to close fileobject", e);
                             }
                             try {
                                 if (reader != null) {

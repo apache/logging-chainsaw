@@ -1427,7 +1427,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
   }
 
   /**
-   * Displays a dialog which will provide options for selecting a configuratino
+   * Displays a dialog which will provide options for selecting a configuration
    */
   private void showReceiverConfigurationPanel() {
     SwingUtilities.invokeLater(
