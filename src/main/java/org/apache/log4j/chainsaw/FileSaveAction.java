@@ -30,6 +30,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -103,7 +104,7 @@ class FileSaveAction extends AbstractAction {
 
     XMLLayout layout = new XMLLayout();
     layout.setProperties(true);
-    boolean saveAsZip = selectedFile.getName().toLowerCase().endsWith(".zip");
+    boolean saveAsZip = selectedFile.getName().toLowerCase(Locale.ENGLISH).endsWith(".zip");
     Writer writer = null;
     try {
       if (saveAsZip) {

@@ -30,6 +30,7 @@ import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import java.util.Locale;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -187,7 +188,7 @@ public static void main(String[] args) {
       boolean useNewLookAndFeels = false;
       int j = 0;
       for (int i=0;i<lookAndFeels.length;i++) {
-        if (lookAndFeels[i].getClassName().toLowerCase().contains("nimbus")) {
+        if (lookAndFeels[i].getClassName().toLowerCase(Locale.ENGLISH).contains("nimbus")) {
             useNewLookAndFeels = true;
         } else {
             newLookAndFeels[j++] = lookAndFeels[i];
@@ -549,7 +550,7 @@ public static void main(String[] args) {
                       defaultPath = currentConfigurationPath.getPath();
                       //FileDialog will not navigate to this location unless we remove the prefixing protocol and slash
                       //at least on winxp
-                      if (defaultPath.toLowerCase().startsWith("file:\\")) {
+                      if (defaultPath.toLowerCase(Locale.ENGLISH).startsWith("file:\\")) {
                           defaultPath = defaultPath.substring("file:\\".length());
                       }
                   }

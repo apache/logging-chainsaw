@@ -52,6 +52,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -290,12 +291,12 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
           String lookAndFeelClassName = model.getLookAndFeelClassName();
           if (lookAndFeelClassName == null || lookAndFeelClassName.trim().equals("")) {
               String osName = System.getProperty("os.name");
-              if (osName.toLowerCase().startsWith("mac")) {
+              if (osName.toLowerCase(Locale.ENGLISH).startsWith("mac")) {
                   //no need to assign look and feel
-              } else if (osName.toLowerCase().startsWith("windows")) {
+              } else if (osName.toLowerCase(Locale.ENGLISH).startsWith("windows")) {
                   lookAndFeelClassName = "com.sun.java.swing.plaf.windows.WindowsLookAndFeel";
                   model.setLookAndFeelClassName(lookAndFeelClassName);
-              } else if (osName.toLowerCase().startsWith("linux")) {
+              } else if (osName.toLowerCase(Locale.ENGLISH).startsWith("linux")) {
                   lookAndFeelClassName = "com.sun.java.swing.plaf.gtk.GTKLookAndFeel";
                   model.setLookAndFeelClassName(lookAndFeelClassName);
               }
@@ -1453,7 +1454,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             for (Iterator iter = plugins.iterator();iter.hasNext();) {
                 Plugin plugin = (Plugin)iter.next();
                 //don't stop ZeroConfPlugin if it is registered
-                if (!plugin.getName().toLowerCase().contains("zeroconf")) {
+                if (!plugin.getName().toLowerCase(Locale.ENGLISH).contains("zeroconf")) {
                   pluginRegistry.stopPlugin(plugin.getName());
                 }
             }

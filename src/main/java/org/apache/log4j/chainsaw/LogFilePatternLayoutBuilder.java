@@ -25,6 +25,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
@@ -191,7 +192,7 @@ public class LogFilePatternLayoutBuilder
         Map.Entry appenderEntry = (Map.Entry)iter.next();
         String appenderName = appenderEntry.getKey().toString();
         String appenderClassName = appenderEntry.getValue().toString();
-        if (appenderClassName.toLowerCase().endsWith("fileappender")) {
+        if (appenderClassName.toLowerCase(Locale.ENGLISH).endsWith("fileappender")) {
           String layout = props.getProperty(appenderPrefix + "." + appenderName + ".layout");
           if (layout != null && layout.trim().equals("org.apache.log4j.PatternLayout")) {
             String conversion = props.getProperty(appenderPrefix + "." + appenderName + ".layout.ConversionPattern");
@@ -247,7 +248,7 @@ public class LogFilePatternLayoutBuilder
         if (appenderAttributes.getNamedItem("name") != null && appenderClass != null && appenderClass.getNodeValue() != null) {
           //all log4j fileappenders end in fileappender..if a custom fileappender also ends in fileappender and uses the same dom nodes to be loaded,
           //try to parse the nodes as well
-          if (appenderClass.getNodeValue().toLowerCase().endsWith("fileappender")) {
+          if (appenderClass.getNodeValue().toLowerCase(Locale.ENGLISH).endsWith("fileappender")) {
             String appenderName = appenderAttributes.getNamedItem("name").getNodeValue();
             //subclass of FileAppender - add it
             Map entry = new HashMap();
@@ -256,23 +257,23 @@ public class LogFilePatternLayoutBuilder
               Node appenderChild = appenderChildren.item(j);
               if (appenderChild.getNodeName().equals("param") && appenderChild.hasAttributes()) {
                 Node fileNameNode = appenderChild.getAttributes().getNamedItem("name");
-                if (fileNameNode != null && fileNameNode.getNodeValue().toLowerCase().equals("file")) {
+                if (fileNameNode != null && fileNameNode.getNodeValue().equalsIgnoreCase("file")) {
                   Node fileValueNode = appenderChild.getAttributes().getNamedItem("value");
                   if (fileValueNode != null) {
                     entry.put("file", fileValueNode.getNodeValue());
                   }
                 }
               }
-              if (appenderChild.getNodeName().toLowerCase().equals("layout") && appenderChild.hasAttributes()) {
+              if (appenderChild.getNodeName().equalsIgnoreCase("layout") && appenderChild.hasAttributes()) {
                 NamedNodeMap layoutAttributes = appenderChild.getAttributes();
                 Node layoutNode = layoutAttributes.getNamedItem("class");
-                if (layoutNode != null && layoutNode.getNodeValue() != null && layoutNode.getNodeValue().equals("org.apache.log4j.PatternLayout")) {
+                if (layoutNode != null && layoutNode.getNodeValue() != null && layoutNode.getNodeValue().equalsIgnoreCase("org.apache.log4j.PatternLayout")) {
                   NodeList layoutChildren = appenderChild.getChildNodes();
                   for (int k = 0; k < layoutChildren.getLength(); k++) {
                     Node layoutChild = layoutChildren.item(k);
                     if (layoutChild.getNodeName().equals("param") && layoutChild.hasAttributes()) {
                       Node layoutName = layoutChild.getAttributes().getNamedItem("name");
-                      if (layoutName != null && layoutName.getNodeValue() != null && layoutName.getNodeValue().toLowerCase().equals("conversionpattern")) {
+                      if (layoutName != null && layoutName.getNodeValue() != null && layoutName.getNodeValue().equalsIgnoreCase("conversionpattern")) {
                         Node conversionValue = layoutChild.getAttributes().getNamedItem("value");
                         if (conversionValue != null) {
                           entry.put("conversion", conversionValue.getNodeValue());

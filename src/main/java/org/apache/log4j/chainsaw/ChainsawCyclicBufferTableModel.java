@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -601,11 +602,11 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         //case may not match..try case sensitive and fall back to case-insensitive
         String result = event.getProperty(columnNames.get(columnIndex).toString());
         if (result == null) {
-            String lowerColName = columnNames.get(columnIndex).toString().toLowerCase();
+            String lowerColName = columnNames.get(columnIndex).toString().toLowerCase(Locale.ENGLISH);
             Set entrySet = event.getProperties().entrySet();
             for (Iterator iter = entrySet.iterator();iter.hasNext();) {
                 Map.Entry thisEntry = (Map.Entry) iter.next();
-                if (thisEntry.getKey().toString().toLowerCase().equals(lowerColName)) {
+                if (thisEntry.getKey().toString().equalsIgnoreCase(lowerColName)) {
                     result = thisEntry.getValue().toString();
                 }
             }
@@ -785,7 +786,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
    * @see javax.swing.table.TableModel#isCellEditable(int, int)
    */
   public boolean isCellEditable(int rowIndex, int columnIndex) {
-    if (getColumnName(columnIndex).toLowerCase().equals(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE)) {
+    if (getColumnName(columnIndex).equalsIgnoreCase(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE)) {
       return true;
     }
 

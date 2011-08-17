@@ -400,7 +400,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         //find the property in the property set...case-sensitive
         for (Iterator iter = propertySet.iterator();iter.hasNext();) {
             String entry = iter.next().toString();
-            if (entry.toLowerCase().equals(headerName)) {
+            if (entry.equalsIgnoreCase(headerName)) {
                 thisProp = entry;
                 break;
             }

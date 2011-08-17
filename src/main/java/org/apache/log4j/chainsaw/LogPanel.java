@@ -67,6 +67,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -532,7 +533,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         		}
             for (Iterator iter = preferenceModel.getVisibleColumnOrder().iterator();iter.hasNext();) {
               TableColumn c = (TableColumn)iter.next();
-              if (c.getHeaderValue().toString().toLowerCase().equals(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE))
+              if (c.getHeaderValue().toString().equalsIgnoreCase(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE))
               {
                 c.setCellEditor(markerCellEditor);
               }
@@ -4321,7 +4322,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                 List entriesCopy = new ArrayList(allEntries);
                 for (Iterator iter = entriesCopy.iterator();iter.hasNext();) {
                     String thisEntry = iter.next().toString();
-                    if (thisEntry.toLowerCase().contains(textToMatch.toLowerCase())) {
+                    if (thisEntry.toLowerCase(Locale.ENGLISH).contains(textToMatch.toLowerCase())) {
                         model.addElement(thisEntry);
                     }
                 }

@@ -349,7 +349,7 @@ public class PluginPropertyEditorPanel extends JPanel {
 
             if (columnIndex == 1) {
                 //ensure name is set
-                if (descriptors[rowIndex].getName().toLowerCase().equals("name") && (aValue == null || aValue.toString().trim().equals(""))) {
+                if (descriptors[rowIndex].getName().equalsIgnoreCase("name") && (aValue == null || aValue.toString().trim().equals(""))) {
                     logger.error("Name required");
                     return;
                 }

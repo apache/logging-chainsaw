@@ -34,6 +34,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 
+import java.util.Locale;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -809,7 +810,7 @@ class ReceiverConfigurationPanel extends JPanel {
 
         boolean isPatternLayoutLogFormat() {
             Object item = logFileFormatTypeComboBox.getSelectedItem();
-            return item != null && item.toString().toLowerCase().contains("patternlayout");
+            return item != null && item.toString().toLowerCase(Locale.ENGLISH).contains("patternlayout");
         }
 
         String getLogFormatTimestampFormat() {

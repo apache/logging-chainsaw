@@ -30,6 +30,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.Locale;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.InputMap;
@@ -92,7 +93,7 @@ public final class SwingHelper {
   }
 
   public static boolean isMacOSX() {
-    return System.getProperty("os.name").toLowerCase().startsWith("mac os x");
+    return System.getProperty("os.name").toLowerCase(Locale.ENGLISH).startsWith("mac os x");
   }
 
   public static List orderOKCancelButtons(JButton okButton, JButton cancelButton) {
