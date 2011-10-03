@@ -118,8 +118,7 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>1.2</source>
-          <target>1.1</target>
+          <source>1.4</source>
         </configuration>
       </plugin>
       <plugin>
@@ -220,7 +219,7 @@
             <artifactId>ant-contrib</artifactId>
             <version>1.0b2</version>
           </dependency>
-        </dependencies>
+	</dependencies>
       </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -324,6 +323,14 @@
           <iconFile>${basedir}/src/main/resources/logo.icns</iconFile>
           <bundleName>Chainsaw</bundleName>
         </configuration>
+        <executions>
+            <execution>
+                <phase>package</phase>
+                <goals>
+                    <goal>bundle</goal>
+                </goals>
+            </execution>
+       </executions>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -386,17 +393,6 @@
     </dependency>
     <dependency>
       <groupId>log4j</groupId>
-      <artifactId>apache-log4j-receivers</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>apache-log4j-receivers</artifactId>
-      <version>1.0-SNAPSHOT</version>
-      <classifier>javadoc</classifier>
-    </dependency>
-    <dependency>
-      <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
       <version>1.2.16</version>
     </dependency>
@@ -436,6 +432,18 @@
       <groupId>com.jcraft</groupId>
       <artifactId>jsch</artifactId>
       <version>0.1.42</version>
+    </dependency>
+    <dependency>
+		<groupId>hsqldb</groupId>
+		<artifactId>hsqldb</artifactId>
+		<version>1.8.0.7</version>
+		<scope>test</scope>
+	</dependency>
+    <dependency>
+        <groupId>org.apache.geronimo.specs</groupId>
+        <artifactId>geronimo-jms_1.1_spec</artifactId>
+        <version>1.0</version>
+        <optional>true</optional>
     </dependency>
   </dependencies>
   <reporting>
@@ -480,7 +488,7 @@
       </plugin>
     </plugins>
   </reporting>
-  <distributionManagement>
+    <distributionManagement>
     <repository>
       <id>logging.repo</id>
       <url>scp://people.apache.org/www/people.apache.org/builds/logging/repo/</url>
