@@ -2335,6 +2335,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     searchModel.setCyclic(preferenceModel.isCyclic());
     logTreePanel.ignore(preferenceModel.getHiddenLoggers());
     logTreePanel.setHiddenExpression(preferenceModel.getHiddenExpression());
+    logTreePanel.setAlwaysDisplayExpression(preferenceModel.getAlwaysDisplayExpression());
     if (preferenceModel.getClearTableExpression() != null) {
         try {
             clearTableExpressionRule = ExpressionRule.getRule(preferenceModel.getClearTableExpression());
@@ -2366,6 +2367,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
     preferenceModel.setHiddenLoggers(new HashSet(logTreePanel.getHiddenSet()));
     preferenceModel.setHiddenExpression(logTreePanel.getHiddenExpression());
+    preferenceModel.setAlwaysDisplayExpression(logTreePanel.getAlwaysDisplayExpression());
     List visibleOrder = new ArrayList();
     Enumeration cols = table.getColumnModel().getColumns();
     while (cols.hasMoreElements()) {

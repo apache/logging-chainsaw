@@ -84,6 +84,7 @@ public class LogPanelPreferenceModel implements Serializable{
   private boolean wrapMsg = true;
   private boolean highlightSearchMatchText;
   private String hiddenExpression;
+  private String alwaysDisplayExpression;
   private String clearTableExpression;
   //default to cyclic mode off
   private boolean cyclic = false;
@@ -254,6 +255,7 @@ public class LogPanelPreferenceModel implements Serializable{
     setVisibleColumns(model.getVisibleColumns());
     setHiddenLoggers(model.getHiddenLoggers());
     setHiddenExpression(model.getHiddenExpression());
+    setAlwaysDisplayExpression(model.getAlwaysDisplayExpression());
     setShowMillisDeltaAsGap(model.isShowMillisDeltaAsGap());
     setClearTableExpression(model.getClearTableExpression());
   }
@@ -504,6 +506,16 @@ public class LogPanelPreferenceModel implements Serializable{
 
   public String getHiddenExpression() {
     return hiddenExpression;
+  }
+
+  public void setAlwaysDisplayExpression(String alwaysDisplayExpression) {
+    Object oldValue = this.hiddenExpression;
+    this.alwaysDisplayExpression = alwaysDisplayExpression;
+    propertySupport.firePropertyChange("alwaysDisplayExpression", oldValue, this.alwaysDisplayExpression);
+  }
+
+  public String getAlwaysDisplayExpression() {
+    return alwaysDisplayExpression;
   }
 
   public void setClearTableExpression(String clearTableExpression) {

@@ -137,11 +137,14 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
 
   private final JList ignoreList = new JList();
   private final JEditorPane ignoreExpressionEntryField = new JEditorPane();
+  private final JEditorPane alwaysDisplayExpressionEntryField = new JEditorPane();
   private final JScrollPane ignoreListScroll = new JScrollPane(ignoreList);
   private final JDialog ignoreDialog = new JDialog();
   private final JDialog ignoreExpressionDialog = new JDialog();
+  private final JDialog alwaysDisplayExpressionDialog = new JDialog();
   private final JLabel ignoreSummary = new JLabel("0 hidden loggers");
   private final JLabel ignoreExpressionSummary = new JLabel("Ignore expression");
+  private final JLabel alwaysDisplayExpressionSummary = new JLabel("Always displayed expression");
   private final SmallToggleButton ignoreLoggerButton = new SmallToggleButton();
   private final EventListenerList listenerList = new EventListenerList();
   private final JTree logTree;
@@ -159,6 +162,7 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
   private final LogPanel logPanel;
   private final RuleColorizer colorizer;
   private Rule ignoreExpressionRule;
+  private Rule alwaysDisplayExpressionRule;
   private boolean expandRootLatch = false;
   private String currentlySelectedLoggerName;
 
@@ -179,12 +183,13 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
 
     setLayout(new BorderLayout());
     ignoreExpressionEntryField.setPreferredSize(new Dimension(300, 150));
-
+    alwaysDisplayExpressionEntryField.setPreferredSize(new Dimension(300, 150));
+    alwaysDisplayExpressionSummary.setMinimumSize(new Dimension(10, alwaysDisplayExpressionSummary.getHeight()));
     ignoreExpressionSummary.setMinimumSize(new Dimension(10, ignoreExpressionSummary.getHeight()));
     ignoreSummary.setMinimumSize(new Dimension(10, ignoreSummary.getHeight()));
 
     JTextComponentFormatter.applySystemFontAndSize(ignoreExpressionEntryField);
-
+    JTextComponentFormatter.applySystemFontAndSize(alwaysDisplayExpressionEntryField);
 
     visibilityRuleDelegate = new VisibilityRuleDelegate();
     colorRuleDelegate = 
@@ -194,7 +199,8 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
           {
             boolean hiddenLogger = e.getLoggerName() != null && isHiddenLogger(e.getLoggerName());
             boolean hiddenExpression = (ignoreExpressionRule != null && ignoreExpressionRule.evaluate(e, null));
-            boolean hidden = hiddenLogger || hiddenExpression;
+            boolean alwaysDisplayExpression = (alwaysDisplayExpressionRule != null && alwaysDisplayExpressionRule.evaluate(e, null));
+            boolean hidden = (!alwaysDisplayExpression) && (hiddenLogger || hiddenExpression);
             String currentlySelectedLoggerName = getCurrentlySelectedLoggerName();
 
             if (!isFocusOnSelected() && !hidden && currentlySelectedLoggerName != null && !"".equals(currentlySelectedLoggerName))
@@ -298,6 +304,9 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
     ignoreExpressionDialog.setTitle("Hidden/Ignored Expression");
     ignoreExpressionDialog.setModal(true);
 
+    alwaysDisplayExpressionDialog.setTitle("Always displayed Expression");
+    alwaysDisplayExpressionDialog.setModal(true);
+
     JPanel ignorePanel = new JPanel();
     ignorePanel.setLayout(new BoxLayout(ignorePanel, BoxLayout.Y_AXIS));
     JPanel ignoreSummaryPanel = new JPanel();
@@ -315,6 +324,14 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
           LogPanel.centerAndSetVisible(ignoreExpressionDialog);
       }
     };
+
+
+    Action showAlwaysDisplayExpressionDialogAction = new AbstractAction("...") {
+      public void actionPerformed(ActionEvent e) {
+          LogPanel.centerAndSetVisible(alwaysDisplayExpressionDialog);
+      }
+    };
+
     showIgnoreDialogAction.putValue(Action.SHORT_DESCRIPTION, "Click to view and manage your hidden/ignored loggers");
     JButton btnShowIgnoreDialog = new SmallButton(showIgnoreDialogAction);
     
@@ -329,6 +346,16 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
     ignoreExpressionPanel.add(btnShowIgnoreExpressionDialog);
 
     ignorePanel.add(ignoreExpressionPanel);
+
+    JPanel alwaysDisplayExpressionPanel = new JPanel();
+    alwaysDisplayExpressionPanel.setLayout(new BoxLayout(alwaysDisplayExpressionPanel, BoxLayout.X_AXIS));
+    alwaysDisplayExpressionPanel.add(alwaysDisplayExpressionSummary);
+    showAlwaysDisplayExpressionDialogAction.putValue(Action.SHORT_DESCRIPTION, "Click to view and manage your always-displayed expression");
+    JButton btnShowAlwaysDisplayExpressionDialog = new SmallButton(showAlwaysDisplayExpressionDialogAction);
+    alwaysDisplayExpressionPanel.add(btnShowAlwaysDisplayExpressionDialog);
+
+    ignorePanel.add(alwaysDisplayExpressionPanel);
+
     add(ignorePanel, BorderLayout.SOUTH);
 
     ignoreList.setModel(new DefaultListModel());
@@ -376,9 +403,29 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
                 ignoreExpressionDialog.setVisible(false);
               }
           }});
-    JPanel closePanel = new JPanel();
-    closePanel.add(ignoreExpressionCloseButton);
-    ignoreExpressionDialogPanel.add(closePanel, BorderLayout.SOUTH);
+
+
+    JPanel alwaysDisplayExpressionDialogPanel = new JPanel(new BorderLayout());
+    alwaysDisplayExpressionEntryField.addKeyListener(new ExpressionRuleContext(filterModel, alwaysDisplayExpressionEntryField));
+
+    alwaysDisplayExpressionDialogPanel.add(new JScrollPane(alwaysDisplayExpressionEntryField), BorderLayout.CENTER);
+    JButton alwaysDisplayExpressionCloseButton = new JButton(new AbstractAction(" Close ") {
+          public void actionPerformed(ActionEvent e)
+          {
+              String alwaysDisplayText = alwaysDisplayExpressionEntryField.getText();
+
+              if (updateAlwaysDisplayExpression(alwaysDisplayText)) {
+                alwaysDisplayExpressionDialog.setVisible(false);
+              }
+          }});
+
+    JPanel closeAlwaysDisplayExpressionPanel = new JPanel();
+    closeAlwaysDisplayExpressionPanel.add(alwaysDisplayExpressionCloseButton);
+    alwaysDisplayExpressionDialogPanel.add(closeAlwaysDisplayExpressionPanel, BorderLayout.SOUTH);
+
+    JPanel closeIgnoreExpressionPanel = new JPanel();
+    closeIgnoreExpressionPanel.add(ignoreExpressionCloseButton);
+    ignoreExpressionDialogPanel.add(closeIgnoreExpressionPanel, BorderLayout.SOUTH);
 
     Box ignoreListButtonPanel = Box.createHorizontalBox();
     
@@ -415,6 +462,9 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
 
     ignoreExpressionDialog.getContentPane().add(ignoreExpressionDialogPanel);
     ignoreExpressionDialog.pack();
+
+    alwaysDisplayExpressionDialog.getContentPane().add(alwaysDisplayExpressionDialogPanel);
+    alwaysDisplayExpressionDialog.pack();
   }
 
     private boolean updateIgnoreExpression(String ignoreText)
@@ -427,12 +477,32 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
             }
             visibilityRuleDelegate.firePropertyChange("hiddenSet", null, null);
 
-            updateAllIgnoreStuff();
+            updateDisplay();
             ignoreExpressionEntryField.setBackground(UIManager.getColor("TextField.background"));
             return true;
         } catch (IllegalArgumentException iae) {
             ignoreExpressionEntryField.setToolTipText(iae.getMessage());
             ignoreExpressionEntryField.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
+            return false;
+        }
+    }
+
+    private boolean updateAlwaysDisplayExpression(String alwaysDisplayText)
+    {
+        try {
+            if (alwaysDisplayText != null && !alwaysDisplayText.trim().equals("")) {
+                alwaysDisplayExpressionRule = ExpressionRule.getRule(alwaysDisplayText);
+            } else {
+                alwaysDisplayExpressionRule = null;
+            }
+            visibilityRuleDelegate.firePropertyChange("alwaysDisplayedSet", null, null);
+
+            updateDisplay();
+            alwaysDisplayExpressionEntryField.setBackground(UIManager.getColor("TextField.background"));
+            return true;
+        } catch (IllegalArgumentException iae) {
+            alwaysDisplayExpressionEntryField.setToolTipText(iae.getMessage());
+            alwaysDisplayExpressionEntryField.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
             return false;
         }
     }
@@ -1426,7 +1496,7 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
         public void stateChanged(ChangeEvent evt)
         {
           visibilityRuleDelegate.firePropertyChange("rule", null, null);
-          updateAllIgnoreStuff();
+          updateDisplay();
         }
       });
 
@@ -1435,16 +1505,17 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
         public void propertyChange(PropertyChangeEvent event)
         {
           if (event.getPropertyName().equals("hiddenSet")) {
-            updateAllIgnoreStuff();
+            updateDisplay();
           }
         }
       });
   }
 
-  private void updateAllIgnoreStuff() {
+  private void updateDisplay() {
       updateHiddenSetModels();
       updateIgnoreSummary();
       updateIgnoreExpressionSummary();
+      updateAlwaysDisplayExpressionSummary();
   }
   
   private void updateHiddenSetModels() {
@@ -1470,6 +1541,10 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
     ignoreExpressionSummary.setText(ignoreExpressionRule != null?"Ignore (set)":"Ignore (unset)");
   }
   
+  private void updateAlwaysDisplayExpressionSummary() {
+    alwaysDisplayExpressionSummary.setText(alwaysDisplayExpressionRule != null?"Always displayed (set)":"Always displayed (unset)");
+  }
+
   private void toggleFocusOnState()
   {
     setFocusOnSelected(!isFocusOnSelected());
@@ -1491,6 +1566,19 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
     public void setHiddenExpression(String hiddenExpression) {
         ignoreExpressionEntryField.setText(hiddenExpression);
         updateIgnoreExpression(hiddenExpression);
+    }
+
+    public String getAlwaysDisplayExpression() {
+        String text = alwaysDisplayExpressionEntryField.getText();
+        if (text == null || text.trim().equals("")) {
+            return null;
+        }
+        return text.trim();
+    }
+
+    public void setAlwaysDisplayExpression(String alwaysDisplayExpression) {
+        alwaysDisplayExpressionEntryField.setText(alwaysDisplayExpression);
+        updateAlwaysDisplayExpression(alwaysDisplayExpression);
     }
 
     public void loggerNameAdded(String loggerName)
@@ -1810,7 +1898,8 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
           String currentlySelectedLoggerName = getCurrentlySelectedLoggerName();
           boolean hiddenLogger = e.getLoggerName() != null && isHiddenLogger(e.getLoggerName());
           boolean hiddenExpression = (ignoreExpressionRule != null && ignoreExpressionRule.evaluate(e, null));
-          boolean hidden = hiddenLogger || hiddenExpression;
+          boolean alwaysDisplayExpression = (alwaysDisplayExpressionRule != null && alwaysDisplayExpressionRule.evaluate(e, null));
+          boolean hidden = (!alwaysDisplayExpression) && (hiddenLogger || hiddenExpression);
           if (currentlySelectedLoggerName == null) {
           	//if there is no selected logger, pass if not hidden
           	return !hidden;
