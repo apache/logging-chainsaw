@@ -224,8 +224,7 @@ public class MessageCenter {
    * 
    * @author Paul Smith <psmith@apache.org>
    */
-  private static class LayoutListCellRenderer extends DefaultListCellRenderer
-    implements ListCellRenderer {
+  private static class LayoutListCellRenderer extends DefaultListCellRenderer {
     private Layout layout;
 
     /**
