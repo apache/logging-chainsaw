@@ -157,7 +157,8 @@ public class LogFilePatternReceiver extends Receiver {
   private static final String REGEXP_DEFAULT_WILDCARD = ".*?";
   private static final String REGEXP_GREEDY_WILDCARD = ".*";
   private static final String PATTERN_WILDCARD = "*";
-  private static final String NOSPACE_GROUP = "(\\S*\\s*?)";
+  //pull in optional leading and trailing spaces
+  private static final String NOSPACE_GROUP = "(\\s*?\\S*?\\s*?)";
   private static final String DEFAULT_GROUP = "(" + REGEXP_DEFAULT_WILDCARD + ")";
   private static final String GREEDY_GROUP = "(" + REGEXP_GREEDY_WILDCARD + ")";
   private static final String MULTIPLE_SPACES_REGEXP = "[ ]+";
