@@ -20,7 +20,8 @@
 		bin assembly to have any suffix on its name. Other assemblies need their Id suffixed, but this one
 		doesn't 
 		<id>bin</id> -->
-	<formats>
+	<id>bin</id>
+    <formats>
 		<format>zip</format>
 		<format>tar.gz</format>
 	</formats>
