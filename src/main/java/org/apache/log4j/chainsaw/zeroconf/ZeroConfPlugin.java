@@ -52,11 +52,13 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.ChainsawConstants;
+import org.apache.log4j.chainsaw.LogFilePatternLayoutBuilder;
 import org.apache.log4j.chainsaw.SmallButton;
 import org.apache.log4j.chainsaw.help.HelpManager;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.chainsaw.plugins.GUIPluginSkeleton;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
+import org.apache.log4j.chainsaw.vfs.VFSLogFilePatternReceiver;
 import org.apache.log4j.helpers.LogLog;
 import org.apache.log4j.net.MulticastReceiver;
 import org.apache.log4j.net.SocketHubReceiver;
@@ -116,6 +118,9 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
     private static final String XML_SOCKET_APPENDER_SERVICE_NAME = "_log4j_xml_tcpconnect_appender.local.";
     private static final String SOCKET_APPENDER_SERVICE_NAME = "_log4j_obj_tcpconnect_appender.local.";
     private static final String SOCKETHUB_APPENDER_SERVICE_NAME = "_log4j_obj_tcpaccept_appender.local.";
+    private static final String TCP_APPENDER_SERVICE_NAME = "_log4j._tcp.local.";
+    private static final String NEW_UDP_APPENDER_SERVICE_NAME = "_log4j._udp.local.";
+
     private JmDNS jmDNS;
 
     public ZeroConfPlugin() {
@@ -125,7 +130,11 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
 
     public void shutdown() {
         if (jmDNS != null) {
-            jmDNS.close();
+            try {
+                jmDNS.close();
+            } catch (Exception e) {
+                LOG.error("Unable to close JMDNS", e);
+            }
         }
         save();
     }
@@ -207,6 +216,8 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         serviceNames.add(SOCKETHUB_APPENDER_SERVICE_NAME);
         serviceNames.add(UDP_APPENDER_SERVICE_NAME);
         serviceNames.add(XML_SOCKET_APPENDER_SERVICE_NAME);
+        serviceNames.add(TCP_APPENDER_SERVICE_NAME);
+        serviceNames.add(NEW_UDP_APPENDER_SERVICE_NAME);
 
         for (Iterator iter = serviceNames.iterator(); iter.hasNext();) {
             String serviceName = iter.next().toString();
@@ -488,6 +499,41 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         String hostAddress = info.getHostAddress();
         String name = info.getName();
         String decoderClass = info.getPropertyString("decoder");
+
+        if (NEW_UDP_APPENDER_SERVICE_NAME.equals(zone))
+        {
+            UDPReceiver receiver = new UDPReceiver();
+            receiver.setPort(port);
+            receiver.setName(name + "-receiver");
+            return receiver;
+        }
+        //FileAppender or socketappender
+        //TODO: add more checks (actual layout format, etc)
+        if (TCP_APPENDER_SERVICE_NAME.equals(zone)) {
+            //CHECK content type
+            //application/octet-stream = SocketReceiver
+            //text/plain = VFSLogFilePatternReceiver (if structured=false)
+            String contentType = info.getPropertyString("contentType").toLowerCase();
+            //won't work with log4j2, as Chainsaw depends on log4j1.x
+            if ("application/octet-stream".equals(contentType))
+            {
+                SocketReceiver receiver = new SocketReceiver();
+                receiver.setPort(port);
+                receiver.setName(name + "-receiver");
+                return receiver;
+            }
+            //this will work - regular text log files are fine
+            if ("text/plain".equals(contentType))
+            {
+                VFSLogFilePatternReceiver receiver = new VFSLogFilePatternReceiver();
+                receiver.setAppendNonMatches(true);
+                receiver.setFileURL(info.getPropertyString("fileURI"));
+                receiver.setLogFormat(LogFilePatternLayoutBuilder.getLogFormatFromPatternLayout(info.getPropertyString("format")));
+                receiver.setTimestampFormat(LogFilePatternLayoutBuilder.getTimeStampFormat(info.getPropertyString("format")));
+                receiver.setName(name + "-receiver");
+                return receiver;
+            }
+        }
 
         //MulticastAppender
         if (MULTICAST_APPENDER_SERVICE_NAME.equals(zone)) {
