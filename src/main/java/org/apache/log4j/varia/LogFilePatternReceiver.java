@@ -79,6 +79,9 @@ import org.apache.log4j.spi.ThrowableInformation;
  * MESSAGE<br>
  * NDC<br>
  * PROP(key)<br>
+ * (NL)<br>
+ * <p>
+ * (NL) represents a new line embedded in the log format, supporting log formats whose fields span multiple lines
  * <p>
  * Use a * to ignore portions of the log format that should be ignored
  * <p>
@@ -149,6 +152,7 @@ public class LogFilePatternReceiver extends Receiver {
   private static final String FILE = "FILE";
   private static final String LINE = "LINE";
   private static final String METHOD = "METHOD";
+  private static final String NEWLINE = "(LF)";
   
   private static final String DEFAULT_HOST = "file";
   
@@ -162,6 +166,7 @@ public class LogFilePatternReceiver extends Receiver {
   private static final String DEFAULT_GROUP = "(" + REGEXP_DEFAULT_WILDCARD + ")";
   private static final String GREEDY_GROUP = "(" + REGEXP_GREEDY_WILDCARD + ")";
   private static final String MULTIPLE_SPACES_REGEXP = "[ ]+";
+  private static final String NEWLINE_REGEXP = "\n";
   private final String newLine = System.getProperty("line.separator");
 
   private final String[] emptyException = new String[] { "" };
@@ -196,6 +201,9 @@ public class LogFilePatternReceiver extends Receiver {
   public static final int MISSING_FILE_RETRY_MILLIS = 10000;
   private boolean appendNonMatches;
   private final Map customLevelDefinitionMap = new HashMap();
+
+  //default to one line - this number is incremented for each (LF) found in the logFormat
+  private int lineCount = 1;
 
     public LogFilePatternReceiver() {
     keywords.add(TIMESTAMP);
@@ -491,9 +499,19 @@ public class LogFilePatternReceiver extends Receiver {
         Matcher eventMatcher;
         Matcher exceptionMatcher;
         String line;
+        //if newlines are provided in the logFormat - (LF) - combine the lines prior to matching
         while ((line = bufferedReader.readLine()) != null) {
-            //skip empty line entries
+            //there is already one line (read above, start i at 1
+            for (int i=1;i<lineCount;i++)
+            {
+                String thisLine = bufferedReader.readLine();
+                if (thisLine != null)
+                {
+                  line = line + newLine + thisLine;
+                }
+            }
             eventMatcher = regexpPattern.matcher(line);
+            //skip empty line entries
             if (line.trim().equals("")) {continue;}
             exceptionMatcher = exceptionPattern.matcher(line);
             if (eventMatcher.matches()) {
@@ -655,11 +673,22 @@ public class LogFilePatternReceiver extends Receiver {
 
     String newPattern = logFormat;
 
+    //process line feeds - (LF) - in the logFormat - before processing properties
     int index = 0;
+    while (index > -1) {
+      index = newPattern.indexOf(NEWLINE);
+      if (index > -1) {
+        //keep track of number of expected newlines in the format, so the lines can be concatenated prior to matching
+        lineCount++;
+        newPattern = singleReplace(newPattern, NEWLINE, NEWLINE_REGEXP);
+      }
+    }
+      
     String current = newPattern;
     //build a list of property names and temporarily replace the property with an empty string,
     //we'll rebuild the pattern later
     List propertyNames = new ArrayList();
+    index = 0;
     while (index > -1) {
         if (current.indexOf(PROP_START) > -1 && current.indexOf(PROP_END) > -1) {
             index = current.indexOf(PROP_START);
@@ -967,7 +996,6 @@ public class LogFilePatternReceiver extends Receiver {
 //    test.setAppendNonMatches(true);
 //    test.setTimestampFormat("yyyy-MM-d HH:mm:ss,SSS");
 //    test.setFileURL("file:///C:/log/test.log");
-//    test.initialize();
 //    test.activateOptions();
 //  }
 
