@@ -531,6 +531,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
                 receiver.setLogFormat(LogFilePatternLayoutBuilder.getLogFormatFromPatternLayout(info.getPropertyString("format")));
                 receiver.setTimestampFormat(LogFilePatternLayoutBuilder.getTimeStampFormat(info.getPropertyString("format")));
                 receiver.setName(name + "-receiver");
+                receiver.setTailing(true);
                 return receiver;
             }
         }
