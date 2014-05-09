@@ -152,7 +152,7 @@ public class LogFilePatternReceiver extends Receiver {
   private static final String FILE = "FILE";
   private static final String LINE = "LINE";
   private static final String METHOD = "METHOD";
-  private static final String NEWLINE = "(LF)";
+  private static final String NEWLINE = "(NL)";
   
   private static final String DEFAULT_HOST = "file";
   
@@ -202,7 +202,7 @@ public class LogFilePatternReceiver extends Receiver {
   private boolean appendNonMatches;
   private final Map customLevelDefinitionMap = new HashMap();
 
-  //default to one line - this number is incremented for each (LF) found in the logFormat
+  //default to one line - this number is incremented for each (NL) found in the logFormat
   private int lineCount = 1;
 
     public LogFilePatternReceiver() {
@@ -499,7 +499,7 @@ public class LogFilePatternReceiver extends Receiver {
         Matcher eventMatcher;
         Matcher exceptionMatcher;
         String line;
-        //if newlines are provided in the logFormat - (LF) - combine the lines prior to matching
+        //if newlines are provided in the logFormat - (NL) - combine the lines prior to matching
         while ((line = bufferedReader.readLine()) != null) {
             //there is already one line (read above, start i at 1
             for (int i=1;i<lineCount;i++)
@@ -611,7 +611,8 @@ public class LogFilePatternReceiver extends Receiver {
   private String convertTimestamp() {
     //some locales (for example, French) generate timestamp text with characters not included in \w -
     // now using \S (all non-whitespace characters) instead of /w 
-    String result = timestampFormat.replaceAll(VALID_DATEFORMAT_CHAR_PATTERN + "+", "\\\\S+");
+    String result = timestampFormat.replaceAll(Pattern.quote("+"), "[+]");
+    result = result.replaceAll(VALID_DATEFORMAT_CHAR_PATTERN, "\\\\S+");
     //make sure dots in timestamp are escaped
     result = result.replaceAll(Pattern.quote("."), "\\\\.");
     return result;
@@ -673,7 +674,7 @@ public class LogFilePatternReceiver extends Receiver {
 
     String newPattern = logFormat;
 
-    //process line feeds - (LF) - in the logFormat - before processing properties
+    //process newlines - (NL) - in the logFormat - before processing properties
     int index = 0;
     while (index > -1) {
       index = newPattern.indexOf(NEWLINE);
