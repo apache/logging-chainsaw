@@ -47,6 +47,10 @@ public interface Constants {
      */
   String RECEIVER_NAME_KEY = "receiver";
     /**
+     * group string literal.
+     */
+  String GROUP_KEY = "group";
+    /**
      * log4jid string literal.
      */
   String LOG4J_ID_KEY = "log4jid";

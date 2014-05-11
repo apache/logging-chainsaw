@@ -367,10 +367,10 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     logUI.ensureChainsawAppenderHandlerAdded();
     logger = LogManager.getLogger(LogUI.class);
 
-    //set hostname & application properties which will cause Chainsaw and other apache-generated
+    //set hostname, application and group properties which will cause Chainsaw and other apache-generated
     //logging events to route (by default) to a tab named 'chainsaw-log'
     PropertyRewritePolicy policy = new PropertyRewritePolicy();
-    policy.setProperties("hostname=chainsaw,application=log");
+    policy.setProperties("hostname=chainsaw,application=log,group=chainsaw");
     
     RewriteAppender rewriteAppender = new RewriteAppender();
     rewriteAppender.setRewritePolicy(policy);

@@ -46,6 +46,7 @@ public class VFSLogFilePatternReceiverBeanInfo extends SimpleBeanInfo {
           "filterExpression", VFSLogFilePatternReceiver.class),
           new PropertyDescriptor(
                   "promptForUserInfo", VFSLogFilePatternReceiver.class),
+        new PropertyDescriptor("group", VFSLogFilePatternReceiver.class),
       };
     } catch (Exception e) {
     }

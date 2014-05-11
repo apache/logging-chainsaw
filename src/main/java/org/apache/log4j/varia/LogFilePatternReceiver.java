@@ -65,6 +65,7 @@ import org.apache.log4j.spi.ThrowableInformation;
  * - supports the parsing of multi-line messages and exceptions
  * - 'hostname' property set to URL host (or 'file' if not available)
  * - 'application' property set to URL path (or value of fileURL if not available) 
+ * - 'group' property can be set to associate multiple log file receivers
  *<p>
  * <b>Keywords:</b><br>
  * TIMESTAMP<br>
@@ -181,8 +182,9 @@ public class LogFilePatternReceiver extends Receiver {
   private boolean tailing;
   private String filterExpression;
   private long waitMillis = 2000; //default 2 seconds
+  private String group;
 
-  private static final String VALID_DATEFORMAT_CHARS = "GyMwWDdFEaHkKhmsSzZ";
+  private static final String VALID_DATEFORMAT_CHARS = "GyYMwWDdFEuaHkKhmsSzZX";
   private static final String VALID_DATEFORMAT_CHAR_PATTERN = "[" + VALID_DATEFORMAT_CHARS + "]";
 
   private Rule expressionRule;
@@ -346,6 +348,19 @@ public class LogFilePatternReceiver extends Receiver {
     this.logFormat = logFormat;
   }
 
+    /**
+   * Mutator
+   */
+  public void setGroup(String group) { this.group = group; }
+
+
+    /**
+   * Accessor
+   *
+   * @return timestamp format
+   */
+  public String getGroup() { return group; }
+    
     /**
    * Mutator.  Specify a pattern from {@link java.text.SimpleDateFormat}
    *
@@ -960,6 +975,9 @@ public class LogFilePatternReceiver extends Receiver {
     properties.put(Constants.HOSTNAME_KEY, host);
     properties.put(Constants.APPLICATION_KEY, path);
     properties.put(Constants.RECEIVER_NAME_KEY, getName());
+    if (group != null) {
+        properties.put(Constants.GROUP_KEY, group);
+    }
 
     //all remaining entries in fieldmap are properties
     properties.putAll(fieldMap);

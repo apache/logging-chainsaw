@@ -44,6 +44,7 @@ public class LogFilePatternReceiverBeanInfo extends SimpleBeanInfo {
         new PropertyDescriptor("appendNonMatches", LogFilePatternReceiver.class),
         new PropertyDescriptor("customLevelDefinitions", LogFilePatternReceiver.class),
         new PropertyDescriptor("useCurrentThread", LogFilePatternReceiver.class),
+        new PropertyDescriptor("group", LogFilePatternReceiver.class),
       };
     } catch (Exception e) {
     }
