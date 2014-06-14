@@ -1046,7 +1046,7 @@ public class LogFilePatternReceiver extends Receiver {
             while (reader == null) {
                 getLogger().info("attempting to load file: " + getFileURL());
                 try {
-                    reader = new InputStreamReader(new URL(getFileURL()).openStream());
+                    reader = new InputStreamReader(new URL(getFileURL()).openStream(), "UTF-8");
                 } catch (FileNotFoundException fnfe) {
                     getLogger().info("file not available - will try again");
                     synchronized (this) {

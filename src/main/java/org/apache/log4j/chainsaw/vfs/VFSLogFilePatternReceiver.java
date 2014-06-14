@@ -29,6 +29,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -356,7 +357,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
 
                     fileObject = fileSystemManager.resolveFile(getFileURL(), opts);
                     if (fileObject.exists()) {
-                        reader = new InputStreamReader(fileObject.getContent().getInputStream());
+                        reader = new InputStreamReader(fileObject.getContent().getInputStream() , "UTF-8");
                         //now that we have a reader, remove additional portions of the file url (sftp passwords, etc.)
                         //check to see if the name is a URLFileName..if so, set file name to not include username/pass
                         if (fileObject.getName() instanceof URLFileName) {
@@ -369,6 +370,8 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                     }
                 } catch (FileSystemException fse) {
                     getLogger().info(loggableFileURL + " not available - may be due to incorrect credentials, but will re-attempt to load after waiting " + MISSING_FILE_RETRY_MILLIS + " millis", fse);
+                } catch (UnsupportedEncodingException e) {
+                    getLogger().info("UTF-8 not available", e);
                 }
                 if (reader == null) {
                     synchronized (this) {
@@ -419,7 +422,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                             }
                             //could have been truncated or appended to (don't do anything if same size)
                             if (fileObject.getContent().getSize() < lastFileSize) {
-                                reader = new InputStreamReader(fileObject.getContent().getInputStream());
+                                reader = new InputStreamReader(fileObject.getContent().getInputStream(), "UTF-8");
                                 getLogger().debug(getPath() + " was truncated");
                                 lastFileSize = 0; //seek to beginning of file
                                 lastFilePointer = 0;
@@ -427,7 +430,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                                 fileLarger = true;
                                 RandomAccessContent rac = fileObject.getContent().getRandomAccessContent(RandomAccessMode.READ);
                                 rac.seek(lastFilePointer);
-                                reader = new InputStreamReader(rac.getInputStream());
+                                reader = new InputStreamReader(rac.getInputStream(), "UTF-8");
                                 BufferedReader bufferedReader = new BufferedReader(reader);
                                 process(bufferedReader);
                                 lastFilePointer = rac.getFilePointer();
