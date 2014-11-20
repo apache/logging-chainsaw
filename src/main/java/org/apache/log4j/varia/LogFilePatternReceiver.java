@@ -173,7 +173,7 @@ public class LogFilePatternReceiver extends Receiver {
   private final String[] emptyException = new String[] { "" };
 
   private SimpleDateFormat dateFormat;
-  private String timestampFormat = "yyyy-MM-d HH:mm:ss,SSS";
+  private String timestampFormat;
   private String logFormat;
   private String customLevelDefinitions;
   private String fileURL;
@@ -357,7 +357,7 @@ public class LogFilePatternReceiver extends Receiver {
     /**
    * Accessor
    *
-   * @return timestamp format
+   * @return group
    */
   public String getGroup() { return group; }
     
@@ -481,7 +481,7 @@ public class LogFilePatternReceiver extends Receiver {
     if (currentMap.size() == 0) {
       if (additionalLines.size() > 0) {
         for (Iterator iter = additionalLines.iterator();iter.hasNext();) {
-          getLogger().info("found non-matching line: " + iter.next());
+          getLogger().debug("found non-matching line: " + iter.next());
         }
       }
       additionalLines.clear();
@@ -625,11 +625,14 @@ public class LogFilePatternReceiver extends Receiver {
    */
   private String convertTimestamp() {
     //some locales (for example, French) generate timestamp text with characters not included in \w -
-    // now using \S (all non-whitespace characters) instead of /w 
-    String result = timestampFormat.replaceAll(Pattern.quote("+"), "[+]");
-    result = result.replaceAll(VALID_DATEFORMAT_CHAR_PATTERN, "\\\\S+");
-    //make sure dots in timestamp are escaped
-    result = result.replaceAll(Pattern.quote("."), "\\\\.");
+    // now using \S (all non-whitespace characters) instead of /w
+    String result = "";
+    if (timestampFormat != null) {
+      result = timestampFormat.replaceAll(Pattern.quote("+"), "[+]");
+      result = result.replaceAll(VALID_DATEFORMAT_CHAR_PATTERN, "\\\\S+");
+      //make sure dots in timestamp are escaped
+      result = result.replaceAll(Pattern.quote("."), "\\\\.");
+    }
     return result;
   }
 
@@ -929,7 +932,7 @@ public class LogFilePatternReceiver extends Receiver {
         e.printStackTrace();
       }
     }
-    //use current time if timestamp not parseable
+    //use current time if timestamp not parseable/dateformat not specified
     if (timeStamp == 0L) {
       timeStamp = System.currentTimeMillis();
     }

@@ -355,18 +355,20 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                     	getLogger().warn("JSch not on classpath!", ncdfe);
                     }
 
-                    fileObject = fileSystemManager.resolveFile(getFileURL(), opts);
-                    if (fileObject.exists()) {
-                        reader = new InputStreamReader(fileObject.getContent().getInputStream() , "UTF-8");
-                        //now that we have a reader, remove additional portions of the file url (sftp passwords, etc.)
-                        //check to see if the name is a URLFileName..if so, set file name to not include username/pass
-                        if (fileObject.getName() instanceof URLFileName) {
-                            URLFileName urlFileName = (URLFileName) fileObject.getName();
-                            setHost(urlFileName.getHostName());
-                            setPath(urlFileName.getPath());
+					synchronized(fileSystemManager) {
+                        fileObject = fileSystemManager.resolveFile(getFileURL(), opts);
+                        if (fileObject.exists()) {
+                            reader = new InputStreamReader(fileObject.getContent().getInputStream() , "UTF-8");
+                            //now that we have a reader, remove additional portions of the file url (sftp passwords, etc.)
+                            //check to see if the name is a URLFileName..if so, set file name to not include username/pass
+                            if (fileObject.getName() instanceof URLFileName) {
+                                URLFileName urlFileName = (URLFileName) fileObject.getName();
+                                setHost(urlFileName.getHostName());
+                                setPath(urlFileName.getPath());
+                            }
+                        } else {
+                            getLogger().info(loggableFileURL + " not available - will re-attempt to load after waiting " + MISSING_FILE_RETRY_MILLIS + " millis");
                         }
-                    } else {
-                        getLogger().info(loggableFileURL + " not available - will re-attempt to load after waiting " + MISSING_FILE_RETRY_MILLIS + " millis");
                     }
                 } catch (FileSystemException fse) {
                     getLogger().info(loggableFileURL + " not available - may be due to incorrect credentials, but will re-attempt to load after waiting " + MISSING_FILE_RETRY_MILLIS + " millis", fse);
@@ -404,12 +406,15 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                         }
 
                         //fileobject was created above, release it and construct a new one
-                        if (fileObject != null) {
-                            fileObject.getFileSystem().getFileSystemManager().closeFileSystem(fileObject.getFileSystem());
-                            fileObject.close();
-                            fileObject = null;
+						synchronized(fileSystemManager) {
+	                        if (fileObject != null) {
+	                              fileObject.getFileSystem().getFileSystemManager().closeFileSystem(fileObject.getFileSystem());
+	                              fileObject.close();
+	                              fileObject = null;
+                            }
+                        
+                        	fileObject = fileSystemManager.resolveFile(getFileURL(), opts);
                         }
-                        fileObject = fileSystemManager.resolveFile(getFileURL(), opts);
 
                         //file may not exist..
                         boolean fileLarger = false;
