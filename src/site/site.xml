@@ -56,7 +56,7 @@
 	
 	<menu name="Development">
 		<item name="Repository" href="/source-repository.html"/>
-		<item name="Cross Reference" href="/jxr.html"/>
+		<item name="Cross Reference" href="/xref/index.html"/>
 		<item name="Dependencies" href="/dependencies.html"/>
 		<item name="Continuous Integration" href="/integration.html"/>
 		<item name="Duplication" href="/cpd.html"/>
