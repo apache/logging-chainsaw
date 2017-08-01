@@ -54,7 +54,7 @@ import java.io.IOException;
  * 
  * <p>See also the Ant build file in the tests/ directory.</p> 
  * 
- * @author Ceki G&uuml;lc&uuml
+ * @author Ceki G&uuml;lc&uuml;
  */
 public class FullCycleDBTest
        extends TestCase {
