@@ -133,10 +133,6 @@ public class FullCycleDBTest
     witnessEvents = null;
   }
 
-  /**
-   * Constructor for DBReeceiverTest.
-   * @param arg0
-   */
   public FullCycleDBTest(String arg0) {
     super(arg0);
   }
@@ -147,7 +143,7 @@ public class FullCycleDBTest
    * and then reads it back using DBReceiver.
    * 
    * DB related information is specified within the configuration files.
-   * @throws Exception
+   * @throws Exception on error
    */
   public void testSingleOutput()
          throws Exception {
@@ -183,7 +179,7 @@ public class FullCycleDBTest
    * exception info.
    * 
    * DB related information is specified within the configuration files.
-   * @throws Exception
+   * @throws IOException on error
    */
   public void testAllFields() throws IOException {
     DOMConfigurator jc1 = new DOMConfigurator();

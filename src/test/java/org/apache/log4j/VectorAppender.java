@@ -35,11 +35,6 @@ public class VectorAppender extends AppenderSkeleton {
   }
 
 
-  /**
-     This method is called by the {@link AppenderSkeleton#doAppend}
-     method.
-
-  */
   public void append(LoggingEvent event) {
     if(delay > 0) {
       try {
@@ -53,6 +48,7 @@ public class VectorAppender extends AppenderSkeleton {
 
   /**
    * Returns a vector of {@link LoggingEvent}.
+   * @return a vector of {@link LoggingEvent}.
    */
   public Vector getVector() {
     return vector;
@@ -76,6 +72,7 @@ public class VectorAppender extends AppenderSkeleton {
   
   /**
    * Returns a delay to log.
+   * @return delay to log
    */
   public long getDelay() {
     return delay;
@@ -83,6 +80,7 @@ public class VectorAppender extends AppenderSkeleton {
 
   /**
    * Sets a delay to log.
+   * @param delay delay to log
    */  
   public void setDelay(long delay) {
     this.delay = delay;

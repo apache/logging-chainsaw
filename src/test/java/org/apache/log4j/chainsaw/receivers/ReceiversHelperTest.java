@@ -41,9 +41,6 @@ import org.apache.log4j.varia.LogFilePatternReceiver;
  */
 public class ReceiversHelperTest extends TestCase {
 
-    /**
-     * @param arg0
-     */
     public ReceiversHelperTest(String test) {
         super(test);
     }
