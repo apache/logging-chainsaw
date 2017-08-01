@@ -74,7 +74,7 @@ import org.w3c.dom.Element;
  * with a final value in the COUNTER field of 500.
  * <p>
  * The SQL statement is manipulated prior to the next execution, adding ' WHERE
- * COUNTER > 500' to the statement to avoid retrieval of previously processed
+ * COUNTER &gt; 500' to the statement to avoid retrieval of previously processed
  * events.
  * <p>
  * The select statement must provide ALL fields which define a LoggingEvent.
@@ -128,7 +128,7 @@ import org.w3c.dom.Element;
  * concat("{{application,databaselogs,hostname,mymachine, log4jid,",
  * COUNTER,"}}") as PROPERTIES, "" as THROWABLE from logtable
  * <p>
- * @author Scott Deboy <sdeboy@apache.org>
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  * <p>
  */
 public class CustomSQLDBReceiver extends Receiver implements Pauseable, UnrecognizedElementHandler {
@@ -449,7 +449,7 @@ public class CustomSQLDBReceiver extends Receiver implements Pauseable, Unrecogn
     }
 
     /**
-     * @{inheritDoc}
+     * {@inheritDoc}
      */
   public boolean parseUnrecognizedElement(Element element, Properties props) throws Exception {
         if ("connectionSource".equals(element.getNodeName())) {

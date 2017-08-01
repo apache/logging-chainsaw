@@ -36,7 +36,7 @@ import org.apache.log4j.Level;
  * A Slider implementation that allows a user to
  * choose a particular Threshold
  * .
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  *
  */
 final class ThresholdSlider extends JSlider {

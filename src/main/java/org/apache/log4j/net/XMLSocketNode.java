@@ -39,7 +39,7 @@ import java.util.List;
    <p>For example, the socket node might decide to log events to a
    local file and also resent them to a second socket node.
 
-    @author  Scott Deboy <sdeboy@apache.org>;
+    @author  Scott Deboy &lt;sdeboy@apache.org&gt;;
 
     @since 0.8.4
 */

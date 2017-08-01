@@ -27,8 +27,8 @@ import java.awt.Color;
  * Color to use based on whatever this implementation
  * has been coded.
  * 
- * @author Paul Smith <psmith@apache.org>
- * @author Scott Deboy <sdeboy@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 public interface Colorizer {
   /**

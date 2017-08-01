@@ -25,11 +25,11 @@ import org.apache.log4j.spi.Thresholdable;
 
 /**
  * Defines the base class for Receiver plugins.
- * <p/>
+ * <p></p>
  * <p>Just as Appenders send logging events outside of the log4j
  * environment (to files, to smtp, to sockets, etc), Receivers bring
  * logging events inside the log4j environment.
- * <p/>
+ * <p></p>
  * <p>Receivers are meant to support the receiving of
  * remote logging events from another process. For example,
  * SocketAppender "appends" a logging event to a socket, configured
@@ -38,15 +38,15 @@ import org.apache.log4j.spi.Thresholdable;
  * object receives the logging event, and then "posts" it to the
  * log4j environment (LoggerRepository) on the receiving machine, to
  * be handled by the configured appenders, etc.  The various
- * settings in this environment (Logger levels, Appender filters &
+ * settings in this environment (Logger levels, Appender filters &amp;
  * thresholds) are applied to the received logging event.
- * <p/>
+ * <p></p>
  * <p>Receivers can also be used to "import" log messages from other
  * logging packages into the log4j environment.
- * <p/>
+ * <p></p>
  * <p>Receivers can be configured to post events to a given
  * LoggerRepository.
- * <p/>
+ * <p></p>
  * <p>Subclasses of Receiver must implement the isActive(),
  * activateOptions(), and shutdown() methods. The doPost() method
  * is provided to standardize the "import" of remote events into

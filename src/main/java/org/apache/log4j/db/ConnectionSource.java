@@ -25,7 +25,7 @@ import java.sql.SQLException;
 
 
 /**
- *  The <id>ConnectionSource</id> interface provides a pluggable means of
+ *  The {@code ConnectionSource} interface provides a pluggable means of
  *  transparently obtaining JDBC {@link java.sql.Connection}s for log4j classes
  *  that require the use of a {@link java.sql.Connection}.
  *

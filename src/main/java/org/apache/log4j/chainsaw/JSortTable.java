@@ -33,7 +33,7 @@ import org.apache.log4j.chainsaw.helper.SwingHelper;
  * specific Column and have the row information sorted by that column.
  *
  * @author Claude Duguay
- * @author Scott Deboy <sdeboy@apache.org>
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  * 
  */
 public class JSortTable extends JTable implements MouseListener {

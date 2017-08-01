@@ -48,7 +48,7 @@ import java.net.UnknownHostException;
  *  Please see the docs for the proper credit to the authors of that class.
  *
  *  @author  <a href="mailto:kbrown@versatilesolutions.com">Kevin Brown</a>
- *  @author Scott Deboy <sdeboy@apache.org>
+ *  @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 public class UDPAppender extends AppenderSkeleton implements PortBased{
   /**

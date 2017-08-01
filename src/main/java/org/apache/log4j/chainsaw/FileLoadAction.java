@@ -40,8 +40,8 @@ import org.apache.log4j.spi.LoggingEvent;
  * Allows the user to specify a particular file to open and import the events
  * into a new tab.
  * 
- * @author Paul Smith <psmith@apache.org>
- * @author Scott Deboy <sdeboy@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  *  
  */
 class FileLoadAction extends AbstractAction {

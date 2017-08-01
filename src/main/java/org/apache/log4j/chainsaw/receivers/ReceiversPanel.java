@@ -89,8 +89,8 @@ import org.apache.log4j.spi.LoggerRepositoryEx;
  * This panel is used to manage all the Receivers configured within Log4j
  *
  *
- * @author Paul Smith <psmith@apache.org>
- * @author Scott Deboy <sdeboy@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 public class ReceiversPanel extends JPanel implements SettingsListener {
   final Action newReceiverButtonAction;
@@ -664,7 +664,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
    * style of Receiver to create, which spawns a relevant Dialog
    * to enter the information and create the Receiver
    *
-   * @author Paul Smith <psmith@apache.org>
+   * @author Paul Smith &lt;psmith@apache.org&gt;
    *
    */
   class NewReceiverPopupMenu extends JPopupMenu {
@@ -749,7 +749,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
    * A popup menu class for when the user uses the popup trigger action
    * on a node in the Receiver tree.
    *
-   * @author Paul Smith <psmith@apache.org>
+   * @author Paul Smith &lt;psmith@apache.org&gt;
    *
    */
   class ReceiverPopupMenu extends JPopupMenu {
@@ -858,7 +858,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
    * A simple Panel that has toolbar buttons for restarting,
    * playing, pausing, and stoping receivers
    *
-   * @author Paul Smith <psmith@apache.org>
+   * @author Paul Smith &lt;psmith@apache.org&gt;
    *
    */
   private class ReceiverToolbar extends JToolBar

@@ -88,7 +88,7 @@ public class DataSourceConnectionSource extends ConnectionSourceSkeleton
   }
 
     /**
-     * @{inheritDoc}
+     * {@inheritDoc}
      */
   public boolean parseUnrecognizedElement(Element element, Properties props) throws Exception {
         if ("dataSource".equals(element.getNodeName())) {

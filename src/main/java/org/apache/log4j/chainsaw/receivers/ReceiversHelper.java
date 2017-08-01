@@ -58,7 +58,7 @@ import org.w3c.dom.Element;
  * A local resource 'known.receivers' is read in on initialization
  * with each line representing the FQN of the Class that is a recognised Receiver.
  * 
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  *
  */
 public class ReceiversHelper {

@@ -39,7 +39,7 @@ import org.apache.log4j.Logger;
  *
  * A TreeModel that represents the Loggers for a given LogPanel
  *
- * @author Paul Smith <psmith@apaceh.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 class LogPanelLoggerTreeModel extends DefaultTreeModel
   implements LoggerNameListener {

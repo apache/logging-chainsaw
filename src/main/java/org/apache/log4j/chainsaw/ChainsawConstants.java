@@ -24,8 +24,8 @@ import java.net.URL;
  * 
  * Constants used throught Chainsaw.
  * 
- * @author Paul Smith <psmith@apache.org>
- * @author Scott Deboy <sdeboy@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  * 
  */
 public class ChainsawConstants {

@@ -16,7 +16,7 @@
  */
 
 /*
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  *
 */
 package org.apache.log4j.chainsaw;
@@ -41,7 +41,7 @@ import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 
 /**
  * A simple splash screen to be used at startup, while everything get's initialized.
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  *
  */
 class ChainsawSplash extends JWindow {

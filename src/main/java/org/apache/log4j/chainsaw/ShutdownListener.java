@@ -30,7 +30,7 @@ import java.util.EventListener;
  * 
  * @see LogUI#setShutdownAction(Action)
  * 
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 public interface ShutdownListener extends EventListener{
 

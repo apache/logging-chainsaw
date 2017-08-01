@@ -50,7 +50,7 @@ import org.apache.log4j.spi.LoggingEvent;
  * A colorizer supporting an ordered collection of ColorRules, including support for notification of
  * color rule changes via a propertyChangeListener and the 'colorrule' property.
  *
- * @author Scott Deboy <sdeboy@apache.org>
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 public class RuleColorizer implements Colorizer {
   private Map rules;

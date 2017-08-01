@@ -28,7 +28,7 @@ import org.apache.log4j.PatternLayout;
 /**
  * Factory class to load and cache Layout information from resources.
  * 
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 public class DefaultLayoutFactory {
   private volatile static String defaultPatternLayout = null;

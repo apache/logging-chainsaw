@@ -35,7 +35,7 @@ import org.apache.log4j.chainsaw.ChainsawConstants;
  * it appropriately. This class effectively decouples the help requester
  * from the help implementation (if any!)
  *
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  *
  */
 public final class HelpManager {

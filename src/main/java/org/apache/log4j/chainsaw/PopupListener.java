@@ -28,8 +28,8 @@ import javax.swing.JPopupMenu;
  * Ensures that a specific popupMenu is displayed when the relevant
  * mouse events are trapped.
  * 
- * @author Scott Deboy <sdeboy@apache.org>
- * @author Paul Smith <psmith@apache.org>
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  * 
  */
 public class PopupListener extends MouseAdapter {

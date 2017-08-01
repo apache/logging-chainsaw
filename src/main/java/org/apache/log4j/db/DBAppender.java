@@ -62,10 +62,11 @@ import java.util.Set;
  * </p>
  *
  * <table border="1" cellpadding="4">
+ * <caption>supported dialects</caption>
  * <tr>
  * <th>RDBMS</th>
- * <th>supports <br/><code>getGeneratedKeys()</code> method</th>
- * <th>specific <br/>SQLDialect support</th>
+ * <th>supports <br><code>getGeneratedKeys()</code> method</th>
+ * <th>specific <br>SQLDialect support</th>
  * <tr>
  * <tr>
  * <td>PostgreSQL</td>
@@ -385,7 +386,7 @@ public class DBAppender extends AppenderSkeleton implements UnrecognizedElementH
   }
 
     /**
-     * @{inheritDoc}
+     * {@inheritDoc}
      */
   public boolean parseUnrecognizedElement(Element element, Properties props) throws Exception {
         if ("connectionSource".equals(element.getNodeName())) {

@@ -29,7 +29,7 @@ import java.util.Properties;
 
 /**
  *
- * @author Scott Deboy <sdeboy@apache.org>
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  * @author Ceki G&uuml;lc&uuml;
  *
  */
@@ -121,7 +121,7 @@ public class DBReceiver extends Receiver implements Pauseable, UnrecognizedEleme
   }
 
     /**
-     * @{inheritDoc}
+     * {@inheritDoc}
      */
   public boolean parseUnrecognizedElement(Element element, Properties props) throws Exception {
         if ("connectionSource".equals(element.getNodeName())) {

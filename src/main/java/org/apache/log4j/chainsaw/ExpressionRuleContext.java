@@ -39,7 +39,7 @@ import org.apache.log4j.spi.LoggingEventFieldResolver;
  * A popup menu which assists in building expression rules.  Completes event keywords, operators and 
  * context if available.
  * 
- * @author Scott Deboy <sdeboy@apache.org>
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 public class ExpressionRuleContext extends KeyAdapter {
   RuleFactory factory = RuleFactory.getInstance();

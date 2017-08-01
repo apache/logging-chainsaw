@@ -40,7 +40,7 @@ import javax.swing.border.SoftBevelBorder;
  *
  * @author Matthew Robinson
  * @author Pavel Vorobeiv
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 class SmallToggleButton extends JToggleButton implements ItemListener,
   MouseListener {

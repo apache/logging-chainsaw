@@ -24,7 +24,7 @@ import java.beans.SimpleBeanInfo;
  * A BeanInfo class to be used as meta-data about the
  * Generator plugin
  *
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  *
  */
 public class GeneratorBeanInfo extends SimpleBeanInfo {

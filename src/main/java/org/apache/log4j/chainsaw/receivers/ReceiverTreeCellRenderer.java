@@ -34,7 +34,7 @@ import org.apache.log4j.spi.Thresholdable;
  * A TreeCellRenderer that can format the information of Receivers
  * and their children
  *
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 public class ReceiverTreeCellRenderer extends DefaultTreeCellRenderer {
   private Icon rootIcon = new ImageIcon(ChainsawIcons.ANIM_NET_CONNECT);

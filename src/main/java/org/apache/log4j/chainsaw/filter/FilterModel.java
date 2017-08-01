@@ -24,8 +24,8 @@ import org.apache.log4j.spi.LocationInfo;
  * This class is used as a Model for Filtering, and retains the unique entries that
  * come through over a set of LoggingEvents
  *
- * @author Paul Smith <psmith@apache.org>
- * @author Scott Deboy <sdeboy@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 public class FilterModel {
   private EventTypeEntryContainer eventContainer =

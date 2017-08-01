@@ -16,7 +16,7 @@
  */
 
 /*
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  *
 */
 package org.apache.log4j.chainsaw;
@@ -47,8 +47,8 @@ import org.apache.log4j.xml.XMLDecoder;
  * The complete File Menu for the main GUI, containing
  * the Load, Save, Close Welcome Tab, and Exit actions
  *
- * @author Paul Smith <psmith@apache.org>
- * @author Scott Deboy <sdeboy@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 class FileMenu extends JMenu {
   private Action loadConfigAction;

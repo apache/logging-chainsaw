@@ -50,7 +50,7 @@ import org.apache.log4j.xml.XMLLayout;
  *  see the docs for the proper credit to the authors of that class.
  *
  *  @author  <a href="mailto:kbrown@versatilesolutions.com">Kevin Brown</a>
- *  @author Scott Deboy <sdeboy@apache.org>
+ *  @author Scott Deboy &lt;sdeboy@apache.org&gt;
  * 
  */
 public class MulticastAppender extends AppenderSkeleton implements PortBased {

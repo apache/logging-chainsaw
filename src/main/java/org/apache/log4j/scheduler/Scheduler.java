@@ -22,7 +22,7 @@ import java.util.Vector;
 
 /**
  * A simple but still useful implementation of a Scheduler (in memory only).
- * <p/>
+ * <p></p>
  * This implementation will work very well when the number of scheduled job is
  * small, say less than 100 jobs. If a larger number of events need to be
  * scheduled, than a better adapted data structure for the jobList can give
@@ -118,7 +118,7 @@ public class Scheduler extends Thread {
     /**
      * Schedule a {@link Job} for execution at system time given by
      * the <code>desiredTime</code> parameter.
-     * <p/>
+     * <p></p>
      * The job will be rescheduled. It will execute with a frequency determined
      * by the period parameter.
      * @param job job to schedule.
@@ -134,7 +134,7 @@ public class Scheduler extends Thread {
     /**
      * Change the period of a job. The original job must exist for its period
      * to be changed.
-     * <p/>
+     * <p></p>
      * The method returns true if the period could be changed, and false
      * otherwise.
      * @param job job.

@@ -35,7 +35,7 @@ import org.apache.log4j.spi.LoggingEvent;
  *  Receive LoggingEvents encoded with an XMLLayout, convert the XML data to a
  *  LoggingEvent and post the LoggingEvent.
  *
- *  @author Scott Deboy <sdeboy@apache.org>
+ *  @author Scott Deboy &lt;sdeboy@apache.org&gt;
  *
  */
 public class UDPReceiver extends Receiver implements PortBased, Pauseable {

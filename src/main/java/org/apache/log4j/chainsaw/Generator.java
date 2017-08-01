@@ -35,7 +35,7 @@ import org.apache.log4j.spi.ThrowableInformation;
  * Class designed to stress, and/or test the Chainsaw GUI by sending it
  * lots of Logging Events.
  *
- * @author Scott Deboy <sdeboy@apache.org>
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  *
  */
 public class Generator extends Receiver implements Runnable {

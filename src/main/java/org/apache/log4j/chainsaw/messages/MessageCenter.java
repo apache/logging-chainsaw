@@ -68,7 +68,7 @@ import org.apache.log4j.varia.ListModelAppender;
  *
  * You can invoke the setVisible() method to display all the messages
  *
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  *
  */
 public class MessageCenter {
@@ -222,7 +222,7 @@ public class MessageCenter {
    * This class simply renders an event by delegating the effort to a
    * Log4j layout instance.
    * 
-   * @author Paul Smith <psmith@apache.org>
+   * @author Paul Smith &lt;psmith@apache.org&gt;
    */
   private static class LayoutListCellRenderer extends DefaultListCellRenderer {
     private Layout layout;

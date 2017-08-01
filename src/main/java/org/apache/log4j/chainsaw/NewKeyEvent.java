@@ -24,7 +24,7 @@ import java.util.EventObject;
  * An event representing when a Key has arrived inside a Chainsaw model that has
  * not been seen previously.
  *
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  *
  */
 public class NewKeyEvent extends EventObject {

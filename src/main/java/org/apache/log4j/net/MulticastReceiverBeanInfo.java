@@ -23,7 +23,7 @@ import java.beans.SimpleBeanInfo;
 /**
  * BeanInfo class for the meta-data of the MulticastReceiver.
  *
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  *
  */
 public class MulticastReceiverBeanInfo extends SimpleBeanInfo {

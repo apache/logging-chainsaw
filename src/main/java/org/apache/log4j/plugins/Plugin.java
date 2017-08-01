@@ -25,17 +25,17 @@ import java.beans.PropertyChangeListener;
 
 /**
  * Defines the required interface for all Plugin objects.
- * <p/>
+ *
  * <p>A plugin implements some specific functionality to extend
  * the log4j framework.  Each plugin is associated with a specific
  * LoggerRepository, which it then uses/acts upon.  The functionality
- * of the plugin is up to the developer.
- * <p/>
+ * of the plugin is up to the developer.</p>
+ *
  * <p>Examples of plugins are Receiver and Watchdog. Receiver plugins
  * allow for remote logging events to be received and processed by
  * a repository as if the event was sent locally. Watchdog plugins
  * allow for a repository to be reconfigured when some "watched"
- * configuration data changes.
+ * configuration data changes.</p>
  *
  * @author Mark Womack (mwomack@apache.org)
  * @author Nicko Cadell
@@ -120,17 +120,19 @@ public interface Plugin extends OptionHandler {
 
     /**
      * Returns true if the testPlugin is considered to be "equivalent" to the
-     * this plugin.  The equivalency test is at the discretion of the plugin
+     * this plugin.
+     *
+     * <p>The equivalency test is at the discretion of the plugin
      * implementation.  The PluginRegistry will use this method when starting
      * new plugins to see if a given plugin is considered equivalent to an
      * already running plugin with the same name.  If they are considered to
      * be equivalent, the currently running plugin will be left in place, and
-     * the new plugin will not be started.
-     * <p/>
-     * It is possible to override the equals() method, however this has
+     * the new plugin will not be started.</p>
+     *
+     * <p>It is possible to override the equals() method, however this has
      * more meaning than is required for this simple test and would also
      * require the overriding of the hashCode() method as well.  All of this
-     * is more work than is needed, so this simple method is used instead.
+     * is more work than is needed, so this simple method is used instead.</p>
      *
      * @param testPlugin The plugin to test equivalency against.
      * @return Returns true if testPlugin is considered to be equivelent.

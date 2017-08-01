@@ -30,7 +30,7 @@ import javax.swing.event.EventListenerList;
 /**
  * An implementation of LoggerNameModel which can be used as a delegate
  * 
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 public class LoggerNameModelSupport implements LoggerNameModel {
   

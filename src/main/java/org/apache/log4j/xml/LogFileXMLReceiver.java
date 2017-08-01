@@ -56,7 +56,7 @@ import org.apache.log4j.spi.LoggingEvent;
  * Once the event has been "posted", it will be handled by the appenders currently configured in the
  * LoggerRespository.
  * 
- * @author Scott Deboy <sdeboy@apache.org>
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  * @since 1.3
  */
 

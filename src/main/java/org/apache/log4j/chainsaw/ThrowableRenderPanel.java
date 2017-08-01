@@ -42,7 +42,7 @@ import javax.swing.table.TableCellEditor;
  * An "editor" that doesn't allow editing, but allows the user to press a "..." for more detail about this
  * Column.
  *
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  *
  */
 class ThrowableRenderPanel extends AbstractCellEditor

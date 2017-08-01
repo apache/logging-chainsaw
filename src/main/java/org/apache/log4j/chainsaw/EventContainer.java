@@ -28,8 +28,8 @@ import org.apache.log4j.rule.Rule;
  *
  * This interface is still subject to change.
  *
- * @author Paul Smith <psmith@apache.org>
- * @author Scott Deboy <sdeboy@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  * @author Stephen Pain
  *
  */

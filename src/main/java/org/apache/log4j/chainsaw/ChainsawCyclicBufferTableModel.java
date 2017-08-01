@@ -54,8 +54,8 @@ import org.apache.log4j.spi.LoggingEvent;
  * event more than once but can be safely ignored (for example, the database receiver
  * when set to retrieve in a loop).
  *
- * @author Paul Smith <psmith@apache.org>
- * @author Scott Deboy <sdeboy@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  * @author Stephen Pain
  *
  */

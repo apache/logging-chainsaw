@@ -46,7 +46,7 @@ import org.apache.log4j.chainsaw.icons.ChainsawIcons;
  * a HTML pages based on URLs.
  *
  * @author Paul Smith
- * @author Scott Deboy <sdeboy@apache.org>
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 public class WelcomePanel extends JPanel {
   private Stack urlStack = new Stack();

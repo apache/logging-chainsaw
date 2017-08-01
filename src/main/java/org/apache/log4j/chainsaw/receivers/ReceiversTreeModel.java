@@ -43,7 +43,7 @@ import org.apache.log4j.plugins.Receiver;
  * A TreeModel that encapsulates the details of all the Receivers and their
  * related information in the Log4j framework
  *
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 public class ReceiversTreeModel extends DefaultTreeModel
   implements PluginListener {

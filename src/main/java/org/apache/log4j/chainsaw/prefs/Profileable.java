@@ -25,7 +25,7 @@ package org.apache.log4j.chainsaw.prefs;
  * in SettingsManager
  * 
  * @see org.apache.log4j.chainsaw.prefs.SettingsManager
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  *
  */
 public interface Profileable extends SettingsListener {

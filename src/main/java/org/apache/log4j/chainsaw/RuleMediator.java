@@ -33,8 +33,8 @@ import org.apache.log4j.spi.LoggingEvent;
  * <p>Setting the individual sub-rules propagates a PropertyChangeEvent as per
  * standard Java beans principles.
  *
- * @author Paul Smith <psmith@apache.org>
- * @author Scott Deboy <sdeboy@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 public class RuleMediator extends AbstractRule {
   private Rule loggerRule;

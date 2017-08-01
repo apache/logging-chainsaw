@@ -45,10 +45,10 @@ public final class MessageFormatter {
     /**
      * Performs single argument substitution for the 'messagePattern' passed as
      * parameter.
-     * <p/>
-     * For example, <code>MessageFormatter.format("Hi {}.", "there");</code>
+     *
+     * <p>For example, <code>MessageFormatter.format("Hi {}.", "there");</code>
      * will return the string "Hi there.".
-     * <p/>
+     * </p>
      * The {} pair is called the formatting element. It serves to designate the
      * location where the argument needs to be inserted within the pattern.
      *
@@ -91,11 +91,11 @@ public final class MessageFormatter {
      * /**
      * Performs a two argument substitution for the 'messagePattern' passed as
      * parameter.
-     * <p/>
-     * For example, <code>MessageFormatter.format("Hi {}. My name is {}.",
+     *
+     * <p>For example, <code>MessageFormatter.format("Hi {}. My name is {}.",
      * "there", "David");</code> will return the string
      * "Hi there. My name is David.".
-     * <p/>
+     * </p>
      * The '{}' pair is called a formatting element. It serves to designate the
      * location where the arguments need to be inserted within
      * the message pattern.

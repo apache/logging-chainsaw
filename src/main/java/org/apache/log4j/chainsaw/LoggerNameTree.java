@@ -27,7 +27,7 @@ import javax.swing.tree.TreeModel;
 /**
  * LoggerNameTree is used to display a TreeModel of LoggerNames.
  *
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 public class LoggerNameTree extends JTree {
   LoggerNameTree(TreeModel model) {

@@ -28,7 +28,7 @@ import javax.swing.UIManager;
 /**
  * Encapsulates the Chainsaw Application wide properties
  *
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  *
  */
 public class ApplicationPreferenceModel {

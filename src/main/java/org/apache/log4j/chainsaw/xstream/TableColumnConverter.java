@@ -28,7 +28,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
  * XStream Converter implementation that deals with TableColumns settings
  * 
  * @see Converter
- * @see XStream
+ * @see "XStream"
  * @see TableColumn
  * @author psmith
  * 

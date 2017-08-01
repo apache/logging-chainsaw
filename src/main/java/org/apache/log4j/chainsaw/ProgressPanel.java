@@ -33,7 +33,7 @@ import javax.swing.SwingUtilities;
  * than ProgressMonitor when you want it to be shown REGARDLESS
  * of any timeouts etc.
  * 
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  *
  */
 public class ProgressPanel extends JPanel {

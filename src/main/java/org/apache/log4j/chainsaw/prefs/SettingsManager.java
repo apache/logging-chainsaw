@@ -35,8 +35,8 @@ import javax.swing.event.EventListenerList;
  * SettingManager allows components to register interest in Saving/Loading
  * of general application preferences/settings.
  *
- * @author Paul Smith <psmith@apache.org>
- * @author Scott Deboy <sdeboy@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  *
  */
 public final class SettingsManager {

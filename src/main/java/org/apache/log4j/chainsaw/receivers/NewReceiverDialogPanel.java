@@ -47,7 +47,7 @@ import org.apache.log4j.plugins.Receiver;
  * A panel that allows a user to configure a new Plugin, and
  * view that plugins javadoc at the same time
  *
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  *
  */
 public class NewReceiverDialogPanel extends JPanel {

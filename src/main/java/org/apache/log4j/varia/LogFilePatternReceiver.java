@@ -129,8 +129,8 @@ import org.apache.log4j.spi.ThrowableInformation;
  * param: "tailing" value="true"
  *<p>
  * This configuration will be able to process these sample events:<br>
- * 710    [       Thread-0] DEBUG                   first.logger first - <test>   <test2>something here</test2>   <test3 blah=something/>   <test4>       <test5>something else</test5>   </test4></test><br>
- * 880    [       Thread-2] DEBUG                   first.logger third - <test>   <test2>something here</test2>   <test3 blah=something/>   <test4>       <test5>something else</test5>   </test4></test><br>
+ * 710    [       Thread-0] DEBUG                   first.logger first - &lt;test&gt;   &lt;test2&gt;something here&lt;/test2&gt;   &lt;test3 blah=something/&gt;   &lt;test4&gt;       &lt;test5&gt;something else&lt;/test5&gt;   &lt;/test4&gt;&lt;/test&gt;<br>
+ * 880    [       Thread-2] DEBUG                   first.logger third - &lt;test&gt;   &lt;test2&gt;something here&lt;/test2&gt;   &lt;test3 blah=something/&gt;   &lt;test4&gt;       &lt;test5&gt;something else&lt;/test5&gt;   &lt;/test4&gt;&lt;/test&gt;<br>
  * 880    [       Thread-0] INFO                    first.logger first - infomsg-0<br>
  * java.lang.Exception: someexception-first<br>
  *     at Generator2.run(Generator2.java:102)<br>

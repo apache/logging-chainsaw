@@ -20,7 +20,7 @@ import java.io.File;
 import java.util.Properties;
 
 /**
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  *
  */
 public class SaveSettingsEvent extends AbstractSettingsEvent {

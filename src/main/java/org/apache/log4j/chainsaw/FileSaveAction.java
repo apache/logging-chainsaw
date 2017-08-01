@@ -49,8 +49,8 @@ import org.apache.log4j.xml.XMLLayout;
  * Allows the user to specify a particular file to which the current tab's
  * displayed events will be saved.
  *
- * @author Scott Deboy <sdeboy@apache.org>
- * @author Paul Smith <psmith@apache.org>
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  * @author Stephen Pain
  */
 class FileSaveAction extends AbstractAction {

@@ -21,7 +21,7 @@ import javax.swing.JPanel;
 
 /**
  * All of the Preferences panels used in this class extend from
- * this, it is used to provide standard L&F required by all.
+ * this, it is used to provide standard L&amp;F required by all.
  * @author Paul Smith
  *
  */

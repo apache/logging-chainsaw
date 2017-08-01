@@ -32,7 +32,7 @@ import javax.swing.table.TableColumn;
  * has been "checked".
  * 
  * Borrowed heavily from the excellent book "Swing, 2nd Edition" by
- * Matthew Robinson  & Pavel Vorobiev.
+ * Matthew Robinson &amp; Pavel Vorobiev.
  * 
  * @author Paul Smith
  *

@@ -29,7 +29,7 @@ import java.util.List;
  *
  * Original CyclicBuffer @author Ceki G&uuml;lc&uuml;
  *
- * This implementation (although there's very little change) @author Paul Smith <psmith@apache.org>
+ * This implementation (although there's very little change) @author Paul Smith &lt;psmith@apache.org&gt;
  *
  */
 public class CyclicBufferList extends AbstractList implements List {

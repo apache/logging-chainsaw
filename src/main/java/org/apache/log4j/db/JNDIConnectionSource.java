@@ -29,7 +29,7 @@ import javax.sql.DataSource;
 
 
 /**
- *  The <id>JNDIConnectionSource</id> is an implementation of
+ *  The {@code JNDIConnectionSource} is an implementation of
  *  {@link ConnectionSource} that obtains a {@link javax.sql.DataSource} from a
  *  JNDI provider and uses it to obtain a {@link java.sql.Connection}.  It is
  *  primarily designed to be used inside of J2EE application servers or

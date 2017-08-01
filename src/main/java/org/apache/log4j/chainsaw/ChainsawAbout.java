@@ -38,7 +38,7 @@ import org.apache.log4j.chainsaw.help.HelpManager;
 /**
  * A simple About box telling people stuff about this project
  * 
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  * 
  */
 class ChainsawAbout extends JDialog {

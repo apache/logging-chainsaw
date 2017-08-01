@@ -41,7 +41,7 @@ import org.apache.log4j.chainsaw.messages.MessageCenter;
 /**
  * A general purpose status bar for all Frame windows
  *
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  *
  */
 public class ChainsawStatusBar extends JPanel {

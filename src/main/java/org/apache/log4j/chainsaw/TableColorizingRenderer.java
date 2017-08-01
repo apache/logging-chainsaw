@@ -73,8 +73,8 @@ import org.apache.log4j.spi.LoggingEventFieldResolver;
  * some ColourFilters that have been stored according to the value for the row
  *
  * @author Claude Duguay
- * @author Scott Deboy <sdeboy@apache.org>
- * @author Paul Smith <psmith@apache.org>
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  *
  */
 public class TableColorizingRenderer extends DefaultTableCellRenderer {

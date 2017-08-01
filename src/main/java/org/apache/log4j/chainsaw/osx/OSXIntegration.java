@@ -32,7 +32,7 @@ import org.apache.log4j.chainsaw.LogUI;
  * This class uses reflection to build the necessary hooks so that there is no compile-time
  * dependency on a Mac SDK.
  * 
- * {@link  http://developer.apple.com/documentation/Java/index.html}
+ * @see "http://developer.apple.com/documentation/Java/index.html"
  * @author psmith
  *
  */

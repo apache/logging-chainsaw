@@ -38,7 +38,7 @@ import org.apache.log4j.spi.LoggingEvent;
  *  MulticastAppender and XMLLayout. The the XML data is converted
  *  back to a LoggingEvent and is posted.
  *
- *  @author Scott Deboy <sdeboy@apache.org>
+ *  @author Scott Deboy &lt;sdeboy@apache.org&gt;
  *
  */
 public class MulticastReceiver extends Receiver implements PortBased,

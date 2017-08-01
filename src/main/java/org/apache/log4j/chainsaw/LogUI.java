@@ -141,8 +141,8 @@ import org.apache.log4j.xml.XMLDecoder;
  * DELAY as much as possible the logging framework initialization process,
  * currently initialized by the creation of a ChainsawAppenderHandler.
  * 
- * @author Scott Deboy <sdeboy@apache.org>
- * @author Paul Smith  <psmith@apache.org>
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
+ * @author Paul Smith  &lt;psmith@apache.org&gt;
  *
  */
 public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
@@ -2176,7 +2176,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
    * batch.
    *
    * @author Paul Smith
-   *                <psmith@apache.org>
+   *                &lt;psmith@apache.org&gt;
    *
    */
   private class NewTabEventBatchReceiver implements EventBatchListener {

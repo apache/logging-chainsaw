@@ -59,7 +59,7 @@ import org.apache.log4j.plugins.Plugin;
 /**
  * A panel that allows the user to edit a particular Plugin, by using introspection
  * this class discovers the modifiable properties of the Plugin
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 public class PluginPropertyEditorPanel extends JPanel {
 

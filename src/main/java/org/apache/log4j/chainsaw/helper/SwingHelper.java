@@ -44,7 +44,7 @@ import javax.swing.SwingUtilities;
 /**
  * A collection of standard utility methods for use within Swing.
  * 
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  *
  */
 public final class SwingHelper {

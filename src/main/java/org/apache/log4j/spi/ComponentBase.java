@@ -88,7 +88,7 @@ public class ComponentBase implements Component {
      * Return an instance specific logger to be used by the component itself.
      * This logger is not intended to be accessed by the end-user, hence the
      * protected keyword.
-     * <p/>
+     *
      * <p>In case the repository for this component is not set,
      * this implementations returns a {@link SimpleULogger} instance.
      *

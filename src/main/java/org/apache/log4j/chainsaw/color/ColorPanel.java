@@ -82,7 +82,7 @@ import org.apache.log4j.rule.Rule;
  * 
  * TODO: examine ColorPanel/RuleColorizer/LogPanel listeners and interactions
  *
- * @author Scott Deboy <sdeboy@apache.org>
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 public class ColorPanel extends JPanel
 {

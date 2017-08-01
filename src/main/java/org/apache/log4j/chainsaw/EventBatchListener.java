@@ -25,7 +25,7 @@ import java.util.List;
  * Implementations of this interface like to be notified
  * of arriving batches of LoggingEvents, but may only
  * be interested in those coming from a particular source
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  *
  */
 public interface EventBatchListener extends EventListener {

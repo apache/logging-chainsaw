@@ -39,8 +39,8 @@ import org.apache.log4j.spi.LoggingEventFieldResolver;
  * bound into the Log4j appender framework, and queues events, to be later
  * dispatched to registered/interested parties.
  * 
- * @author Scott Deboy <sdeboy@apache.org>
- * @author Paul Smith <psmith@apache.org>
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  * 
  */
 public class ChainsawAppenderHandler extends AppenderSkeleton {

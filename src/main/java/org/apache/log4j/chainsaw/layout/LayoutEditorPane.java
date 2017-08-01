@@ -55,7 +55,7 @@ import org.apache.log4j.spi.ThrowableInformation;
  * An editor Pane that allows a user to Edit a Pattern Layout and preview the output it would
  * generate with an example LoggingEvent
  * 
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  *
  */
 public final class LayoutEditorPane extends JPanel {

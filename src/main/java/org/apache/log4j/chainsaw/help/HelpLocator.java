@@ -34,7 +34,7 @@ import org.apache.log4j.chainsaw.messages.MessageCenter;
  * Class loaders based on URL roots.
  * 
  * @author Paul Smith
- *         <psmith@apache.org>
+ *         &lt;psmith@apache.org&gt;
  */
 class HelpLocator {
   private List classLoaders = new ArrayList();

@@ -64,8 +64,8 @@ import org.apache.log4j.chainsaw.receivers.ReceiversHelper;
 
 /**
  * Encapsulates the full Toolbar, and menus and all the actions that can be performed from it.
- * @author Paul Smith <psmith@apache.org>
- * @author Scott Deboy <sdeboy@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 class ChainsawToolBarAndMenus implements ChangeListener {
   private final SmallToggleButton showReceiversButton;

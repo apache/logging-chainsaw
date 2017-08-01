@@ -37,7 +37,7 @@ import javax.swing.border.SoftBevelBorder;
  *
  * @author Matthew Robinson
  * @author Pavel Vorobeiv
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  *
  */
 public class SmallButton extends JButton implements MouseListener {

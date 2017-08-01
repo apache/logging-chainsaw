@@ -29,8 +29,8 @@ import org.apache.log4j.spi.LoggingEvent;
 /**
  * A container class that contains a group of events split up
  * into branches based on Identifiers
- * @author Paul Smith <psmith@apache.org>
- * @author Scott Deboy <sdeboy@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  *
  */
 class ChainsawEventBatch {

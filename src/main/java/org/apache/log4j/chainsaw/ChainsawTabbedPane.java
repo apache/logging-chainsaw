@@ -16,7 +16,7 @@
  */
 
 /*
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  *
 */
 package org.apache.log4j.chainsaw;
@@ -55,8 +55,8 @@ import org.apache.log4j.chainsaw.prefs.SettingsManager;
  * For more information on the issue:
  * http://developer.java.sun.com/developer/bugParade/bugs/4253819.html
  * 
- * @author Paul Smith <psmith@apache.org>
- * @author Scott Deboy <sdeboy@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  *
  */
 

@@ -47,7 +47,7 @@ import org.apache.log4j.spi.LoggingEvent;
   appenders currently configured in the LoggerRespository.
 
   @author Mark Womack
-  @author Scott Deboy <sdeboy@apache.org>
+  @author Scott Deboy &lt;sdeboy@apache.org&gt;
 
 */
 public class XMLSocketReceiver extends Receiver implements Runnable, PortBased, Pauseable {

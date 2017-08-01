@@ -36,8 +36,8 @@ import org.apache.log4j.Logger;
 /**
  * A simple factory/facade for creating some of the standard Icons that are based
  * on line drawings
- * @author Paul Smith <psmith@apache.org>
- * @author Scott Deboy <sdeboy@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
+ * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  *
  */
 public final class LineIconFactory {
@@ -120,7 +120,7 @@ public final class LineIconFactory {
   /**
      * A nice and simple 'X' style icon that is used to indicate a 'close' operation.
      *
-     * @author Scott Deboy <sdeboy@apache.org>
+     * @author Scott Deboy &lt;sdeboy@apache.org&gt;
      *
      */
   private static class BlankIcon implements Icon {
@@ -145,7 +145,7 @@ public final class LineIconFactory {
   /**
      * A nice and simple 'X' style icon that is used to indicate a 'close' operation.
      *
-     * @author Scott Deboy <sdeboy@apache.org>
+     * @author Scott Deboy &lt;sdeboy@apache.org&gt;
      *
      */
   private static class CloseIcon implements Icon {

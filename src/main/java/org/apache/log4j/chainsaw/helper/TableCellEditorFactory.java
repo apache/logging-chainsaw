@@ -23,7 +23,7 @@ import javax.swing.table.TableCellEditor;
 import org.apache.log4j.Level;
 
 /**
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  *
  */
 public class TableCellEditorFactory

@@ -99,7 +99,7 @@ import org.apache.log4j.spi.LoggingEvent;
  * and implements the Rule interface so that it can filter in/out events
  * that do not match the users request for refining the view based on Loggers.
  *
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
 {
@@ -1613,7 +1613,7 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
    * @author $author$
    * @version $Revision$, $Date$
    *
-   * @author Paul Smith <psmith@apache.org>
+   * @author Paul Smith &lt;psmith@apache.org&gt;
         *
         */
   private class LoggerNameTreeCellRenderer extends DefaultTreeCellRenderer

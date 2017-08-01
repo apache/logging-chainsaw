@@ -30,12 +30,12 @@ import java.beans.PropertyChangeSupport;
  * the basic methods of the Plugin interface. Subclasses are required
  * to implement the isActive(), activateOptions(), and shutdown()
  * methods.
- * <p/>
+ * <p></p>
  * <p>Developers are not required to subclass PluginSkeleton to
  * develop their own plugins (they are only required to implement the
  * Plugin interface), but it provides a convenient base class to start
  * from.
- * <p/>
+ * <p></p>
  * Contributors: Nicko Cadell
  *
  * @author Mark Womack (mwomack@apache.org)

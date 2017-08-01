@@ -36,7 +36,7 @@ import org.apache.log4j.spi.LoggingEvent;
  * It relies an an internal PatternLayout to accomplish this, but ensures HTML characters
  * from any LoggingEvent are escaped first.
  *
- * @author Paul Smith <psmith@apache.org>
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 public class EventDetailLayout extends Layout {
   private EnhancedPatternLayout patternLayout = new EnhancedPatternLayout();
