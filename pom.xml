@@ -377,6 +377,7 @@
         <version>${site.plugin.version}</version>
         <configuration>
           <locales>en</locales>
+          <templateFile>${basedir}/src/site/site.vm</templateFile>
         </configuration>
       </plugin>
     </plugins>
@@ -525,7 +526,6 @@
             <reports>
               <report>cim</report>
               <report>scm</report>
-              <report>license</report>
               <report>project-team</report>
               <report>issue-tracking</report>
               <report>mailing-list</report>

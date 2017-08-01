@@ -14,7 +14,7 @@
 ~~ limitations under the License.
 ZeroConf - Zero Configuration
 
-    Chainsaw can use ZeroConf to discover advertised appenders and automatically configure a matching receiver, but you must update your configuration in order to advertise your appender via ZeroConf.
+    Apache Chainsaw&#x2122; can use ZeroConf to discover advertised appenders and automatically configure a matching receiver, but you must update your configuration in order to advertise your appender via ZeroConf.
     
     If you are using a newer version of log4j (1.2.16 or greater), most of the network-based appenders are capable of advertising their configurations via ZeroConf, but have this
 capability disabled by default.

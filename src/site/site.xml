@@ -37,7 +37,7 @@
 	<menu name="Get Chainsaw">
 	   <item name="Download" href="/download.html"/>
 	   <item name="Changes" href="/changes-report.html"/>
-	   <item name="License" href="/license.html"/>
+	   <item name="License" href="http://www.apache.org/licenses/"/>
 	   <item name="Important Distribution Notes" href="/distributionnotes.html" />
 	</menu>
 
@@ -67,6 +67,7 @@
 		<item name="Home" href="http://www.apache.org"/>	
 		<item name="Sponsorship" href="http://www.apache.org/foundation/sponsorship.html"/>
 		<item name="Thanks" href="http://www.apache.org/foundation/thanks.html"/>
+                <item name="Security" href="https://www.apache.org/security/"/>
 		<item name="Conferences" href="http://www.apachecon.com"/>
 	</menu>
 	
