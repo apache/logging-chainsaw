@@ -23,6 +23,7 @@
   <version>2.1.0-SNAPSHOT</version>
   <description>Graphical Viewer for Logging events from a local or remote log4j event system.</description>
   <url>https://logging.apache.org/chainsaw</url>
+  <inceptionYear>2002</inceptionYear>
   <issueManagement>
     <system>Bugzilla</system>
     <url>https://issues.apache.org/bugzilla/</url>
@@ -106,6 +107,22 @@
     <url>http://www.apache.org</url>
   </organization>
   <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>${javadoc.plugin.version}</version>
+          <configuration>
+            <bottom><![CDATA[<p align="center">Copyright &#169; {inceptionYear}-{currentYear} {organizationName}. All Rights Reserved.<br />
+            Apache Logging, Apache Log4j, Log4j, Apache Chainsaw, Chainsaw, Apache, the Apache feather logo, the Apache Logging project logo,
+            and the Apache Log4j logo are trademarks of The Apache Software Foundation.</p>]]></bottom>
+            <additionalparam>${javadoc.opts}</additionalparam>
+            <encoding>UTF-8</encoding>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
     <plugins>
       <plugin>
         <groupId>org.apache.rat</groupId>
@@ -274,9 +291,6 @@
       </plugin>
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <configuration>
-          <encoding>UTF-8</encoding>
-        </configuration>
         <executions>
           <execution>
             <goals>
@@ -485,7 +499,14 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.7</version>
+        <version>${javadoc.plugin.version}</version>
+        <configuration>
+          <bottom><![CDATA[<p align="center">Copyright &#169; {inceptionYear}-{currentYear} {organizationName}. All Rights Reserved.<br />
+          Apache Logging, Apache Log4j, Log4j, Apache Chainsaw, Chainsaw, Apache, the Apache feather logo, the Apache Logging project logo,
+          and the Apache Log4j logo are trademarks of The Apache Software Foundation.</p>]]></bottom>
+          <additionalparam>${javadoc.opts}</additionalparam>
+          <encoding>UTF-8</encoding>
+        </configuration>
       </plugin>
     </plugins>
   </reporting>
@@ -501,6 +522,18 @@
   </distributionManagement>
   <properties>
     <chainsaw.mainclass>org.apache.log4j.chainsaw.LogUI</chainsaw.mainclass>
+    <javadoc.plugin.version>2.10.4</javadoc.plugin.version>
   </properties>
+  <profiles>
+    <profile>
+      <id>java8-doclint-disabled</id>
+      <activation>
+        <jdk>[1.8,)</jdk>
+      </activation>
+      <properties>
+        <javadoc.opts>-Xdoclint:none</javadoc.opts>
+      </properties>
+    </profile>
+  </profiles>
 </project>
 
