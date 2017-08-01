@@ -22,10 +22,10 @@
   <name>Apache Chainsaw</name>
   <version>2.1.0-SNAPSHOT</version>
   <description>Graphical Viewer for Logging events from a local or remote log4j event system.</description>
-  <url>http://logging.apache.org:80/chainsaw</url>
+  <url>https://logging.apache.org/chainsaw</url>
   <issueManagement>
     <system>Bugzilla</system>
-    <url>http://issues.apache.org/bugzilla/</url>
+    <url>https://issues.apache.org/bugzilla/</url>
   </issueManagement>
   <ciManagement>
     <system>Gump</system>
@@ -37,22 +37,29 @@
       <subscribe>log4j-user-subscribe@logging.apache.org</subscribe>
       <unsubscribe>log4j-user-unsubscribe@logging.apache.org</unsubscribe>
       <post>log4j-user@logging.apache.org</post>
-      <archive>http://mail-archives.apache.org/mod_mbox/logging-log4j-user/</archive>
+      <archive>https://lists.apache.org/list.html?log4j-user@logging.apache.org</archive>
       <otherArchives>
-        <otherArchive>http://marc.theaimsgroup.com/?l=log4j-user&amp;r=1&amp;w=2</otherArchive>
+        <otherArchive>http://mail-archives.apache.org/mod_mbox/logging-log4j-user/</otherArchive>
+        <otherArchive>http://marc.info/?l=log4j-user</otherArchive>
         <otherArchive>http://dir.gmane.org/gmane.comp.jakarta.log4j.user</otherArchive>
       </otherArchives>
     </mailingList>
     <mailingList>
-      <name>log4j-dev</name>
-      <subscribe>log4j-dev-subscribe@logging.apache.org</subscribe>
-      <unsubscribe>log4j-dev-unsubscribe@logging.apache.org</unsubscribe>
-      <post>log4j-dev@logging.apache.org</post>
-      <archive>http://mail-archives.apache.org/mod_mbox/logging-log4j-dev/</archive>
+      <name>dev : development of the logging projects including chainsaw</name>
+      <subscribe>dev-subscribe@logging.apache.org</subscribe>
+      <unsubscribe>dev-unsubscribe@logging.apache.org</unsubscribe>
+      <post>dev@logging.apache.org</post>
+      <archive>https://lists.apache.org/list.html?dev@logging.apache.org</archive>
       <otherArchives>
-        <otherArchive>http://marc.theaimsgroup.com/?l=log4j-dev&amp;r=1&amp;w=2</otherArchive>
-        <otherArchive>http://dir.gmane.org/gmane.comp.jakarta.log4j.devel</otherArchive>
+        <otherArchive>http://mail-archives.apache.org/mod_mbox/logging-dev/</otherArchive>
       </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>logging commits : all svn/git commits of the logging projects including chainsaw</name>
+      <subscribe>commits-subscribe@logging.apache.org</subscribe>
+      <unsubscribe>commits-unsubscribe@logging.apache.org</unsubscribe>
+      <post>Read-Only List</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/logging-commits/</archive>
     </mailingList>
   </mailingLists>
   <developers>
@@ -90,9 +97,9 @@
     </license>
   </licenses>
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/logging/chainsaw/trunk</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/logging/chainsaw/trunk</developerConnection>
-    <url>http://svn.apache.org/repos/asf/logging/chainsaw/trunk/</url>
+    <connection>scm:git:http://git-wip-us.apache.org/repos/asf/logging-chainsaw.git</connection>
+    <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/logging-chainsaw.git</developerConnection>
+    <url>https://git-wip-us.apache.org/repos/asf?p=logging-chainsaw.git</url>
   </scm>
   <organization>
     <name>Apache Software Foundation</name>
