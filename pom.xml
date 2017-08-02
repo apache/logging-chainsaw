@@ -382,31 +382,6 @@
       </plugin>
     </plugins>
   </build>
-  <repositories>
-    <repository>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots />
-      <id>Codehaus Snapshots</id>
-      <url>http://nexus.codehaus.org/snapshots</url>
-    </repository>
-    <repository>
-      <id>logging.rc</id>
-      <name>logging services release candidates</name>
-      <url>http://people.apache.org/builds/logging/repo</url>
-    </repository>
-  </repositories>
-  <pluginRepositories>
-    <pluginRepository>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots />
-      <id>Codehaus Snapshots</id>
-      <url>http://nexus.codehaus.org/snapshots</url>
-    </pluginRepository>
-  </pluginRepositories>
   <dependencies>
     <dependency>
       <groupId>log4j</groupId>
