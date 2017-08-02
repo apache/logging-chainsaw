@@ -58,7 +58,7 @@
 		<item name="Repository" href="/source-repository.html"/>
 		<item name="Cross Reference" href="/xref/index.html"/>
 		<item name="Dependencies" href="/dependencies.html"/>
-		<item name="Continuous Integration" href="/integration.html"/>
+		<!--item name="Continuous Integration" href="/integration.html"/-->
 		<item name="Duplication" href="/cpd.html"/>
 		<item name="PMD" href="/pmd.html"/>
 	</menu>

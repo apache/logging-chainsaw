@@ -28,10 +28,6 @@
     <system>Bugzilla</system>
     <url>https://issues.apache.org/bugzilla/</url>
   </issueManagement>
-  <ciManagement>
-    <system>Gump</system>
-    <url>http://vmgump.apache.org/gump/public/logging-chainsaw/logging-log4j-chainsaw/index.html</url>
-  </ciManagement>
   <mailingLists>
     <mailingList>
       <name>log4j-user</name>
@@ -499,7 +495,7 @@
         <reportSets>
           <reportSet>
             <reports>
-              <report>cim</report>
+              <!--report>cim</report-->
               <report>scm</report>
               <report>project-team</report>
               <report>issue-tracking</report>
