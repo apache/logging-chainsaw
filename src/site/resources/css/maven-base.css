@@ -56,6 +56,9 @@ div.clear hr{
 .xright, #bannerRight {
   float:right;
 }
+.center {
+  text-align: center;
+}
 #banner {
   padding: 0px;
 }
