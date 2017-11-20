@@ -17,8 +17,8 @@
 
 package org.apache.log4j.varia;
 
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
 
 import javax.swing.DefaultListModel;
 import javax.swing.ListModel;
@@ -32,17 +32,17 @@ import javax.swing.ListModel;
  * @author Paul Smith (psmith@apache.org)
  *
  */
-public final class ListModelAppender extends AppenderSkeleton {
+public final class ListModelAppender extends AbstractAppender {
     /**
      * Default list model.
      */
-  private final DefaultListModel model = new DefaultListModel();
+  private final DefaultListModel<LogEvent> model = new DefaultListModel<>();
 
   /**
    * Constructs a ListModelAppender.
    */
   public ListModelAppender() {
-      super(true);
+    super("ListModelAppender", null, null);
   }
   /**
    * Returns a reference to the ListModel that contains all the LoggingEvents
@@ -54,13 +54,11 @@ public final class ListModelAppender extends AppenderSkeleton {
     return model;
   }
 
-    /** {@inheritDoc} */
-  protected void append(final LoggingEvent event) {
+  public void append(final LogEvent event) {
     model.addElement(event);
   }
 
-    /** {@inheritDoc} */
-  public void close() {
+  public void stop() {
     clearModel();
   }
 
@@ -69,11 +67,6 @@ public final class ListModelAppender extends AppenderSkeleton {
    */
   public void clearModel() {
     model.clear();
-  }
-
-    /** {@inheritDoc} */
-  public boolean requiresLayout() {
-      return false;
   }
 
 }

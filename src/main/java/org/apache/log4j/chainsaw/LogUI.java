@@ -86,11 +86,9 @@ import javax.swing.event.EventListenerList;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
-import org.apache.log4j.Appender;
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.log4j.LoggerRepositoryExImpl;
 import org.apache.log4j.chainsaw.color.RuleColorizer;
 import org.apache.log4j.chainsaw.dnd.FileDnDTarget;
@@ -116,8 +114,6 @@ import org.apache.log4j.plugins.PluginEvent;
 import org.apache.log4j.plugins.PluginListener;
 import org.apache.log4j.plugins.PluginRegistry;
 import org.apache.log4j.plugins.Receiver;
-import org.apache.log4j.rewrite.PropertyRewritePolicy;
-import org.apache.log4j.rewrite.RewriteAppender;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.Decoder;
@@ -127,6 +123,12 @@ import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.RepositorySelector;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.apache.log4j.xml.XMLDecoder;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.appender.rewrite.PropertiesRewritePolicy;
+import org.apache.logging.log4j.core.appender.rewrite.RewriteAppender;
+import org.apache.logging.log4j.core.appender.rewrite.RewritePolicy;
+import org.apache.logging.log4j.core.config.AppenderRef;
+import org.apache.logging.log4j.core.config.Property;
 
 
 /**
@@ -367,22 +369,31 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     logUI.ensureChainsawAppenderHandlerAdded();
     logger = LogManager.getLogger(LogUI.class);
 
-    //set hostname, application and group properties which will cause Chainsaw and other apache-generated
-    //logging events to route (by default) to a tab named 'chainsaw-log'
-    PropertyRewritePolicy policy = new PropertyRewritePolicy();
-    policy.setProperties("hostname=chainsaw,application=log,group=chainsaw");
-    
-    RewriteAppender rewriteAppender = new RewriteAppender();
-    rewriteAppender.setRewritePolicy(policy);
-
-    Enumeration appenders = Logger.getLogger("org.apache").getAllAppenders();
+    Enumeration<Appender> appenders = Logger.getLogger("org.apache").getAllAppenders();
     if (!appenders.hasMoreElements()) {
     	appenders = Logger.getRootLogger().getAllAppenders();
     }
+
+    ArrayList<AppenderRef> appenderRefs = new ArrayList<>();
     while (appenders.hasMoreElements()) {
-    	Appender nextAppender = (Appender)appenders.nextElement();
-    	rewriteAppender.addAppender(nextAppender);
+        appenderRefs.add(AppenderRef.createAppenderRef(appenders.nextElement().getName(), Level.ALL, null));
     }
+
+    //set hostname, application and group properties which will cause Chainsaw and other apache-generated
+    //logging events to route (by default) to a tab named 'chainsaw-log'
+    RewritePolicy policy = PropertiesRewritePolicy.createPolicy(configuration, new Property[] {
+            Property.createProperty("hostname", "chainsaw"),
+            Property.createProperty("application", "log"),
+            Property.createProperty("group", "chainsaw")
+    });
+    RewriteAppender rewriteAppender = RewriteAppender.createAppender(
+            "rewrite",
+            true,
+            appenderRefs,
+            configuration,
+            policy,
+            null);
+
     Logger.getLogger("org.apache").removeAllAppenders();
     Logger.getLogger("org.apache").addAppender(rewriteAppender);
     Logger.getLogger("org.apache").setAdditivity(false);
@@ -2103,8 +2114,8 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         Iterator iter2 = panel.getMatchingEvents(rule).iterator();
 
         while (iter2.hasNext()) {
-          LoggingEventWrapper e = (LoggingEventWrapper) iter2.next();
-          list.add(e.getLoggingEvent());
+          LogEventWrapper e = (LogEventWrapper) iter2.next();
+          list.add(e.getLogEvent());
         }
       }
 

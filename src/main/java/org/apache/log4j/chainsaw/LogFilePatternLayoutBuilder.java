@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -34,27 +33,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.chainsaw.messages.MessageCenter;
-import org.apache.log4j.helpers.OptionConverter;
-import org.apache.log4j.pattern.ClassNamePatternConverter;
-import org.apache.log4j.pattern.DatePatternConverter;
-import org.apache.log4j.pattern.FileLocationPatternConverter;
-import org.apache.log4j.pattern.FullLocationPatternConverter;
-import org.apache.log4j.pattern.LevelPatternConverter;
-import org.apache.log4j.pattern.LineLocationPatternConverter;
-import org.apache.log4j.pattern.LineSeparatorPatternConverter;
-import org.apache.log4j.pattern.LiteralPatternConverter;
-import org.apache.log4j.pattern.LoggerPatternConverter;
-import org.apache.log4j.pattern.LoggingEventPatternConverter;
-import org.apache.log4j.pattern.MessagePatternConverter;
-import org.apache.log4j.pattern.MethodLocationPatternConverter;
-import org.apache.log4j.pattern.NDCPatternConverter;
-import org.apache.log4j.pattern.PatternParser;
-import org.apache.log4j.pattern.PropertiesPatternConverter;
-import org.apache.log4j.pattern.RelativeTimePatternConverter;
-import org.apache.log4j.pattern.SequenceNumberPatternConverter;
-import org.apache.log4j.pattern.ThreadPatternConverter;
-import org.apache.log4j.xml.Log4jEntityResolver;
+import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.apache.logging.log4j.core.pattern.*;
 import org.apache.log4j.xml.SAXErrorHandler;
+import org.apache.logging.log4j.core.util.OptionConverter;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -66,11 +48,10 @@ public class LogFilePatternLayoutBuilder
 {
     public static String getLogFormatFromPatternLayout(String patternLayout) {
         String input = OptionConverter.convertSpecialChars(patternLayout);
-        List converters = new ArrayList();
-        List fields = new ArrayList();
-        Map converterRegistry = null;
+        List<PatternConverter> converters = new ArrayList<>();
+        List<FormattingInfo> fields = new ArrayList<>();
 
-        PatternParser.parse(input, converters, fields, converterRegistry, PatternParser.getPatternLayoutRules());
+        new PatternParser(PatternLayout.KEY).parse(input, converters, fields, false, false);
         return getFormatFromConverters(converters);
     }
 
@@ -100,12 +81,11 @@ public class LogFilePatternLayoutBuilder
       return timestampFormat;
     }
   
-    private static String getFormatFromConverters(List converters) {
-        StringBuffer buffer = new StringBuffer();
-        for (Iterator iter = converters.iterator();iter.hasNext();) {
-            LoggingEventPatternConverter converter = (LoggingEventPatternConverter)iter.next();
+    private static String getFormatFromConverters(List<PatternConverter> converters) {
+        StringBuilder buffer = new StringBuilder();
+        for (PatternConverter converter : converters) {
             if (converter instanceof DatePatternConverter) {
-              buffer.append("TIMESTAMP");
+                buffer.append("TIMESTAMP");
             } else if (converter instanceof MessagePatternConverter) {
                 buffer.append("MESSAGE");
             } else if (converter instanceof LoggerPatternConverter) {
@@ -114,14 +94,14 @@ public class LogFilePatternLayoutBuilder
                 buffer.append("CLASS");
             } else if (converter instanceof RelativeTimePatternConverter) {
                 buffer.append("PROP(RELATIVETIME)");
-            } else if (converter instanceof ThreadPatternConverter) {
+            } else if (converter instanceof ThreadNamePatternConverter) {
                 buffer.append("THREAD");
-            } else if (converter instanceof NDCPatternConverter) {
+            } else if (converter instanceof NdcPatternConverter) {
                 buffer.append("NDC");
             } else if (converter instanceof LiteralPatternConverter) {
                 LiteralPatternConverter literal = (LiteralPatternConverter)converter;
                 //format shouldn't normally take a null, but we're getting a literal, so passing in the buffer will work
-                literal.format(null, buffer);
+                literal.format(buffer);
             } else if (converter instanceof SequenceNumberPatternConverter) {
                 buffer.append("PROP(log4jid)");
             } else if (converter instanceof LevelPatternConverter) {
@@ -134,13 +114,13 @@ public class LogFilePatternLayoutBuilder
                 buffer.append("LINE");
             } else if (converter instanceof FileLocationPatternConverter) {
                 buffer.append("FILE");
-            } else if (converter instanceof PropertiesPatternConverter) {
+            } else if (converter instanceof MdcPatternConverter) {
 //                PropertiesPatternConverter propertiesConverter = (PropertiesPatternConverter) converter;
 //                String option = propertiesConverter.getOption();
 //                if (option != null && option.length() > 0) {
 //                    buffer.append("PROP(" + option + ")");
 //                } else {
-                    buffer.append("PROP(PROPERTIES)");
+                buffer.append("PROP(PROPERTIES)");
 //                }
             } else if (converter instanceof LineSeparatorPatternConverter) {
                 //done
@@ -152,11 +132,7 @@ public class LogFilePatternLayoutBuilder
   public static Map getAppenderConfiguration(File file) {
     try {
       return getXMLFileAppenderConfiguration(file);
-    } catch (IOException e) {
-      //ignore
-    } catch (ParserConfigurationException e) {
-      //ignore
-    } catch (SAXException e) {
+    } catch (IOException | ParserConfigurationException | SAXException e) {
       //ignore
     }
     try {
@@ -169,7 +145,7 @@ public class LogFilePatternLayoutBuilder
   }
 
   public static Map getPropertiesFileAppenderConfiguration(File propertyFile) throws IOException, ParserConfigurationException, SAXException {
-    Map result = new HashMap();
+    Map<String, Map<String, String>> result = new HashMap<>();
     String appenderPrefix = "log4j.appender";
     Properties props = new Properties();
     FileInputStream inputStream = null;
@@ -177,7 +153,7 @@ public class LogFilePatternLayoutBuilder
       inputStream = new FileInputStream(propertyFile);
       props.load(inputStream);
       Enumeration propertyNames = props.propertyNames();
-      Map appenders = new HashMap();
+      Map<String, String> appenders = new HashMap<>();
       while (propertyNames.hasMoreElements()) {
         String propertyName = propertyNames.nextElement().toString();
         if (propertyName.startsWith(appenderPrefix)) {
@@ -188,24 +164,23 @@ public class LogFilePatternLayoutBuilder
           }
         }
       }
-      for (Iterator iter = appenders.entrySet().iterator();iter.hasNext();) {
-        Map.Entry appenderEntry = (Map.Entry)iter.next();
-        String appenderName = appenderEntry.getKey().toString();
-        String appenderClassName = appenderEntry.getValue().toString();
-        if (appenderClassName.toLowerCase(Locale.ENGLISH).endsWith("fileappender")) {
-          String layout = props.getProperty(appenderPrefix + "." + appenderName + ".layout");
-          if (layout != null && layout.trim().equals("org.apache.log4j.PatternLayout")) {
-            String conversion = props.getProperty(appenderPrefix + "." + appenderName + ".layout.ConversionPattern");
-            String file = props.getProperty(appenderPrefix + "." + appenderName + ".File");
-            if (conversion != null && file != null) {
-              Map entry = new HashMap();
-              entry.put("file", file.trim());
-              entry.put("conversion", conversion.trim());
-              result.put(appenderName, entry);
+        for (Map.Entry<String, String> appenderEntry : appenders.entrySet()) {
+            String appenderName = appenderEntry.getKey();
+            String appenderClassName = appenderEntry.getValue();
+            if (appenderClassName.toLowerCase(Locale.ENGLISH).endsWith("fileappender")) {
+                String layout = props.getProperty(appenderPrefix + "." + appenderName + ".layout");
+                if (layout != null && layout.trim().equals("org.apache.log4j.PatternLayout")) {
+                    String conversion = props.getProperty(appenderPrefix + "." + appenderName + ".layout.ConversionPattern");
+                    String file = props.getProperty(appenderPrefix + "." + appenderName + ".File");
+                    if (conversion != null && file != null) {
+                        Map<String, String> entry = new HashMap<>();
+                        entry.put("file", file.trim());
+                        entry.put("conversion", conversion.trim());
+                        result.put(appenderName, entry);
+                    }
+                }
             }
-          }
         }
-      }
           /*
           example:
           log4j.appender.R=org.apache.log4j.RollingFileAppender
@@ -228,69 +203,65 @@ public class LogFilePatternLayoutBuilder
   }
 
   private static Map getXMLFileAppenderConfiguration(File file) throws IOException, ParserConfigurationException, SAXException {
-    InputStream stream = file.toURI().toURL().openStream();
-    Map result = new HashMap();
-    try {
-      InputSource src = new InputSource(stream);
-      src.setSystemId(file.toURI().toURL().toString());
-      DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-      DocumentBuilder docBuilder = dbf.newDocumentBuilder();
+      Map<String, Map<String, String>> result = new HashMap<>();
+      try (InputStream stream = file.toURI().toURL().openStream()) {
+          InputSource src = new InputSource(stream);
+          src.setSystemId(file.toURI().toURL().toString());
+          DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+          DocumentBuilder docBuilder = dbf.newDocumentBuilder();
 
-      docBuilder.setErrorHandler(new SAXErrorHandler());
-      docBuilder.setEntityResolver(new Log4jEntityResolver());
-      Document doc = docBuilder.parse(src);
-      NodeList appenders = doc.getElementsByTagName("appender");
-      for (int i = 0; i < appenders.getLength(); i++) {
-        Node appender = appenders.item(i);
-        NamedNodeMap appenderAttributes = appender.getAttributes();
+          docBuilder.setErrorHandler(new SAXErrorHandler());
+          Document doc = docBuilder.parse(src);
+          NodeList appenders = doc.getElementsByTagName("appender");
+          for (int i = 0; i < appenders.getLength(); i++) {
+              Node appender = appenders.item(i);
+              NamedNodeMap appenderAttributes = appender.getAttributes();
 //        Class appenderClass = Class.forName(map.getNamedItem("class").getNodeValue());
-        Node appenderClass = appenderAttributes.getNamedItem("class");
-        if (appenderAttributes.getNamedItem("name") != null && appenderClass != null && appenderClass.getNodeValue() != null) {
-          //all log4j fileappenders end in fileappender..if a custom fileappender also ends in fileappender and uses the same dom nodes to be loaded,
-          //try to parse the nodes as well
-          if (appenderClass.getNodeValue().toLowerCase(Locale.ENGLISH).endsWith("fileappender")) {
-            String appenderName = appenderAttributes.getNamedItem("name").getNodeValue();
-            //subclass of FileAppender - add it
-            Map entry = new HashMap();
-            NodeList appenderChildren = appender.getChildNodes();
-            for (int j = 0; j < appenderChildren.getLength(); j++) {
-              Node appenderChild = appenderChildren.item(j);
-              if (appenderChild.getNodeName().equals("param") && appenderChild.hasAttributes()) {
-                Node fileNameNode = appenderChild.getAttributes().getNamedItem("name");
-                if (fileNameNode != null && fileNameNode.getNodeValue().equalsIgnoreCase("file")) {
-                  Node fileValueNode = appenderChild.getAttributes().getNamedItem("value");
-                  if (fileValueNode != null) {
-                    entry.put("file", fileValueNode.getNodeValue());
-                  }
-                }
-              }
-              if (appenderChild.getNodeName().equalsIgnoreCase("layout") && appenderChild.hasAttributes()) {
-                NamedNodeMap layoutAttributes = appenderChild.getAttributes();
-                Node layoutNode = layoutAttributes.getNamedItem("class");
-                if (layoutNode != null && layoutNode.getNodeValue() != null && layoutNode.getNodeValue().equalsIgnoreCase("org.apache.log4j.PatternLayout")) {
-                  NodeList layoutChildren = appenderChild.getChildNodes();
-                  for (int k = 0; k < layoutChildren.getLength(); k++) {
-                    Node layoutChild = layoutChildren.item(k);
-                    if (layoutChild.getNodeName().equals("param") && layoutChild.hasAttributes()) {
-                      Node layoutName = layoutChild.getAttributes().getNamedItem("name");
-                      if (layoutName != null && layoutName.getNodeValue() != null && layoutName.getNodeValue().equalsIgnoreCase("conversionpattern")) {
-                        Node conversionValue = layoutChild.getAttributes().getNamedItem("value");
-                        if (conversionValue != null) {
-                          entry.put("conversion", conversionValue.getNodeValue());
-                        }
+              Node appenderClass = appenderAttributes.getNamedItem("class");
+              if (appenderAttributes.getNamedItem("name") != null && appenderClass != null && appenderClass.getNodeValue() != null) {
+                  //all log4j fileappenders end in fileappender..if a custom fileappender also ends in fileappender and uses the same dom nodes to be loaded,
+                  //try to parse the nodes as well
+                  if (appenderClass.getNodeValue().toLowerCase(Locale.ENGLISH).endsWith("fileappender")) {
+                      String appenderName = appenderAttributes.getNamedItem("name").getNodeValue();
+                      //subclass of FileAppender - add it
+                      Map<String, String> entry = new HashMap<>();
+                      NodeList appenderChildren = appender.getChildNodes();
+                      for (int j = 0; j < appenderChildren.getLength(); j++) {
+                          Node appenderChild = appenderChildren.item(j);
+                          if (appenderChild.getNodeName().equals("param") && appenderChild.hasAttributes()) {
+                              Node fileNameNode = appenderChild.getAttributes().getNamedItem("name");
+                              if (fileNameNode != null && fileNameNode.getNodeValue().equalsIgnoreCase("file")) {
+                                  Node fileValueNode = appenderChild.getAttributes().getNamedItem("value");
+                                  if (fileValueNode != null) {
+                                      entry.put("file", fileValueNode.getNodeValue());
+                                  }
+                              }
+                          }
+                          if (appenderChild.getNodeName().equalsIgnoreCase("layout") && appenderChild.hasAttributes()) {
+                              NamedNodeMap layoutAttributes = appenderChild.getAttributes();
+                              Node layoutNode = layoutAttributes.getNamedItem("class");
+                              if (layoutNode != null && layoutNode.getNodeValue() != null && layoutNode.getNodeValue().equalsIgnoreCase("org.apache.log4j.PatternLayout")) {
+                                  NodeList layoutChildren = appenderChild.getChildNodes();
+                                  for (int k = 0; k < layoutChildren.getLength(); k++) {
+                                      Node layoutChild = layoutChildren.item(k);
+                                      if (layoutChild.getNodeName().equals("param") && layoutChild.hasAttributes()) {
+                                          Node layoutName = layoutChild.getAttributes().getNamedItem("name");
+                                          if (layoutName != null && layoutName.getNodeValue() != null && layoutName.getNodeValue().equalsIgnoreCase("conversionpattern")) {
+                                              Node conversionValue = layoutChild.getAttributes().getNamedItem("value");
+                                              if (conversionValue != null) {
+                                                  entry.put("conversion", conversionValue.getNodeValue());
+                                              }
+                                          }
+                                      }
+                                  }
+                              }
+                          }
                       }
-                    }
+                      result.put(appenderName, entry);
                   }
-                }
               }
-            }
-            result.put(appenderName, entry);
           }
-        }
       }
-    } finally {
-      stream.close();
-    }
     MessageCenter.getInstance().getLogger().info("getXMLFileAppenderConfiguration for file: " + file + ", result: " + result);
     return result;
   }

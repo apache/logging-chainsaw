@@ -23,14 +23,14 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.URL;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.log4j.chainsaw.ChainsawConstants;
 
 
 /**
  * Singleton help manager where objects can register to display
- * Help for something, an independant viewer can register to
+ * Help for something, an independent viewer can register to
  * be notified when the requested Help URL changes and can display
  * it appropriately. This class effectively decouples the help requester
  * from the help implementation (if any!)

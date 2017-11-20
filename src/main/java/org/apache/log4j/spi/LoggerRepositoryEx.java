@@ -17,9 +17,8 @@
 
 package org.apache.log4j.spi;
 
-import org.apache.log4j.Appender;
-import org.apache.log4j.Category;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.Logger;
 import org.apache.log4j.plugins.PluginRegistry;
 import org.apache.log4j.scheduler.Scheduler;
 
@@ -103,7 +102,7 @@ public interface LoggerRepositoryEx extends LoggerRepository {
     @param logger The logger from which the appender was removed.
     @param appender The appender removed from the logger.
     */
-  void fireRemoveAppenderEvent(Category logger, Appender appender);
+  void fireRemoveAppenderEvent(Logger logger, Appender appender);
 
   /**
     Requests that a level changed event be sent to any registered
@@ -119,7 +118,7 @@ public interface LoggerRepositoryEx extends LoggerRepository {
   void fireConfigurationChangedEvent();
 
   /**
-   * Return the PluginRegisty for this LoggerRepository.
+   * Return the PluginRegistry for this LoggerRepository.
    * @return plug in registry.
    */
   PluginRegistry getPluginRegistry();

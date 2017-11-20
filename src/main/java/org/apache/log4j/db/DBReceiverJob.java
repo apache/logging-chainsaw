@@ -17,19 +17,24 @@
 
 package org.apache.log4j.db;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.log4j.scheduler.Job;
 import org.apache.log4j.spi.ComponentBase;
-import org.apache.log4j.spi.LocationInfo;
-import org.apache.log4j.spi.LoggingEvent;
-import org.apache.log4j.spi.ThrowableInformation;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.impl.Log4jLogEvent;
+import org.apache.logging.log4j.core.impl.ThrowableProxy;
+import org.apache.logging.log4j.message.SimpleMessage;
+import org.apache.logging.log4j.spi.MutableThreadContextStack;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Hashtable;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 /**
@@ -77,19 +82,19 @@ class DBReceiverJob extends ComponentBase implements Job {
 	    long timeStamp = 0L;
 	    String level = null;
 	    String threadName = null;
-	    Object message = null;
+	    String message = null;
 	    String ndc = null;
 	    String className = null;
 	    String methodName = null;
 	    String fileName = null;
 	    String lineNumber = null;
-	    Hashtable properties = new Hashtable();
+	    Map<String, String> properties = new HashMap<>();
 	
 
         //event.setSequenceNumber(rs.getLong(1));
         timeStamp = rs.getLong(2);
         message = rs.getString(3);
-		logger = Logger.getLogger(rs.getString(4));
+		logger = LogManager.getLogger(rs.getString(4));
         level = rs.getString(5);
 		Level levelImpl = Level.toLevel(level.trim());
 
@@ -103,41 +108,42 @@ class DBReceiverJob extends ComponentBase implements Job {
         methodName = rs.getString(11);
         lineNumber = rs.getString(12).trim();
 
-		LocationInfo locationInfo = null;
-        if (fileName.equals(LocationInfo.NA)) {
-          locationInfo = LocationInfo.NA_LOCATION_INFO;
+		StackTraceElement locationInfo;
+        if (fileName.equals("?")) {
+          locationInfo = null;
         } else {
-          locationInfo = new LocationInfo(fileName, className,
-              methodName, lineNumber);
+          locationInfo = new StackTraceElement(fileName, className,
+              methodName, Integer.parseInt(lineNumber));
         }
 
         long id = rs.getLong(13);
         //LogLog.info("Received event with id=" + id);
         lastId = id;
 
-		ThrowableInformation throwableInfo = null;
+		ThrowableProxy throwableInfo = null;
         if ((mask & DBHelper.EXCEPTION_EXISTS) != 0) {
           throwableInfo = getException(connection, id);
         }
 
-	    LoggingEvent event = new LoggingEvent(logger.getName(),
-	            logger, timeStamp, levelImpl, message,
-	            threadName,
-	            throwableInfo,
-	            ndc,
-	            locationInfo,
-	            properties);
-
-
         // Scott asked for this info to be
-        event.setProperty("log4jid", Long.toString(id));
+        properties.put("log4jid", Long.toString(id));
+
+	    LogEvent event = Log4jLogEvent.newBuilder()
+	                .setLoggerFqcn(logger.getName())
+	                .setLoggerName(logger.getName())
+	                .setTimeMillis(timeStamp)
+	                .setLevel(levelImpl)
+	                .setMessage(new SimpleMessage(message))
+	                .setThreadName(threadName)
+	                .setThrownProxy(throwableInfo)
+                    .setContextStack(new MutableThreadContextStack(Arrays.asList(ndc.split(" "))))
+	                .setContextMap(properties)
+	                .setSource(locationInfo)
+	                .build();
 
         if ((mask & DBHelper.PROPERTIES_EXIST) != 0) {
           getProperties(connection, id, event);
         }
-
-
-
 
         if (!parentDBReceiver.isPaused()) {
           parentDBReceiver.doPost(event);
@@ -171,7 +177,7 @@ class DBReceiverJob extends ComponentBase implements Job {
    * @param event
    * @throws SQLException
    */
-  void getProperties(Connection connection, long id, LoggingEvent event)
+  void getProperties(Connection connection, long id, LogEvent event)
       throws SQLException {
 
     PreparedStatement statement = connection.prepareStatement(sqlProperties);
@@ -182,7 +188,7 @@ class DBReceiverJob extends ComponentBase implements Job {
       while (rs.next()) {
         String key = rs.getString(1);
         String value = rs.getString(2);
-        event.setProperty(key, value);
+        event.getContextMap().put(key, value);
       }
     } finally {
       statement.close();
@@ -197,7 +203,7 @@ class DBReceiverJob extends ComponentBase implements Job {
    * @param id
    * @throws SQLException
    */
-  ThrowableInformation getException(Connection connection, long id)
+  ThrowableProxy getException(Connection connection, long id)
       throws SQLException {
 
     PreparedStatement statement = null;
@@ -220,7 +226,7 @@ class DBReceiverJob extends ComponentBase implements Job {
         strRep[i] = (String) v.get(i);
       }
       // we've filled strRep, we now attach it to the event
-      return new ThrowableInformation(strRep);
+      return new ThrowableProxy(strRep);
     } finally {
       if (statement != null) {
         statement.close();

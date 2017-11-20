@@ -17,10 +17,8 @@
 
 package org.apache.log4j;
 
-import org.apache.log4j.helpers.LogLog;
 import org.apache.log4j.or.ObjectRenderer;
 import org.apache.log4j.or.RendererMap;
-import org.apache.log4j.plugins.Plugin;
 import org.apache.log4j.plugins.PluginRegistry;
 import org.apache.log4j.scheduler.Scheduler;
 import org.apache.log4j.spi.ErrorItem;
@@ -31,17 +29,18 @@ import org.apache.log4j.spi.LoggerRepository;
 import org.apache.log4j.spi.LoggerRepositoryEventListener;
 import org.apache.log4j.spi.LoggerRepositoryEx;
 import org.apache.log4j.spi.RendererSupport;
-import org.apache.log4j.xml.UnrecognizedElementHandler;
-import org.apache.log4j.xml.DOMConfigurator;
-import org.w3c.dom.Element;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.status.StatusLogger;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Vector;
 
 
@@ -52,8 +51,7 @@ import java.util.Vector;
 */
 public final class LoggerRepositoryExImpl
         implements LoggerRepositoryEx,
-        RendererSupport,
-        UnrecognizedElementHandler {
+        RendererSupport {
 
     /**
      * Wrapped logger repository.
@@ -141,7 +139,7 @@ public final class LoggerRepositoryExImpl
     final LoggerRepositoryEventListener listener) {
     synchronized (repositoryEventListeners) {
       if (repositoryEventListeners.contains(listener)) {
-        LogLog.warn(
+        StatusLogger.getLogger().warn(
           "Ignoring attempt to add a previously "
                   + "registered LoggerRepositoryEventListener.");
       } else {
@@ -159,7 +157,7 @@ public final class LoggerRepositoryExImpl
     final LoggerRepositoryEventListener listener) {
     synchronized (repositoryEventListeners) {
       if (!repositoryEventListeners.contains(listener)) {
-        LogLog.warn(
+        StatusLogger.getLogger().warn(
           "Ignoring attempt to remove a "
                   + "non-registered LoggerRepositoryEventListener.");
       } else {
@@ -176,7 +174,7 @@ public final class LoggerRepositoryExImpl
   public void addLoggerEventListener(final LoggerEventListener listener) {
     synchronized (loggerEventListeners) {
       if (loggerEventListeners.get(listener) != null) {
-        LogLog.warn(
+        StatusLogger.getLogger().warn(
          "Ignoring attempt to add a previously registerd LoggerEventListener.");
       } else {
         HierarchyEventListenerProxy proxy =
@@ -208,7 +206,7 @@ public final class LoggerRepositoryExImpl
       HierarchyEventListenerProxy proxy =
               (HierarchyEventListenerProxy) loggerEventListeners.get(listener);
       if (proxy == null) {
-        LogLog.warn(
+        StatusLogger.getLogger().warn(
           "Ignoring attempt to remove a non-registered LoggerEventListener.");
       } else {
         loggerEventListeners.remove(listener);
@@ -221,7 +219,7 @@ public final class LoggerRepositoryExImpl
      * Issue warning that there are no appenders in hierarchy.
      * @param cat logger, not currently used.
      */
-  public void emitNoAppenderWarning(final Category cat) {
+  public void emitNoAppenderWarning(final Locale.Category cat) {
     repo.emitNoAppenderWarning(cat);
   }
 
@@ -319,7 +317,7 @@ public final class LoggerRepositoryExImpl
       @param logger The logger to which the appender was added.
       @param appender The appender added to the logger.
      */
-    public void fireAddAppenderEvent(final Category logger,
+    public void fireAddAppenderEvent(final Logger logger,
                                      final Appender appender) {
         repo.fireAddAppenderEvent(logger, appender);
     }
@@ -331,7 +329,7 @@ public final class LoggerRepositoryExImpl
       @param logger The logger from which the appender was removed.
       @param appender The appender removed from the logger.
       */
-    public void fireRemoveAppenderEvent(final Category logger,
+    public void fireRemoveAppenderEvent(final Logger logger,
                                         final Appender appender) {
        if (repo instanceof Hierarchy) {
            ((Hierarchy) repo).fireRemoveAppenderEvent(logger, appender);
@@ -410,7 +408,7 @@ public final class LoggerRepositoryExImpl
      {@link Enumeration}.
      @return enumerator of current loggers
    */
-  public Enumeration getCurrentLoggers() {
+  public Enumeration<Logger> getCurrentLoggers() {
     return repo.getCurrentLoggers();
   }
 
@@ -428,15 +426,6 @@ public final class LoggerRepositoryExImpl
    */
   public void addErrorItem(final ErrorItem errorItem) {
     getErrorList().add(errorItem);
-  }
-
-  /**
-   * Get enumerator over current loggers.
-   * @return enumerator over current loggers
-     @deprecated Please use {@link #getCurrentLoggers} instead.
-   */
-  public Enumeration getCurrentCategories() {
-    return repo.getCurrentCategories();
   }
 
   /**
@@ -583,32 +572,6 @@ public final class LoggerRepositoryExImpl
     return loggerFactory;
   }
 
-    /** {@inheritDoc} */
-    public boolean parseUnrecognizedElement(
-            final Element element,
-            final Properties props) throws Exception {
-        if ("plugin".equals(element.getNodeName())) {
-            Object instance =
-                    DOMConfigurator.parseElement(element, props, Plugin.class);
-            if (instance instanceof Plugin) {
-                Plugin plugin = (Plugin) instance;
-                String pluginName = DOMConfigurator.subst(element.getAttribute("name"), props);
-                if (pluginName.length() > 0) {
-                    plugin.setName(pluginName);
-                }
-                getPluginRegistry().addPlugin(plugin);
-                plugin.setLoggerRepository(this);
-
-                LogLog.debug("Pushing plugin on to the object stack.");
-                plugin.activateOptions();
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-
     /**
      * Implementation of RendererSupportImpl if not
      * provided by LoggerRepository.
@@ -662,18 +625,18 @@ public final class LoggerRepositoryExImpl
        }
 
         /** {@inheritDoc} */
-       public void addAppenderEvent(final Category cat,
+       public void addAppenderEvent(final Logger cat,
                                     final Appender appender) {
-           if (isEnabled() && cat instanceof Logger) {
-                listener.appenderAddedEvent((Logger) cat, appender);
+           if (isEnabled() && cat != null) {
+                listener.appenderAddedEvent(cat, appender);
            }
        }
 
         /** {@inheritDoc} */
-       public void removeAppenderEvent(final Category cat,
+       public void removeAppenderEvent(final Logger cat,
                                     final Appender appender) {
-           if (isEnabled() && cat instanceof Logger) {
-                listener.appenderRemovedEvent((Logger) cat, appender);
+           if (isEnabled() && cat != null) {
+                listener.appenderRemovedEvent(cat, appender);
            }
        }
 

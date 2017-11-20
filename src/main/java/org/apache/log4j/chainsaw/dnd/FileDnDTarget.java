@@ -17,7 +17,8 @@
 package org.apache.log4j.chainsaw.dnd;
 
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.Color;
 import java.awt.datatransfer.Transferable;
@@ -42,7 +43,7 @@ import javax.swing.JComponent;
  * the standard PropertyChangesListener semantics to indicate that a list of 
  * files have been dropped onto the target.
  * 
- * If you wish to know whan the files have been dropped, subscribe to the "fileList" property change.
+ * If you wish to know what the files have been dropped, subscribe to the "fileList" property change.
  * 
  * @author psmith
  *
@@ -51,7 +52,7 @@ public class FileDnDTarget implements DropTargetListener{
     /**
      * Logger for this class
      */
-    private static final Logger LOG = Logger.getLogger(FileDnDTarget.class);
+    private static final Logger LOG = LogManager.getLogger(FileDnDTarget.class);
 
     protected int acceptableActions = DnDConstants.ACTION_COPY;
 

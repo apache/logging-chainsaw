@@ -33,7 +33,7 @@ import org.apache.log4j.plugins.Pauseable;
 import org.apache.log4j.plugins.Plugin;
 import org.apache.log4j.plugins.Receiver;
 import org.apache.log4j.spi.LoggerRepository;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.core.LogEvent;
 
 
 /**
@@ -470,7 +470,7 @@ public class SocketReceiver extends Receiver implements Runnable, PortBased,
     }
   }
     /** {@inheritDoc} */
-  public void doPost(final LoggingEvent event) {
+  public void doPost(final LogEvent event) {
     if (!isPaused()) {
       super.doPost(event);
     }

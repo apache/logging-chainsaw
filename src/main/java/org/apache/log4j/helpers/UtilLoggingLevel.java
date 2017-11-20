@@ -20,165 +20,85 @@ package org.apache.log4j.helpers;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
 
 /**
  * An extension of the Level class that provides support for java.util.logging
  * Levels.
  *
- *
  * @author Scott Deboy (sdeboy@apache.org)
  */
-
-public class UtilLoggingLevel extends Level {
-
-    /**
-     * Serialization version id.
-     */
-    private static final long serialVersionUID = 909301162611820211L;
+public final class UtilLoggingLevel {
 
     /**
      * Numerical value for SEVERE.
      */
-    public static final int SEVERE_INT = 22000;
+    private static final int SEVERE_INT = 22000;
     /**
      * Numerical value for WARNING.
      */
-    public static final int WARNING_INT = 21000;
+    private static final int WARNING_INT = 21000;
 
-    //INFO level defined in parent as 20000..no need to redefine here
-    
+    /**
+     * Numerical value for INFO.
+     */
+    private static final int INFO_INT = 20000;
+
     /**
      * Numerical value for CONFIG.
      */
-    public static final int CONFIG_INT = 14000;
+    private static final int CONFIG_INT = 14000;
+
     /**
      * Numerical value for FINE.
      */
-    public static final int FINE_INT = 13000;
+    private static final int FINE_INT = 13000;
+
     /**
      * Numerical value for FINER.
      */
-    public static final int FINER_INT = 12000;
+    private static final int FINER_INT = 12000;
+
     /**
      * Numerical value for FINEST.
      */
-    public static final int FINEST_INT = 11000;
-    /**
-     * Numerical value for UNKNOWN.
-     */
-    public static final int UNKNOWN_INT = 10000;
+    private static final int FINEST_INT = 11000;
 
     /**
      * SEVERE.
      */
-    public static final UtilLoggingLevel SEVERE =
-            new UtilLoggingLevel(SEVERE_INT, "SEVERE", 0);
+    private static final Level SEVERE =
+            Level.forName("SEVERE", SEVERE_INT);
     /**
      * WARNING.
      */
-    public static final UtilLoggingLevel WARNING =
-            new UtilLoggingLevel(WARNING_INT, "WARNING", 4);
+    private static final Level WARNING =
+            Level.forName("WARNING", WARNING_INT);
     /**
      * INFO.
      */
-    //note: we've aligned the int values of the java.util.logging INFO level with log4j's level
-    public static final UtilLoggingLevel INFO =
-            new UtilLoggingLevel(INFO_INT, "INFO", 5);
+    private static final Level INFO =
+            Level.forName("INFO", INFO_INT);
     /**
      * CONFIG.
      */
-    public static final UtilLoggingLevel CONFIG =
-            new UtilLoggingLevel(CONFIG_INT, "CONFIG", 6);
+    private static final Level CONFIG =
+            Level.forName("CONFIG", CONFIG_INT);
     /**
      * FINE.
      */
-    public static final UtilLoggingLevel FINE =
-            new UtilLoggingLevel(FINE_INT, "FINE", 7);
+    private static final Level FINE =
+            Level.forName("FINE", FINE_INT);
     /**
      * FINER.
      */
-    public static final UtilLoggingLevel FINER =
-            new UtilLoggingLevel(FINER_INT, "FINER", 8);
+    private static final Level FINER =
+            Level.forName("FINER", FINER_INT);
     /**
      * FINEST.
      */
-    public static final UtilLoggingLevel FINEST =
-            new UtilLoggingLevel(FINEST_INT, "FINEST", 9);
-
-    /**
-     * Create new instance.
-     * @param level numeric value for level.
-     * @param levelStr symbolic name for level.
-     * @param syslogEquivalent Equivalent syslog severity.
-     */
-    protected UtilLoggingLevel(final int level,
-                               final String levelStr,
-                               final int syslogEquivalent) {
-        super(level, levelStr, syslogEquivalent);
-    }
-
-    /**
-     * Convert an integer passed as argument to a level. If the
-     * conversion fails, then this method returns the specified default.
-     * @param val numeric value.
-     * @param defaultLevel level to be returned if no level matches
-     * numeric value.
-     * @return matching level or default level.
-     */
-    public static UtilLoggingLevel toLevel(final int val,
-                               final UtilLoggingLevel defaultLevel) {
-        switch (val) {
-            case SEVERE_INT:
-                return SEVERE;
-
-            case WARNING_INT:
-                return WARNING;
-
-            case INFO_INT:
-                return INFO;
-
-            case CONFIG_INT:
-                return CONFIG;
-
-            case FINE_INT:
-                return FINE;
-
-            case FINER_INT:
-                return FINER;
-
-            case FINEST_INT:
-                return FINEST;
-
-            default:
-                return defaultLevel;
-        }
-    }
-
-    /**
-     * Gets level matching numeric value.
-     * @param val numeric value.
-     * @return  matching level or UtilLoggerLevel.FINEST if no match.
-     */
-    public static Level toLevel(final int val) {
-        return toLevel(val, FINEST);
-    }
-
-    /**
-     * Gets list of supported levels.
-     * @return  list of supported levels.
-     */
-    public static List getAllPossibleLevels() {
-        ArrayList list = new ArrayList();
-        list.add(FINE);
-        list.add(FINER);
-        list.add(FINEST);
-        list.add(INFO);
-        list.add(CONFIG);
-        list.add(WARNING);
-        list.add(SEVERE);
-        return list;
-    }
+    private static final Level FINEST =
+            Level.forName("FINEST", FINEST_INT);
 
     /**
      * Get level with specified symbolic name.

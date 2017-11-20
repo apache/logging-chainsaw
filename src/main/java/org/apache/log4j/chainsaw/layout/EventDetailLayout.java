@@ -17,15 +17,14 @@
 
 package org.apache.log4j.chainsaw.layout;
 
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Set;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.impl.Log4jLogEvent;
+import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.apache.logging.log4j.message.SimpleMessage;
+import org.apache.logging.log4j.util.TriConsumer;
 
-import org.apache.log4j.EnhancedPatternLayout;
-import org.apache.log4j.Layout;
-import org.apache.log4j.Logger;
-import org.apache.log4j.spi.LocationInfo;
-import org.apache.log4j.spi.LoggingEvent;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -34,99 +33,33 @@ import org.apache.log4j.spi.LoggingEvent;
  * when mouse-over on a particular log event row.
  *
  * It relies an an internal PatternLayout to accomplish this, but ensures HTML characters
- * from any LoggingEvent are escaped first.
+ * from any LogEvent are escaped first.
  *
  * @author Paul Smith &lt;psmith@apache.org&gt;
  */
-public class EventDetailLayout extends Layout {
-  private EnhancedPatternLayout patternLayout = new EnhancedPatternLayout();
+public class EventDetailLayout {
+  private PatternLayout patternLayout;
 
-  public EventDetailLayout() {
+  public synchronized void setConversionPattern(String conversionPattern) {
+    patternLayout = PatternLayout.newBuilder().withPattern(conversionPattern).build();
   }
 
-  public void setConversionPattern(String conversionPattern) {
-    patternLayout.setConversionPattern(conversionPattern);
-    patternLayout.activateOptions();
-  }
-
-  public String getConversionPattern() {
+  public synchronized String getConversionPattern() {
     return patternLayout.getConversionPattern();
   }
 
-  /* (non-Javadoc)
-   * @see org.apache.log4j.Layout#getFooter()
-   */
   public String getFooter() {
     return "";
   }
 
-  /* (non-Javadoc)
-   * @see org.apache.log4j.Layout#getHeader()
-   */
   public String getHeader() {
     return "";
   }
 
-  //  /* (non-Javadoc)
-  //   * @see org.apache.log4j.Layout#format(java.io.Writer, org.apache.log4j.spi.LoggingEvent)
-  //   */
-  //  public void format(Writer output, LoggingEvent event)
-  //    throws IOException {
-  //    boolean pastFirst = false;
-  //    output.write("<html><body><table cellspacing=0 cellpadding=0>");
-  //
-  //    List columnNames = ChainsawColumns.getColumnsNames();
-  //
-  //    Vector v = ChainsawAppenderHandler.convert(event);
-  //
-  //    /**
-  //     * we need to add the ID property from the event
-  //     */
-  //    v.add(event.getProperty(ChainsawConstants.LOG4J_ID_KEY));
-  //    
-  //    //             ListIterator iter = displayFilter.getDetailColumns().listIterator();
-  //    Iterator iter = columnNames.iterator();
-  //    String column = null;
-  //    int index = -1;
-  //
-  //    while (iter.hasNext()) {
-  //      column = (String) iter.next();
-  //      index = columnNames.indexOf(column);
-  //
-  //      if (index > -1) {
-  //        if (pastFirst) {
-  //          output.write("</td></tr>");
-  //        }
-  //
-  //        output.write("<tr><td valign=\"top\"><b>");
-  //        output.write(column);
-  //        output.write(": </b></td><td>");
-  //
-  //
-  //        if (index<v.size()) {
-  //			Object o = v.get(index);
-  //
-  //			if (o != null) {
-  //				output.write(escape(o.toString()));
-  //			} else {
-  //				output.write("{null}");
-  //			}
-  //			
-  //		}else {
-  ////            output.write("Invalid column " + column + " (index=" + index + ")");      
-  //        }
-  //
-  //        pastFirst = true;
-  //      }
-  //    }
-  //
-  //    output.write("</table></body></html>");
-  //  }
-
   /**
     * Escape &lt;, &gt; &amp; and &quot; as their entities. It is very
     * dumb about &amp; handling.
-    * @param aStr the String to escape.
+    * @param string the String to escape.
     * @return the escaped String
     */
   private static String escape(String string) {
@@ -134,7 +67,7 @@ public class EventDetailLayout extends Layout {
       return "";
     }
 
-    final StringBuffer buf = new StringBuffer();
+    final StringBuilder buf = new StringBuilder();
 
     for (int i = 0; i < string.length(); i++) {
       char c = string.charAt(i);
@@ -142,28 +75,22 @@ public class EventDetailLayout extends Layout {
       switch (c) {
       case '<':
         buf.append("&lt;");
-
         break;
 
       case '>':
         buf.append("&gt;");
-
         break;
 
       case '\"':
         buf.append("&quot;");
-
         break;
 
       case '&':
         buf.append("&amp;");
-
         break;
 
       default:
         buf.append(c);
-
-        break;
       }
     }
 
@@ -171,109 +98,65 @@ public class EventDetailLayout extends Layout {
   }
 
   /**
-   * Takes a source event and copies it into a new LoggingEvent object
+   * Takes a source event and copies it into a new LogEvent object
    * and ensuring all the internal elements of the event are HTML safe
    * @param event
-   * @return new LoggingEvent
+   * @return new LogEvent
    */
-  private static LoggingEvent copyForHTML(LoggingEvent event) {
-    Logger logger = Logger.getLogger(event.getLoggerName());
-    String threadName = event.getThreadName();
-    Object msg = escape(event.getMessage().toString());
-    String ndc = event.getNDC();
-//    Hashtable mdc = formatMDC(event);
-    LocationInfo li = null;
-    if (event.locationInformationExists()) {
+  private static LogEvent copyForHTML(LogEvent event) {
+    String msg = escape(event.getMessage().getFormattedMessage());
+    StackTraceElement li = null;
+    if (event.getSource() != null) {
         li = formatLocationInfo(event);
     }
-    Hashtable properties = formatProperties(event);
-    LoggingEvent copy = new LoggingEvent(null,
-	   logger, event.getTimeStamp(),
-	   event.getLevel(),
-	   msg,
-	   threadName,
-	   event.getThrowableInformation(),
-	   ndc,
-	   li,
-	   properties);
-    
-    return copy;
+    Map<String, String> properties = formatProperties(event);
+
+    return Log4jLogEvent.newBuilder()
+            .setLoggerFqcn(event.getLoggerFqcn())
+            .setLoggerName(event.getLoggerName())
+            .setTimeMillis(event.getTimeMillis())
+            .setNanoTime(event.getNanoTime())
+            .setLevel(event.getLevel())
+            .setMessage(new SimpleMessage(msg))
+            .setThreadName(event.getThreadName())
+            .setThreadId(event.getThreadId())
+            .setThreadPriority(event.getThreadPriority())
+            .setThrownProxy(event.getThrownProxy())
+            .setContextStack(event.getContextStack())
+            .setContextMap(properties)
+            .setSource(li)
+            .setMarker(event.getMarker())
+            .build();
   }
 
-//  /**
-//  * @param event
-//  * @return
-//  */
-//  private static Hashtable formatMDC(LoggingEvent event) {
-//    Set keySet = event.getMDCKeySet();
-//    Hashtable hashTable = new Hashtable();
-//
-//    for (Iterator iter = keySet.iterator(); iter.hasNext();) {
-//      Object key = (Object) iter.next();
-//      Object value = event.getMDC(key.toString());
-//      hashTable.put(escape(key.toString()), escape(value.toString()));
-//    }
-//
-//    return hashTable;
-//  }
-
-  /**
-   * @param event
-   * @return
-   */
-  private static LocationInfo formatLocationInfo(LoggingEvent event) {
-    LocationInfo info = event.getLocationInformation();
-    LocationInfo newInfo =
-      new LocationInfo(
-        escape(info.getFileName()), escape(info.getClassName()),
-        escape(info.getMethodName()), escape(info.getLineNumber()));
-
-    return newInfo;
+  private static StackTraceElement formatLocationInfo(LogEvent event) {
+    StackTraceElement info = event.getSource();
+    return new StackTraceElement(
+      escape(info.getFileName()), escape(info.getClassName()),
+      escape(info.getMethodName()), info.getLineNumber());
   }
 
-  /**
-   * @param event
-   * @return
-   */
-  private static Hashtable formatProperties(LoggingEvent event) {
-    Set keySet = event.getPropertyKeySet();
-    Hashtable hashTable = new Hashtable();
-
-    for (Iterator iter = keySet.iterator(); iter.hasNext();) {
-      Object key = iter.next();
-      Object value = event.getProperty(key.toString());
-      hashTable.put(escape(key.toString()), escape(value.toString()));
-    }
-
+  private static Map<String, String> formatProperties(LogEvent event) {
+    Map<String, String> hashTable = new HashMap<>();
+    event.getContextData().forEach(new TriConsumer<String, String, Map<String, String>>() {
+      @Override
+      public void accept(String key, String value, Map<String, String> state) {
+        state.put(escape(key), escape(value));
+      }
+    }, hashTable);
     return hashTable;
   }
 
-  /* (non-Javadoc)
-     * @see org.apache.log4j.Layout#ignoresThrowable()
-     */
-  public boolean ignoresThrowable() {
-    return false;
-  }
-
-  /* (non-Javadoc)
-   * @see org.apache.log4j.spi.OptionHandler#activateOptions()
-   */
-  public void activateOptions() {
-  }
-
-  /* (non-Javadoc)
-   * @see org.apache.log4j.Layout#format(java.io.Writer, org.apache.log4j.spi.LoggingEvent)
-   */
-  public String format(final LoggingEvent event) {
-      LoggingEvent newEvent =  copyForHTML(event);
-      /**
+  public String format(final LogEvent event) {
+      LogEvent newEvent = copyForHTML(event);
+      /*
        * Layouts are not thread-safe, but are normally
        * protected by the fact that their Appender is thread-safe.
        * 
        * But here in Chainsaw there is no such guarantees.
        */ 
-      synchronized(patternLayout) {
-          return patternLayout.format(newEvent);
+      synchronized (this) {
+          return patternLayout.toSerializable(newEvent);
       }
   }
 }

@@ -114,14 +114,14 @@ public interface EventContainer extends SortTableModel, LoggerNameModel {
   /**
    * Returns the vector representing the row.
    */
-  LoggingEventWrapper getRow(int row);
+  LogEventWrapper getRow(int row);
 
   /**
    * Adds a row to the model.
    * @param e event
    * @return flag representing whether or not the row is being displayed (not filtered)
    */
-  boolean isAddRow(LoggingEventWrapper e);
+  boolean isAddRow(LogEventWrapper e);
 
   /**
    * Fire appropriate table update events for the range.
@@ -152,9 +152,9 @@ public interface EventContainer extends SortTableModel, LoggerNameModel {
 
   /**
    * Returns the index of the LoggingEventWrapper
-   * @param loggingEventWrapper
+   * @param logEventWrapper
    */
-  int getRowIndex(LoggingEventWrapper loggingEventWrapper);
+  int getRowIndex(LogEventWrapper logEventWrapper);
 
   /**
    * Remove property from all events in container

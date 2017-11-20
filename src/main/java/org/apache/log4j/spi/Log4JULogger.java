@@ -16,10 +16,10 @@
  */
 package org.apache.log4j.spi;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.Level;
 import org.apache.log4j.ULogger;
 import org.apache.log4j.helpers.MessageFormatter;
-import org.apache.log4j.Level;
 
 
 /**
@@ -142,7 +142,7 @@ public final class Log4JULogger implements ULogger {
      * {@inheritDoc}
      */
     public boolean isWarnEnabled() {
-        return logger.isEnabledFor(Level.WARN);
+        return logger.isEnabled(Level.WARN);
     }
 
     /**
@@ -157,7 +157,7 @@ public final class Log4JULogger implements ULogger {
      */
     public void warn(final Object parameterizedMsg,
                      final Object param1) {
-        if (logger.isEnabledFor(Level.WARN)) {
+        if (logger.isEnabled(Level.WARN)) {
             logger.warn(MessageFormatter.format(
                     parameterizedMsg.toString(), param1));
         }
@@ -169,7 +169,7 @@ public final class Log4JULogger implements ULogger {
     public void warn(final String parameterizedMsg,
                      final Object param1,
                      final Object param2) {
-        if (logger.isEnabledFor(Level.WARN)) {
+        if (logger.isEnabled(Level.WARN)) {
             logger.warn(MessageFormatter.format(
                     parameterizedMsg.toString(), param1, param2));
         }
@@ -186,7 +186,7 @@ public final class Log4JULogger implements ULogger {
      * {@inheritDoc}
      */
     public boolean isErrorEnabled() {
-        return logger.isEnabledFor(Level.ERROR);
+        return logger.isEnabled(Level.ERROR);
     }
 
     /**
@@ -201,7 +201,7 @@ public final class Log4JULogger implements ULogger {
      * {@inheritDoc}
      */
     public void error(final Object parameterizedMsg, final Object param1) {
-        if (logger.isEnabledFor(Level.ERROR)) {
+        if (logger.isEnabled(Level.ERROR)) {
             logger.error(MessageFormatter.format(
                     parameterizedMsg.toString(), param1));
         }
@@ -213,7 +213,7 @@ public final class Log4JULogger implements ULogger {
     public void error(final String parameterizedMsg,
                       final Object param1,
                       final Object param2) {
-        if (logger.isEnabledFor(Level.ERROR)) {
+        if (logger.isEnabled(Level.ERROR)) {
             logger.error(MessageFormatter.format(
                     parameterizedMsg.toString(), param1, param2));
         }

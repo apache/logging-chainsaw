@@ -37,13 +37,11 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
 import org.apache.log4j.helpers.UtilLoggingLevel;
 import org.apache.log4j.spi.Decoder;
-import org.apache.log4j.spi.LoggingEvent;
-import org.apache.log4j.spi.ThrowableInformation;
-import org.apache.log4j.spi.LocationInfo;
+import org.apache.logging.log4j.core.LogEvent;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -77,7 +75,7 @@ public class UtilLoggingXMLDecoder implements Decoder {
     /**
      * Additional properties.
      */
-  private Map additionalProperties = new HashMap();
+  private Map<String, String> additionalProperties = new HashMap<>();
     /**
      * Partial event.
      */
@@ -120,17 +118,17 @@ public class UtilLoggingXMLDecoder implements Decoder {
 
   /**
    * Sets an additionalProperty map, where each Key/Value pair is
-   * automatically added to each LoggingEvent as it is decoded.
+   * automatically added to each LogEvent as it is decoded.
    *
    * This is useful, say, to include the source file name of the Logging events
    * @param properties additional properties
    */
-  public void setAdditionalProperties(final Map properties) {
+  public void setAdditionalProperties(final Map<String, String> properties) {
     this.additionalProperties = properties;
   }
 
   /**
-   * Converts the LoggingEvent data in XML string format into an actual
+   * Converts the LogEvent data in XML string format into an actual
    * XML Document class instance.
    * @param data XML fragment
    * @return  dom document
@@ -180,7 +178,7 @@ public class UtilLoggingXMLDecoder implements Decoder {
    * @return Vector of LoggingEvents
    * @throws IOException if IO error during processing.
    */
-  public Vector decode(final URL url) throws IOException {
+  public Vector<LogEvent> decode(final URL url) throws IOException {
     LineNumberReader reader;
     boolean isZipFile = url.getPath().toLowerCase().endsWith(".zip");
     InputStream inputStream;
@@ -199,10 +197,10 @@ public class UtilLoggingXMLDecoder implements Decoder {
     } else {
         reader = new LineNumberReader(new InputStreamReader(inputStream, ENCODING));
     }
-    Vector v = new Vector();
+    Vector<LogEvent> v = new Vector<>();
 
       String line;
-      Vector events;
+      Vector<LogEvent> events;
       try {
           while ((line = reader.readLine()) != null) {
               StringBuffer buffer = new StringBuffer(line);
@@ -233,7 +231,7 @@ public class UtilLoggingXMLDecoder implements Decoder {
    * @param document to decode events from
    * @return Vector of LoggingEvents
    */
-  public Vector decodeEvents(final String document) {
+  public Vector<LogEvent> decodeEvents(final String document) {
 
       if (document != null) {
 
@@ -279,22 +277,22 @@ public class UtilLoggingXMLDecoder implements Decoder {
 
     /**
       * Converts the string data into an XML Document, and then soaks out the
-      * relevant bits to form a new LoggingEvent instance which can be used
+      * relevant bits to form a new LogEvent instance which can be used
       * by any Log4j element locally.
       * @param data XML fragment
-      * @return a single LoggingEvent or null
+      * @return a single LogEvent or null
       */
-  public LoggingEvent decode(final String data) {
+  public LogEvent decode(final String data) {
     Document document = parse(data);
 
     if (document == null) {
       return null;
     }
 
-    Vector events = decodeEvents(document);
+    Vector<LogEvent> events = decodeEvents(document);
 
     if (events.size() > 0) {
-      return (LoggingEvent) events.firstElement();
+      return events.firstElement();
     }
 
     return null;
@@ -305,8 +303,8 @@ public class UtilLoggingXMLDecoder implements Decoder {
    * @param document XML document
    * @return Vector of LoggingEvents
    */
-  private Vector decodeEvents(final Document document) {
-    Vector events = new Vector();
+  private Vector<LogEvent> decodeEvents(final Document document) {
+    Vector<LogEvent> events = new Vector<>();
 
     NodeList eventList = document.getElementsByTagName("record");
 
@@ -325,7 +323,7 @@ public class UtilLoggingXMLDecoder implements Decoder {
     String methodName = null;
     String fileName = null;
     String lineNumber = null;
-    Hashtable properties = new Hashtable();
+    Hashtable<String, String> properties = new Hashtable<>();
 
       //format of date: 2003-05-04T11:04:52
       //ignore date or set as a property? using millis in constructor instead
@@ -372,7 +370,7 @@ public class UtilLoggingXMLDecoder implements Decoder {
         }
 
         if (tagName.equalsIgnoreCase("exception")) {
-          ArrayList exceptionList = new ArrayList();
+          ArrayList<String> exceptionList = new ArrayList<>();
           NodeList exList = list.item(y).getChildNodes();
           int exlistLength = exList.getLength();
 
@@ -394,35 +392,33 @@ public class UtilLoggingXMLDecoder implements Decoder {
             }
           }
           if (exceptionList.size() > 0) {
-              exception =
-                (String[]) exceptionList.toArray(new String[exceptionList.size()]);
+              exception = exceptionList.toArray(new String[exceptionList.size()]);
           }
         }
       }
 
-        /**
+        /*
          * We add all the additional properties to the properties
          * hashtable. Override properties that already exist
          */
         if (additionalProperties.size() > 0) {
             if (properties == null) {
-                properties = new Hashtable(additionalProperties);
+                properties = new Hashtable<String, String>(additionalProperties);
             }
-            Iterator i = additionalProperties.entrySet().iterator();
-            while (i.hasNext()) {
-                Map.Entry e = (Map.Entry) i.next();
+            for (Object o : additionalProperties.entrySet()) {
+                Map.Entry e = (Map.Entry)o;
                 properties.put(e.getKey(), e.getValue());
             }
         }
 
-      LocationInfo info;
+      StackTraceElement info;
       if ((fileName != null)
               || (className != null)
               || (methodName != null)
               || (lineNumber != null)) {
-          info = new LocationInfo(fileName, className, methodName, lineNumber);
+          info = new StackTraceElement(fileName, className, methodName, Integer.parseInt(lineNumber));
       } else {
-        info = LocationInfo.NA_LOCATION_INFO;
+        info = null;
       }
 
         ThrowableInformation throwableInfo = null;
@@ -430,7 +426,7 @@ public class UtilLoggingXMLDecoder implements Decoder {
             throwableInfo = new ThrowableInformation(exception);
         }
 
-        LoggingEvent loggingEvent = new LoggingEvent(null,
+        LogEvent loggingEvent = new LogEvent(null,
                 logger, timeStamp, level, message,
                 threadName,
                 throwableInfo,
@@ -450,7 +446,7 @@ public class UtilLoggingXMLDecoder implements Decoder {
      * @return text content of all text or CDATA children of node.
      */
   private String getCData(final Node n) {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     NodeList nl = n.getChildNodes();
 
     for (int x = 0; x < nl.getLength(); x++) {

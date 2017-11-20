@@ -17,7 +17,7 @@
 
 package org.apache.log4j.spi;
 
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
 
 /**
  * An interface that defines the required methods for supporting the
@@ -32,7 +32,7 @@ import org.apache.log4j.Level;
  */
 public interface Thresholdable {
     /**
-     * Sets the component theshold to the given level.
+     * Sets the component threshold to the given level.
      *
      * @param level The threshold level events must equal or be greater
      *              than before further processing can be done.

@@ -48,9 +48,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.log4j.chainsaw.ChainsawConstants;
 import org.apache.log4j.chainsaw.LogFilePatternLayoutBuilder;
 import org.apache.log4j.chainsaw.SmallButton;
@@ -59,7 +58,6 @@ import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.chainsaw.plugins.GUIPluginSkeleton;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.chainsaw.vfs.VFSLogFilePatternReceiver;
-import org.apache.log4j.helpers.LogLog;
 import org.apache.log4j.net.MulticastReceiver;
 import org.apache.log4j.net.SocketHubReceiver;
 import org.apache.log4j.net.SocketReceiver;
@@ -74,6 +72,7 @@ import org.apache.log4j.spi.LoggerRepositoryEx;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
+import org.apache.logging.log4j.status.StatusLogger;
 
 /**
  * This plugin is designed to detect specific Zeroconf zones (Rendevouz/Bonjour,
@@ -90,7 +89,7 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
  */
 public class ZeroConfPlugin extends GUIPluginSkeleton {
 
-    private static final Logger LOG = Logger.getLogger(ZeroConfPlugin.class);
+    private static final Logger LOG = LogManager.getLogger(ZeroConfPlugin.class);
 
     private ZeroConfDeviceModel discoveredDevices = new ZeroConfDeviceModel();
 
@@ -588,7 +587,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
             return receiver;
         }
         //not recognized
-        LogLog.debug("Unable to find receiver for appender with service name: " + zone);
+        StatusLogger.getLogger().debug("Unable to find receiver for appender with service name: " + zone);
         return null;
     }
 

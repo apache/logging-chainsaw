@@ -21,7 +21,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.log4j.chainsaw.LogUI;
 
 
@@ -38,7 +39,7 @@ import org.apache.log4j.chainsaw.LogUI;
  */
 public class OSXIntegration {
     public static final boolean IS_OSX = System.getProperty("os.name").startsWith("Mac OS X");
-    private static final Logger LOG = Logger.getLogger(OSXIntegration.class);
+    private static final Logger LOG = LogManager.getLogger(OSXIntegration.class);
     private static Object applicationInstance;
     public static final void init(final LogUI logui) {
         LOG.info("OSXIntegration.init() called");

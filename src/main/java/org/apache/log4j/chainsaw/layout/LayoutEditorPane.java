@@ -21,8 +21,10 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 import java.util.Date;
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -42,18 +44,20 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
 import org.apache.log4j.chainsaw.ChainsawConstants;
 import org.apache.log4j.chainsaw.JTextComponentFormatter;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
-import org.apache.log4j.spi.LocationInfo;
-import org.apache.log4j.spi.LoggingEvent;
-import org.apache.log4j.spi.ThrowableInformation;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.impl.Log4jLogEvent;
+import org.apache.logging.log4j.core.impl.ThrowableProxy;
+import org.apache.logging.log4j.message.SimpleMessage;
+import org.apache.logging.log4j.spi.MutableThreadContextStack;
 
 
 /**
  * An editor Pane that allows a user to Edit a Pattern Layout and preview the output it would
- * generate with an example LoggingEvent
+ * generate with an example LogEvent
  * 
  * @author Paul Smith &lt;psmith@apache.org&gt;
  *
@@ -78,7 +82,7 @@ public final class LayoutEditorPane extends JPanel {
     new JScrollPane(
     		ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
     		ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-  private LoggingEvent event;
+  private LogEvent event;
   private EventDetailLayout layout = new EventDetailLayout();
 
   /**
@@ -94,9 +98,6 @@ public final class LayoutEditorPane extends JPanel {
     setupListeners();
   }
 
-  /**
-  * @return
-  */
   private Action createCutAction() {
     final Action action =
       new AbstractAction("Cut", ChainsawIcons.ICON_CUT) {
@@ -110,9 +111,6 @@ public final class LayoutEditorPane extends JPanel {
     return action;
   }
 
-  /**
-   * @return
-   */
   private Action createCopyAction() {
     final Action action =
       new AbstractAction("Copy", ChainsawIcons.ICON_COPY) {
@@ -126,9 +124,6 @@ public final class LayoutEditorPane extends JPanel {
     return action;
   }
 
-  /**
-    *
-    */
   private void setupListeners() {
     patternEditor.getDocument().addDocumentListener(
       new DocumentListener() {
@@ -172,28 +167,29 @@ public final class LayoutEditorPane extends JPanel {
       *
       */
   private void createEvent() {
-    Hashtable hashTable = new Hashtable();
-    hashTable.put("key1", "val1");
-    hashTable.put("key2", "val2");
-    hashTable.put("key3", "val3");
+    Map<String, String> contextMap = new HashMap<>(3);
+    contextMap.put("key1", "val1");
+    contextMap.put("key2", "val2");
+    contextMap.put("key3", "val3");
 
-    LocationInfo li =
-      new LocationInfo(
-        "myfile.java", "com.mycompany.util.MyClass", "myMethod", "321");
+    StackTraceElement li =
+      new StackTraceElement(
+        "myfile.java", "com.mycompany.util.MyClass", "myMethod", 321);
 
-    ThrowableInformation tsr = new ThrowableInformation(new Exception());
+    ThrowableProxy tsr = new ThrowableProxy(new Exception());
 
-    event = new LoggingEvent("org.apache.log4j.Logger",
-	    Logger.getLogger("com.mycompany.mylogger"),
-		new Date().getTime(),
-		org.apache.log4j.Level.DEBUG,
-		"The quick brown fox jumped over the lazy dog",
-		"Thread-1",
-		tsr,
-		"NDC string",
-		li,
-		hashTable);
-    
+    event = Log4jLogEvent.newBuilder()
+                .setLoggerFqcn("org.apache.log4j.Logger")
+                .setLoggerName("com.mycompany.mylogger")
+                .setTimeMillis(new Date().getTime())
+                .setLevel(Level.DEBUG)
+                .setMessage(new SimpleMessage("The quick brown fox jumped over the lazy dog"))
+                .setThreadName("Thread-1")
+                .setThrownProxy(tsr)
+                .setContextStack(new MutableThreadContextStack(Arrays.asList("NDC", "string")))
+                .setContextMap(contextMap)
+                .setSource(li)
+                .build();
   }
 
   /**

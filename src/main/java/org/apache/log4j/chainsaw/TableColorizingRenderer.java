@@ -173,8 +173,8 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     final JTable table, Object value, boolean isSelected, boolean hasFocus,
     int row, int col) {
     EventContainer container = (EventContainer) table.getModel();
-    LoggingEventWrapper loggingEventWrapper = container.getRow(row);
-    value = formatField(value, loggingEventWrapper);
+    LogEventWrapper logEventWrapper = container.getRow(row);
+    value = formatField(value, logEventWrapper);
     TableColumn tableColumn = table.getColumnModel().getColumn(col);
     int width = tableColumn.getWidth();
     JLabel label = (JLabel)super.getTableCellRendererComponent(table, value,
@@ -183,16 +183,16 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     int colIndex = tableColumn.getModelIndex() + 1;
 
     //no event, use default renderer
-    if (loggingEventWrapper == null) {
+    if (logEventWrapper == null) {
         return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
     }
     long delta = 0;
     if (row > 0) {
-        LoggingEventWrapper previous = eventContainer.getRow(row - 1);
-        delta = Math.min(ChainsawConstants.MILLIS_DELTA_RENDERING_HEIGHT_MAX, Math.max(0, (long) ((loggingEventWrapper.getLoggingEvent().getTimeStamp() - previous.getLoggingEvent().getTimeStamp()) * ChainsawConstants.MILLIS_DELTA_RENDERING_FACTOR)));
+        LogEventWrapper previous = eventContainer.getRow(row - 1);
+        delta = Math.min(ChainsawConstants.MILLIS_DELTA_RENDERING_HEIGHT_MAX, Math.max(0, (long) ((logEventWrapper.getLogEvent().getTimeStamp() - previous.getLogEvent().getTimeStamp()) * ChainsawConstants.MILLIS_DELTA_RENDERING_FACTOR)));
     }
 
-    Map matches = loggingEventWrapper.getSearchMatches();
+    Map matches = logEventWrapper.getSearchMatches();
 
     JComponent component;
     switch (colIndex) {
@@ -325,8 +325,8 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
               textPane.setBorder(getMiddleBorder(isSelected, 0));
             }
         }
-        int currentMarkerHeight = loggingEventWrapper.getMarkerHeight();
-        int currentMsgHeight = loggingEventWrapper.getMsgHeight();
+        int currentMarkerHeight = logEventWrapper.getMarkerHeight();
+        int currentMsgHeight = logEventWrapper.getMsgHeight();
         int newRowHeight = ChainsawConstants.DEFAULT_ROW_HEIGHT;
         boolean setHeight = false;
 
@@ -351,15 +351,15 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         }
 
         if (colIndex == ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME) {
-            loggingEventWrapper.setMarkerHeight(newRowHeight);
-            if (newRowHeight != currentMarkerHeight && newRowHeight >= loggingEventWrapper.getMsgHeight()) {
+            logEventWrapper.setMarkerHeight(newRowHeight);
+            if (newRowHeight != currentMarkerHeight && newRowHeight >= logEventWrapper.getMsgHeight()) {
                 setHeight = true;
             }
         }
 
         if (colIndex == ChainsawColumns.INDEX_MESSAGE_COL_NAME) {
-            loggingEventWrapper.setMsgHeight(newRowHeight);
-            if (newRowHeight != currentMsgHeight && newRowHeight >= loggingEventWrapper.getMarkerHeight()) {
+            logEventWrapper.setMsgHeight(newRowHeight);
+            if (newRowHeight != currentMsgHeight && newRowHeight >= logEventWrapper.getMarkerHeight()) {
                 setHeight = true;
             }
         }
@@ -394,7 +394,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
 
     //remaining entries are properties
     default:
-        Set propertySet = loggingEventWrapper.getPropertyKeySet();
+        Set propertySet = logEventWrapper.getPropertyKeySet();
         String headerName = tableColumn.getHeaderValue().toString().toLowerCase();
         String thisProp = null;
         //find the property in the property set...case-sensitive
@@ -408,7 +408,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         if (thisProp != null) {
             String propKey = LoggingEventFieldResolver.PROP_FIELD + thisProp.toUpperCase();
             Set propKeyMatches = (Set)matches.get(propKey);
-            singleLineTextPane.setText(loggingEventWrapper.getLoggingEvent().getProperty(thisProp));
+            singleLineTextPane.setText(logEventWrapper.getLogEvent().getProperty(thisProp));
             setHighlightAttributesInternal(propKeyMatches, (StyledDocument) singleLineTextPane.getDocument());
         } else {
             singleLineTextPane.setText("");
@@ -422,16 +422,16 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     Color foreground;
     Rule loggerRule = colorizer.getLoggerRule();
     //use logger colors in table instead of event colors if event passes logger rule
-    if (loggerRule != null && loggerRule.evaluate(loggingEventWrapper.getLoggingEvent(), null)) {
+    if (loggerRule != null && loggerRule.evaluate(logEventWrapper.getLogEvent(), null)) {
         background = applicationPreferenceModel.getSearchBackgroundColor();
         foreground = applicationPreferenceModel.getSearchForegroundColor();
     } else {
         if (colorizeSearch && !applicationPreferenceModel.isBypassSearchColors()) {
-          background = loggingEventWrapper.isSearchMatch()?applicationPreferenceModel.getSearchBackgroundColor():loggingEventWrapper.getBackground();
-          foreground = loggingEventWrapper.isSearchMatch()?applicationPreferenceModel.getSearchForegroundColor():loggingEventWrapper.getForeground();
+          background = logEventWrapper.isSearchMatch()?applicationPreferenceModel.getSearchBackgroundColor(): logEventWrapper.getBackground();
+          foreground = logEventWrapper.isSearchMatch()?applicationPreferenceModel.getSearchForegroundColor(): logEventWrapper.getForeground();
         } else {
-          background = loggingEventWrapper.getBackground();
-          foreground = loggingEventWrapper.getForeground();
+          background = logEventWrapper.getBackground();
+          foreground = logEventWrapper.getForeground();
         }
     }
 
@@ -564,7 +564,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
    *
    * @return formatted object
    */
-  private Object formatField(Object field, LoggingEventWrapper loggingEventWrapper) {
+  private Object formatField(Object field, LogEventWrapper logEventWrapper) {
     if (!(field instanceof Date)) {
       return (field == null ? "" : field);
     }
@@ -574,7 +574,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         return "" + (((Date)field).getTime() - relativeTimestampBase);
     }
     if (useRelativeTimesToPrevious) {
-        return loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
+        return logEventWrapper.getLogEvent().getProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
     }
 
     return dateFormatInUse.format((Date) field);

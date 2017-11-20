@@ -20,7 +20,7 @@
   <groupId>log4j</groupId>
   <artifactId>apache-chainsaw</artifactId>
   <name>Apache Chainsaw</name>
-  <version>2.0.0</version>
+  <version>3.0.0</version>
   <description>Graphical Viewer for Logging events from a local or remote log4j event system.</description>
   <url>https://logging.apache.org/chainsaw</url>
   <inceptionYear>2002</inceptionYear>
@@ -139,8 +139,8 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
+          <source>1.7</source>
+          <target>1.7</target>
         </configuration>
       </plugin>
       <plugin>
@@ -382,14 +382,19 @@
   </build>
   <dependencies>
     <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>apache-log4j-extras</artifactId>
-      <version>1.1</version>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>2.9.1</version>
     </dependency>
     <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.16</version>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>2.9.1</version>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>3.7</version>
     </dependency>
     <dependency>
       <groupId>javax.jmdns</groupId>
@@ -533,4 +538,3 @@
     </profile>
   </profiles>
 </project>
-

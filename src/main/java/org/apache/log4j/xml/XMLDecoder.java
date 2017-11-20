@@ -36,12 +36,13 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.log4j.spi.Decoder;
-import org.apache.log4j.spi.LocationInfo;
-import org.apache.log4j.spi.LoggingEvent;
-import org.apache.log4j.spi.ThrowableInformation;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.impl.Log4jLogEvent;
+import org.apache.logging.log4j.core.impl.ThrowableProxy;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -49,13 +50,13 @@ import org.xml.sax.InputSource;
 
 
 /**
- * Decodes Logging Events in XML formated into elements that are used by
+ * Decodes Log4j 1.2 XML formatted log events into elements that are used by
  * Chainsaw.
  *
  * This decoder can process a collection of log4j:event nodes ONLY
  * (no XML declaration nor eventSet node)
  *
- * NOTE:  Only a single LoggingEvent is returned from the decode method
+ * NOTE:  Only a single LogEvent is returned from the decode method
  * even though the DTD supports multiple events nested in an eventSet.
  *
  * NOTE: This class has been created on the assumption that all XML log files
@@ -94,7 +95,7 @@ public class XMLDecoder implements Decoder {
     /**
      * Additional properties.
      */
-  private Map additionalProperties = new HashMap();
+  private Map<String, String> additionalProperties = new HashMap<>();
     /**
      * Partial event.
      */
@@ -123,7 +124,6 @@ public class XMLDecoder implements Decoder {
     try {
       docBuilder = dbf.newDocumentBuilder();
       docBuilder.setErrorHandler(new SAXErrorHandler());
-      docBuilder.setEntityResolver(new Log4jEntityResolver());
     } catch (ParserConfigurationException pce) {
       System.err.println("Unable to get document builder");
     }
@@ -131,17 +131,17 @@ public class XMLDecoder implements Decoder {
 
   /**
    * Sets an additionalProperty map, where each Key/Value pair is
-   * automatically added to each LoggingEvent as it is decoded.
+   * automatically added to each LogEvent as it is decoded.
    *
    * This is useful, say, to include the source file name of the Logging events
    * @param properties additional properties
    */
-  public void setAdditionalProperties(final Map properties) {
+  public void setAdditionalProperties(final Map<String, String> properties) {
     this.additionalProperties = properties;
   }
 
   /**
-   * Converts the LoggingEvent data in XML string format into an actual
+   * Converts the LogEvent data in XML string format into an actual
    * XML Document class instance.
    * @param data XML fragment
    * @return dom document
@@ -158,7 +158,7 @@ public class XMLDecoder implements Decoder {
       // causes Crimson to barf. The Log4jEntityResolver only cares
       // about the "log4j.dtd" ending.
 
-      /**
+      /*
        * resetting the length of the StringBuffer is dangerous, particularly
        * on some JDK 1.4 impls, there's a known Bug that causes a memory leak
        */
@@ -184,7 +184,7 @@ public class XMLDecoder implements Decoder {
    * @return Vector of LoggingEvents
    * @throws IOException if IO error during processing.
    */
-  public Vector decode(final URL url) throws IOException {
+  public Vector<LogEvent> decode(final URL url) throws IOException {
     LineNumberReader reader;
     boolean isZipFile = url.getPath().toLowerCase().endsWith(".zip");
     InputStream inputStream;
@@ -204,10 +204,10 @@ public class XMLDecoder implements Decoder {
         reader = new LineNumberReader(new InputStreamReader(inputStream, ENCODING));
     }
 
-    Vector v = new Vector();
+    Vector<LogEvent> v = new Vector<>();
 
     String line;
-    Vector events;
+    Vector<LogEvent> events;
     try {
         while ((line = reader.readLine()) != null) {
             StringBuffer buffer = new StringBuffer(line);
@@ -238,7 +238,7 @@ public class XMLDecoder implements Decoder {
      * @param document to decode events from
      * @return Vector of LoggingEvents
      */
-  public Vector decodeEvents(final String document) {
+  public Vector<LogEvent> decodeEvents(final String document) {
     if (document != null) {
       if (document.trim().equals("")) {
         return null;
@@ -281,12 +281,12 @@ public class XMLDecoder implements Decoder {
 
   /**
    * Converts the string data into an XML Document, and then soaks out the
-   * relevant bits to form a new LoggingEvent instance which can be used
+   * relevant bits to form a new LogEvent instance which can be used
    * by any Log4j element locally.
    * @param data XML fragment
-   * @return a single LoggingEvent or null
+   * @return a single LogEvent or null
    */
-  public LoggingEvent decode(final String data) {
+  public LogEvent decode(final String data) {
     Document document = parse(data);
 
     if (document == null) {
@@ -296,7 +296,7 @@ public class XMLDecoder implements Decoder {
     Vector events = decodeEvents(document);
 
     if (events.size() > 0) {
-      return (LoggingEvent) events.firstElement();
+      return (LogEvent) events.firstElement();
     }
 
     return null;
@@ -307,8 +307,8 @@ public class XMLDecoder implements Decoder {
    * @param document XML document
    * @return Vector of LoggingEvents
    */
-  private Vector decodeEvents(final Document document) {
-    Vector events = new Vector();
+  private Vector<LogEvent> decodeEvents(final Document document) {
+    Vector<LogEvent> events = new Vector<>();
 
     Logger logger;
     long timeStamp;
@@ -335,7 +335,7 @@ public class XMLDecoder implements Decoder {
         if (eventNode.getNodeType() != Node.ELEMENT_NODE) {
             continue;
         }
-      logger = Logger.getLogger(eventNode.getAttributes().getNamedItem("logger").getNodeValue());
+      logger = LogManager.getLogger(eventNode.getAttributes().getNamedItem("logger").getNodeValue());
       timeStamp = Long.parseLong(eventNode.getAttributes().getNamedItem("timestamp").getNodeValue());
       level = Level.toLevel(eventNode.getAttributes().getNamedItem("level").getNodeValue());
       threadName = eventNode.getAttributes().getNamedItem("thread").getNodeValue();
@@ -433,21 +433,21 @@ public class XMLDecoder implements Decoder {
           }
       }
 
-      LocationInfo info;
+      StackTraceElement info;
       if ((fileName != null)
               || (className != null)
               || (methodName != null)
               || (lineNumber != null)) {
-          info = new LocationInfo(fileName, className, methodName, lineNumber);
+          info = new StackTraceElement(fileName, className, methodName, Integer.parseInt(lineNumber));
       } else {
-        info = LocationInfo.NA_LOCATION_INFO;
+        info = null;
       }
-      ThrowableInformation throwableInfo = null;
+      ThrowableProxy throwableInfo = null;
       if (exception != null) {
-          throwableInfo = new ThrowableInformation(exception);
+          throwableInfo = new ThrowableProxy(exception);
       }
 
-        LoggingEvent loggingEvent = new LoggingEvent(null,
+        LogEvent loggingEvent = new Log4jLogEvent(null,
                 logger, timeStamp, level, message,
                 threadName,
                 throwableInfo,

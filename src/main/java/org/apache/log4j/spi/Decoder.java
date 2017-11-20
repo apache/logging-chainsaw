@@ -18,6 +18,8 @@
 package org.apache.log4j.spi;
 
 
+import org.apache.logging.log4j.core.LogEvent;
+
 import java.io.IOException;
 
 import java.net.URL;
@@ -38,26 +40,26 @@ public interface Decoder {
      * @param document document to decode.
      * @return list of LoggingEvent instances.
      */
-  Vector decodeEvents(String document);
+  Vector<LogEvent> decodeEvents(String document);
 
     /**
      * Decode event from string.
      * @param event string representation of event
      * @return event
      */
-  LoggingEvent decode(String event);
+  LogEvent decode(String event);
 
     /**
-     * Decode event from document retreived from URL.
+     * Decode event from document retrieved from URL.
      * @param url url of document
      * @return list of LoggingEvent instances.
      * @throws IOException if IO error resolving document.
      */
-  Vector decode(URL url) throws IOException;
+  Vector<LogEvent> decode(URL url) throws IOException;
 
     /**
      * Sets additional properties.
      * @param additionalProperties map of additional properties.
      */
-  void setAdditionalProperties(Map additionalProperties);
+  void setAdditionalProperties(Map<String, String> additionalProperties);
 }

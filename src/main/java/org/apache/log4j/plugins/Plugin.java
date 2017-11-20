@@ -135,7 +135,7 @@ public interface Plugin extends OptionHandler {
      * is more work than is needed, so this simple method is used instead.</p>
      *
      * @param testPlugin The plugin to test equivalency against.
-     * @return Returns true if testPlugin is considered to be equivelent.
+     * @return Returns true if testPlugin is considered to be equivalent.
      */
     boolean isEquivalent(Plugin testPlugin);
 

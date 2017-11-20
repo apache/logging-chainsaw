@@ -17,8 +17,8 @@
 
 package org.apache.log4j.spi;
 
-import org.apache.log4j.Appender;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.Logger;
 
 
 /**

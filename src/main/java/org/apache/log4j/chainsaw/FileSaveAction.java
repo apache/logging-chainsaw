@@ -117,9 +117,9 @@ class FileSaveAction extends AbstractAction {
       }
       Iterator iter = v.iterator();
       while (iter.hasNext()) {
-        LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) iter.next();
-        layout.setLocationInfo(loggingEventWrapper.getLoggingEvent().getThrowableInformation() != null);
-        writer.write(layout.format(loggingEventWrapper.getLoggingEvent()));
+        LogEventWrapper logEventWrapper = (LogEventWrapper) iter.next();
+        layout.setLocationInfo(logEventWrapper.getLogEvent().getThrowableInformation() != null);
+        writer.write(layout.format(logEventWrapper.getLogEvent()));
       }
     } catch (IOException ioe) {
       LogLog.warn("Unable to save file", ioe);

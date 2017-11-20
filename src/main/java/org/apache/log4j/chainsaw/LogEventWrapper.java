@@ -22,17 +22,16 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.helpers.Constants;
-import org.apache.log4j.rule.Rule;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.core.LogEvent;
 
 /**
- * Wrap access to a LoggingEvent.  All property updates need to go through this object and not through the wrapped logging event,
- * since the properties are shared by two views of the same backing LoggingEvent, and loggingEvent itself creates a copy of passed-in properties..
+ * Wrap access to a LogEvent.  All property updates need to go through this object and not through the wrapped logging event,
+ * since the properties are shared by two views of the same backing LogEvent, and logEvent itself creates a copy of passed-in properties..
  *
- * Property reads can be made on the actual LoggingEvent.
+ * Property reads can be made on the actual LogEvent.
  */
-public class LoggingEventWrapper {
-  private final LoggingEvent loggingEvent;
+public class LogEventWrapper {
+  private final LogEvent logEvent;
   private static final int DEFAULT_HEIGHT = -1;
 
   private Color colorRuleBackground = ChainsawConstants.COLOR_DEFAULT_BACKGROUND;
@@ -46,44 +45,44 @@ public class LoggingEventWrapper {
   private boolean searchMatch = false;
   //a Map of event fields to Sets of string matches (can be used to render matches differently)
   Map eventMatches = new HashMap();
-  private LoggingEventWrapper syncWrapper;
+  private LogEventWrapper syncWrapper;
   private boolean displayed;
 
-  public LoggingEventWrapper(LoggingEvent loggingEvent) {
-    this.loggingEvent = loggingEvent;
+  public LogEventWrapper(LogEvent logEvent) {
+    this.logEvent = logEvent;
   }
 
-  public LoggingEventWrapper(LoggingEventWrapper loggingEventWrapper) {
-    this.loggingEvent = loggingEventWrapper.getLoggingEvent();
-    this.id = loggingEventWrapper.id;
-    this.syncWrapper = loggingEventWrapper;
-    loggingEventWrapper.syncWrapper = this;
+  public LogEventWrapper(LogEventWrapper logEventWrapper) {
+    this.logEvent = logEventWrapper.getLogEvent();
+    this.id = logEventWrapper.id;
+    this.syncWrapper = logEventWrapper;
+    logEventWrapper.syncWrapper = this;
   }
 
-  public LoggingEvent getLoggingEvent() {
-    return loggingEvent;
+  public LogEvent getLogEvent() {
+    return logEvent;
   }
 
   public void setProperty(String propName, String propValue) {
-    loggingEvent.setProperty(propName, propValue);
+    logEvent.setProperty(propName, propValue);
     if (id == 0 && propName.equals(Constants.LOG4J_ID_KEY)) {
       id = Integer.parseInt(propValue);
     }
     if (syncWrapper != null && !propName.equals(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE)) {
-      syncWrapper.getLoggingEvent().setProperty(propName, propValue);
+      syncWrapper.getLogEvent().setProperty(propName, propValue);
     }
   }
 
   public Object removeProperty(String propName) {
-    Object result = loggingEvent.removeProperty(propName);
+    Object result = logEvent.removeProperty(propName);
     if (syncWrapper != null && !propName.equals(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE)) {
-      syncWrapper.getLoggingEvent().removeProperty(propName);
+      syncWrapper.getLogEvent().removeProperty(propName);
     }
     return result;
   }
 
   public Set getPropertyKeySet() {
-    return loggingEvent.getPropertyKeySet();
+    return logEvent.getPropertyKeySet();
   }
 
   public void updateColorRuleColors(Color backgroundColor, Color foregroundColor) {
@@ -106,7 +105,7 @@ public class LoggingEventWrapper {
 
   public void evaluateSearchRule(Rule searchRule) {
     eventMatches.clear();
-    searchMatch = searchRule != null && searchRule.evaluate(loggingEvent, eventMatches);
+    searchMatch = searchRule != null && searchRule.evaluate(logEvent, eventMatches);
   }
 
   public Map getSearchMatches() {
@@ -156,7 +155,7 @@ public class LoggingEventWrapper {
   }
 
   public void setPreviousDisplayedEventTimestamp(long previousDisplayedEventTimeStamp) {
-    setProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE, String.valueOf(loggingEvent.getTimeStamp() - previousDisplayedEventTimeStamp));
+    setProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE, String.valueOf(logEvent.getTimeStamp() - previousDisplayedEventTimeStamp));
   }
 
   public boolean isDisplayed() {
@@ -171,7 +170,7 @@ public class LoggingEventWrapper {
       return false;
     }
 
-    LoggingEventWrapper that = (LoggingEventWrapper) o;
+    LogEventWrapper that = (LogEventWrapper) o;
 
     if (id != that.id) {
       return false;
@@ -185,6 +184,6 @@ public class LoggingEventWrapper {
   }
 
   public String toString() {
-    return "LoggingEventWrapper - id: " + id + " background: " + getBackground() + ", foreground: " + getForeground() + ", msg: " + loggingEvent.getMessage();
+    return "LoggingEventWrapper - id: " + id + " background: " + getBackground() + ", foreground: " + getForeground() + ", msg: " + logEvent.getMessage();
   }
 }

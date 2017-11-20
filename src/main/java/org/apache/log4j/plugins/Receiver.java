@@ -17,9 +17,9 @@
 
 package org.apache.log4j.plugins;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LogEvent;
 import org.apache.log4j.spi.Thresholdable;
 
 
@@ -70,7 +70,7 @@ public abstract class Receiver extends PluginSkeleton implements Thresholdable {
     }
 
     /**
-     * Sets the receiver theshold to the given level.
+     * Sets the receiver threshold to the given level.
      *
      * @param level The threshold level events must equal or be greater
      *              than before further processing can be done.
@@ -100,7 +100,7 @@ public abstract class Receiver extends PluginSkeleton implements Thresholdable {
      */
     public boolean isAsSevereAsThreshold(final Level level) {
         return ((thresholdLevel == null)
-                || level.isGreaterOrEqual(thresholdLevel));
+                || level.isLessSpecificThan(thresholdLevel));
     }
 
     /**
@@ -109,7 +109,7 @@ public abstract class Receiver extends PluginSkeleton implements Thresholdable {
      *
      * @param event the log event to post to the local log4j environment.
      */
-    public void doPost(final LoggingEvent event) {
+    public void doPost(final LogEvent event) {
         // if event does not meet threshold, exit now
         if (!isAsSevereAsThreshold(event.getLevel())) {
             return;
@@ -123,7 +123,7 @@ public abstract class Receiver extends PluginSkeleton implements Thresholdable {
         // if the logger level is greater or equal to the level
         // of the event, use the logger to append the event.
         if (event.getLevel()
-                .isGreaterOrEqual(localLogger.getEffectiveLevel())) {
+                .isLessSpecificThan(localLogger.getEffectiveLevel())) {
             // call the loggers appenders to process the event
             localLogger.callAppenders(event);
         }

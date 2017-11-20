@@ -21,11 +21,6 @@ import org.apache.log4j.plugins.Pauseable;
 import org.apache.log4j.plugins.Receiver;
 import org.apache.log4j.scheduler.Scheduler;
 import org.apache.log4j.spi.LoggerRepositoryEx;
-import org.apache.log4j.xml.DOMConfigurator;
-import org.apache.log4j.xml.UnrecognizedElementHandler;
-import org.w3c.dom.Element;
-
-import java.util.Properties;
 
 /**
  *
@@ -33,7 +28,7 @@ import java.util.Properties;
  * @author Ceki G&uuml;lc&uuml;
  *
  */
-public class DBReceiver extends Receiver implements Pauseable, UnrecognizedElementHandler {
+public class DBReceiver extends Receiver implements Pauseable {
   /**
    * By default we refresh data every 1000 milliseconds.
    * @see #setRefreshMillis
@@ -118,23 +113,6 @@ public class DBReceiver extends Receiver implements Pauseable, UnrecognizedEleme
    */
   public boolean isPaused() {
     return paused;
-  }
-
-    /**
-     * {@inheritDoc}
-     */
-  public boolean parseUnrecognizedElement(Element element, Properties props) throws Exception {
-        if ("connectionSource".equals(element.getNodeName())) {
-            Object instance =
-                    DOMConfigurator.parseElement(element, props, ConnectionSource.class);
-            if (instance instanceof ConnectionSource) {
-                ConnectionSource source = (ConnectionSource) instance;
-                source.activateOptions();
-                setConnectionSource(source);
-            }
-            return true;
-        }
-        return false;
   }
 
 }

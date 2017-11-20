@@ -26,19 +26,19 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.plugins.Pauseable;
 import org.apache.log4j.plugins.Receiver;
 import org.apache.log4j.spi.ComponentBase;
 import org.apache.log4j.spi.LoggerRepository;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LogEvent;
 
 
 // Contributors:  Moses Hohman <mmhohman@rainbow.uchicago.edu>
 
 /**
-   Read {@link LoggingEvent} objects sent from a remote client using
+   Read {@link LogEvent} objects sent from a remote client using
    Sockets (TCP). These logging events are logged according to local
    policy, as if they were generated locally.
 
@@ -142,7 +142,7 @@ public class SocketNode13 extends ComponentBase implements Runnable, Pauseable {
      * Deserialize events from socket until interrupted.
      */
   public void run() {
-    LoggingEvent event;
+    LogEvent event;
     Logger remoteLogger;
     Exception listenerException = null;
     ObjectInputStream ois = null;
@@ -171,10 +171,10 @@ public class SocketNode13 extends ComponentBase implements Runnable, Pauseable {
       try {
         while (!isClosed()) {
           // read an event from the wire
-          event = (LoggingEvent) ois.readObject();
-          event.setProperty(Constants.HOSTNAME_KEY, hostName);
+          event = (LogEvent) ois.readObject();
+          event.getContextMap().put(Constants.HOSTNAME_KEY, hostName);
           // store the known remote info in an event property
-          event.setProperty("log4j.remoteSourceInfo", remoteInfo);
+          event.getContextMap().put("log4j.remoteSourceInfo", remoteInfo);
 
           // if configured with a receiver, tell it to post the event
           if (!isPaused() && !isClosed()) {
@@ -191,9 +191,9 @@ public class SocketNode13 extends ComponentBase implements Runnable, Pauseable {
               // apply the logger-level filter
               if (event
                 .getLevel()
-                .isGreaterOrEqual(remoteLogger.getEffectiveLevel())) {
+                .isLessSpecificThan(remoteLogger.getLevel())) {
                 // finally log the event as if was generated locally
-                remoteLogger.callAppenders(event);
+                remoteLogger. callAppenders(event);
               }
             }
           } else {
