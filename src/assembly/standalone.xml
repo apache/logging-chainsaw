@@ -28,6 +28,7 @@
       <directory>target/appassembler/bin</directory>
       <outputDirectory>bin</outputDirectory>
       <lineEnding>unix</lineEnding>
+      <directoryMode>0755</directoryMode>
       <fileMode>0755</fileMode>
     </fileSet>
     <fileSet>
