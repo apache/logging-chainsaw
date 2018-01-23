@@ -333,16 +333,28 @@
         </executions>
       </plugin>
       <plugin>
-         <groupId>org.codehaus.mojo</groupId>
-         <artifactId>osxappbundle-maven-plugin</artifactId>
-         <version>1.0-alpha-2</version>
+        <groupId>sh.tak.appbundler</groupId>
+        <artifactId>appbundle-maven-plugin</artifactId>
+        <version>1.2.0</version>
         <configuration>
           <mainClass>${chainsaw.mainclass}</mainClass>
-          <dictionaryFile>${basedir}/src/main/resources/Info.plist</dictionaryFile>
-          <iconFile>${basedir}/src/main/resources/logo.icns</iconFile>
           <bundleName>Chainsaw</bundleName>
+          <iconFile>logo.icns</iconFile>
+          <generateDiskImageFile>true</generateDiskImageFile>
+          <jvmOptions>
+            <jvmOption>-Xms128m</jvmOption>
+            <jvmOption>-Xmx512m</jvmOption>
+          </jvmOptions>
         </configuration>
-      </plugin>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>bundle</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin> 
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>webstart-maven-plugin</artifactId>
