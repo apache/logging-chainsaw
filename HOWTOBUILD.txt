@@ -39,7 +39,7 @@ target/appassembler/bin/chainsaw.bat
 [OSX]
 You can use the *nix steps above, or go one extra step for a nicer OSX experience
 
-mvn package osxappbundle:bundle -DmainClass=org.apache.log4j.chainsaw.LogUI
+mvn package appbundle:bundle
 
 This will create an OSX distribution, look inside the target folder for the packaged OSX application and .dmg distribution.  You can drag the application to your /Applications folder, or just double click it from the target folder.
 
