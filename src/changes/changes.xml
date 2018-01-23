@@ -21,6 +21,18 @@
   </properties>
   <body>
       <release version="2.0.0" date="2018-01-20" description="Apache Chainsaw 2.0.0">
+      <action dev="sdeboy" type="fix">
+          Doc updates
+      </action>
+      <action dev="mattsicker" type="fix">
+          Update to minimum Java 1.6
+      </action>
+      <action dev="mattsicker" type="fix">
+          Branding fixes
+      </action>
+      <action dev="bodewig" type="fix">
+          Update to support maven3
+      </action>
       <action dev="psmith" issue="42789" type="add" due-to="Isuru Suriarachchi" due-to-email="">
 		Added support for remembering filter expressions for each LogPanel
       </action>

@@ -14,12 +14,12 @@
 ~~ limitations under the License.
 Download
 
-   Latest Development Build:  Date: 2006-03-02 (SVN tag 'release_20060302')
+   Latest Build:
 
-	* {{{http://logging.apache.org/log4j/docs/webstart/chainsaw/chainsawWebStart.jnlp}Java Web Start}} 
-	
 	* {{{http://logging.apache.org/log4j/docs/webstart/chainsaw/chainsaw.dmg}OSX}} - .dmg bundled distribution.  Drag to your /Applications folder
 	
-	* {{{http://logging.apache.org/log4j/docs/webstart/chainsaw/chainsaw-bundle.zip}Unix/Dos Standalone}} (.bat/.sh)
+	* {{{http://logging.apache.org/log4j/docs/webstart/chainsaw/apache-chainsaw-2.0.0-standalone.tar.gz}Standalone tar.gz}} (Unix/Mac: bin/chainsaw, Windows: bin/chainsaw.bat)
+
+	* {{{http://logging.apache.org/log4j/docs/webstart/chainsaw/apache-chainsaw-2.0.0-standalone.zip}Standalone zip}} (Unix/Mac: bin/chainsaw, Windows: bin/chainsaw.bat)
 	
 	Please check the {{{distributionnotes.html}Important Distribution Notes}} for more information about some of the extended feature sets.
