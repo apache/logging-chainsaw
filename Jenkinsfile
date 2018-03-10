@@ -24,7 +24,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                ansiColor {
+                ansiColor('xterm') {
                     sh 'mvn site:site'
                     sh 'mvn package'
                 }
