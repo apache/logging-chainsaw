@@ -32,8 +32,7 @@ pipeline {
         stage('Build') {
             steps {
                 checkout scm
-                def image = docker.image 'maven:3-alpine'
-                image.inside {
+                docker.image('maven:3-alpine').inside {
                     ansiColor
                     sh 'mvn site:site'
                     sh 'mvn package'
