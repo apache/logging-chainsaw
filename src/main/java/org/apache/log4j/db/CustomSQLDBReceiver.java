@@ -170,7 +170,7 @@ public class CustomSQLDBReceiver extends Receiver implements Pauseable, Unrecogn
         throw new IllegalStateException(
           "CustomSQLDBReceiver cannot function without a connection source");
       }
-      whereExists = (sqlStatement.toUpperCase().indexOf(WHERE_CLAUSE) > -1);
+      whereExists = (sqlStatement.toUpperCase().contains(WHERE_CLAUSE));
     
       customReceiverJob = new CustomReceiverJob();
         
@@ -341,8 +341,8 @@ public class CustomSQLDBReceiver extends Receiver implements Pauseable, Unrecogn
                         // support MDC being wrapped in {{name, value}}
                         // or
                         // just name, value
-                        if ((mdcString.indexOf("{{") > -1)
-                                && (mdcString.indexOf("}}") > -1)) {
+                        if ((mdcString.contains("{{"))
+                                && (mdcString.contains("}}"))) {
                             mdcString = mdcString
                                     .substring(mdcString.indexOf("{{") + 2,
                                             mdcString.indexOf("}}"));
@@ -374,8 +374,8 @@ public class CustomSQLDBReceiver extends Receiver implements Pauseable, Unrecogn
                     if (propertiesString != null) {
                         // support properties being wrapped in {{name,
                         // value}} or just name, value
-                        if ((propertiesString.indexOf("{{") > -1)
-                                && (propertiesString.indexOf("}}") > -1)) {
+                        if ((propertiesString.contains("{{"))
+                                && (propertiesString.contains("}}"))) {
                             propertiesString = propertiesString.substring(
                                     propertiesString.indexOf("{{") + 2,
                                     propertiesString.indexOf("}}"));

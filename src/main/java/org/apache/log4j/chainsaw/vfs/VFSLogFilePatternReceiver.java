@@ -237,7 +237,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
       //we don't want to call super.activateOptions, but we do want active to be set to true
       active = true;
       //on receiver restart, only prompt for credentials if we don't already have them
-      if (promptForUserInfo && getFileURL().indexOf("@") == -1) {
+      if (promptForUserInfo && !getFileURL().contains("@")) {
     	  /*
     	  if promptforuserinfo is true, wait for a reference to the container
     	  (via the VisualReceiver callback).
@@ -305,7 +305,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
       } else {
         //starts with protocol:/  but not protocol://
         String oldURL = getFileURL();
-        if (oldURL != null && oldURL.indexOf(":/") > -1 && oldURL.indexOf("://") == -1) {
+        if (oldURL != null && oldURL.contains(":/") && !oldURL.contains("://")) {
           int index = oldURL.indexOf(":/");
           String lastPart = oldURL.substring(index + ":/".length());
           int passEndIndex = lastPart.indexOf("@");
@@ -315,7 +315,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
           }
           vfsReader = new VFSReader();
           new Thread(vfsReader).start();
-        } else if (oldURL != null && oldURL.indexOf("://") > -1) {
+        } else if (oldURL != null && oldURL.contains("://")) {
         //starts with protocol://
             int index = oldURL.indexOf("://");
             String lastPart = oldURL.substring(index + "://".length());

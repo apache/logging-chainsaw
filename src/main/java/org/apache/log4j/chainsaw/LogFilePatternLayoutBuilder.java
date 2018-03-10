@@ -182,7 +182,7 @@ public class LogFilePatternLayoutBuilder
         String propertyName = propertyNames.nextElement().toString();
         if (propertyName.startsWith(appenderPrefix)) {
           String value = propertyName.substring(appenderPrefix.length() + 1);
-          if (value.indexOf(".") == -1) {
+          if (!value.contains(".")) {
             //no sub-values - this entry is the appender name & class
             appenders.put(value, props.getProperty(propertyName).trim());
           }

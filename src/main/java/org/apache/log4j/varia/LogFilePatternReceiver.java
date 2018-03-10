@@ -709,7 +709,7 @@ public class LogFilePatternReceiver extends Receiver {
     List propertyNames = new ArrayList();
     index = 0;
     while (index > -1) {
-        if (current.indexOf(PROP_START) > -1 && current.indexOf(PROP_END) > -1) {
+        if (current.contains(PROP_START) && current.contains(PROP_END)) {
             index = current.indexOf(PROP_START);
             String longPropertyName = current.substring(current.indexOf(PROP_START), current.indexOf(PROP_END) + 1);
             String shortProp = getShortPropertyName(longPropertyName);

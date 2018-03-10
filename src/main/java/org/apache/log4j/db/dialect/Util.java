@@ -44,15 +44,15 @@ public class Util extends ComponentBase {
 
       String dbName = meta.getDatabaseProductName().toLowerCase();
 
-      if (dbName.indexOf(POSTGRES_PART) != -1) {
+      if (dbName.contains(POSTGRES_PART)) {
         return ConnectionSource.POSTGRES_DIALECT;
-      } else if (dbName.indexOf(MYSQL_PART) != -1) {
+      } else if (dbName.contains(MYSQL_PART)) {
         return ConnectionSource.MYSQL_DIALECT;
-      } else if (dbName.indexOf(ORACLE_PART) != -1) {
+      } else if (dbName.contains(ORACLE_PART)) {
         return ConnectionSource.ORACLE_DIALECT;
-      } else if (dbName.indexOf(MSSQL_PART) != -1) {
+      } else if (dbName.contains(MSSQL_PART)) {
         return ConnectionSource.MSSQL_DIALECT;
-      } else if (dbName.indexOf(HSQL_PART) != -1) {
+      } else if (dbName.contains(HSQL_PART)) {
         return ConnectionSource.HSQL_DIALECT;
       } else {
         return ConnectionSource.UNKNOWN_DIALECT;
