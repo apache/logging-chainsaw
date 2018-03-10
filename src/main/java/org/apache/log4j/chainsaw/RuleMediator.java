@@ -63,11 +63,7 @@ public class RuleMediator extends AbstractRule {
       return false;
     }
 
-    if (filterRule != null && !filterRule.evaluate(e, null)) {
-      return false;
-    }
-
-    return true;
+      return filterRule == null || filterRule.evaluate(e, null);
   }
 
   public boolean isFindRuleRequired() {

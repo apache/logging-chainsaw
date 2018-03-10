@@ -222,11 +222,8 @@ public class ExpressionRuleContext extends KeyAdapter {
       text.substring(lastFieldStartPosition, lastFieldPosition).toUpperCase()
           .trim();
 
-    if (resolver.isField(field)) {
-      return true;
-    }
+      return resolver.isField(field);
 
-    return false;
   }
 
   //returns the currently active field which can be used to display a context menu

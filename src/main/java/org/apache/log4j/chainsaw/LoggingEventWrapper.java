@@ -173,11 +173,7 @@ public class LoggingEventWrapper {
 
     LoggingEventWrapper that = (LoggingEventWrapper) o;
 
-    if (id != that.id) {
-      return false;
-    }
-
-    return true;
+      return id == that.id;
   }
 
   public int hashCode() {

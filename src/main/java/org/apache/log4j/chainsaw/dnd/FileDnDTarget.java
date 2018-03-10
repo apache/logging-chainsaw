@@ -171,9 +171,7 @@ public class FileDnDTarget implements DropTargetListener{
     	int sa = e.getSourceActions();
     
     	// we're saying that these actions are necessary
-    	if ((sa & acceptableActions) == 0)
-    		return false;
-    	return true;
+        return (sa & acceptableActions) != 0;
     }
 
     /**
