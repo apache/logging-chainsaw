@@ -453,11 +453,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         }});
 
     LogManager.getRootLogger().setLevel(Level.TRACE);
-    EventQueue.invokeLater(new Runnable() {
-        public void run() {
-            logUI.activateViewer();
-        }
-    });
+    EventQueue.invokeLater(logUI::activateViewer);
 
     logger.info("SecurityManager is now: " + System.getSecurityManager());
 
@@ -1074,11 +1070,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     if (
       noReceiversDefined
         && applicationPreferenceModel.isShowNoReceiverWarning()) {
-      SwingHelper.invokeOnEDT(new Runnable() {
-          public void run() {
-              showReceiverConfigurationPanel();
-          }
-      });
+      SwingHelper.invokeOnEDT(this::showReceiverConfigurationPanel);
     }
 
     Container container = tutorialFrame.getContentPane();

@@ -3388,13 +3388,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                   //                logger.debug("Typed something recently applying filter");
                   if (!(textFeld.getText().trim().equals(lastText.trim()))) {
                     lastText = textFeld.getText();
-                    EventQueue.invokeLater(new Runnable()
-                    {
-                        public void run()
-                        {
-                          setFilter();
-                        }
-                    });
+                    EventQueue.invokeLater(DelayedTextDocumentListener.this::setFilter);
                   }
                 } else {
                   // they stopped typing a while ago, let's forget about it

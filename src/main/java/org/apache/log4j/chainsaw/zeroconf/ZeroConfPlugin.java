@@ -630,11 +630,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         frame.pack();
         frame.setVisible(true);
 
-        Thread thread = new Thread(new Runnable() {
-            public void run() {
-                plugin.shutdown();
-            }
-        });
+        Thread thread = new Thread(plugin::shutdown);
         Runtime.getRuntime().addShutdownHook(thread);
     }
 

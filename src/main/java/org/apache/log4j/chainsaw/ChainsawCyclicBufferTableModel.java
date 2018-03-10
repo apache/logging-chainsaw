@@ -374,11 +374,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
       uniqueRow = 0;
     }
 
-    SwingHelper.invokeOnEDT(new Runnable() {
-    	public void run() {
-    	    fireTableDataChanged();
-    	}
-    });
+    SwingHelper.invokeOnEDT(this::fireTableDataChanged);
 
     notifyCountListeners();
     loggerNameModelDelegate.reset();

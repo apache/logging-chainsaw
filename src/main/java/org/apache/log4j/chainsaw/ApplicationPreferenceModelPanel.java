@@ -123,12 +123,7 @@ public static void main(String[] args) {
       new ApplicationPreferenceModelPanel(model);
     f.getContentPane().add(panel);
 
-    model.addPropertyChangeListener(
-      new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-          System.out.println(evt);
-        }
-      });
+    model.addPropertyChangeListener(System.out::println);
     panel.setOkCancelActionListener(
       new ActionListener() {
         public void actionPerformed(ActionEvent e) {
