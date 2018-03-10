@@ -32,7 +32,7 @@ pipeline {
                     }
                 }
                 junit '**/target/surefire-reports/*.xml'
-                archiveArtifacts 'target/apache-chainsaw-*.*'
+                archiveArtifacts '**/target/apache-chainsaw-*.*'
             }
         }
     }
