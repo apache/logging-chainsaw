@@ -19,22 +19,19 @@
  */
 
 pipeline {
-    agent {
-        label 'ubuntu'
-    }
+    agent any
+    tool name: 'Maven 3 (latest)', type: 'maven'
     stages {
         stage('Build') {
             steps {
-                deleteDir()
-                checkout scm
-                docker.image('maven:3-alpine').inside {
-                    ansiColor
+                ansiColor {
                     sh 'mvn site:site'
                     sh 'mvn package'
-                    junit '**/target/surefire-reports/*.xml'
-                    archive 'target/apache-chainsaw-*.*'
                 }
+                junit '**/target/surefire-reports/*.xml'
+                archive 'target/apache-chainsaw-*.*'
             }
         }
     }
 }
+
