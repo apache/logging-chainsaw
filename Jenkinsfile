@@ -19,17 +19,20 @@
  */
 
 pipeline {
-    agent any
+    agent {
+        label 'ubuntu'
+    }
     stages {
         stage('Build') {
             steps {
-                tool name: 'Maven 3 (latest)', type: 'maven'
-                ansiColor('xterm') {
-                    sh 'mvn site:site'
-                    sh 'mvn package'
+                withMaven(jdk: 'JDK 1.8 (latest)', maven: 'Maven 3 (latest)') {
+                    ansiColor('xterm') {
+                        sh 'mvn site:site'
+                        sh 'mvn package'
+                    }
                 }
                 junit '**/target/surefire-reports/*.xml'
-                archive 'target/apache-chainsaw-*.*'
+                archiveArtifacts 'target/apache-chainsaw-*.*'
             }
         }
     }
