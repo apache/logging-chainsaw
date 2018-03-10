@@ -36,7 +36,7 @@ public interface EventBatchListener extends EventListener {
    * any identifier
    * @return String identifier of the interested source
    */
-  public String getInterestedIdentifier();
+  String getInterestedIdentifier();
 
   /**
    * Implementations receive a list of LoggingEvent instances only if they are interested,
@@ -44,5 +44,5 @@ public interface EventBatchListener extends EventListener {
    * @param events List of LoggingEvent instances
    * @param identifier the identifier this list of LoggingEvents is associated with
    */
-  public void receiveEventBatch(String identifier, List events);
+  void receiveEventBatch(String identifier, List events);
 }

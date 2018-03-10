@@ -38,7 +38,7 @@ public interface Colorizer {
    * @param event
    * @return background color 
    */
-  public Color getBackgroundColor(LoggingEvent event);
+  Color getBackgroundColor(LoggingEvent event);
   
-  public Color getForegroundColor(LoggingEvent event);
+  Color getForegroundColor(LoggingEvent event);
 }

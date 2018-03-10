@@ -26,5 +26,5 @@ import java.util.EventListener;
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 public interface EventCountListener  extends EventListener{
-  public void eventCountChanged(int currentCount, int totalCount);
+  void eventCountChanged(int currentCount, int totalCount);
 }

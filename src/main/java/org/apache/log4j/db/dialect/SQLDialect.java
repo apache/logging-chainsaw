@@ -22,6 +22,6 @@ package org.apache.log4j.db.dialect;
  */
 public interface SQLDialect {
   
-  public String getSelectInsertId();
+  String getSelectInsertId();
   
 }

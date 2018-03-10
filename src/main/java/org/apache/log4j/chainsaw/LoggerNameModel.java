@@ -36,7 +36,7 @@ public interface LoggerNameModel {
    * 
    * @return unmodifiable Collection of Logger name Strings
    */
-  public Collection getLoggerNames();
+  Collection getLoggerNames();
   
   /**
    * Attempts to add the loggerName to the model, and returns
@@ -48,13 +48,13 @@ public interface LoggerNameModel {
    * 
    * @param loggerName
    */
-  public boolean addLoggerName(String loggerName);
+  boolean addLoggerName(String loggerName);
 
   /**
    * The logger names have been cleared
    */
-  public void reset();
+  void reset();
   
-  public void addLoggerNameListener(LoggerNameListener l);
-  public void removeLoggerNameListener(LoggerNameListener l);
+  void addLoggerNameListener(LoggerNameListener l);
+  void removeLoggerNameListener(LoggerNameListener l);
 }

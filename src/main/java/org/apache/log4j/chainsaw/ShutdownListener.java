@@ -34,5 +34,5 @@ import java.util.EventListener;
  */
 public interface ShutdownListener extends EventListener{
 
-  public void shuttingDown();
+  void shuttingDown();
 }

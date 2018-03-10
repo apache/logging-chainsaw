@@ -33,12 +33,12 @@ import java.sql.SQLException;
  */
 public interface ConnectionSource extends Component, OptionHandler {
 
-  final int UNKNOWN_DIALECT = 0;
-  final int POSTGRES_DIALECT = 1;
-  final int MYSQL_DIALECT = 2;
-  final int ORACLE_DIALECT = 3;
-  final int MSSQL_DIALECT = 4;
-  final int HSQL_DIALECT = 5;  
+  int UNKNOWN_DIALECT = 0;
+  int POSTGRES_DIALECT = 1;
+  int MYSQL_DIALECT = 2;
+  int ORACLE_DIALECT = 3;
+  int MSSQL_DIALECT = 4;
+  int HSQL_DIALECT = 5;
   /**
    *  Obtain a {@link java.sql.Connection} for use.  The client is
    *  responsible for closing the {@link java.sql.Connection} when it is no
@@ -64,6 +64,6 @@ public interface ConnectionSource extends Component, OptionHandler {
   
   /**
    * If the connection does not support batch updates, we will avoid using them.
-   */  
-  public boolean supportsBatchUpdates();
+   */
+  boolean supportsBatchUpdates();
 }

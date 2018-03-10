@@ -49,7 +49,7 @@ public interface SettingsListener extends EventListener {
 	 * 
 	 * @param event
 	 */
-	public void loadSettings(LoadSettingsEvent event);
+    void loadSettings(LoadSettingsEvent event);
   
-	public void saveSettings(SaveSettingsEvent event);
+	void saveSettings(SaveSettingsEvent event);
 }

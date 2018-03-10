@@ -31,5 +31,5 @@ public interface NewKeyListener extends EventListener {
 	/**
 	 * @param e the new key event being added
 	 */
-  public void newKeyAdded(NewKeyEvent e);
+    void newKeyAdded(NewKeyEvent e);
 }

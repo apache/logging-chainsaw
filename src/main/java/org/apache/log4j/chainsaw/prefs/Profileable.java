@@ -34,7 +34,7 @@ public interface Profileable extends SettingsListener {
 	 * Must be able to provide a name which is used to determine at a minimum, 
 	 * the default profile name prefix for this component.
 	*/
-	public String getNamespace();
+    String getNamespace();
 	
 
 }
