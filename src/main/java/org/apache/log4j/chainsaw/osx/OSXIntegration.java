@@ -66,15 +66,19 @@ public class OSXIntegration {
                         new InvocationHandler() {
 
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                    if("handlePreferences".equals(method.getName())){
-                        LOG.info("handlePreferences(...) called");
-                        logui.showApplicationPreferences();
-                    }else if("handleQuit".equals(method.getName())){
-                        setHandled(args[0], logui.exit()?Boolean.TRUE:Boolean.FALSE);
-                        
-                    }else if("handleAbout".equals(method.getName())) {
-                        logui.showAboutBox();
-                        setHandled(args[0], Boolean.TRUE);
+                    switch (method.getName()) {
+                        case "handlePreferences":
+                            LOG.info("handlePreferences(...) called");
+                            logui.showApplicationPreferences();
+                            break;
+                        case "handleQuit":
+                            setHandled(args[0], logui.exit() ? Boolean.TRUE : Boolean.FALSE);
+
+                            break;
+                        case "handleAbout":
+                            logui.showAboutBox();
+                            setHandled(args[0], Boolean.TRUE);
+                            break;
                     }
 //                    TODO think about File Open/Save options
                     return null;

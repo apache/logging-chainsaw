@@ -141,13 +141,17 @@ class ChainsawTabbedPane extends JTabbedPane implements SettingsListener {
      SavableTabSetting setting = new SavableTabSetting();
      for(int i = 0 ; i < count ; i++){
        title = super.getTitleAt(i);
-       if(title.equals(WELCOME_TAB)){
-         setting.setWelcome(true);
-       } else if (title.equals("chainsaw-log")){
-         setting.setChainsawLog(true);
-       } else if (title.equals(ZEROCONF)){
-         setting.setZeroconf(true);
-       }
+         switch (title) {
+             case WELCOME_TAB:
+                 setting.setWelcome(true);
+                 break;
+             case "chainsaw-log":
+                 setting.setChainsawLog(true);
+                 break;
+             case ZEROCONF:
+                 setting.setZeroconf(true);
+                 break;
+         }
      }
 
      stream.toXML(setting, writer);

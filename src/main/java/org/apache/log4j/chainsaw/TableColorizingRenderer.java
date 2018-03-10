@@ -702,16 +702,17 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
             String elementName = elem.getName();
             if (elementName != null)
             {
-                if (elementName.equals(AbstractDocument.ParagraphElementName)) {
-                    return new OneLineParagraphView(elem);
-                } else  if (elementName.equals(AbstractDocument.ContentElementName)) {
-                    return new LabelView(elem);
-                } else if (elementName.equals(AbstractDocument.SectionElementName)) {
-                    return new BoxView(elem, View.Y_AXIS);
-                } else if (elementName.equals(StyleConstants.ComponentElementName)) {
-                    return new ComponentView(elem);
-                } else if (elementName.equals(StyleConstants.IconElementName)) {
-                    return new IconView(elem);
+                switch (elementName) {
+                    case AbstractDocument.ParagraphElementName:
+                        return new OneLineParagraphView(elem);
+                    case AbstractDocument.ContentElementName:
+                        return new LabelView(elem);
+                    case AbstractDocument.SectionElementName:
+                        return new BoxView(elem, View.Y_AXIS);
+                    case StyleConstants.ComponentElementName:
+                        return new ComponentView(elem);
+                    case StyleConstants.IconElementName:
+                        return new IconView(elem);
                 }
             }
             return new LabelView(elem);
