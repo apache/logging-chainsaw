@@ -172,8 +172,8 @@ public class ChainsawAppenderHandler extends AppenderSkeleton {
   void setDataRate(double dataRate) {
     double oldValue = this.dataRate;
     this.dataRate = dataRate;
-    propertySupport.firePropertyChange("dataRate", new Double(oldValue),
-        new Double(this.dataRate));
+    propertySupport.firePropertyChange("dataRate", oldValue,
+            this.dataRate);
   }
 
   /**

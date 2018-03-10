@@ -57,8 +57,7 @@ public abstract class ConnectionSourceSkeleton extends ComponentBase implements 
       Util util = new Util();
       util.setLoggerRepository(repository);
       if (overriddenSupportsGetGeneratedKeys != null) {
-        supportsGetGeneratedKeys = overriddenSupportsGetGeneratedKeys
-            .booleanValue();
+        supportsGetGeneratedKeys = overriddenSupportsGetGeneratedKeys;
       } else {
         supportsGetGeneratedKeys = util.supportsGetGeneratedKeys(meta);
       }

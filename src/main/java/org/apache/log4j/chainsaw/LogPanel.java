@@ -372,7 +372,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       "scrollToBottom",
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+          boolean value = (Boolean) evt.getNewValue();
           if (value) {
             scrollToBottom();
           }
@@ -438,7 +438,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     preferenceModel.addPropertyChangeListener("levelIcons",
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          boolean useIcons = ((Boolean) evt.getNewValue()).booleanValue();
+          boolean useIcons = (Boolean) evt.getNewValue();
           renderer.setLevelUseIcons(useIcons);
           table.tableChanged(new TableModelEvent(tableModel));
           searchRenderer.setLevelUseIcons(useIcons);
@@ -452,7 +452,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     preferenceModel.addPropertyChangeListener("wrapMessage",
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          boolean wrap = ((Boolean) evt.getNewValue()).booleanValue();
+          boolean wrap = (Boolean) evt.getNewValue();
           renderer.setWrapMessage(wrap);
           table.tableChanged(new TableModelEvent(tableModel));
           searchRenderer.setWrapMessage(wrap);
@@ -463,7 +463,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     preferenceModel.addPropertyChangeListener("searchResultsVisible",
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          boolean displaySearchResultsInDetailsIfAvailable = ((Boolean) evt.getNewValue()).booleanValue();
+          boolean displaySearchResultsInDetailsIfAvailable = (Boolean) evt.getNewValue();
           if (displaySearchResultsInDetailsIfAvailable) {
             showSearchResults();
           } else {
@@ -475,7 +475,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       preferenceModel.addPropertyChangeListener("highlightSearchMatchText",
         new PropertyChangeListener() {
           public void propertyChange(PropertyChangeEvent evt) {
-            boolean highlightText = ((Boolean) evt.getNewValue()).booleanValue();
+            boolean highlightText = (Boolean) evt.getNewValue();
             renderer.setHighlightSearchMatchText(highlightText);
             table.tableChanged(new TableModelEvent(tableModel));
             searchRenderer.setHighlightSearchMatchText(highlightText);
@@ -487,7 +487,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       "detailPaneVisible",
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          boolean detailPaneVisible = ((Boolean) evt.getNewValue()).booleanValue();
+          boolean detailPaneVisible = (Boolean) evt.getNewValue();
 
           if (detailPaneVisible) {
             showDetailPane();
@@ -504,7 +504,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       "logTreePanelVisible",
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          boolean newValue = ((Boolean) evt.getNewValue()).booleanValue();
+          boolean newValue = (Boolean) evt.getNewValue();
 
           if (newValue) {
             showLogTreePanel();
@@ -517,7 +517,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     preferenceModel.addPropertyChangeListener("toolTips",
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          boolean toolTips = ((Boolean) evt.getNewValue()).booleanValue();
+          boolean toolTips = (Boolean) evt.getNewValue();
           renderer.setToolTipsVisible(toolTips);
           searchRenderer.setToolTipsVisible(toolTips);
         }
@@ -618,7 +618,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     preferenceModel.addPropertyChangeListener("toolTips",
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+          boolean value = (Boolean) evt.getNewValue();
           searchToggleToolTips.setSelected(value);
           mainToggleToolTips.setSelected(value);
         }
@@ -628,7 +628,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       "logTreePanelVisible",
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+          boolean value = (Boolean) evt.getNewValue();
           menuItemLoggerTree.setSelected(value);
         }
       });
@@ -637,7 +637,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       "detailPaneVisible",
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+          boolean value = (Boolean) evt.getNewValue();
           menuItemToggleDetails.setSelected(value);
         }
       });
@@ -982,7 +982,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       public void mouseClicked(MouseEvent e) {
         LoggingEventWrapper loggingEventWrapper = searchModel.getRow(searchTable.getSelectedRow());
         if (loggingEventWrapper != null) {
-          int id = new Integer(loggingEventWrapper.getLoggingEvent().getProperty("log4jid")).intValue();
+          int id = new Integer(loggingEventWrapper.getLoggingEvent().getProperty("log4jid"));
           //preserve the table's viewble column
           setSelectedEvent(id);
         }
@@ -1277,14 +1277,14 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
     JPanel rightThumbNailPanel = new JPanel();
     rightThumbNailPanel.setLayout(new BoxLayout(rightThumbNailPanel, BoxLayout.Y_AXIS));
-    rightThumbNailPanel.add(Box.createVerticalStrut(scrollBarWidth.intValue()));
+    rightThumbNailPanel.add(Box.createVerticalStrut(scrollBarWidth));
     colorizedEventAndSearchMatchThumbnail = new ColorizedEventAndSearchMatchThumbnail();
     rightThumbNailPanel.add(colorizedEventAndSearchMatchThumbnail);
-    rightThumbNailPanel.add(Box.createVerticalStrut(scrollBarWidth.intValue()));
+    rightThumbNailPanel.add(Box.createVerticalStrut(scrollBarWidth));
     rightPanel.add(rightThumbNailPanel);
     //set thumbnail width to be a bit narrower than scrollbar width
     if (scrollBarWidth != null) {
-        rightThumbNailPanel.setPreferredSize(new Dimension(scrollBarWidth.intValue() -4, -1));
+        rightThumbNailPanel.setPreferredSize(new Dimension(scrollBarWidth -4, -1));
     }
     eventsAndStatusPanel.add(rightPanel, BorderLayout.EAST);
 
@@ -1293,15 +1293,15 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
     JPanel leftThumbNailPanel = new JPanel();
     leftThumbNailPanel.setLayout(new BoxLayout(leftThumbNailPanel, BoxLayout.Y_AXIS));
-    leftThumbNailPanel.add(Box.createVerticalStrut(scrollBarWidth.intValue()));
+    leftThumbNailPanel.add(Box.createVerticalStrut(scrollBarWidth));
     eventTimeDeltaMatchThumbnail = new EventTimeDeltaMatchThumbnail();
     leftThumbNailPanel.add(eventTimeDeltaMatchThumbnail);
-    leftThumbNailPanel.add(Box.createVerticalStrut(scrollBarWidth.intValue()));
+    leftThumbNailPanel.add(Box.createVerticalStrut(scrollBarWidth));
     leftPanel.add(leftThumbNailPanel);
 
     //set thumbnail width to be a bit narrower than scrollbar width
     if (scrollBarWidth != null) {
-        leftThumbNailPanel.setPreferredSize(new Dimension(scrollBarWidth.intValue() -4, -1));
+        leftThumbNailPanel.setPreferredSize(new Dimension(scrollBarWidth -4, -1));
     }
     eventsAndStatusPanel.add(leftPanel, BorderLayout.WEST);
 
@@ -2688,10 +2688,10 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       detailPanel.removeAll();
       JPanel leftSpacePanel = new JPanel();
       Integer scrollBarWidth = (Integer) UIManager.get("ScrollBar.width");
-      leftSpacePanel.setPreferredSize(new Dimension(scrollBarWidth.intValue() -4, -1));
+      leftSpacePanel.setPreferredSize(new Dimension(scrollBarWidth -4, -1));
 
       JPanel rightSpacePanel = new JPanel();
-      rightSpacePanel.setPreferredSize(new Dimension(scrollBarWidth.intValue() -4, -1));
+      rightSpacePanel.setPreferredSize(new Dimension(scrollBarWidth -4, -1));
 
       detailPanel.add(detailToolbar, BorderLayout.NORTH);
       detailPanel.add(detailPane, BorderLayout.CENTER);
@@ -2717,9 +2717,9 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
       detailPanel.add(searchPane, BorderLayout.CENTER);
       Integer scrollBarWidth = (Integer) UIManager.get("ScrollBar.width");
       JPanel leftSpacePanel = new JPanel();
-      leftSpacePanel.setPreferredSize(new Dimension(scrollBarWidth.intValue() -4, -1));
+      leftSpacePanel.setPreferredSize(new Dimension(scrollBarWidth -4, -1));
       JPanel rightSpacePanel = new JPanel();
-      rightSpacePanel.setPreferredSize(new Dimension(scrollBarWidth.intValue() -4, -1));
+      rightSpacePanel.setPreferredSize(new Dimension(scrollBarWidth -4, -1));
       detailPanel.add(leftSpacePanel, BorderLayout.WEST);
       detailPanel.add(rightSpacePanel, BorderLayout.EAST);
       detailPanel.revalidate();
@@ -2809,7 +2809,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         }
       };
 
-    dockPauseAction.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_P));
+    dockPauseAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_P);
     dockPauseAction.putValue(
       Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F12"));
     dockPauseAction.putValue(
@@ -2856,7 +2856,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
       dockToggleLogTreeAction.putValue(Action.SHORT_DESCRIPTION, "Toggles the Logger Tree Pane");
       dockToggleLogTreeAction.putValue("enabled", Boolean.TRUE);
-      dockToggleLogTreeAction.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_T));
+      dockToggleLogTreeAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_T);
       dockToggleLogTreeAction.putValue(
         Action.ACCELERATOR_KEY,
         KeyStroke.getKeyStroke(KeyEvent.VK_T, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));

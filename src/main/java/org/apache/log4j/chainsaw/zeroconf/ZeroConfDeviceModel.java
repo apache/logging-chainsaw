@@ -124,7 +124,7 @@ public class ZeroConfDeviceModel extends AbstractTableModel implements ServiceLi
         if(columnIndex!=2 || !(aValue instanceof Boolean))  {
             return;
         }
-        boolean autoConnect = ((Boolean)aValue).booleanValue();
+        boolean autoConnect = (Boolean) aValue;
         Object device = this.deviceList.get(rowIndex);
         String autoConnectHandle = getAutoConnectHandle((ServiceInfo) device);
         if(autoConnect) {

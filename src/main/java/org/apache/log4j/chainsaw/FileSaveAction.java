@@ -68,7 +68,7 @@ class FileSaveAction extends AbstractAction {
     putValue(
       Action.ACCELERATOR_KEY,
       KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-    putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_S));
+    putValue(Action.MNEMONIC_KEY, KeyEvent.VK_S);
     putValue(
       Action.SHORT_DESCRIPTION, "Saves displayed events for the current tab");
     putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.FILE_SAVE_AS));

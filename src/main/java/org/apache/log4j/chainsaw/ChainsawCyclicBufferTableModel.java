@@ -553,7 +553,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         return id;
       }
 
-      return new Integer(rowIndex);
+      return rowIndex;
 
     case ChainsawColumns.INDEX_LEVEL_COL_NAME:
       return event.getLevel();
@@ -622,7 +622,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
 
     //only set the property if it doesn't already exist
     if (id == null) {
-      id = new Integer(++uniqueRow);
+      id = ++uniqueRow;
       loggingEventWrapper.setProperty(Constants.LOG4J_ID_KEY, id.toString());
     }
 

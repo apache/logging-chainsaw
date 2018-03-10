@@ -512,7 +512,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
         {
           public void propertyChange(PropertyChangeEvent evt)
           {
-            boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+            boolean value = (Boolean) evt.getNewValue();
             rdLevelIcons.setSelected(value);
             rdLevelText.setSelected(!value);
           }
@@ -644,7 +644,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
           {
             public void propertyChange(PropertyChangeEvent evt)
             {
-              boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+              boolean value = (Boolean) evt.getNewValue();
               wrapMessage.setSelected(value);
             }
           });
@@ -654,7 +654,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
         {
           public void propertyChange(PropertyChangeEvent evt)
           {
-            boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+            boolean value = (Boolean) evt.getNewValue();
             searchResultsVisible.setSelected(value);
           }
         });
@@ -664,7 +664,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
           {
             public void propertyChange(PropertyChangeEvent evt)
             {
-              boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+              boolean value = (Boolean) evt.getNewValue();
               highlightSearchMatchText.setSelected(value);
             }
           });
@@ -694,7 +694,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
         {
           public void propertyChange(PropertyChangeEvent evt)
           {
-            boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+            boolean value = (Boolean) evt.getNewValue();
             toolTips.setSelected(value);
           }
         });
@@ -704,7 +704,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
       {
         public void propertyChange(PropertyChangeEvent evt)
         {
-          boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+          boolean value = (Boolean) evt.getNewValue();
           thumbnailBarToolTips.setSelected(value);
         }
       });
@@ -722,7 +722,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
         {
           public void propertyChange(PropertyChangeEvent evt)
           {
-            boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+            boolean value = (Boolean) evt.getNewValue();
             detailPanelVisible.setSelected(value);
           }
         });
@@ -747,7 +747,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
       {
           public void propertyChange(PropertyChangeEvent evt)
           {
-              boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+              boolean value = (Boolean) evt.getNewValue();
               showMillisDeltaAsGap.setSelected(value);
           }
       });
@@ -756,7 +756,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
         {
           public void propertyChange(PropertyChangeEvent evt)
           {
-            boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+            boolean value = (Boolean) evt.getNewValue();
             scrollToBottom.setSelected(value);
           }
         });
@@ -774,7 +774,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
         {
           public void propertyChange(PropertyChangeEvent evt)
           {
-            boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+            boolean value = (Boolean) evt.getNewValue();
             loggerTreePanel.setSelected(value);
           }
         });

@@ -76,7 +76,7 @@ class FileMenu extends JMenu {
       loadLog4JAction.putValue(
         Action.ACCELERATOR_KEY,
         KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-      loadLog4JAction.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_L));
+      loadLog4JAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_L);
       loadLog4JAction.putValue(Action.SHORT_DESCRIPTION, "Loads events from a local XMLLayout-formatted file ");
       loadLog4JAction.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.FILE_OPEN));
 
@@ -114,7 +114,7 @@ class FileMenu extends JMenu {
       Action.ACCELERATOR_KEY,
       KeyStroke.getKeyStroke(KeyEvent.VK_X, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
     exitAction.putValue(Action.SHORT_DESCRIPTION, "Exits the Application");
-    exitAction.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_X));
+    exitAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_X);
     exitAction.putValue(Action.NAME, "Exit");
 
     JMenuItem menuItemExit = new JMenuItem(exitAction);

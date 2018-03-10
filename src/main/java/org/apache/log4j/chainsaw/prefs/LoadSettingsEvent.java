@@ -39,7 +39,7 @@ public class LoadSettingsEvent extends SettingsEvent {
   }
   
   public boolean asBoolean(String key) {
-  	return Boolean.valueOf(getSetting(key)).booleanValue();
+  	return Boolean.valueOf(getSetting(key));
   }
   
   public int asInt(String key) {

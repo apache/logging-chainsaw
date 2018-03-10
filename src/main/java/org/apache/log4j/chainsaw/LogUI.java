@@ -644,7 +644,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
           getApplicationPreferenceModel().setReceivers(
-            ((Boolean) evt.getNewValue()).booleanValue());
+                  (Boolean) evt.getNewValue());
         }
       });
   }
@@ -1006,7 +1006,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             for (Object o : getPanels().entrySet()) {
                 Map.Entry entry = (Map.Entry) o;
                 Boolean docked = (Boolean) entry.getValue();
-                if (docked.booleanValue()) {
+                if (docked) {
                     String identifier = (String) entry.getKey();
                     int count = getTabbedPane().getTabCount();
                     boolean found = false;
@@ -1042,7 +1042,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       "dataRate",
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          double dataRate = ((Double) evt.getNewValue()).doubleValue();
+          double dataRate = (Double) evt.getNewValue();
           statusBar.setDataRate(dataRate);
         }
       });
@@ -1343,7 +1343,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
           ToolTipManager.sharedInstance().setDismissDelay(
-            ((Integer) evt.getNewValue()).intValue());
+                  (Integer) evt.getNewValue());
         }
       });
     ToolTipManager.sharedInstance().setDismissDelay(
@@ -1353,7 +1353,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       "responsiveness",
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          int value = ((Integer) evt.getNewValue()).intValue();
+          int value = (Integer) evt.getNewValue();
           handler.setQueueInterval((value * 1000) - 750);
         }
       });
@@ -1366,7 +1366,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
           SwingUtilities.invokeLater(
             new Runnable() {
               public void run() {
-                int placement = ((Integer) evt.getNewValue()).intValue();
+                int placement = (Integer) evt.getNewValue();
 
                 switch (placement) {
                 case SwingConstants.TOP:
@@ -1387,7 +1387,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       "statusBar",
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+          boolean value = (Boolean) evt.getNewValue();
           setStatusBarVisible(value);
         }
       });
@@ -1397,7 +1397,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       "receivers",
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+          boolean value = (Boolean) evt.getNewValue();
 
           if (value) {
             showReceiverPanel();
@@ -1417,7 +1417,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       "toolbar",
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+          boolean value = (Boolean) evt.getNewValue();
           toolbar.setVisible(value);
         }
       });
@@ -1470,7 +1470,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                   networkReceiver.getClass().getMethod(
                     "setPort", int.class);
                 portMethod.invoke(
-                  networkReceiver, new Integer(port));
+                  networkReceiver, port);
 
                 networkReceiver.setThreshold(Level.TRACE);
 
@@ -1677,7 +1677,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       } else {
         valueToSend = true;
       }
-      m.put(entry.getKey(), new Boolean(valueToSend));
+      m.put(entry.getKey(), valueToSend);
     }
 
     return m;

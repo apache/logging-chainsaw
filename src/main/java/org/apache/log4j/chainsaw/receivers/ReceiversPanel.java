@@ -222,7 +222,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
       Action.SHORT_DESCRIPTION, "Creates and configures a new Receiver");
     newReceiverButtonAction.putValue(Action.NAME, "New Receiver");
     newReceiverButtonAction.putValue(
-      Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_N));
+      Action.MNEMONIC_KEY, KeyEvent.VK_N);
 
     newReceiverButtonAction.setEnabled(true);
 
@@ -240,7 +240,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
       Action.SMALL_ICON, new ImageIcon(ChainsawIcons.ICON_RESUME_RECEIVER));
     playReceiverButtonAction.setEnabled(false);
     playReceiverButtonAction.putValue(
-      Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_R));
+      Action.MNEMONIC_KEY, KeyEvent.VK_R);
 
     pauseReceiverButtonAction =
       new AbstractAction() {
@@ -255,7 +255,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
     pauseReceiverButtonAction.putValue(Action.NAME, "Pause");
 
     pauseReceiverButtonAction.putValue(
-      Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_P));
+      Action.MNEMONIC_KEY, KeyEvent.VK_P);
 
     pauseReceiverButtonAction.putValue(
       Action.SMALL_ICON, new ImageIcon(ChainsawIcons.PAUSE));
@@ -276,7 +276,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
     shutdownReceiverButtonAction.putValue(
       Action.SMALL_ICON, new ImageIcon(ChainsawIcons.ICON_STOP_RECEIVER));
     shutdownReceiverButtonAction.putValue(
-      Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_S));
+      Action.MNEMONIC_KEY, KeyEvent.VK_S);
 
     shutdownReceiverButtonAction.setEnabled(false);
 
@@ -295,7 +295,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
     saveReceiversButtonAction.putValue(
       Action.SMALL_ICON, new ImageIcon(ChainsawIcons.FILE_SAVE_AS));
     saveReceiversButtonAction.putValue(
-      Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_V));
+      Action.MNEMONIC_KEY, KeyEvent.VK_V);
 
 
     restartReceiverButtonAction =
@@ -322,7 +322,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
       restartReceiverButtonAction.putValue(
         Action.SMALL_ICON, new ImageIcon(ChainsawIcons.ICON_RESTART));
       restartReceiverButtonAction.putValue(
-        Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_R));
+        Action.MNEMONIC_KEY, KeyEvent.VK_R);
 
       restartReceiverButtonAction.setEnabled(false);
 

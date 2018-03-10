@@ -247,7 +247,7 @@ public static void main(String[] args) {
         "tabPlacement",
         new PropertyChangeListener() {
           public void propertyChange(PropertyChangeEvent evt) {
-            int value = ((Integer) evt.getNewValue()).intValue();
+            int value = (Integer) evt.getNewValue();
 
             configureTabPlacement(value);
           }
@@ -258,7 +258,7 @@ public static void main(String[] args) {
         new PropertyChangeListener() {
           public void propertyChange(PropertyChangeEvent evt) {
             statusBar.setSelected(
-              ((Boolean) evt.getNewValue()).booleanValue());
+                    (Boolean) evt.getNewValue());
           }
         });
 
@@ -266,7 +266,7 @@ public static void main(String[] args) {
         "toolbar",
         new PropertyChangeListener() {
           public void propertyChange(PropertyChangeEvent evt) {
-            toolBar.setSelected(((Boolean) evt.getNewValue()).booleanValue());
+            toolBar.setSelected((Boolean) evt.getNewValue());
           }
         });
 
@@ -275,7 +275,7 @@ public static void main(String[] args) {
         new PropertyChangeListener() {
           public void propertyChange(PropertyChangeEvent evt) {
             receivers.setSelected(
-              ((Boolean) evt.getNewValue()).booleanValue());
+                    (Boolean) evt.getNewValue());
           }
         });
 
@@ -592,21 +592,21 @@ public static void main(String[] args) {
         new PropertyChangeListener() {
           public void propertyChange(PropertyChangeEvent evt) {
             showNoReceiverWarning.setSelected(
-              ((Boolean) evt.getNewValue()).booleanValue());
+                    (Boolean) evt.getNewValue());
           }
         });
       
       uncommittedPreferenceModel.addPropertyChangeListener("showSplash", new PropertyChangeListener() {
 
         public void propertyChange(PropertyChangeEvent evt) {
-          boolean value = ((Boolean)evt.getNewValue()).booleanValue();
+          boolean value = (Boolean) evt.getNewValue();
           showSplash.setSelected(value);
         }});
       
       uncommittedPreferenceModel.addPropertyChangeListener("okToRemoveSecurityManager", new PropertyChangeListener() {
 
 		public void propertyChange(PropertyChangeEvent evt) {
-            boolean newValue = ((Boolean) evt.getNewValue()).booleanValue();
+            boolean newValue = (Boolean) evt.getNewValue();
             if(newValue) {
             okToRemoveSecurityManager.setSelected(newValue);
             }else {
@@ -628,7 +628,7 @@ public static void main(String[] args) {
         "responsiveness",
         new PropertyChangeListener() {
           public void propertyChange(PropertyChangeEvent evt) {
-            int value = ((Integer) evt.getNewValue()).intValue();
+            int value = (Integer) evt.getNewValue();
 
             if (value >= 1000) {
               int newValue = (value - 750) / 1000;
@@ -712,7 +712,7 @@ public static void main(String[] args) {
         "confirmExit",
         new PropertyChangeListener() {
           public void propertyChange(PropertyChangeEvent evt) {
-            boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+            boolean value = (Boolean) evt.getNewValue();
             confirmExit.setSelected(value);
           }
         });
@@ -733,10 +733,10 @@ public static void main(String[] args) {
     }
 
     private void setupInitialValues() {
-      sliderLabelMap.put(new Integer(1), new JLabel(" Fastest "));
-      sliderLabelMap.put(new Integer(2), new JLabel(" Fast "));
-      sliderLabelMap.put(new Integer(3), new JLabel(" Medium "));
-      sliderLabelMap.put(new Integer(4), new JLabel(" Slow "));
+      sliderLabelMap.put(1, new JLabel(" Fastest "));
+      sliderLabelMap.put(2, new JLabel(" Fast "));
+      sliderLabelMap.put(3, new JLabel(" Medium "));
+      sliderLabelMap.put(4, new JLabel(" Slow "));
 
       //          
       showNoReceiverWarning.setSelected(

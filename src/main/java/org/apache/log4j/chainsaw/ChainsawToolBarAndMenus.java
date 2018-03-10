@@ -161,7 +161,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
       "statusBar",
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+          boolean value = (Boolean) evt.getNewValue();
           toggleStatusBarCheck.setSelected(value);
         }
       });
@@ -170,7 +170,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
       "receivers",
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+          boolean value = (Boolean) evt.getNewValue();
           showReceiversButton.setSelected(value);
           toggleShowReceiversCheck.setSelected(value);
         }
@@ -211,7 +211,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
 
     action.putValue(Action.SHORT_DESCRIPTION, "Toggles the Logger Tree Pane");
     action.putValue("enabled", Boolean.TRUE);
-    action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_T));
+    action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_T);
     action.putValue(
       Action.ACCELERATOR_KEY,
       KeyStroke.getKeyStroke(KeyEvent.VK_T, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
@@ -236,7 +236,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
 
      action.putValue(Action.SHORT_DESCRIPTION, "Toggles Scroll to Bottom");
      action.putValue("enabled", Boolean.TRUE);
-     action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_B));
+     action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_B);
      action.putValue(
        Action.ACCELERATOR_KEY,
        KeyStroke.getKeyStroke(KeyEvent.VK_B, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
@@ -258,7 +258,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
 
       action.putValue(Action.SHORT_DESCRIPTION, "Scroll to top");
       action.putValue("enabled", Boolean.TRUE);
-      action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_T));
+      action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_T);
       action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_A,  Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 
       return action;
@@ -276,7 +276,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
 
        action.putValue(Action.SHORT_DESCRIPTION, "Find the next marker from the current location");
        action.putValue("enabled", Boolean.TRUE);
-       action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_N));
+       action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_N);
        action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F2"));
 
        return action;
@@ -294,7 +294,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
 
       action.putValue(Action.SHORT_DESCRIPTION, "Find the previous marker from the current location");
       action.putValue("enabled", Boolean.TRUE);
-      action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_P));
+      action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_P);
       action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F2,  InputEvent.SHIFT_MASK));
 
       return action;
@@ -312,7 +312,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
 
       action.putValue(Action.SHORT_DESCRIPTION, "Toggle marker for selected row");
       action.putValue("enabled", Boolean.TRUE);
-      action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_T));
+      action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_T);
       action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F2,  Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 
       return action;
@@ -330,7 +330,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
 
       action.putValue(Action.SHORT_DESCRIPTION, "Removes all markers");
       action.putValue("enabled", Boolean.TRUE);
-      action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_R));
+      action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_R);
       action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F2,  Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | InputEvent.SHIFT_MASK));
 
       return action;
@@ -374,7 +374,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
         }
       };
 
-    action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_C));
+    action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_C);
     action.putValue(
       Action.ACCELERATOR_KEY,
       KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
@@ -402,7 +402,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
 
     //    action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.ALT_MASK));
     action.putValue(Action.SHORT_DESCRIPTION, "Toggles the Welcome tab");
-    action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_C));
+    action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_C);
     action.putValue(Action.NAME, "Welcome tab");
 
     return action;
@@ -425,7 +425,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
       "toolbar",
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          boolean value = ((Boolean) evt.getNewValue()).booleanValue();
+          boolean value = (Boolean) evt.getNewValue();
           showToolbarCheck.setSelected(value);
         }
       });
@@ -479,7 +479,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
       };
 
     toggleStatusBarAction.putValue(
-      Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_B));
+      Action.MNEMONIC_KEY, KeyEvent.VK_B);
     toggleStatusBarCheck.setAction(toggleStatusBarAction);
     toggleStatusBarCheck.setSelected(
       logui.getApplicationPreferenceModel().isStatusBar());
@@ -588,7 +588,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
         }
       };
 
-    action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_P));
+    action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_P);
     action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F12"));
     action.putValue(
       Action.SHORT_DESCRIPTION,
@@ -668,7 +668,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
         }
       };
 
-    action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_E));
+    action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_E);
     action.putValue(
       Action.SHORT_DESCRIPTION,
       "Shows the currently configured Log4j Receivers");
@@ -694,7 +694,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
         }
       };
 
-    action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_D));
+    action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_D);
     action.putValue(
       Action.ACCELERATOR_KEY,
       KeyStroke.getKeyStroke(KeyEvent.VK_D, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
@@ -716,7 +716,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
         }
       };
 
-    action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_T));
+    action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_T);
 
     return action;
   }
@@ -894,7 +894,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
         };
         action.putValue(Action.SHORT_DESCRIPTION, "Find the next colorized event from the current location");
         action.putValue("enabled", Boolean.TRUE);
-        action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_N));
+        action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_N);
         action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 
       return action;
@@ -913,7 +913,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
         };
         action.putValue(Action.SHORT_DESCRIPTION, "Find the next colorized event from the current location");
         action.putValue("enabled", Boolean.TRUE);
-        action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_P));
+        action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_P);
         action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 
       return action;

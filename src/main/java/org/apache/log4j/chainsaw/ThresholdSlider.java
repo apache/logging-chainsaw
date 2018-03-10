@@ -77,7 +77,7 @@ final class ThresholdSlider extends JSlider {
       for (Object aPriorityList : priorityList) {
           Level item = (Level) aPriorityList;
           labelMap.put(
-                  new Integer(priorityList.indexOf(item)), new JLabel(item.toString()));
+                  priorityList.indexOf(item), new JLabel(item.toString()));
 
           //      System.out.println("creating levels for :: " + item.toInt() + "," + item.toString());
       }

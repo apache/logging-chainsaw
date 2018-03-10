@@ -1270,14 +1270,13 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
 
       while (depthEnum.hasMoreElements()) {
         depths.add(
-                new Integer(
-                        ((DefaultMutableTreeNode) depthEnum.nextElement()).getDepth()));
+                ((DefaultMutableTreeNode) depthEnum.nextElement()).getDepth());
       }
 
       Collections.sort(depths);
       Collections.reverse(depths);
 
-      int maxDepth = ((Integer) depths.get(0)).intValue();
+      int maxDepth = (Integer) depths.get(0);
 
       if (maxDepth > WARN_DEPTH) {
         logger.warn("Should warn user, depth=" + maxDepth);
