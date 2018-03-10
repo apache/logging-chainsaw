@@ -20,10 +20,10 @@
 
 pipeline {
     agent any
-    tool name: 'Maven 3 (latest)', type: 'maven'
     stages {
         stage('Build') {
             steps {
+                tool name: 'Maven 3 (latest)', type: 'maven'
                 ansiColor('xterm') {
                     sh 'mvn site:site'
                     sh 'mvn package'
