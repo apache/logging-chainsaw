@@ -85,19 +85,18 @@ public class PluginClassLoaderFactory {
 			throw new RuntimeException(e.getMessage());
 		}
         if (strings !=null) {
-			for (int i = 0; i < strings.length; i++) {
-				String name = strings[i];
-				File file = new File(pluginDirectory, name);
-				try {
-					list.add(file.toURI().toURL());
-					System.out.println("Added " + file.getAbsolutePath()
-							+ " to Plugin class loader list");
-				} catch (Exception e) {
-					System.err.println("Failed to retrieve the URL for file: "
-							+ file.getAbsolutePath());
-					throw new RuntimeException(e.getMessage());
-				}
-			}
+            for (String name : strings) {
+                File file = new File(pluginDirectory, name);
+                try {
+                    list.add(file.toURI().toURL());
+                    System.out.println("Added " + file.getAbsolutePath()
+                            + " to Plugin class loader list");
+                } catch (Exception e) {
+                    System.err.println("Failed to retrieve the URL for file: "
+                            + file.getAbsolutePath());
+                    throw new RuntimeException(e.getMessage());
+                }
+            }
 		}
         ClassLoader parent = PluginClassLoaderFactory.class.getClassLoader();
         URL[] urls = (URL[]) list.toArray(new URL[list.size()]);

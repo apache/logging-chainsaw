@@ -51,13 +51,13 @@ public class LogPanelPreferenceModel implements Serializable{
 
     Properties properties = SettingsManager.getInstance().getDefaultSettings();
 
-    for (Iterator iter = properties.entrySet().iterator(); iter.hasNext();) {
-      Map.Entry entry = (Map.Entry) iter.next();
+      for (Map.Entry<Object, Object> objectObjectEntry : properties.entrySet()) {
+          Map.Entry entry = (Map.Entry) objectObjectEntry;
 
-      if (entry.getKey().toString().startsWith("DateFormat")) {
-        list.add(entry.getValue());
+          if (entry.getKey().toString().startsWith("DateFormat")) {
+              list.add(entry.getValue());
+          }
       }
-    }
 
     DATE_FORMATS = Collections.unmodifiableCollection(list);
   }
@@ -133,13 +133,13 @@ public class LogPanelPreferenceModel implements Serializable{
   }
   
   private TableColumn findColumnByHeader(List list, String header) {
-	  for (Iterator iter = list.iterator();iter.hasNext();) {
-		  TableColumn c = (TableColumn)iter.next();
+      for (Object aList : list) {
+          TableColumn c = (TableColumn) aList;
           //columns may have changed - header may not exist
-		  if (c != null && c.getHeaderValue() != null && c.getHeaderValue().equals(header)) {
-			  return c;
-		  }
-	  }
+          if (c != null && c.getHeaderValue() != null && c.getHeaderValue().equals(header)) {
+              return c;
+          }
+      }
 	  return null;
   }
   

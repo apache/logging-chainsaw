@@ -70,14 +70,14 @@ class HelpLocator {
   URL findResource(String name) {
     URL url = null;
 
-    for (Iterator iter = classLoaders.iterator(); iter.hasNext();) {
-      ClassLoader loader = (ClassLoader) iter.next();
-      url = loader.getResource(name);
+      for (Object classLoader : classLoaders) {
+          ClassLoader loader = (ClassLoader) classLoader;
+          url = loader.getResource(name);
 
-      if (url != null) {
-        break;
+          if (url != null) {
+              break;
+          }
       }
-    }
 
     return url;
   }

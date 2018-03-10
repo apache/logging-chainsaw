@@ -219,8 +219,8 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         serviceNames.add(TCP_APPENDER_SERVICE_NAME);
         serviceNames.add(NEW_UDP_APPENDER_SERVICE_NAME);
 
-        for (Iterator iter = serviceNames.iterator(); iter.hasNext();) {
-            String serviceName = iter.next().toString();
+        for (Object serviceName1 : serviceNames) {
+            String serviceName = serviceName1.toString();
             jmDNS.addServiceListener(
                     serviceName,
                     new ZeroConfServiceListener());
@@ -339,10 +339,9 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
      */
     private void deviceRemoved(String name) {
         Component[] menuComponents = connectToMenu.getMenuComponents();
-        for (int i = 0; i < menuComponents.length; i++) {
-            Component c = menuComponents[i];
+        for (Component c : menuComponents) {
             if (!(c instanceof JPopupMenu.Separator)) {
-                JMenuItem item = (JMenuItem) menuComponents[i];
+                JMenuItem item = (JMenuItem) c;
                 if (item.getText().compareToIgnoreCase(name) == 0) {
                     connectToMenu.remove(item);
                     break;
@@ -600,10 +599,9 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
      */
     private JMenuItem locateMatchingMenuItem(String name) {
         Component[] menuComponents = connectToMenu.getMenuComponents();
-        for (int i = 0; i < menuComponents.length; i++) {
-            Component c = menuComponents[i];
+        for (Component c : menuComponents) {
             if (!(c instanceof JPopupMenu.Separator)) {
-                JMenuItem item = (JMenuItem) menuComponents[i];
+                JMenuItem item = (JMenuItem) c;
                 if (item.getText().compareToIgnoreCase(name) == 0) {
                     return item;
                 }

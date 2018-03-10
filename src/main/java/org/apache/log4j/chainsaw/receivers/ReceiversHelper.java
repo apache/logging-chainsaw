@@ -137,12 +137,12 @@ public class ReceiversHelper {
     PluginRegistry pluginRegistry = ((LoggerRepositoryEx) repo).getPluginRegistry();
     List fullPluginList = pluginRegistry.getPlugins();
     List pluginList = new ArrayList();
-    for (Iterator iter = fullPluginList.iterator();iter.hasNext();) {
-        Plugin thisPlugin = (Plugin)iter.next();
-        if (thisPlugin instanceof Receiver) {
-            pluginList.add(thisPlugin);
-        }
-    }
+      for (Object aFullPluginList : fullPluginList) {
+          Plugin thisPlugin = (Plugin) aFullPluginList;
+          if (thisPlugin instanceof Receiver) {
+              pluginList.add(thisPlugin);
+          }
+      }
     //remove everything that isn't a receiver..otherwise, we'd create an empty config file
     try {
         if (pluginList.size() > 0) {
@@ -156,11 +156,11 @@ public class ReceiversHelper {
             rootElement.setAttribute("xmlns:log4j", "http://jakarta.apache.org/log4j/");
             rootElement.setAttribute("debug", "true");
 
-            for (int i = 0; i < pluginList.size(); i++) {
+            for (Object aPluginList : pluginList) {
                 Receiver receiver;
 
-                if (pluginList.get(i) instanceof Receiver) {
-                    receiver = (Receiver) pluginList.get(i);
+                if (aPluginList instanceof Receiver) {
+                    receiver = (Receiver) aPluginList;
                 } else {
                     continue;
                 }
@@ -172,8 +172,8 @@ public class ReceiversHelper {
                 BeanInfo beanInfo = Introspector.getBeanInfo(receiver.getClass());
                 List list = new ArrayList(Arrays.asList(beanInfo.getPropertyDescriptors()));
 
-                for (int j = 0; j < list.size(); j++) {
-                    PropertyDescriptor d = (PropertyDescriptor) list.get(j);
+                for (Object aList : list) {
+                    PropertyDescriptor d = (PropertyDescriptor) aList;
                     //don't serialize the loggerRepository property for subclasses of componentbase..
                     //easier to change this than tweak componentbase right now..
                     if (d.getReadMethod().getName().equals("getLoggerRepository")) {

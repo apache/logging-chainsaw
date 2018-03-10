@@ -146,8 +146,8 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
             filteredList.clear();
             if (ruleMediator == null) {
                 LoggingEventWrapper lastEvent = null;
-                for (Iterator iter = unfilteredList.iterator();iter.hasNext();) {
-                    LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper)iter.next();
+                for (Object anUnfilteredList : unfilteredList) {
+                    LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) anUnfilteredList;
                     loggingEventWrapper.setDisplayed(true);
                     updateEventMillisDelta(loggingEventWrapper, lastEvent);
                     filteredList.add(loggingEventWrapper);
@@ -293,10 +293,10 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         filteredListSize = filteredList.size();
         unfilteredListSize = unfilteredList.size();
     }
-    for (int i = 0; i < listeners.length; i++) {
-      listeners[i].eventCountChanged(
-        filteredListSize, unfilteredListSize);
-    }
+      for (EventCountListener listener : listeners) {
+          listener.eventCountChanged(
+                  filteredListSize, unfilteredListSize);
+      }
   }
 
   /**
@@ -331,8 +331,8 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         if (sort) {
             //reset display (used to ensure row height is updated)
             LoggingEventWrapper lastEvent = null;
-            for (Iterator iter = filteredList.iterator();iter.hasNext();) {
-                LoggingEventWrapper e = (LoggingEventWrapper)iter.next();
+            for (Object aFilteredList : filteredList) {
+                LoggingEventWrapper e = (LoggingEventWrapper) aFilteredList;
                 e.setDisplayed(true);
                 updateEventMillisDelta(e, lastEvent);
                 lastEvent = e;
@@ -423,8 +423,8 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
             }
         }
         //now remove the event from all events
-        for (Iterator iter = unfilteredListCopy.iterator();iter.hasNext();) {
-            LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper)iter.next();
+        for (Object anUnfilteredListCopy : unfilteredListCopy) {
+            LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) anUnfilteredListCopy;
             loggingEventWrapper.removeProperty(propName);
         }
     }
@@ -435,8 +435,8 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         synchronized(mutex) {
             unfilteredListCopy = new ArrayList(unfilteredList);
         }
-        for (Iterator iter = unfilteredListCopy.iterator();iter.hasNext();) {
-            LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) iter.next();
+        for (Object anUnfilteredListCopy : unfilteredListCopy) {
+            LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) anUnfilteredListCopy;
             loggingEventWrapper.evaluateSearchRule(findRule);
             //return the count of visible search matches
             if (loggingEventWrapper.isSearchMatch() && loggingEventWrapper.isDisplayed()) {
@@ -491,12 +491,12 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   public int getSearchMatchCount() {
     int searchMatchCount = 0;
     synchronized(mutex) {
-      for (Iterator iter = filteredList.iterator();iter.hasNext();) {
-        LoggingEventWrapper wrapper = (LoggingEventWrapper) iter.next();
-        if (wrapper.isSearchMatch() && wrapper.isDisplayed()) {
-          searchMatchCount++;
+        for (Object aFilteredList : filteredList) {
+            LoggingEventWrapper wrapper = (LoggingEventWrapper) aFilteredList;
+            if (wrapper.isSearchMatch() && wrapper.isDisplayed()) {
+                searchMatchCount++;
+            }
         }
-      }
     }
     return searchMatchCount;
   }
@@ -602,8 +602,8 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         if (result == null) {
             String lowerColName = columnNames.get(columnIndex).toString().toLowerCase(Locale.ENGLISH);
             Set entrySet = event.getProperties().entrySet();
-            for (Iterator iter = entrySet.iterator();iter.hasNext();) {
-                Map.Entry thisEntry = (Map.Entry) iter.next();
+            for (Object anEntrySet : entrySet) {
+                Map.Entry thisEntry = (Map.Entry) anEntrySet;
                 if (thisEntry.getKey().toString().equalsIgnoreCase(lowerColName)) {
                     result = thisEntry.getValue().toString();
                 }
@@ -689,18 +689,18 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         /**
          * If so, we should add them as columns and notify listeners.
          */
-        for (Iterator iter = loggingEventWrapper.getPropertyKeySet().iterator(); iter.hasNext();) {
-          String key = iter.next().toString().toUpperCase();
+          for (Object o : loggingEventWrapper.getPropertyKeySet()) {
+              String key = o.toString().toUpperCase();
 
-          //add all keys except the 'log4jid' key (columnNames is all-caps)
-          if (!columnNames.contains(key) && !(Constants.LOG4J_ID_KEY.equalsIgnoreCase(key))) {
-            columnNames.add(key);
-            logger.debug("Adding col '" + key + "', columnNames=" + columnNames);
-            fireNewKeyColumnAdded(
-              new NewKeyEvent(
-                this, columnNames.indexOf(key), key, loggingEventWrapper.getLoggingEvent().getProperty(key)));
+              //add all keys except the 'log4jid' key (columnNames is all-caps)
+              if (!columnNames.contains(key) && !(Constants.LOG4J_ID_KEY.equalsIgnoreCase(key))) {
+                  columnNames.add(key);
+                  logger.debug("Adding col '" + key + "', columnNames=" + columnNames);
+                  fireNewKeyColumnAdded(
+                          new NewKeyEvent(
+                                  this, columnNames.indexOf(key), key, loggingEventWrapper.getLoggingEvent().getProperty(key)));
+              }
           }
-        }
       }
    }
 
@@ -753,10 +753,9 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     NewKeyListener[] listeners =
             eventListenerList.getListeners(NewKeyListener.class);
 
-    for (int i = 0; i < listeners.length; i++) {
-      NewKeyListener listener = listeners[i];
-      listener.newKeyAdded(e);
-    }
+      for (NewKeyListener listener : listeners) {
+          listener.newKeyAdded(e);
+      }
   }
 
   /**
@@ -870,12 +869,11 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
 
                   int increment = 0;
 
-                  for (Iterator iter = unfilteredList.iterator();
-                      iter.hasNext();) {
-                    LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) iter.next();
-                    newUnfilteredList.add(loggingEventWrapper);
-                    monitor.setProgress(index++);
-                  }
+                    for (Object anUnfilteredList : unfilteredList) {
+                        LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) anUnfilteredList;
+                        newUnfilteredList.add(loggingEventWrapper);
+                        monitor.setProgress(index++);
+                    }
 
                   unfilteredList = newUnfilteredList;
                   filteredList = newFilteredList;

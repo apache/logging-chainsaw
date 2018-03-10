@@ -156,11 +156,10 @@ class FileMenu extends JMenu {
         mrulog4j.removeAll();
         int counter = 1;
         if (MRUFileList.log4jMRU().getMRUList().size() > 0) {
-            for (Iterator iter = MRUFileList.log4jMRU().getMRUList().iterator(); iter
-                    .hasNext();) {
-                final URL url = (URL) iter.next();
+            for (Object o : MRUFileList.log4jMRU().getMRUList()) {
+                final URL url = (URL) o;
                 // TODO work out the 'name', for local files it can't just be the full path
-                final String name = url.getProtocol().startsWith("file")?url.getPath().substring(url.getPath().lastIndexOf('/')+1):url.getPath();
+                final String name = url.getProtocol().startsWith("file") ? url.getPath().substring(url.getPath().lastIndexOf('/') + 1) : url.getPath();
                 String title = (counter++) + " - " + url.toExternalForm();
                 JMenuItem menuItem = new JMenuItem(new AbstractAction(title) {
 

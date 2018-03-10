@@ -75,9 +75,9 @@ public class MRUFileList{
         
         ChangeEvent event = null;
         EventListener[] eventListeners = listeners.getListeners(ChangeListener.class);
-        for (int i = 0; i < eventListeners.length; i++) {
-            ChangeListener listener = (ChangeListener) eventListeners[i];
-            if(event==null) {
+        for (EventListener eventListener : eventListeners) {
+            ChangeListener listener = (ChangeListener) eventListener;
+            if (event == null) {
                 event = new ChangeEvent(MRUFileList.class);
             }
             listener.stateChanged(event);

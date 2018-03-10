@@ -131,10 +131,10 @@ public class ChainsawStatusBar extends JPanel {
         pausedLabel
       };
 
-    for (int i = 0; i < toFix.length; i++) {
-      toFix[i].setPreferredSize(toFix[i].getMinimumSize());
-      toFix[i].setMaximumSize(toFix[i].getMinimumSize());
-    }
+        for (JComponent aToFix : toFix) {
+            aToFix.setPreferredSize(aToFix.getMinimumSize());
+            aToFix.setMaximumSize(aToFix.getMinimumSize());
+        }
 
     statusMsg.setMinimumSize(pausedLabel.getPreferredSize());
     statusMsg.setToolTipText("Shows messages from Chainsaw");

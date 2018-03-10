@@ -62,11 +62,10 @@ public class ReceiversHelperTest extends TestCase {
                 VFSLogFilePatternReceiver.class,
             };
 
-        for (int i = 0; i < expectedList.length; i++) {
+        for (Class c : expectedList) {
 
-            Class c = expectedList[i];
             assertTrue("Should have found class " + c.getName(),
-                list.contains(c));
+                    list.contains(c));
         }
     }
 }

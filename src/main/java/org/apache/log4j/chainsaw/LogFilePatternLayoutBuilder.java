@@ -102,10 +102,10 @@ public class LogFilePatternLayoutBuilder
   
     private static String getFormatFromConverters(List converters) {
         StringBuffer buffer = new StringBuffer();
-        for (Iterator iter = converters.iterator();iter.hasNext();) {
-            LoggingEventPatternConverter converter = (LoggingEventPatternConverter)iter.next();
+        for (Object converter1 : converters) {
+            LoggingEventPatternConverter converter = (LoggingEventPatternConverter) converter1;
             if (converter instanceof DatePatternConverter) {
-              buffer.append("TIMESTAMP");
+                buffer.append("TIMESTAMP");
             } else if (converter instanceof MessagePatternConverter) {
                 buffer.append("MESSAGE");
             } else if (converter instanceof LoggerPatternConverter) {
@@ -119,7 +119,7 @@ public class LogFilePatternLayoutBuilder
             } else if (converter instanceof NDCPatternConverter) {
                 buffer.append("NDC");
             } else if (converter instanceof LiteralPatternConverter) {
-                LiteralPatternConverter literal = (LiteralPatternConverter)converter;
+                LiteralPatternConverter literal = (LiteralPatternConverter) converter;
                 //format shouldn't normally take a null, but we're getting a literal, so passing in the buffer will work
                 literal.format(null, buffer);
             } else if (converter instanceof SequenceNumberPatternConverter) {
@@ -140,7 +140,7 @@ public class LogFilePatternLayoutBuilder
 //                if (option != null && option.length() > 0) {
 //                    buffer.append("PROP(" + option + ")");
 //                } else {
-                    buffer.append("PROP(PROPERTIES)");
+                buffer.append("PROP(PROPERTIES)");
 //                }
             } else if (converter instanceof LineSeparatorPatternConverter) {
                 //done
@@ -188,24 +188,24 @@ public class LogFilePatternLayoutBuilder
           }
         }
       }
-      for (Iterator iter = appenders.entrySet().iterator();iter.hasNext();) {
-        Map.Entry appenderEntry = (Map.Entry)iter.next();
-        String appenderName = appenderEntry.getKey().toString();
-        String appenderClassName = appenderEntry.getValue().toString();
-        if (appenderClassName.toLowerCase(Locale.ENGLISH).endsWith("fileappender")) {
-          String layout = props.getProperty(appenderPrefix + "." + appenderName + ".layout");
-          if (layout != null && layout.trim().equals("org.apache.log4j.PatternLayout")) {
-            String conversion = props.getProperty(appenderPrefix + "." + appenderName + ".layout.ConversionPattern");
-            String file = props.getProperty(appenderPrefix + "." + appenderName + ".File");
-            if (conversion != null && file != null) {
-              Map entry = new HashMap();
-              entry.put("file", file.trim());
-              entry.put("conversion", conversion.trim());
-              result.put(appenderName, entry);
+        for (Object o : appenders.entrySet()) {
+            Map.Entry appenderEntry = (Map.Entry) o;
+            String appenderName = appenderEntry.getKey().toString();
+            String appenderClassName = appenderEntry.getValue().toString();
+            if (appenderClassName.toLowerCase(Locale.ENGLISH).endsWith("fileappender")) {
+                String layout = props.getProperty(appenderPrefix + "." + appenderName + ".layout");
+                if (layout != null && layout.trim().equals("org.apache.log4j.PatternLayout")) {
+                    String conversion = props.getProperty(appenderPrefix + "." + appenderName + ".layout.ConversionPattern");
+                    String file = props.getProperty(appenderPrefix + "." + appenderName + ".File");
+                    if (conversion != null && file != null) {
+                        Map entry = new HashMap();
+                        entry.put("file", file.trim());
+                        entry.put("conversion", conversion.trim());
+                        result.put(appenderName, entry);
+                    }
+                }
             }
-          }
         }
-      }
           /*
           example:
           log4j.appender.R=org.apache.log4j.RollingFileAppender

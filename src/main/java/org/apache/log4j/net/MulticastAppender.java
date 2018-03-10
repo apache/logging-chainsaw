@@ -23,7 +23,6 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 
 import org.apache.log4j.AppenderSkeleton;

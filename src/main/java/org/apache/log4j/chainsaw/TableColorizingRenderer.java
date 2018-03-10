@@ -398,8 +398,8 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         String headerName = tableColumn.getHeaderValue().toString().toLowerCase();
         String thisProp = null;
         //find the property in the property set...case-sensitive
-        for (Iterator iter = propertySet.iterator();iter.hasNext();) {
-            String entry = iter.next().toString();
+        for (Object aPropertySet : propertySet) {
+            String entry = aPropertySet.toString();
             if (entry.equalsIgnoreCase(headerName)) {
                 thisProp = entry;
                 break;
@@ -652,8 +652,8 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     public void setHighlightAttributes(Object matchSet, StyledDocument styledDocument) {
         if (matchSet instanceof Set) {
             Set thisSet = (Set)matchSet;
-            for (Iterator iter = thisSet.iterator();iter.hasNext();) {
-                String thisEntry = iter.next().toString();
+            for (Object aThisSet : thisSet) {
+                String thisEntry = aThisSet.toString();
                 bold(thisEntry, styledDocument);
             }
         }

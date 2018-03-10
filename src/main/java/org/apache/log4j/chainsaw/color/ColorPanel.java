@@ -307,8 +307,8 @@ public class ColorPanel extends JPanel
       if (logPanelColorizersModel.getIndexOf(noTab) == -1) {
         logPanelColorizersModel.addElement(noTab);
       }
-      for (Iterator iter = allLogPanelColorizers.entrySet().iterator();iter.hasNext();) {
-          Map.Entry entry = (Map.Entry)iter.next();
+      for (Object o : allLogPanelColorizers.entrySet()) {
+          Map.Entry entry = (Map.Entry) o;
           if (!entry.getValue().equals(currentLogPanelColorizer) && (logPanelColorizersModel.getIndexOf(entry.getKey()) == -1)) {
               logPanelColorizersModel.addElement(entry.getKey());
           }

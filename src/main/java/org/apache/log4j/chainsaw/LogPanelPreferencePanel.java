@@ -177,22 +177,19 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
       final JList columnList = new JList();
       columnList.setVisibleRowCount(17);
 
-      for (
-        Iterator iter = preferenceModel.getColumns().iterator();
-          iter.hasNext();)
-      {
-          TableColumn col = (TableColumn)iter.next();
-          Enumeration enumeration = columnListModel.elements();
-          boolean found = false;
-          while (enumeration.hasMoreElements()) {
-              TableColumn thisCol = (TableColumn) enumeration.nextElement();
-              if (thisCol.getHeaderValue().equals(col.getHeaderValue())) {
-                  found = true;
-              }
+      for (Object o : preferenceModel.getColumns()) {
+        TableColumn col = (TableColumn) o;
+        Enumeration enumeration = columnListModel.elements();
+        boolean found = false;
+        while (enumeration.hasMoreElements()) {
+          TableColumn thisCol = (TableColumn) enumeration.nextElement();
+          if (thisCol.getHeaderValue().equals(col.getHeaderValue())) {
+            found = true;
           }
-            if (!found) {
-              columnListModel.addElement(col);
-            }
+        }
+        if (!found) {
+          columnListModel.addElement(col);
+        }
       }
 
       columnList.setModel(columnListModel);
@@ -290,36 +287,29 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
       bgDateFormat.add(rdISO);
       dateFormatPanel.add(rdISO);
 
-      for (
-        Iterator iter = LogPanelPreferenceModel.DATE_FORMATS.iterator();
-          iter.hasNext();)
-      {
-        final String format = (String) iter.next();
+      for (Object DATE_FORMAT : LogPanelPreferenceModel.DATE_FORMATS) {
+        final String format = (String) DATE_FORMAT;
         final JRadioButton rdFormat = new JRadioButton(format);
         rdFormat.setHorizontalTextPosition(SwingConstants.RIGHT);
-        rdFormat.setAlignmentX(Component.LEFT_ALIGNMENT);      
+        rdFormat.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        rdFormat.addActionListener(new ActionListener()
-          {
-            public void actionPerformed(ActionEvent e)
-            {
-              preferenceModel.setDateFormatPattern(format);
-              customFormatText.setEnabled(rdCustom.isSelected());
-              rdLast = rdFormat;
-            }
-          });
+        rdFormat.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent e) {
+            preferenceModel.setDateFormatPattern(format);
+            customFormatText.setEnabled(rdCustom.isSelected());
+            rdLast = rdFormat;
+          }
+        });
         //update based on external changes to dateformatpattern (column context
         //menu)
         preferenceModel.addPropertyChangeListener(
-          "dateFormatPattern", new PropertyChangeListener()
-          {
-            public void propertyChange(PropertyChangeEvent evt)
-            {
-              rdFormat.setSelected(
-                preferenceModel.getDateFormatPattern().equals(format));
-              rdLast = rdFormat;
-            }
-          });
+                "dateFormatPattern", new PropertyChangeListener() {
+                  public void propertyChange(PropertyChangeEvent evt) {
+                    rdFormat.setSelected(
+                            preferenceModel.getDateFormatPattern().equals(format));
+                    rdLast = rdFormat;
+                  }
+                });
 
         dateFormatPanel.add(rdFormat);
         bgDateFormat.add(rdFormat);
@@ -792,24 +782,21 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
       preferenceModel.addPropertyChangeListener("columns", new PropertyChangeListener() {
         	public void propertyChange(PropertyChangeEvent evt) {
       	  List cols = (List)evt.getNewValue();
-            for (
-          	        Iterator iter = cols.iterator();
-          	          iter.hasNext();)
-          	      {
-          	        TableColumn col = (TableColumn) iter.next();
-                    Enumeration enumeration = columnListModel.elements();
-                    boolean found = false;
-                    while (enumeration.hasMoreElements()) {
-                        TableColumn thisCol = (TableColumn) enumeration.nextElement();
-                        if (thisCol.getHeaderValue().equals(col.getHeaderValue())) {
-                            found = true;
-                        }
-                    }
-          	        if (!found) {
-          	        	columnListModel.addElement(col);
-          	            columnListModel.fireContentsChanged();
-          	        }
-          	      }
+              for (Object col1 : cols) {
+                TableColumn col = (TableColumn) col1;
+                Enumeration enumeration = columnListModel.elements();
+                boolean found = false;
+                while (enumeration.hasMoreElements()) {
+                  TableColumn thisCol = (TableColumn) enumeration.nextElement();
+                  if (thisCol.getHeaderValue().equals(col.getHeaderValue())) {
+                    found = true;
+                  }
+                }
+                if (!found) {
+                  columnListModel.addElement(col);
+                  columnListModel.fireContentsChanged();
+                }
+              }
         }});
 
         preferenceModel.addPropertyChangeListener(

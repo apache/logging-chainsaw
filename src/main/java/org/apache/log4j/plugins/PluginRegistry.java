@@ -127,8 +127,8 @@ public final class PluginRegistry {
     private void firePluginStarted(final Plugin plugin) {
         PluginEvent e = null;
         synchronized (listenerList) {
-            for (Iterator iter = listenerList.iterator(); iter.hasNext();) {
-                PluginListener l = (PluginListener) iter.next();
+            for (Object aListenerList : listenerList) {
+                PluginListener l = (PluginListener) aListenerList;
                 if (e == null) {
                     e = new PluginEvent(plugin);
                 }
@@ -146,8 +146,8 @@ public final class PluginRegistry {
     private void firePluginStopped(final Plugin plugin) {
         PluginEvent e = null;
         synchronized (listenerList) {
-            for (Iterator iter = listenerList.iterator(); iter.hasNext();) {
-                PluginListener l = (PluginListener) iter.next();
+            for (Object aListenerList : listenerList) {
+                PluginListener l = (PluginListener) aListenerList;
                 if (e == null) {
                     e = new PluginEvent(plugin);
                 }

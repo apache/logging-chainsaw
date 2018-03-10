@@ -563,8 +563,8 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             	
                 public void run() {
                     logger.debug("Loading files: " + fileList);
-                    for (Iterator iter = fileList.iterator(); iter.hasNext();) {
-                        File  file = (File) iter.next();
+                    for (Object aFileList : fileList) {
+                        File file = (File) aFileList;
                         final Decoder decoder = new XMLDecoder();
                         try {
                             getStatusBar().setMessage("Loading " + file.getAbsolutePath() + "...");
@@ -1003,31 +1003,30 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     Action showHiddenTabsAction =
       new AbstractAction("Show All Hidden") {
         public void actionPerformed(ActionEvent e) {
-          for (Iterator iter = getPanels().entrySet().iterator();
-              iter.hasNext();) {
-          	Map.Entry entry = (Map.Entry)iter.next();
-          	Boolean docked = (Boolean)entry.getValue();
-          	if (docked.booleanValue()) {
-	            String identifier = (String) entry.getKey();
-	            int count = getTabbedPane().getTabCount();
-	            boolean found = false;
-	
-	            for (int i = 0; i < count; i++) {
-	              String name = getTabbedPane().getTitleAt(i);
-	
-	              if (name.equals(identifier)) {
-	                found = true;
-	
-	                break;
-	              }
-	            }
-	
-	            if (!found) {
-	              displayPanel(identifier, true);
-	              tbms.stateChange();
-	            }
-          	}
-          }
+            for (Object o : getPanels().entrySet()) {
+                Map.Entry entry = (Map.Entry) o;
+                Boolean docked = (Boolean) entry.getValue();
+                if (docked.booleanValue()) {
+                    String identifier = (String) entry.getKey();
+                    int count = getTabbedPane().getTabCount();
+                    boolean found = false;
+
+                    for (int i = 0; i < count; i++) {
+                        String name = getTabbedPane().getTitleAt(i);
+
+                        if (name.equals(identifier)) {
+                            found = true;
+
+                            break;
+                        }
+                    }
+
+                    if (!found) {
+                        displayPanel(identifier, true);
+                        tbms.stateChange();
+                    }
+                }
+            }
         }
       };
 
@@ -1139,9 +1138,9 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                       PluginRegistry pluginRegistry = ((LoggerRepositoryEx) repo).getPluginRegistry();
                       List list = pluginRegistry.getPlugins(Generator.class);
 
-                      for (Iterator iter = list.iterator(); iter.hasNext();) {
-                         Plugin plugin = (Plugin) iter.next();
-                         pluginRegistry.stopPlugin(plugin.getName());
+                      for (Object aList : list) {
+                          Plugin plugin = (Plugin) aList;
+                          pluginRegistry.stopPlugin(plugin.getName());
                       }
                    }
                 }
@@ -1450,13 +1449,13 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             applicationPreferenceModel.setShowNoReceiverWarning(!receiverConfigurationPanel.isDontWarnMeAgain());
             //remove existing plugins
             List plugins = pluginRegistry.getPlugins();
-            for (Iterator iter = plugins.iterator();iter.hasNext();) {
-                Plugin plugin = (Plugin)iter.next();
-                //don't stop ZeroConfPlugin if it is registered
-                if (!plugin.getName().toLowerCase(Locale.ENGLISH).contains("zeroconf")) {
-                  pluginRegistry.stopPlugin(plugin.getName());
-                }
-            }
+                  for (Object plugin1 : plugins) {
+                      Plugin plugin = (Plugin) plugin1;
+                      //don't stop ZeroConfPlugin if it is registered
+                      if (!plugin.getName().toLowerCase(Locale.ENGLISH).contains("zeroconf")) {
+                          pluginRegistry.stopPlugin(plugin.getName());
+                      }
+                  }
             URL configURL = null;
 
             if (receiverConfigurationPanel.getModel().isNetworkReceiverMode()) {
@@ -1489,34 +1488,34 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
               if (log4jConfigFile != null) {
                 try {
                   Map entries = LogFilePatternLayoutBuilder.getAppenderConfiguration(log4jConfigFile);
-                  for (Iterator iter = entries.entrySet().iterator();iter.hasNext();) {
-                    try {
-                      Map.Entry entry = (Map.Entry)iter.next();
-                      String name = (String) entry.getKey();
-                      Map values = (Map) entry.getValue();
-                      //values: conversion, file
-                      String conversionPattern = values.get("conversion").toString();
-                      File file = new File(values.get("file").toString());
-                      URL fileURL = file.toURI().toURL();
-                      String timestampFormat = LogFilePatternLayoutBuilder.getTimeStampFormat(conversionPattern);
-                      String receiverPattern = LogFilePatternLayoutBuilder.getLogFormatFromPatternLayout(conversionPattern);
-                      VFSLogFilePatternReceiver fileReceiver = new VFSLogFilePatternReceiver();
-                      fileReceiver.setName(name);
-                      fileReceiver.setAutoReconnect(true);
-                      fileReceiver.setContainer(LogUI.this);
-                      fileReceiver.setAppendNonMatches(true);
-                      fileReceiver.setFileURL(fileURL.toURI().toString());
-                      fileReceiver.setTailing(true);
-                      fileReceiver.setLogFormat(receiverPattern);
-                      fileReceiver.setTimestampFormat(timestampFormat);
-                      fileReceiver.setThreshold(Level.TRACE);
-                      pluginRegistry.addPlugin(fileReceiver);
-                      fileReceiver.activateOptions();
-                      receiversPanel.updateReceiverTreeInDispatchThread();
-                    } catch (URISyntaxException e1) {
-                      e1.printStackTrace();
+                    for (Object o : entries.entrySet()) {
+                        try {
+                            Map.Entry entry = (Map.Entry) o;
+                            String name = (String) entry.getKey();
+                            Map values = (Map) entry.getValue();
+                            //values: conversion, file
+                            String conversionPattern = values.get("conversion").toString();
+                            File file = new File(values.get("file").toString());
+                            URL fileURL = file.toURI().toURL();
+                            String timestampFormat = LogFilePatternLayoutBuilder.getTimeStampFormat(conversionPattern);
+                            String receiverPattern = LogFilePatternLayoutBuilder.getLogFormatFromPatternLayout(conversionPattern);
+                            VFSLogFilePatternReceiver fileReceiver = new VFSLogFilePatternReceiver();
+                            fileReceiver.setName(name);
+                            fileReceiver.setAutoReconnect(true);
+                            fileReceiver.setContainer(LogUI.this);
+                            fileReceiver.setAppendNonMatches(true);
+                            fileReceiver.setFileURL(fileURL.toURI().toString());
+                            fileReceiver.setTailing(true);
+                            fileReceiver.setLogFormat(receiverPattern);
+                            fileReceiver.setTimestampFormat(timestampFormat);
+                            fileReceiver.setThreshold(Level.TRACE);
+                            pluginRegistry.addPlugin(fileReceiver);
+                            fileReceiver.activateOptions();
+                            receiversPanel.updateReceiverTreeInDispatchThread();
+                        } catch (URISyntaxException e1) {
+                            e1.printStackTrace();
+                        }
                     }
-                  }
                 } catch (IOException e1) {
                   e1.printStackTrace();
                 }
@@ -1774,9 +1773,9 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             shutdownListenerList.getListeners(
               ShutdownListener.class);
 
-    for (int i = 0; i < listeners.length; i++) {
-      listeners[i].shuttingDown();
-    }
+      for (ShutdownListener listener : listeners) {
+          listener.shuttingDown();
+      }
   }
 
   /**

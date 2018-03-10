@@ -124,9 +124,9 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
 
        //iterate over visual receivers and call setcontainer
        Collection c = pluginRegistry.getPlugins(VisualReceiver.class);
-       for (Iterator iter = c.iterator();iter.hasNext();) {
-    	   ((VisualReceiver)iter.next()).setContainer(this);
-       }
+        for (Object aC : c) {
+            ((VisualReceiver) aC).setContainer(this);
+        }
        
        pluginRegistry.addPluginListener(new PluginListener() {
 		public void pluginStarted(PluginEvent e) {
@@ -357,12 +357,11 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
                     Collection allReceivers =
                         pluginRegistry.getPlugins(Receiver.class);
 
-                    for (Iterator iter = allReceivers.iterator();
-                        iter.hasNext();) {
-                      Receiver item = (Receiver) iter.next();
-                      item.shutdown();
-                      item.activateOptions();
-                    }
+                      for (Object allReceiver : allReceivers) {
+                          Receiver item = (Receiver) allReceiver;
+                          item.shutdown();
+                          item.activateOptions();
+                      }
 
                     updateReceiverTreeInDispatchThread();
                     MessageCenter.getInstance().getLogger().info(
@@ -422,10 +421,10 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
     	List socketReceivers =
       		pluginRegistry.getPlugins(SocketReceiver.class);
 
-    	for (Iterator iter = socketReceivers.iterator(); iter.hasNext();) {
-      		SocketReceiver element = (SocketReceiver) iter.next();
-      		element.addSocketNodeEventListener(listener);
-    	}
+        for (Object socketReceiver : socketReceivers) {
+            SocketReceiver element = (SocketReceiver) socketReceiver;
+            element.addSocketNodeEventListener(listener);
+        }
      }
   }
 
@@ -489,15 +488,14 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
     TreePath[] paths = receiversTree.getSelectionPaths();
     Collection receivers = new ArrayList();
 
-    for (int i = 0; i < paths.length; i++) {
-      TreePath path = paths[i];
-      DefaultMutableTreeNode node =
-        (DefaultMutableTreeNode) path.getLastPathComponent();
+      for (TreePath path : paths) {
+          DefaultMutableTreeNode node =
+                  (DefaultMutableTreeNode) path.getLastPathComponent();
 
-      if ((node != null) && node.getUserObject() instanceof Receiver) {
-        receivers.add(node.getUserObject());
+          if ((node != null) && node.getUserObject() instanceof Receiver) {
+              receivers.add(node.getUserObject());
+          }
       }
-    }
 
     return (Receiver[]) receivers.toArray(new Receiver[0]);
   }
@@ -580,9 +578,9 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
             Receiver[] receivers = getSelectedReceivers();
 
             if (receivers != null) {
-              for (int i = 0; i < receivers.length; i++) {
-                pluginRegistry.stopPlugin(receivers[i].getName());
-              }
+                for (Receiver receiver : receivers) {
+                    pluginRegistry.stopPlugin(receiver.getName());
+                }
             }
           }
         }).start();
@@ -673,70 +671,70 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
           ReceiversHelper.getInstance().getKnownReceiverClasses();
         String separatorCheck = null;
 
-        for (Iterator iter = receiverList.iterator(); iter.hasNext();) {
-          final Class toCreate = (Class) iter.next();
-          Package thePackage = toCreate.getPackage();
-          final String name =
-            toCreate.getName().substring(thePackage.getName().length() + 1);
+          for (Object aReceiverList : receiverList) {
+              final Class toCreate = (Class) aReceiverList;
+              Package thePackage = toCreate.getPackage();
+              final String name =
+                      toCreate.getName().substring(thePackage.getName().length() + 1);
 
-          if (separatorCheck == null) {
-            separatorCheck = name.substring(0, 1);
-          } else {
-            String current = name.substring(0, 1);
+              if (separatorCheck == null) {
+                  separatorCheck = name.substring(0, 1);
+              } else {
+                  String current = name.substring(0, 1);
 
-            if (!current.equals(separatorCheck)) {
-              addSeparator();
-              separatorCheck = current;
-            }
-          }
-
-          add(
-            new AbstractAction("New " + name + "...") {
-              public void actionPerformed(ActionEvent e) {
-                Container container = SwingUtilities.getAncestorOfClass(JFrame.class, ReceiversPanel.this);
-                final JDialog dialog = new JDialog((JFrame) container,"New " + toCreate.getName() + "..." ,true);
-                
-                try {
-                  final NewReceiverDialogPanel panel =
-                    NewReceiverDialogPanel.create(toCreate);
-                  dialog.getContentPane().add(panel);
-                  dialog.pack();
-                  SwingHelper.centerOnScreen(dialog);
-
-                  /**
-                   * Make the default button the ok button
-                   */
-                  dialog.getRootPane().setDefaultButton(panel.getOkPanel().getOkButton());
-                  
-                  /**
-                   * Use the standard Cancel metaphor
-                   */
-                  SwingHelper.configureCancelForDialog(dialog, panel.getOkPanel().getCancelButton());
-                  
-
-                  panel.getOkPanel().getOkButton().addActionListener(
-                    new ActionListener() {
-                      public void actionPerformed(ActionEvent e2) {
-                        Plugin plugin = panel.getPlugin();
-                        if (plugin.getName() != null && !plugin.getName().trim().equals("")) {
-                            dialog.dispose();
-                            pluginRegistry.addPlugin(plugin);
-                            plugin.activateOptions();
-                            MessageCenter.getInstance().addMessage("Plugin '" + plugin.getName() + "' started");
-                        } else {
-                            MessageCenter.getInstance().getLogger().error("Name required to create receiver");
-                        }
-                      }
-                    });
-                  dialog.setVisible(true);
-                } catch (Exception e1) {
-                  e1.printStackTrace();
-                  MessageCenter.getInstance().getLogger().error(
-                    "Failed to create the new Receiver dialog", e1);
-                }
+                  if (!current.equals(separatorCheck)) {
+                      addSeparator();
+                      separatorCheck = current;
+                  }
               }
-            });
-        }
+
+              add(
+                      new AbstractAction("New " + name + "...") {
+                          public void actionPerformed(ActionEvent e) {
+                              Container container = SwingUtilities.getAncestorOfClass(JFrame.class, ReceiversPanel.this);
+                              final JDialog dialog = new JDialog((JFrame) container, "New " + toCreate.getName() + "...", true);
+
+                              try {
+                                  final NewReceiverDialogPanel panel =
+                                          NewReceiverDialogPanel.create(toCreate);
+                                  dialog.getContentPane().add(panel);
+                                  dialog.pack();
+                                  SwingHelper.centerOnScreen(dialog);
+
+                                  /**
+                                   * Make the default button the ok button
+                                   */
+                                  dialog.getRootPane().setDefaultButton(panel.getOkPanel().getOkButton());
+
+                                  /**
+                                   * Use the standard Cancel metaphor
+                                   */
+                                  SwingHelper.configureCancelForDialog(dialog, panel.getOkPanel().getCancelButton());
+
+
+                                  panel.getOkPanel().getOkButton().addActionListener(
+                                          new ActionListener() {
+                                              public void actionPerformed(ActionEvent e2) {
+                                                  Plugin plugin = panel.getPlugin();
+                                                  if (plugin.getName() != null && !plugin.getName().trim().equals("")) {
+                                                      dialog.dispose();
+                                                      pluginRegistry.addPlugin(plugin);
+                                                      plugin.activateOptions();
+                                                      MessageCenter.getInstance().addMessage("Plugin '" + plugin.getName() + "' started");
+                                                  } else {
+                                                      MessageCenter.getInstance().getLogger().error("Name required to create receiver");
+                                                  }
+                                              }
+                                          });
+                                  dialog.setVisible(true);
+                              } catch (Exception e1) {
+                                  e1.printStackTrace();
+                                  MessageCenter.getInstance().getLogger().error(
+                                          "Failed to create the new Receiver dialog", e1);
+                              }
+                          }
+                      });
+          }
       } catch (Exception e) {
         e.printStackTrace();
         throw new RuntimeException(e.getMessage());

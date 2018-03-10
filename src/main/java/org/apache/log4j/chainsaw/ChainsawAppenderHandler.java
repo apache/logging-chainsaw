@@ -286,9 +286,8 @@ public class ChainsawAppenderHandler extends AppenderSkeleton {
                       colonIndex));
                 }
               }
-              for (Iterator itery = customExpressionRules.entrySet().iterator(); itery
-                  .hasNext();) {
-                Map.Entry entry = (Map.Entry) itery.next();
+              for (Object o : customExpressionRules.entrySet()) {
+                Map.Entry entry = (Map.Entry) o;
                 Rule rule = (Rule) entry.getValue();
                 if (rule.evaluate(e, null)) {
                   eventBatch.addEvent((String) entry.getKey(), e);
@@ -333,10 +332,9 @@ public class ChainsawAppenderHandler extends AppenderSkeleton {
         for (Iterator iter = eventBatch.identifierIterator(); iter.hasNext();) {
           String identifier = (String) iter.next();
           List eventList = null;
-          for (int i = 0; i < listeners.length; i++) {
-            EventBatchListener listener = listeners[i];
+          for (EventBatchListener listener : listeners) {
             if ((listener.getInterestedIdentifier() == null)
-                || listener.getInterestedIdentifier().equals(identifier)) {
+                    || listener.getInterestedIdentifier().equals(identifier)) {
               if (eventList == null) {
                 eventList = eventBatch.entrySet(identifier);
               }

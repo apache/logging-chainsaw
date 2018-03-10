@@ -61,19 +61,19 @@ class ChainsawSplash extends JWindow {
     Font[] allFonts =
       GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
 
-    for (int i = 0; i < allFonts.length; i++) {
-      availableFontNames.add(allFonts[i].getName());
-    }
-
-    for (int i = 0; i < preferredFontNames.length; i++) {
-      if (availableFontNames.contains(preferredFontNames[i])) {
-        textFont = new Font(preferredFontNames[i], Font.PLAIN, 12);
-
-        System.out.println("Using font=" + textFont.getName());
-
-        break;
+      for (Font allFont : allFonts) {
+          availableFontNames.add(allFont.getName());
       }
-    }
+
+      for (String preferredFontName : preferredFontNames) {
+          if (availableFontNames.contains(preferredFontName)) {
+              textFont = new Font(preferredFontName, Font.PLAIN, 12);
+
+              System.out.println("Using font=" + textFont.getName());
+
+              break;
+          }
+      }
 
     if (textFont == null) {
       System.out.println("Using basic font");

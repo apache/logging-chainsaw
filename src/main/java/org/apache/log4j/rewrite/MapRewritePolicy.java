@@ -57,10 +57,8 @@ public class MapRewritePolicy implements RewritePolicy {
                 newMsg = msg;
             }
 
-            for(Iterator iter = eventProps.entrySet().iterator();
-                    iter.hasNext();
-                  ) {
-                Map.Entry entry = (Map.Entry) iter.next();
+            for (Object o : eventProps.entrySet()) {
+                Map.Entry entry = (Map.Entry) o;
                 if (!("message".equals(entry.getKey()))) {
                     props.put(entry.getKey(), entry.getValue());
                 }

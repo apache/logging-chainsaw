@@ -229,13 +229,13 @@ public class XMLSocketReceiver extends Receiver implements Runnable, PortBased, 
       * Closes all the connected sockets in the List.
       */
      private synchronized void closeAllAcceptedSockets() {
-       for (int x = 0; x < socketList.size(); x++) {
-         try {
-           ((Socket) socketList.get(x)).close();
-         } catch (Exception e) {
-           // ignore for now
+         for (Object aSocketList : socketList) {
+             try {
+                 ((Socket) aSocketList).close();
+             } catch (Exception e) {
+                 // ignore for now
+             }
          }
-       }
 
        // clear member variables
        socketList.clear();

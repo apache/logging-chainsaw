@@ -81,23 +81,19 @@ public class ReceiversTreeModel extends DefaultTreeModel
     if (receivers.size() == 0) {
       getRootNode().add(NoReceiversNode);
     } else {
-      for (Iterator iter = receivers.iterator(); iter.hasNext();) {
-        final Receiver item = (Receiver) iter.next();
-        final DefaultMutableTreeNode receiverNode = new DefaultMutableTreeNode(item);
+        for (Object receiver : receivers) {
+            final Receiver item = (Receiver) receiver;
+            final DefaultMutableTreeNode receiverNode = new DefaultMutableTreeNode(item);
 
-        item.addPropertyChangeListener(creatPluginPropertyChangeListener(item, receiverNode));
-        if (item instanceof SocketReceiver) {
-          for (
-            Iterator iterator =
-              ((SocketReceiver) item).getConnectedSocketDetails().iterator();
-              iterator.hasNext();) {
-            Object details = iterator.next();
-            receiverNode.add(new DefaultMutableTreeNode(details));
-          }
+            item.addPropertyChangeListener(creatPluginPropertyChangeListener(item, receiverNode));
+            if (item instanceof SocketReceiver) {
+                for (Object details : ((SocketReceiver) item).getConnectedSocketDetails()) {
+                    receiverNode.add(new DefaultMutableTreeNode(details));
+                }
+            }
+
+            getRootNode().add(receiverNode);
         }
-
-        getRootNode().add(receiverNode);
-      }
     }
 
     reload();

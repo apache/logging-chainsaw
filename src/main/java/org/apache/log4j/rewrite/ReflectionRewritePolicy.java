@@ -52,19 +52,19 @@ public class ReflectionRewritePolicy implements RewritePolicy {
                 PropertyDescriptor[] props = Introspector.getBeanInfo(
                         msg.getClass(), Object.class).getPropertyDescriptors();
                 if (props.length > 0) {
-                    for (int i=0;i<props.length;i++) {
+                    for (PropertyDescriptor prop : props) {
                         try {
                             Object propertyValue =
-                                props[i].getReadMethod().invoke(msg,
-                                        (Object[]) null);
-                            if ("message".equalsIgnoreCase(props[i].getName())) {
+                                    prop.getReadMethod().invoke(msg,
+                                            (Object[]) null);
+                            if ("message".equalsIgnoreCase(prop.getName())) {
                                 newMsg = propertyValue;
                             } else {
-                                rewriteProps.put(props[i].getName(), propertyValue);
+                                rewriteProps.put(prop.getName(), propertyValue);
                             }
                         } catch (Exception e) {
                             LogLog.warn("Unable to evaluate property " +
-                                    props[i].getName(), e);
+                                    prop.getName(), e);
                         }
                     }
                     return new LoggingEvent(

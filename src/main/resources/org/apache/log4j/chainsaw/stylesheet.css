@@ -16,7 +16,7 @@
 
 */
 
- BODY, TABLE, TD,  {
+ BODY, TABLE, TD {
   font-size: 10px;
   color: #000000;
   font-family: Tahoma, Verdana, Helvetica, Arial, sans-serif;

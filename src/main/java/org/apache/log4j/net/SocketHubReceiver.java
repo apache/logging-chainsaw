@@ -319,9 +319,9 @@ extends Receiver implements SocketNodeEventListener, PortBased {
     socketNode.addSocketNodeEventListener(this);
 
     synchronized (listenerList) {
-        for (Iterator iter = listenerList.iterator(); iter.hasNext();) {
+        for (Object aListenerList : listenerList) {
             SocketNodeEventListener listener =
-                    (SocketNodeEventListener) iter.next();
+                    (SocketNodeEventListener) aListenerList;
             socketNode.addSocketNodeEventListener(listener);
         }
     }

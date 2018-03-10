@@ -237,9 +237,9 @@ public class SocketNode13 extends ComponentBase implements Runnable, Pauseable {
    */
   private void fireSocketClosedEvent(final Exception listenerException) {
     synchronized (listenerList) {
-        for (Iterator iter = listenerList.iterator(); iter.hasNext();) {
+        for (Object aListenerList : listenerList) {
             SocketNodeEventListener snel =
-                    (SocketNodeEventListener) iter.next();
+                    (SocketNodeEventListener) aListenerList;
             if (snel != null) {
                 snel.socketClosedEvent(listenerException);
             }
@@ -253,9 +253,9 @@ public class SocketNode13 extends ComponentBase implements Runnable, Pauseable {
    */
   private void fireSocketOpened(final String remoteInfo) {
     synchronized (listenerList) {
-        for (Iterator iter = listenerList.iterator(); iter.hasNext();) {
+        for (Object aListenerList : listenerList) {
             SocketNodeEventListener snel =
-                    (SocketNodeEventListener) iter.next();
+                    (SocketNodeEventListener) aListenerList;
             if (snel != null) {
                 snel.socketOpened(remoteInfo);
             }

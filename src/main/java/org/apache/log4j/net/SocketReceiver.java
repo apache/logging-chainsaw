@@ -223,13 +223,13 @@ public class SocketReceiver extends Receiver implements Runnable, PortBased,
    * Closes all the connected sockets in the List.
    */
   private synchronized void closeAllAcceptedSockets() {
-    for (int x = 0; x < socketList.size(); x++) {
-      try {
-        ((Socket) socketList.get(x)).close();
-      } catch (Exception e) {
-        // ignore for now
+      for (Object aSocketList : socketList) {
+          try {
+              ((Socket) aSocketList).close();
+          } catch (Exception e) {
+              // ignore for now
+          }
       }
-    }
 
     // clear member variables
     socketMap.clear();
@@ -289,12 +289,11 @@ public class SocketReceiver extends Receiver implements Runnable, PortBased,
 
           SocketNode13 node = new SocketNode13(socket, this);
           synchronized (listenerList) {
-            for (Iterator iter = listenerList.iterator();
-                 iter.hasNext();) {
-                SocketNodeEventListener l =
-                        (SocketNodeEventListener) iter.next();
-                node.addSocketNodeEventListener(l);
-            }
+              for (Object aListenerList : listenerList) {
+                  SocketNodeEventListener l =
+                          (SocketNodeEventListener) aListenerList;
+                  node.addSocketNodeEventListener(l);
+              }
           }
           socketMap.put(socket, node);
           new Thread(node).start();

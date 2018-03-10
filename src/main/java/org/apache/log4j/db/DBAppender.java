@@ -298,16 +298,16 @@ public class DBAppender extends AppenderSkeleton implements UnrecognizedElementH
           if (propertiesKeys.size() > 0) {
               PreparedStatement insertPropertiesStatement =
                   connection.prepareStatement(insertPropertiesSQL);
-              
-              for (Iterator i = propertiesKeys.iterator(); i.hasNext();) {
-                  String key = (String) i.next();
+
+              for (Object propertiesKey : propertiesKeys) {
+                  String key = (String) propertiesKey;
                   String value = event.getProperty(key);
-                  
+
                   //LogLog.info("id " + eventId + ", key " + key + ", value " + value);
                   insertPropertiesStatement.setInt(1, eventId);
                   insertPropertiesStatement.setString(2, key);
                   insertPropertiesStatement.setString(3, value);
-                  
+
                   if (cnxSupportsBatchUpdates) {
                       insertPropertiesStatement.addBatch();
                   } else {

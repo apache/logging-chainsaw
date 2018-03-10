@@ -295,23 +295,23 @@ public class FullCycleDBTest
     Vector v = va.getVector();
     Vector r = new Vector();
     // remove all elements older than startTime
-    for(Iterator i = v.iterator(); i.hasNext(); ) {
-      LoggingEvent event = (LoggingEvent) i.next();  
-      if(startTime > event.getTimeStamp()) {
-        System.out.println("***Removing event with timestamp "+event.getTimeStamp());
-      } else {
-        System.out.println("***Keeping event with timestamo"+event.getTimeStamp());
-        r.add(event);
+      for (Object aV : v) {
+          LoggingEvent event = (LoggingEvent) aV;
+          if (startTime > event.getTimeStamp()) {
+              System.out.println("***Removing event with timestamp " + event.getTimeStamp());
+          } else {
+              System.out.println("***Keeping event with timestamo" + event.getTimeStamp());
+              r.add(event);
+          }
       }
-    }
     return r;
   }
 
   void dump(Vector v) {
-    for(int i = 0; i < v.size(); i++) {
-      LoggingEvent le = (LoggingEvent) v.get(i);
-      System.out.println("---"+le.getLevel()+" "+le.getLoggerName()+" "+le.getMessage());
-    }
+      for (Object aV : v) {
+          LoggingEvent le = (LoggingEvent) aV;
+          System.out.println("---" + le.getLevel() + " " + le.getLoggerName() + " " + le.getMessage());
+      }
   }
   
   public static Test XXsuite() {

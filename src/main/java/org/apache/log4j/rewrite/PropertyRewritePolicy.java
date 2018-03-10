@@ -64,10 +64,8 @@ public class PropertyRewritePolicy implements RewritePolicy {
     public LoggingEvent rewrite(final LoggingEvent source) {
         if (!properties.isEmpty()) {
             Map rewriteProps = new HashMap(source.getProperties());
-            for(Iterator iter = properties.entrySet().iterator();
-                    iter.hasNext();
-                    ) {
-                Map.Entry entry = (Map.Entry) iter.next();
+            for (Object o : properties.entrySet()) {
+                Map.Entry entry = (Map.Entry) o;
                 if (!rewriteProps.containsKey(entry.getKey())) {
                     rewriteProps.put(entry.getKey(), entry.getValue());
                 }

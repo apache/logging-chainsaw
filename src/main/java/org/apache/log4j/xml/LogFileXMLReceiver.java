@@ -273,8 +273,8 @@ public class LogFileXMLReceiver extends Receiver {
             return;
         }
 
-        for (Iterator iter = c.iterator(); iter.hasNext();) {
-            LoggingEvent evt = (LoggingEvent) iter.next();
+        for (Object aC : c) {
+            LoggingEvent evt = (LoggingEvent) aC;
             if (passesExpression(evt)) {
                 if (evt.getProperty(Constants.HOSTNAME_KEY) != null) {
                     evt.setProperty(Constants.HOSTNAME_KEY, host);

@@ -480,9 +480,9 @@ public class LogFilePatternReceiver extends Receiver {
   private LoggingEvent buildEvent() {
     if (currentMap.size() == 0) {
       if (additionalLines.size() > 0) {
-        for (Iterator iter = additionalLines.iterator();iter.hasNext();) {
-          getLogger().debug("found non-matching line: " + iter.next());
-        }
+          for (Object additionalLine : additionalLines) {
+              getLogger().debug("found non-matching line: " + additionalLine);
+          }
       }
       additionalLines.clear();
       return null;

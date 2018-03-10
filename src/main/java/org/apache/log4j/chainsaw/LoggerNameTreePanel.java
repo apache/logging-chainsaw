@@ -564,10 +564,10 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
   }
 
   private boolean isHiddenLogger(String loggerName) {
-    for (Iterator iter = hiddenSet.iterator();iter.hasNext();) {
-      String hiddenLoggerEntry = iter.next().toString();
+    for (Object aHiddenSet : hiddenSet) {
+      String hiddenLoggerEntry = aHiddenSet.toString();
       if (loggerName.startsWith(hiddenLoggerEntry + ".") || loggerName.endsWith(hiddenLoggerEntry)) {
-          return true;
+        return true;
       }
     }
     return false;
@@ -695,22 +695,18 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
 
       logger.debug("Collapsing all children of selected node");
 
-    for (int i = 0; i < paths.length; i++)
-    {
-      TreePath path = paths[i];
+    for (TreePath path : paths) {
       DefaultMutableTreeNode node =
-        (DefaultMutableTreeNode) path.getLastPathComponent();
+              (DefaultMutableTreeNode) path.getLastPathComponent();
       Enumeration enumeration = node.depthFirstEnumeration();
 
-      while (enumeration.hasMoreElements())
-      {
+      while (enumeration.hasMoreElements()) {
         DefaultMutableTreeNode child =
-          (DefaultMutableTreeNode) enumeration.nextElement();
+                (DefaultMutableTreeNode) enumeration.nextElement();
 
-        if ((child.getParent() != null) && (child != node))
-        {
+        if ((child.getParent() != null) && (child != node)) {
           TreeNode[] nodes =
-            ((DefaultMutableTreeNode) child.getParent()).getPath();
+                  ((DefaultMutableTreeNode) child.getParent()).getPath();
 
           TreePath treePath = new TreePath(nodes);
           logTree.collapsePath(treePath);
@@ -1246,10 +1242,7 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
 
       logger.debug("Expanding all children of selected node");
 
-    for (int i = 0; i < paths.length; i++)
-    {
-      TreePath path = paths[i];
-
+    for (TreePath path : paths) {
       /**
        * TODO this is commented out, right now it expands all nodes including the root, so if there is a large tree..... look out.
        */
@@ -1265,22 +1258,20 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
       //      }
 
       DefaultMutableTreeNode treeNode =
-        (DefaultMutableTreeNode) path.getLastPathComponent();
+              (DefaultMutableTreeNode) path.getLastPathComponent();
 
       Enumeration depthEnum = treeNode.depthFirstEnumeration();
 
-      if (!depthEnum.hasMoreElements())
-      {
+      if (!depthEnum.hasMoreElements()) {
         break;
       }
 
       List depths = new ArrayList();
 
-      while (depthEnum.hasMoreElements())
-      {
+      while (depthEnum.hasMoreElements()) {
         depths.add(
-          new Integer(
-            ((DefaultMutableTreeNode) depthEnum.nextElement()).getDepth()));
+                new Integer(
+                        ((DefaultMutableTreeNode) depthEnum.nextElement()).getDepth()));
       }
 
       Collections.sort(depths);
@@ -1288,22 +1279,19 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
 
       int maxDepth = ((Integer) depths.get(0)).intValue();
 
-      if (maxDepth > WARN_DEPTH)
-      {
+      if (maxDepth > WARN_DEPTH) {
         logger.warn("Should warn user, depth=" + maxDepth);
       }
 
       depthEnum = treeNode.depthFirstEnumeration();
 
-      while (depthEnum.hasMoreElements())
-      {
+      while (depthEnum.hasMoreElements()) {
         DefaultMutableTreeNode node =
-          (DefaultMutableTreeNode) depthEnum.nextElement();
+                (DefaultMutableTreeNode) depthEnum.nextElement();
 
-        if (node.isLeaf() && node.getParent() != null)
-        {
+        if (node.isLeaf() && node.getParent() != null) {
           TreeNode[] nodes =
-            ((DefaultMutableTreeNode) node.getParent()).getPath();
+                  ((DefaultMutableTreeNode) node.getParent()).getPath();
           TreePath treePath = new TreePath(nodes);
 
           logger.debug("Expanding path:" + treePath);
@@ -1320,14 +1308,12 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
             listenerList.getListeners(ChangeListener.class);
     ChangeEvent e = null;
 
-    for (int i = 0; i < listeners.length; i++)
-    {
-      if (e == null)
-      {
+    for (ChangeListener listener : listeners) {
+      if (e == null) {
         e = new ChangeEvent(this);
       }
 
-      listeners[i].stateChanged(e);
+      listener.stateChanged(e);
     }
   }
 
@@ -1524,11 +1510,10 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
       List sortedIgnoreList = new ArrayList(hiddenSet);
       Collections.sort(sortedIgnoreList);
 
-      for (Iterator iter = sortedIgnoreList.iterator(); iter.hasNext();)
-      {
-        String string = (String) iter.next();
-        model.addElement(string);
-      }
+    for (Object aSortedIgnoreList : sortedIgnoreList) {
+      String string = (String) aSortedIgnoreList;
+      model.addElement(string);
+    }
 
 //      ignoreList.setModel(model);
 

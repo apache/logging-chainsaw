@@ -154,12 +154,12 @@ public class FileDnDTarget implements DropTargetListener{
     private boolean isDragOk(DropTargetDragEvent e) {
     	DataFlavor[] flavors = new DataFlavor[] { DataFlavor.javaFileListFlavor };
     	DataFlavor chosen = null;
-    	for (int i = 0; i < flavors.length; i++) {
-    		if (e.isDataFlavorSupported(flavors[i])) {
-    			chosen = flavors[i];
-    			break;
-    		}
-    	}
+        for (DataFlavor flavor : flavors) {
+            if (e.isDataFlavorSupported(flavor)) {
+                chosen = flavor;
+                break;
+            }
+        }
     	/*
     	 * the src does not support any of the StringTransferable flavors
     	 */

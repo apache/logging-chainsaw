@@ -187,13 +187,13 @@ public static void main(String[] args) {
       UIManager.LookAndFeelInfo[] newLookAndFeels = new UIManager.LookAndFeelInfo[lookAndFeels.length];
       boolean useNewLookAndFeels = false;
       int j = 0;
-      for (int i=0;i<lookAndFeels.length;i++) {
-        if (lookAndFeels[i].getClassName().toLowerCase(Locale.ENGLISH).contains("nimbus")) {
-            useNewLookAndFeels = true;
-        } else {
-            newLookAndFeels[j++] = lookAndFeels[i];
+        for (UIManager.LookAndFeelInfo lookAndFeel : lookAndFeels) {
+            if (lookAndFeel.getClassName().toLowerCase(Locale.ENGLISH).contains("nimbus")) {
+                useNewLookAndFeels = true;
+            } else {
+                newLookAndFeels[j++] = lookAndFeel;
+            }
         }
-      }
       if (useNewLookAndFeels) {
           UIManager.LookAndFeelInfo[] replacedLookAndFeels = new UIManager.LookAndFeelInfo[lookAndFeels.length - 1];
           System.arraycopy(newLookAndFeels, 0, replacedLookAndFeels, 0, newLookAndFeels.length - 1);
@@ -337,20 +337,19 @@ public static void main(String[] args) {
       lfPanel.setLayout(new BoxLayout(lfPanel, BoxLayout.Y_AXIS));
       lfPanel.setBorder(BorderFactory.createTitledBorder(" Look & Feel "));
 
-      for (int i = 0; i < lookAndFeels.length; i++) {
-        final UIManager.LookAndFeelInfo lfInfo = lookAndFeels[i];
-        final JRadioButton lfItem = new JRadioButton(" " + lfInfo.getName() + " ");
-        lfItem.setName(lfInfo.getClassName());
-        lfItem.addActionListener(
-          new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-              uncommittedPreferenceModel.setLookAndFeelClassName(
-                lfInfo.getClassName());
-            }
-          });
-        lookAndFeelGroup.add(lfItem);
-        lfPanel.add(lfItem);
-      }
+        for (final UIManager.LookAndFeelInfo lfInfo : lookAndFeels) {
+            final JRadioButton lfItem = new JRadioButton(" " + lfInfo.getName() + " ");
+            lfItem.setName(lfInfo.getClassName());
+            lfItem.addActionListener(
+                    new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            uncommittedPreferenceModel.setLookAndFeelClassName(
+                                    lfInfo.getClassName());
+                        }
+                    });
+            lookAndFeelGroup.add(lfItem);
+            lfPanel.add(lfItem);
+        }
 
       try {
         final Class gtkLF =

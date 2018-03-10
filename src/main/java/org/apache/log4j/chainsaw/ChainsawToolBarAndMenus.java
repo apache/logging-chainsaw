@@ -551,15 +551,15 @@ class ChainsawToolBarAndMenus implements ChangeListener {
       ReceiversHelper.getInstance().getKnownReceiverClasses();
     JMenu receiverHelp = new JMenu("Receiver JavaDoc");
 
-    for (Iterator iter = knownReceivers.iterator(); iter.hasNext();) {
-      final Class clazz = (Class) iter.next();
-      receiverHelp.add(
-        new AbstractAction(clazz.getName()) {
-          public void actionPerformed(ActionEvent arg0) {
-            HelpManager.getInstance().showHelpForClass(clazz);
-          }
-        });
-    }
+      for (Object knownReceiver : knownReceivers) {
+          final Class clazz = (Class) knownReceiver;
+          receiverHelp.add(
+                  new AbstractAction(clazz.getName()) {
+                      public void actionPerformed(ActionEvent arg0) {
+                          HelpManager.getInstance().showHelpForClass(clazz);
+                      }
+                  });
+      }
 
     helpMenu.add(receiverHelp);
 
@@ -865,21 +865,21 @@ class ChainsawToolBarAndMenus implements ChangeListener {
       toggleScrollToBottomMenuItem.setSelected(logPanel.isScrollToBottom());
     }
 
-    for (int i = 0; i < logPanelSpecificActions.length; i++) {
-      logPanelSpecificActions[i].setEnabled(activateLogPanelActions);
-    }
+      for (Action logPanelSpecificAction : logPanelSpecificActions) {
+          logPanelSpecificAction.setEnabled(activateLogPanelActions);
+      }
 
     String currentLookAndFeelName = UIManager.getLookAndFeel().getName();
 
-    for (Iterator iter = lookAndFeelMenus.iterator(); iter.hasNext();) {
-      JRadioButtonMenuItem element = (JRadioButtonMenuItem) iter.next();
+      for (Object lookAndFeelMenu : lookAndFeelMenus) {
+          JRadioButtonMenuItem element = (JRadioButtonMenuItem) lookAndFeelMenu;
 
-      if (element.getText().equals(currentLookAndFeelName)) {
-        element.setSelected(true);
-      } else {
-        element.setSelected(false);
+          if (element.getText().equals(currentLookAndFeelName)) {
+              element.setSelected(true);
+          } else {
+              element.setSelected(false);
+          }
       }
-    }
   }
 
     private Action getFindNextColorizedEventAction() {

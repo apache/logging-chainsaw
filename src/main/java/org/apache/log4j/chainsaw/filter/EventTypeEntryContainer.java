@@ -143,11 +143,11 @@ public class EventTypeEntryContainer {
     if(properties == null) {
      return;   
     }
-        for (Iterator iter = properties.entrySet().iterator(); iter.hasNext();) {
-            Map.Entry entry = (Map.Entry)iter.next();
-            if (!(propListModel.contains(entry.getKey()))) {
-                propListModel.addElement(entry.getKey());
-            }
-        }
+      for (Object o : properties.entrySet()) {
+          Map.Entry entry = (Map.Entry) o;
+          if (!(propListModel.contains(entry.getKey()))) {
+              propListModel.addElement(entry.getKey());
+          }
+      }
     }
 }

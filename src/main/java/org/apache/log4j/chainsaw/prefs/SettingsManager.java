@@ -118,8 +118,8 @@ public final class SettingsManager {
     private void loadProfileableSettings() {
         EventListener[] listeners = listenerList.getListeners(SettingsListener.class);
 
-        for (int i = 0; i < listeners.length; i++) {
-            SettingsListener settingsListener = (SettingsListener) listeners[i];
+        for (EventListener listener : listeners) {
+            SettingsListener settingsListener = (SettingsListener) listener;
 
             if (settingsListener instanceof Profileable) {
                 Profileable p = (Profileable) settingsListener;
@@ -187,8 +187,8 @@ public final class SettingsManager {
         EventListener[] listeners = listenerList.getListeners(SettingsListener.class);
         LoadSettingsEvent event = null;
 
-        for (int i = 0; i < listeners.length; i++) {
-            SettingsListener settingsListener = (SettingsListener) listeners[i];
+        for (EventListener listener : listeners) {
+            SettingsListener settingsListener = (SettingsListener) listener;
 
             if (event == null) {
                 Properties loadedProperties = loadGlobalProperties();
@@ -231,8 +231,8 @@ public final class SettingsManager {
         EventListener[] listeners = listenerList.getListeners(SettingsListener.class);
         SaveSettingsEvent event = null;
 
-        for (int i = 0; i < listeners.length; i++) {
-            SettingsListener settingsListener = (SettingsListener) listeners[i];
+        for (EventListener listener : listeners) {
+            SettingsListener settingsListener = (SettingsListener) listener;
 
             if (settingsListener instanceof Profileable) {
                 Profileable profileable = (Profileable) settingsListener;
@@ -244,8 +244,8 @@ public final class SettingsManager {
 
                 try {
                     os = new BufferedOutputStream(new FileOutputStream(
-                                new File(settingsDir,
-                                		 URLEncoder.encode(profileable.getNamespace()) + ".properties")));
+                            new File(settingsDir,
+                                    URLEncoder.encode(profileable.getNamespace()) + ".properties")));
                     event.getProperties().store(os, HEADER);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -266,8 +266,8 @@ public final class SettingsManager {
         EventListener[] listeners = listenerList.getListeners(SettingsListener.class);
         SaveSettingsEvent event = null;
 
-        for (int i = 0; i < listeners.length; i++) {
-            SettingsListener settingsListener = (SettingsListener) listeners[i];
+        for (EventListener listener : listeners) {
+            SettingsListener settingsListener = (SettingsListener) listener;
 
             if (!(settingsListener instanceof Profileable)) {
                 if (event == null) {

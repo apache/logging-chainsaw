@@ -65,14 +65,13 @@ public class LoadSettingsEvent extends SettingsEvent {
   public Collection getSettingsStartingWith(String string)
   {
     Collection c = new ArrayList();
-    
-    for (Iterator iter = properties.entrySet().iterator(); iter.hasNext(); )
-    {
-      Map.Entry entry = (Map.Entry) iter.next();
-      if(entry.getKey().toString().startsWith(string)) {
-        c.add(entry.getValue());
+
+      for (Map.Entry<Object, Object> objectObjectEntry : properties.entrySet()) {
+          Map.Entry entry = (Map.Entry) objectObjectEntry;
+          if (entry.getKey().toString().startsWith(string)) {
+              c.add(entry.getValue());
+          }
       }
-    }
     
     return Collections.unmodifiableCollection(c);
     
