@@ -13,7 +13,6 @@ package org.apache.log4j.chainsaw;
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.AbstractAction;

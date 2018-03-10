@@ -19,8 +19,6 @@ package org.apache.log4j.chainsaw;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -30,7 +28,6 @@ import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.help.HelpManager;

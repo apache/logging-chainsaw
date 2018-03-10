@@ -17,7 +17,6 @@
 package org.apache.log4j.chainsaw.plugins;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;

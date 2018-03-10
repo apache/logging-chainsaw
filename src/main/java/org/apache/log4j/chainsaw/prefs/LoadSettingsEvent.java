@@ -19,7 +19,6 @@ package org.apache.log4j.chainsaw.prefs;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 

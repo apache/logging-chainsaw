@@ -17,12 +17,10 @@
 
 package org.apache.log4j.chainsaw.receivers;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Vector;
 import java.util.Enumeration;
-import java.util.Iterator;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;

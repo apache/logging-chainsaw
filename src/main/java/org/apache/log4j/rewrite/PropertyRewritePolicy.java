@@ -18,7 +18,6 @@ package org.apache.log4j.rewrite;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
 

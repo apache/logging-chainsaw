@@ -25,7 +25,6 @@ import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
-import java.util.Iterator;
 
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.plugins.Receiver;

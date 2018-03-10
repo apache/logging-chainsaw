@@ -18,10 +18,7 @@
 package org.apache.log4j.chainsaw;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.DefaultBoundedRangeModel;

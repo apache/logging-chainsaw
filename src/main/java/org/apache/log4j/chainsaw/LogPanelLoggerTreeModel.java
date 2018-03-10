@@ -19,7 +19,6 @@
  */
 package org.apache.log4j.chainsaw;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;

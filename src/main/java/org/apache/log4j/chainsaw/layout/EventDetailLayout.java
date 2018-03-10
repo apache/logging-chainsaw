@@ -18,7 +18,6 @@
 package org.apache.log4j.chainsaw.layout;
 
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.log4j.EnhancedPatternLayout;

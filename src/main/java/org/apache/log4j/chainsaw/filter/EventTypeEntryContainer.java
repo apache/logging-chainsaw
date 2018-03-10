@@ -21,7 +21,6 @@ package org.apache.log4j.chainsaw.filter;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 

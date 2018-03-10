@@ -17,7 +17,6 @@
 package org.apache.log4j.rewrite;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
