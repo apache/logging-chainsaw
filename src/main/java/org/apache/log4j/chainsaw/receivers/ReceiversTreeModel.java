@@ -103,14 +103,11 @@ public class ReceiversTreeModel extends DefaultTreeModel
 
   private PropertyChangeListener creatPluginPropertyChangeListener(final Receiver item, final DefaultMutableTreeNode receiverNode)
   {
-    return new PropertyChangeListener() {
+    return evt -> {
+      logger.debug(evt.toString());
+      ReceiversTreeModel.this.fireTreeNodesChanged(item, receiverNode.getPath(), null, null);
 
-      public void propertyChange(PropertyChangeEvent evt)
-      {
-        logger.debug(evt.toString());
-        ReceiversTreeModel.this.fireTreeNodesChanged(item, receiverNode.getPath(), null, null);
-        
-      }};
+    };
   }
 
   /**

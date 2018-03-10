@@ -185,41 +185,31 @@ public class ChainsawStatusBar extends JPanel {
 
     connectionThread =
       new Thread(
-        new Runnable() {
-          public void run() {
-            while (true) {
-              try {
-                Thread.sleep(DELAY_PERIOD);
-              } catch (InterruptedException e) {
-              }
-
-              Icon icon = null;
-
-              if (
-                (System.currentTimeMillis() - lastReceivedConnection) < DELAY_PERIOD) {
-                icon = netConnectIcon;
-              }
-
-              final Icon theIcon = icon;
-              SwingUtilities.invokeLater(
-                new Runnable() {
-                  public void run() {
-                    receivedConnectionlabel.setIcon(theIcon);
+              () -> {
+                while (true) {
+                  try {
+                    Thread.sleep(DELAY_PERIOD);
+                  } catch (InterruptedException e) {
                   }
-                });
-            }
-          }
-        });
+
+                  Icon icon = null;
+
+                  if (
+                    (System.currentTimeMillis() - lastReceivedConnection) < DELAY_PERIOD) {
+                    icon = netConnectIcon;
+                  }
+
+                  final Icon theIcon = icon;
+                  SwingUtilities.invokeLater(
+                          () -> receivedConnectionlabel.setIcon(theIcon));
+                }
+              });
     connectionThread.start();
   }
 
   void setDataRate(final double dataRate) {
     SwingUtilities.invokeLater(
-      new Runnable() {
-        public void run() {
-          receivedEventLabel.setText(nf.format(dataRate) + "/s");
-        }
-      });
+            () -> receivedEventLabel.setText(nf.format(dataRate) + "/s"));
   }
 
   /**
@@ -243,14 +233,12 @@ public class ChainsawStatusBar extends JPanel {
   void setPaused(final boolean isPaused, String tabName) {
     if (tabName.equals(logUI.getActiveTabName())) {
       Runnable runnable =
-        new Runnable() {
-          public void run() {
-              pausedLabel.setIcon(isPaused ? pausedIcon : null);
-              pausedLabel.setToolTipText(
-                isPaused ? "This Log panel is currently paused"
-                         : "This Log panel is not paused");
-          }
-      };
+              () -> {
+                  pausedLabel.setIcon(isPaused ? pausedIcon : null);
+                  pausedLabel.setToolTipText(
+                    isPaused ? "This Log panel is currently paused"
+                             : "This Log panel is not paused");
+              };
       SwingUtilities.invokeLater(runnable);
     }
   }
@@ -259,12 +247,10 @@ public class ChainsawStatusBar extends JPanel {
           final int selectedLine, final int lineCount, final int total, String tabName) {
     if (tabName.equals(logUI.getActiveTabName())) {
         SwingUtilities.invokeLater(
-          new Runnable() {
-            public void run() {
-              lineSelectionLabel.setText(selectedLine+"");
-              eventCountLabel.setText("Filtered/Total: " + lineCount + ":" + total);
-            }
-          });
+                () -> {
+                  lineSelectionLabel.setText(selectedLine+"");
+                  eventCountLabel.setText("Filtered/Total: " + lineCount + ":" + total);
+                });
     }
   }
 
@@ -280,30 +266,18 @@ public class ChainsawStatusBar extends JPanel {
 
   void setNothingSelected() {
     SwingUtilities.invokeLater(
-      new Runnable() {
-        public void run() {
-          lineSelectionLabel.setText("");
-        }
-      });
+            () -> lineSelectionLabel.setText(""));
   }
 
   void clear() {
     setMessage(DEFAULT_MSG);
     setNothingSelected();
     SwingUtilities.invokeLater(
-      new Runnable() {
-        public void run() {
-          receivedEventLabel.setText("");
-        }
-      });
+            () -> receivedEventLabel.setText(""));
   }
 
   public void setMessage(final String msg) {
     SwingUtilities.invokeLater(
-      new Runnable() {
-        public void run() {
-          statusMsg.setText(" " + msg);
-        }
-      });
+            () -> statusMsg.setText(" " + msg));
   }
 }

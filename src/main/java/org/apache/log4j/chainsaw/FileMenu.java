@@ -133,14 +133,7 @@ class FileMenu extends JMenu {
     
   
     
-    MRUFileList.addChangeListener(new ChangeListener() {
-        
-        public void stateChanged(ChangeEvent e) {
-            
-            buildMRUMenu(mrulog4j, logUI);
-        }
-        
-    });
+    MRUFileList.addChangeListener(e -> buildMRUMenu(mrulog4j, logUI));
     buildMRUMenu(mrulog4j, logUI);
     
     add(mrulog4j);

@@ -123,14 +123,12 @@ public abstract class AbstractPreferencePanel extends JPanel
       TreeSelectionModel.SINGLE_TREE_SELECTION);
     prefTree.setSelectionModel(treeSelectionModel);
     prefTree.addTreeSelectionListener(
-      new TreeSelectionListener() {
-        public void valueChanged(TreeSelectionEvent e) {
-          TreePath path = e.getNewLeadSelectionPath();
-          DefaultMutableTreeNode node =
-            (DefaultMutableTreeNode) path.getLastPathComponent();
-          setDisplayedPrefPanel((JComponent) node.getUserObject());
-        }
-      });
+            e -> {
+              TreePath path = e.getNewLeadSelectionPath();
+              DefaultMutableTreeNode node =
+                (DefaultMutableTreeNode) path.getLastPathComponent();
+              setDisplayedPrefPanel((JComponent) node.getUserObject());
+            });
   
     // ensure the first pref panel is selected and displayed
     DefaultMutableTreeNode root =

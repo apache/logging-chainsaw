@@ -183,49 +183,47 @@ public class LogFileXMLReceiver extends Receiver {
      * Process the file
      */
     public void activateOptions() {
-        Runnable runnable = new Runnable() {
-            public void run() {
-                try {
-                    URL url = new URL(fileURL);
-                    host = url.getHost();
-                    if (host != null && host.equals("")) {
-                        host = FILE_KEY;
-                    }
-                    path = url.getPath();
-                } catch (MalformedURLException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
+        Runnable runnable = () -> {
+            try {
+                URL url = new URL(fileURL);
+                host = url.getHost();
+                if (host != null && host.equals("")) {
+                    host = FILE_KEY;
                 }
+                path = url.getPath();
+            } catch (MalformedURLException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
 
-                try {
-                    if (filterExpression != null) {
-                        expressionRule = ExpressionRule.getRule(filterExpression);
-                    }
-                } catch (Exception e) {
-                    getLogger().warn("Invalid filter expression: " + filterExpression, e);
+            try {
+                if (filterExpression != null) {
+                    expressionRule = ExpressionRule.getRule(filterExpression);
                 }
+            } catch (Exception e) {
+                getLogger().warn("Invalid filter expression: " + filterExpression, e);
+            }
 
-                Class c;
-                try {
-                    c = Class.forName(decoder);
-                    Object o = c.newInstance();
-                    if (o instanceof Decoder) {
-                        decoderInstance = (Decoder) o;
-                    }
-                } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+            Class c;
+            try {
+                c = Class.forName(decoder);
+                Object o = c.newInstance();
+                if (o instanceof Decoder) {
+                    decoderInstance = (Decoder) o;
                 }
+            } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
 
-                try {
-                    reader = new InputStreamReader(new URL(getFileURL()).openStream());
-                    process(reader);
-                } catch (FileNotFoundException fnfe) {
-                    getLogger().info("file not available");
-                } catch (IOException ioe) {
-                    getLogger().warn("unable to load file", ioe);
-                    return;
-                }
+            try {
+                reader = new InputStreamReader(new URL(getFileURL()).openStream());
+                process(reader);
+            } catch (FileNotFoundException fnfe) {
+                getLogger().info("file not available");
+            } catch (IOException ioe) {
+                getLogger().warn("unable to load file", ioe);
+                return;
             }
         };
         if (useCurrentThread) {

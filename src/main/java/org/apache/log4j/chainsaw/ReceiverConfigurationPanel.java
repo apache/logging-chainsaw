@@ -194,11 +194,7 @@ class ReceiverConfigurationPanel extends JPanel {
          * This listener activates/deactivates certain controls based on the current
          * state of the options
          */
-        ActionListener al = new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    updateEnabledState((Component)e.getSource());
-                }
-            };
+        ActionListener al = e -> updateEnabledState((Component)e.getSource());
 
         logFileReceiverRadioButton.addActionListener(al);
         log4jConfigReceiverRadioButton.addActionListener(al);
@@ -267,21 +263,17 @@ class ReceiverConfigurationPanel extends JPanel {
             }
         });
 
-      saveButton.addActionListener(new ActionListener()
-      {
-          public void actionPerformed(ActionEvent e)
-          {
-            try {
-                URL url = browseFile("Choose a path and file name to save", false);
-                if (url != null) {
-                  File file = new File(url.toURI());
-                  panelModel.setSaveConfigFile(file);
-                }
-            } catch (Exception ex) {
-                logger.error(
-                    "Error browsing for log file", ex);
+      saveButton.addActionListener(e -> {
+        try {
+            URL url = browseFile("Choose a path and file name to save", false);
+            if (url != null) {
+              File file = new File(url.toURI());
+              panelModel.setSaveConfigFile(file);
             }
-          }
+        } catch (Exception ex) {
+            logger.error(
+                "Error browsing for log file", ex);
+        }
       });
       return panel;
     }
@@ -654,11 +646,7 @@ class ReceiverConfigurationPanel extends JPanel {
         if (selectedFile != null) {
           result = selectedFile.toURI().toURL();
         }
-        EventQueue.invokeLater(new Runnable() {
-          public void run() {
-            dialog.setVisible(true);
-          }
-        });
+        EventQueue.invokeLater(() -> dialog.setVisible(true));
         return result;
     }
 
@@ -680,11 +668,7 @@ class ReceiverConfigurationPanel extends JPanel {
         if (selectedFile != null) {
           result = selectedFile.toURI().toURL();
         }
-        EventQueue.invokeLater(new Runnable() {
-          public void run() {
-            dialog.setVisible(true);
-          }
-        });
+        EventQueue.invokeLater(() -> dialog.setVisible(true));
         return result;
     }
 

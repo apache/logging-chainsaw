@@ -247,61 +247,58 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
     	  */
 
     	  //get a reference to the container
-    	  new Thread(new Runnable() {
-    		  public void run() {
-    	  synchronized(waitForContainerLock) {
-    		  while (container == null) {
-    			  try {
-    				  waitForContainerLock.wait(1000);
-    				  getLogger().debug("waiting for setContainer call");
-    			  } catch (InterruptedException ie){}
-    		  }
-    	  }
-
-    	  Frame containerFrame1;
-          if (container instanceof Frame) {
-              containerFrame1 = (Frame)container;
-          } else {
-              synchronized(waitForContainerLock) {
-                  //loop until the container has a frame
-                  while ((containerFrame1 = (Frame)SwingUtilities.getAncestorOfClass(Frame.class, container)) == null) {
-                      try {
-                          waitForContainerLock.wait(1000);
-                          getLogger().debug("waiting for container's frame to be available");
-                      } catch (InterruptedException ie) {}
-                  }
-              }
+    	  new Thread(() -> {
+      synchronized(waitForContainerLock) {
+          while (container == null) {
+              try {
+                  waitForContainerLock.wait(1000);
+                  getLogger().debug("waiting for setContainer call");
+              } catch (InterruptedException ie){}
           }
-            final Frame containerFrame = containerFrame1;
-    	  	  //create the dialog
-    	  	  SwingUtilities.invokeLater(new Runnable() {
-    	  		public void run() {
-    	  			  Frame owner = null;
-    	  			  if (container != null) {
-    	  				  owner = (Frame)SwingUtilities.getAncestorOfClass(Frame.class, containerFrame);
-    	  			  }
-    	  			  final UserNamePasswordDialog f = new UserNamePasswordDialog(owner);
-    	  			  f.pack();
-    	  			  Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
-    	  			  f.setLocation(d.width /2, d.height/2);
-    	  			  f.setVisible(true);
-    	  				if (null == f.getUserName() || null == f.getPassword()) {
-    	  					getLogger().info("Username and password not both provided, not using credentials");
-    	  				} else {
-    	  				    String oldURL = getFileURL();
-    	  					int index = oldURL.indexOf("://");
-    	  					String firstPart = oldURL.substring(0, index);
-    	  					String lastPart = oldURL.substring(index + "://".length());
-    	  					setFileURL(firstPart + "://" + f.getUserName()+ ":" + new String(f.getPassword()) + "@" + lastPart);
+      }
 
-    	  			        setHost(oldURL.substring(0, index + "://".length()));
-    	  		            setPath(oldURL.substring(index + "://".length()));
-    	  				}
-                        vfsReader = new VFSReader();
-    	  				new Thread(vfsReader).start();
-    	  			  }
-    	  		  });
-    		  }}).start();
+      Frame containerFrame1;
+if (container instanceof Frame) {
+containerFrame1 = (Frame)container;
+} else {
+synchronized(waitForContainerLock) {
+//loop until the container has a frame
+while ((containerFrame1 = (Frame)SwingUtilities.getAncestorOfClass(Frame.class, container)) == null) {
+try {
+waitForContainerLock.wait(1000);
+getLogger().debug("waiting for container's frame to be available");
+} catch (InterruptedException ie) {}
+}
+}
+}
+final Frame containerFrame = containerFrame1;
+            //create the dialog
+            SwingUtilities.invokeLater(() -> {
+                Frame owner = null;
+                if (container != null) {
+                    owner = (Frame) SwingUtilities.getAncestorOfClass(Frame.class, containerFrame);
+                }
+                final UserNamePasswordDialog f = new UserNamePasswordDialog(owner);
+                f.pack();
+                Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+                f.setLocation(d.width / 2, d.height / 2);
+                f.setVisible(true);
+                if (null == f.getUserName() || null == f.getPassword()) {
+                    getLogger().info("Username and password not both provided, not using credentials");
+                } else {
+                    String oldURL = getFileURL();
+                    int index = oldURL.indexOf("://");
+                    String firstPart = oldURL.substring(0, index);
+                    String lastPart = oldURL.substring(index + "://".length());
+                    setFileURL(firstPart + "://" + f.getUserName() + ":" + new String(f.getPassword()) + "@" + lastPart);
+
+                    setHost(oldURL.substring(0, index + "://".length()));
+                    setPath(oldURL.substring(index + "://".length()));
+                }
+                vfsReader = new VFSReader();
+                new Thread(vfsReader).start();
+            });
+          }).start();
       } else {
         //starts with protocol:/  but not protocol://
         String oldURL = getFileURL();
@@ -542,14 +539,12 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
 		  panel.add(submitButton, gc);
 
 		  getContentPane().add(panel);
-		  submitButton.addActionListener(new ActionListener(){
-			  public void actionPerformed(ActionEvent evt) {
-				  userName = userNameTextField.getText();
-				  password = passwordTextField.getPassword();
-				  getContentPane().setVisible(false);
-				  UserNamePasswordDialog.this.dispose();
-			  }
-		  });
+		  submitButton.addActionListener(evt -> {
+              userName = userNameTextField.getText();
+              password = passwordTextField.getPassword();
+              getContentPane().setVisible(false);
+              UserNamePasswordDialog.this.dispose();
+          });
 	  }
 	 
 	  public String getUserName() {

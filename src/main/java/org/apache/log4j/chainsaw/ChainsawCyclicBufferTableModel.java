@@ -170,36 +170,31 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
             }
             newSize = filteredList.size();
           }
-      	SwingHelper.invokeOnEDT(new Runnable() {
-      		public void run() {
-      			if (newSize > 0) {
-	      			if (previousSize == newSize) {
-	      				//same - update all
-	      				fireTableRowsUpdated(0, newSize - 1);
-	      			} else if (previousSize > newSize) {
-	      				//less now..update and delete difference
-	      				fireTableRowsUpdated(0, newSize - 1);
-                        //swing bug exposed by variable height rows when calling fireTableRowsDeleted..use tabledatacchanged
-                        fireTableDataChanged();
-	      			} else if (previousSize < newSize) {
-	      				//more now..update and insert difference
-                        if (previousSize > 0) {
-	      				    fireTableRowsUpdated(0, previousSize - 1);
-                        }
-	      				fireTableRowsInserted(Math.max(0, previousSize), newSize - 1);
-	      			}
-      			} else {
-      				//no rows to show
-      				fireTableDataChanged();
-      			}
-	      	notifyCountListeners();
-            //post refilter with newValue of FALSE (filtering is complete)
-            SwingHelper.invokeOnEDT(new Runnable() {
-                public void run() {
-                    propertySupport.firePropertyChange("refilter", Boolean.TRUE, Boolean.FALSE);
-                }
-            });
-      	}});
+      	SwingHelper.invokeOnEDT(() -> {
+              if (newSize > 0) {
+                  if (previousSize == newSize) {
+                      //same - update all
+                      fireTableRowsUpdated(0, newSize - 1);
+                  } else if (previousSize > newSize) {
+                      //less now..update and delete difference
+                      fireTableRowsUpdated(0, newSize - 1);
+//swing bug exposed by variable height rows when calling fireTableRowsDeleted..use tabledatacchanged
+fireTableDataChanged();
+                  } else if (previousSize < newSize) {
+                      //more now..update and insert difference
+if (previousSize > 0) {
+                          fireTableRowsUpdated(0, previousSize - 1);
+}
+                      fireTableRowsInserted(Math.max(0, previousSize), newSize - 1);
+                  }
+              } else {
+                  //no rows to show
+                  fireTableDataChanged();
+              }
+          notifyCountListeners();
+//post refilter with newValue of FALSE (filtering is complete)
+SwingHelper.invokeOnEDT(() -> propertySupport.firePropertyChange("refilter", Boolean.TRUE, Boolean.FALSE));
+      });
   }
 
   public int locate(Rule rule, int startLocation, boolean searchForward) {
@@ -342,11 +337,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         }
       }
       if (sort) {
-        SwingHelper.invokeOnEDT(new Runnable() {
-            public void run() {
-                fireTableRowsUpdated(0, Math.max(filteredListSize - 1, 0));
-            }
-        });
+        SwingHelper.invokeOnEDT(() -> fireTableRowsUpdated(0, Math.max(filteredListSize - 1, 0)));
       }
   }
 
@@ -698,27 +689,26 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
    }
 
   public void fireTableEvent(final int begin, final int end, final int count) {
-  	SwingHelper.invokeOnEDT(new Runnable() {
-  		public void run() {
-    if (cyclic) {
-      if (!reachedCapacity) {
-        //if we didn't loop and it's the 1st time, insert
-        if ((begin + count) < cyclicBufferSize) {
-          fireTableRowsInserted(begin, end);
-        } else {
-          //we did loop - insert and then update rows
-          //rows are zero-indexed, subtract 1 from cyclicbuffersize for the event notification
-          fireTableRowsInserted(begin, cyclicBufferSize - 1);
-          fireTableRowsUpdated(0, cyclicBufferSize - 1);
-          reachedCapacity = true;
-        }
-      } else {
-        fireTableRowsUpdated(0, cyclicBufferSize - 1);
-      }
-    } else {
-      fireTableRowsInserted(begin, end);
-    }
-  }});
+  	SwingHelper.invokeOnEDT(() -> {
+if (cyclic) {
+if (!reachedCapacity) {
+//if we didn't loop and it's the 1st time, insert
+if ((begin + count) < cyclicBufferSize) {
+fireTableRowsInserted(begin, end);
+} else {
+//we did loop - insert and then update rows
+//rows are zero-indexed, subtract 1 from cyclicbuffersize for the event notification
+fireTableRowsInserted(begin, cyclicBufferSize - 1);
+fireTableRowsUpdated(0, cyclicBufferSize - 1);
+reachedCapacity = true;
+}
+} else {
+fireTableRowsUpdated(0, cyclicBufferSize - 1);
+}
+} else {
+fireTableRowsInserted(begin, end);
+}
+});
   }
 
     public void fireRowUpdated(int row, boolean checkForNewColumns) {
@@ -831,58 +821,56 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     public void propertyChange(PropertyChangeEvent arg0) {
       Thread thread =
         new Thread(
-          new Runnable() {
-            public void run() {
-              ProgressMonitor monitor = null;
+                () -> {
+                  ProgressMonitor monitor = null;
 
-              int index = 0;
+                  int index = 0;
 
-              try {
-                synchronized (mutex) {
-                  monitor =
-                    new ProgressMonitor(
-                      null, "Switching models...",
-                      "Transferring between data structures, please wait...", 0,
-                      unfilteredList.size() + 1);
-                  monitor.setMillisToDecideToPopup(250);
-                  monitor.setMillisToPopup(100);
-                  logger.debug(
-                    "Changing Model, isCyclic is now " + cyclic);
+                  try {
+                    synchronized (mutex) {
+                      monitor =
+                        new ProgressMonitor(
+                          null, "Switching models...",
+                          "Transferring between data structures, please wait...", 0,
+                          unfilteredList.size() + 1);
+                      monitor.setMillisToDecideToPopup(250);
+                      monitor.setMillisToPopup(100);
+                      logger.debug(
+                        "Changing Model, isCyclic is now " + cyclic);
 
-                  List newUnfilteredList = null;
-                  List newFilteredList = null;
+                      List newUnfilteredList = null;
+                      List newFilteredList = null;
 
-                  if (cyclic) {
-                    newUnfilteredList = new CyclicBufferList(cyclicBufferSize);
-                    newFilteredList = new CyclicBufferList(cyclicBufferSize);
-                  } else {
-                    newUnfilteredList = new ArrayList(cyclicBufferSize);
-                    newFilteredList = new ArrayList(cyclicBufferSize);
-                  }
+                      if (cyclic) {
+                        newUnfilteredList = new CyclicBufferList(cyclicBufferSize);
+                        newFilteredList = new CyclicBufferList(cyclicBufferSize);
+                      } else {
+                        newUnfilteredList = new ArrayList(cyclicBufferSize);
+                        newFilteredList = new ArrayList(cyclicBufferSize);
+                      }
 
-                  int increment = 0;
+                      int increment = 0;
 
-                    for (Object anUnfilteredList : unfilteredList) {
-                        LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) anUnfilteredList;
-                        newUnfilteredList.add(loggingEventWrapper);
-                        monitor.setProgress(index++);
+                        for (Object anUnfilteredList : unfilteredList) {
+                            LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) anUnfilteredList;
+                            newUnfilteredList.add(loggingEventWrapper);
+                            monitor.setProgress(index++);
+                        }
+
+                      unfilteredList = newUnfilteredList;
+                      filteredList = newFilteredList;
                     }
 
-                  unfilteredList = newUnfilteredList;
-                  filteredList = newFilteredList;
-                }
+                    monitor.setNote("Refiltering...");
+                    reFilter();
 
-                monitor.setNote("Refiltering...");
-                reFilter();
+                    monitor.setProgress(index++);
+                  } finally {
+                    monitor.close();
+                  }
 
-                monitor.setProgress(index++);
-              } finally {
-                monitor.close();
-              }
-
-              logger.debug("Model Change completed");
-            }
-          });
+                  logger.debug("Model Change completed");
+                });
       thread.setPriority(Thread.MIN_PRIORITY + 1);
       thread.start();
     }

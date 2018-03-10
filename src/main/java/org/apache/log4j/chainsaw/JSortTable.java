@@ -92,25 +92,23 @@ public class JSortTable extends JTable implements MouseListener {
 
   //Allow synchronous updates if already on the EDT
   private void scrollTo(final int row, final int col) {
-    SwingHelper.invokeOnEDT(new Runnable() {
-      public void run() {
-        final int currentRow = getSelectedRow();
-        if ((row > -1) && (row < getRowCount())) {
-          try {
-            //get the requested row off of the bottom and top of the screen by making the 5 rows around the requested row visible
-            //if new past current row, scroll to display the 20th row past new selected row
-            scrollRectToVisible(getCellRect(row, col, true));
-            if (row > currentRow) {
-                scrollRectToVisible(getCellRect(row + 5, col, true));
-            }
-            if (row < currentRow) {
-                scrollRectToVisible(getCellRect(row - 5, col, true));
-            }
-            scrollRectToVisible(getCellRect(row, col, true));
-            setRowSelectionInterval(row, row);
-          } catch (IllegalArgumentException iae) {
-            //ignore..out of bounds
+    SwingHelper.invokeOnEDT(() -> {
+      final int currentRow = getSelectedRow();
+      if ((row > -1) && (row < getRowCount())) {
+        try {
+          //get the requested row off of the bottom and top of the screen by making the 5 rows around the requested row visible
+          //if new past current row, scroll to display the 20th row past new selected row
+          scrollRectToVisible(getCellRect(row, col, true));
+          if (row > currentRow) {
+              scrollRectToVisible(getCellRect(row + 5, col, true));
           }
+          if (row < currentRow) {
+              scrollRectToVisible(getCellRect(row - 5, col, true));
+          }
+          scrollRectToVisible(getCellRect(row, col, true));
+          setRowSelectionInterval(row, row);
+        } catch (IllegalArgumentException iae) {
+          //ignore..out of bounds
         }
       }
     });

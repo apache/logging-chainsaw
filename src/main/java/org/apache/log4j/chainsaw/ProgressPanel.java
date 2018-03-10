@@ -53,20 +53,12 @@ public class ProgressPanel extends JPanel {
 
   public void setMessage(final String string) {
     SwingUtilities.invokeLater(
-      new Runnable() {
-        public void run() {
-          messageLabel.setText(string);
-        }
-      });
+            () -> messageLabel.setText(string));
   }
 
   public void setProgress(final int progress) {
     try {
-      Runnable runnable = new Runnable() {
-          public void run() {
-            progressBar.setValue(progress);
-          }
-        };
+      Runnable runnable = () -> progressBar.setValue(progress);
     if (!SwingUtilities.isEventDispatchThread()) {
         SwingUtilities.invokeAndWait(runnable);
     }else {

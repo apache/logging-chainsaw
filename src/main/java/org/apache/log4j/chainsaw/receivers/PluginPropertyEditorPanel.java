@@ -100,32 +100,29 @@ public class PluginPropertyEditorPanel extends JPanel {
      *
      */
     private void setupListeners() {
-        addPropertyChangeListener("plugin", new PropertyChangeListener() {
+        addPropertyChangeListener("plugin", evt -> {
 
-                public void propertyChange(PropertyChangeEvent evt) {
+            final Plugin p = (Plugin) evt.getNewValue();
 
-                    final Plugin p = (Plugin) evt.getNewValue();
+            if (p != null) {
 
-                    if (p != null) {
+                try {
 
-                        try {
-
-                            PluginPropertyTableModel model =
-                                new PluginPropertyTableModel(p);
-                            propertyTable.setModel(model);
-                            propertyTable.getColumnModel().getColumn(1)
-                            .setCellEditor(new PluginTableCellEditor());
-                            propertyTable.setEnabled(true);
-                        } catch (Throwable e) {
-                            logger.error("Failed to introspect the Plugin", e);
-                        }
-                    } else {
-                        propertyTable.setModel(defaultModel);
-                        propertyTable.setEnabled(false);
-                    }
-
+                    PluginPropertyTableModel model =
+                        new PluginPropertyTableModel(p);
+                    propertyTable.setModel(model);
+                    propertyTable.getColumnModel().getColumn(1)
+                    .setCellEditor(new PluginTableCellEditor());
+                    propertyTable.setEnabled(true);
+                } catch (Throwable e) {
+                    logger.error("Failed to introspect the Plugin", e);
                 }
-            });
+            } else {
+                propertyTable.setModel(defaultModel);
+                propertyTable.setEnabled(false);
+            }
+
+        });
     }
 
     public static void main(String[] args) {
@@ -253,16 +250,13 @@ public class PluginPropertyEditorPanel extends JPanel {
             List list = new ArrayList(Arrays.asList(
                         beanInfo.getPropertyDescriptors()));
 
-            list.sort(new Comparator() {
+            list.sort((o1, o2) -> {
 
-                public int compare(Object o1, Object o2) {
+                PropertyDescriptor d1 = (PropertyDescriptor) o1;
+                PropertyDescriptor d2 = (PropertyDescriptor) o2;
 
-                    PropertyDescriptor d1 = (PropertyDescriptor) o1;
-                    PropertyDescriptor d2 = (PropertyDescriptor) o2;
-
-                    return d1.getDisplayName().compareToIgnoreCase(
-                            d2.getDisplayName());
-                }
+                return d1.getDisplayName().compareToIgnoreCase(
+                        d2.getDisplayName());
             });
             this.plugin = p;
             this.descriptors = (PropertyDescriptor[]) list.toArray(

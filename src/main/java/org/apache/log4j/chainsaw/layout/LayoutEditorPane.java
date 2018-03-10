@@ -146,11 +146,7 @@ public final class LayoutEditorPane extends JPanel {
       });
 
     patternEditor.addCaretListener(
-      new CaretListener() {
-        public void caretUpdate(CaretEvent e) {
-          updateTextActions(e.getMark() != e.getDot());
-        }
-      });
+            e -> updateTextActions(e.getMark() != e.getDot()));
   }
 
   private void updatePreview() {

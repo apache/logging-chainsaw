@@ -99,11 +99,7 @@ class ChainsawTabbedPane extends JTabbedPane implements SettingsListener {
 
     super.fireStateChanged();
     if (!"chainsaw-log".equals(name)) {
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                setSelectedTab(getTabCount() - 1);
-            }
-        });
+        EventQueue.invokeLater(() -> setSelectedTab(getTabCount() - 1));
     }
   }
 

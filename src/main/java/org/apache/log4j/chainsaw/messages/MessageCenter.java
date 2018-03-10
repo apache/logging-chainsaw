@@ -129,12 +129,10 @@ public class MessageCenter {
   private void setupListeners() {
     propertySupport.addPropertyChangeListener(
       "layout",
-      new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-          Layout newLayout = (Layout) evt.getNewValue();
-          messageList.setCellRenderer(new LayoutListCellRenderer(newLayout));
-        }
-      });
+            evt -> {
+              Layout newLayout = (Layout) evt.getNewValue();
+              messageList.setCellRenderer(new LayoutListCellRenderer(newLayout));
+            });
     messageList.addMouseListener(popupListener);
 
     appender.getModel().addListDataListener(

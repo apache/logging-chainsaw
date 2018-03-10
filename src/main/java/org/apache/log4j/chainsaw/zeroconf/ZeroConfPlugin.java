@@ -249,16 +249,14 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
             insertToLeftOfHelp(menuBar, connectToMenu);
             connectToMenu.add(nothingToConnectTo);
             
-            discoveredDevices.addTableModelListener(new TableModelListener (){
+            discoveredDevices.addTableModelListener(e -> {
+                if(discoveredDevices.getRowCount()==0) {
+                    connectToMenu.add(nothingToConnectTo,0);
+                }else if(discoveredDevices.getRowCount()>0) {
+                    connectToMenu.remove(nothingToConnectTo);
+                }
 
-                public void tableChanged(TableModelEvent e) {
-                    if(discoveredDevices.getRowCount()==0) {
-                        connectToMenu.add(nothingToConnectTo,0);
-                    }else if(discoveredDevices.getRowCount()>0) {
-                        connectToMenu.remove(nothingToConnectTo);
-                    }
-                    
-                }});
+            });
             
             nothingToConnectTo.setEnabled(false);
 
@@ -323,12 +321,9 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         }
 //         if the device name is one of the autoconnect devices, then connect immediately
         if (preferenceModel != null && preferenceModel.getAutoConnectDevices() != null && preferenceModel.getAutoConnectDevices().contains(name)) {
-            new Thread(new Runnable() {
-
-                public void run() {
-                    LOG.info("Auto-connecting to " + name);
-                    connectTo(info);
-                }
+            new Thread(() -> {
+                LOG.info("Auto-connecting to " + name);
+                connectTo(info);
             }).start();
         }
     }
@@ -364,12 +359,8 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
              * background thread or not.. All it says is to NOT do it in the AWT
              * thread, so I'm thinking it probably should be a background thread
              */
-            Runnable runnable = new Runnable() {
-                public void run() {
-                    ZeroConfPlugin.this.jmDNS.requestServiceInfo(event
-                            .getType(), event.getName());
-                }
-            };
+            Runnable runnable = () -> ZeroConfPlugin.this.jmDNS.requestServiceInfo(event
+                    .getType(), event.getName());
             Thread thread = new Thread(runnable,
                     "ChainsawZeroConfRequestResolutionThread");
             thread.setPriority(Thread.MIN_PRIORITY);

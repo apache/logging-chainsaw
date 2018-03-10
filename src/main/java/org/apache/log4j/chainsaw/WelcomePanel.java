@@ -73,20 +73,18 @@ public class WelcomePanel extends JPanel {
         textInfo.setPage(helpURL);
         JTextComponentFormatter.applySystemFontAndSize(textInfo);
         textInfo.addHyperlinkListener(
-          new HyperlinkListener() {
-            public void hyperlinkUpdate(HyperlinkEvent e) {
-              if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                urlStack.add(textInfo.getPage());
+                e -> {
+                  if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                    urlStack.add(textInfo.getPage());
 
-                try {
-                  textInfo.setPage(e.getURL());
-                  urlToolbar.updateToolbar();
-                } catch (IOException e1) {
-                  e1.printStackTrace();
-                }
-              }
-            }
-          });
+                    try {
+                      textInfo.setPage(e.getURL());
+                      urlToolbar.updateToolbar();
+                    } catch (IOException e1) {
+                      e1.printStackTrace();
+                    }
+                  }
+                });
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -95,19 +93,17 @@ public class WelcomePanel extends JPanel {
 
   void setURL(final URL url) {
     SwingUtilities.invokeLater(
-      new Runnable() {
-        public void run() {
-          try {
-            urlStack.push(textInfo.getPage());
-            textInfo.setPage(url);
-            //not all pages displayed in the Welcome Panel are html-based (example receiver config is an xml file)..
-            JTextComponentFormatter.applySystemFontAndSize(textInfo);
-            urlToolbar.updateToolbar();
-          } catch (IOException e) {
-            e.printStackTrace();
-          }
-        }
-      });
+            () -> {
+              try {
+                urlStack.push(textInfo.getPage());
+                textInfo.setPage(url);
+                //not all pages displayed in the Welcome Panel are html-based (example receiver config is an xml file)..
+                JTextComponentFormatter.applySystemFontAndSize(textInfo);
+                urlToolbar.updateToolbar();
+              } catch (IOException e) {
+                e.printStackTrace();
+              }
+            });
   }
 
   private class URLToolbar extends JToolBar {

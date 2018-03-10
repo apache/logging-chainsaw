@@ -56,11 +56,7 @@ class LogPanelLoggerTreeModel extends DefaultTreeModel
   public void loggerNameAdded(final String loggerName) {
     //invoke later, not on current EDT
     SwingUtilities.invokeLater(
-      new Runnable() {
-        public void run() {
-          addLoggerNameInDispatchThread(loggerName);
-        }
-      });
+            () -> addLoggerNameInDispatchThread(loggerName));
   }
 
   public void reset() {
@@ -181,11 +177,7 @@ outerFor:
 
   private static class LogPanelTreeNode extends DefaultMutableTreeNode {
     protected static Comparator nodeComparator =
-      new Comparator() {
-        public int compare(Object o1, Object o2) {
-          return o1.toString().compareToIgnoreCase(o2.toString());
-        }
-      };
+            (o1, o2) -> o1.toString().compareToIgnoreCase(o2.toString());
 
     private LogPanelTreeNode(String logName) {
       super(logName);

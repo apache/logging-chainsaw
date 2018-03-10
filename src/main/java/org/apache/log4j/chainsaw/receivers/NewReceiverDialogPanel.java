@@ -74,9 +74,7 @@ public class NewReceiverDialogPanel extends JPanel {
          * url to be the Help resource for that class
          */
         pluginEditorPanel.addPropertyChangeListener("plugin",
-            new PropertyChangeListener() {
-
-                public void propertyChange(PropertyChangeEvent evt) {
+                evt -> {
 
                     Plugin plugin = (Plugin) evt.getNewValue();
                     URL url = HelpManager.getInstance().getHelpForClass(
@@ -89,8 +87,7 @@ public class NewReceiverDialogPanel extends JPanel {
                             "Failed to load the Help resource for " +
                             plugin.getClass(), e);
                     }
-                }
-            });
+                });
     }
 
     /**
@@ -170,11 +167,7 @@ public class NewReceiverDialogPanel extends JPanel {
         JDialog dialog = new JDialog((JFrame) null, true);
         dialog.getContentPane().add(panel);
 
-        ActionListener al = new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    System.exit(1);
-                }
-            };
+        ActionListener al = e -> System.exit(1);
 
         panel.okPanel.getOkButton().addActionListener(al);
         panel.okPanel.getCancelButton().addActionListener(al);

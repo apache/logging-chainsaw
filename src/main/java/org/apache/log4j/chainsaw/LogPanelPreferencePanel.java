@@ -76,21 +76,9 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
     appPreferenceModel = appModel;
     initComponents();
 
-    getOkButton().addActionListener(new ActionListener()
-      {
-        public void actionPerformed(ActionEvent e)
-        {
-          hidePanel();
-        }
-      });
+    getOkButton().addActionListener(e -> hidePanel());
 
-    getCancelButton().addActionListener(new ActionListener()
-      {
-        public void actionPerformed(ActionEvent e)
-        {
-          hidePanel();
-        }
-      });
+    getCancelButton().addActionListener(e -> hidePanel());
     }
 
   //~ Methods =================================================================
@@ -108,20 +96,8 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
     LogPanelPreferencePanel panel = new LogPanelPreferencePanel(model, appModel);
     f.getContentPane().add(panel);
 
-    model.addPropertyChangeListener(new PropertyChangeListener()
-      {
-        public void propertyChange(PropertyChangeEvent evt)
-        {
-          logger.warn(evt.toString());
-        }
-      });
-    panel.setOkCancelActionListener(new ActionListener()
-      {
-        public void actionPerformed(ActionEvent e)
-        {
-          System.exit(1);
-        }
-      });
+    model.addPropertyChangeListener(evt -> logger.warn(evt.toString()));
+    panel.setOkCancelActionListener(e -> System.exit(1));
 
     f.setSize(640, 480);
     f.setVisible(true);
@@ -217,16 +193,14 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
           }
         });
       JButton setAsDefaultsButton = new JButton("Use selected columns as default visible columns");
-      setAsDefaultsButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent actionEvent) {
-          List selectedColumns = new ArrayList();
-          for (int i = 0;i<columnListModel.getSize();i++) {
-            if (preferenceModel.isColumnVisible((TableColumn) columnListModel.get(i))) {
-              selectedColumns.add(((TableColumn)columnListModel.get(i)).getHeaderValue());
-            }
+      setAsDefaultsButton.addActionListener(actionEvent -> {
+        List selectedColumns = new ArrayList();
+        for (int i = 0;i<columnListModel.getSize();i++) {
+          if (preferenceModel.isColumnVisible((TableColumn) columnListModel.get(i))) {
+            selectedColumns.add(((TableColumn)columnListModel.get(i)).getHeaderValue());
           }
-          appPreferenceModel.setDefaultColumnNames(selectedColumns);
         }
+        appPreferenceModel.setDefaultColumnNames(selectedColumns);
       });
       columnList.setCellRenderer(cellRenderer);
       columnBox.add(new JScrollPane(columnList));
@@ -293,22 +267,18 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
         rdFormat.setHorizontalTextPosition(SwingConstants.RIGHT);
         rdFormat.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        rdFormat.addActionListener(new ActionListener() {
-          public void actionPerformed(ActionEvent e) {
-            preferenceModel.setDateFormatPattern(format);
-            customFormatText.setEnabled(rdCustom.isSelected());
-            rdLast = rdFormat;
-          }
+        rdFormat.addActionListener(e -> {
+          preferenceModel.setDateFormatPattern(format);
+          customFormatText.setEnabled(rdCustom.isSelected());
+          rdLast = rdFormat;
         });
         //update based on external changes to dateformatpattern (column context
         //menu)
         preferenceModel.addPropertyChangeListener(
-                "dateFormatPattern", new PropertyChangeListener() {
-                  public void propertyChange(PropertyChangeEvent evt) {
-                    rdFormat.setSelected(
-                            preferenceModel.getDateFormatPattern().equals(format));
-                    rdLast = rdFormat;
-                  }
+                "dateFormatPattern", evt -> {
+                  rdFormat.setSelected(
+                          preferenceModel.getDateFormatPattern().equals(format));
+                  rdLast = rdFormat;
                 });
 
         dateFormatPanel.add(rdFormat);
@@ -423,99 +393,61 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
     */
     private void setupListeners()
     {
-      getOkButton().addActionListener(new ActionListener() {
-    	  public void actionPerformed(ActionEvent evt) {
-    		  commit();
-    	  }
-      });
+      getOkButton().addActionListener(evt -> commit());
       
-      getCancelButton().addActionListener(new ActionListener() {
-    	  public void actionPerformed(ActionEvent evt) {
-    		  reset();
-    	  }
-      });
+      getCancelButton().addActionListener(evt -> reset());
     	  
-    	  rdCustom.addActionListener(new ActionListener()
-        {
-          public void actionPerformed(ActionEvent e)
-          {
+    	  rdCustom.addActionListener(e -> {
             customFormatText.setEnabled(rdCustom.isSelected());
             customFormatText.grabFocus();
-          }
-        });
+          });
 
       //a second?? listener for dateformatpattern
       preferenceModel.addPropertyChangeListener(
-        "dateFormatPattern", new PropertyChangeListener()
-        {
-          public void propertyChange(PropertyChangeEvent evt)
+        "dateFormatPattern", evt -> {
+          /**
+           * we need to make sure we are not reacting to the user typing, so only do this
+           * if the text box is not the same as the model
+           */
+          if (
+            preferenceModel.isCustomDateFormat()
+              && !customFormatText.getText().equals(
+                evt.getNewValue().toString()))
           {
-            /**
-             * we need to make sure we are not reacting to the user typing, so only do this
-             * if the text box is not the same as the model
-             */
-            if (
-              preferenceModel.isCustomDateFormat()
-                && !customFormatText.getText().equals(
-                  evt.getNewValue().toString()))
-            {
-              customFormatText.setText(preferenceModel.getDateFormatPattern());
-              rdCustom.setSelected(true);
-              customFormatText.setEnabled(true);
-            }
-            else
-            {
-              rdCustom.setSelected(false);
-            }
+            customFormatText.setText(preferenceModel.getDateFormatPattern());
+            rdCustom.setSelected(true);
+            customFormatText.setEnabled(true);
+          }
+          else
+          {
+            rdCustom.setSelected(false);
           }
         });
 
-      rdISO.addActionListener(new ActionListener()
-        {
-          public void actionPerformed(ActionEvent e)
-          {
-            preferenceModel.setDateFormatPattern("ISO8601");
-            customFormatText.setEnabled(rdCustom.isSelected());
-            rdLast = rdISO;
-          }
+      rdISO.addActionListener(e -> {
+        preferenceModel.setDateFormatPattern("ISO8601");
+        customFormatText.setEnabled(rdCustom.isSelected());
+        rdLast = rdISO;
+      });
+      preferenceModel.addPropertyChangeListener(
+        "dateFormatPattern", evt -> {
+          rdISO.setSelected(preferenceModel.isUseISO8601Format());
+          rdLast = rdISO;
         });
       preferenceModel.addPropertyChangeListener(
-        "dateFormatPattern", new PropertyChangeListener()
-        {
-          public void propertyChange(PropertyChangeEvent evt)
-          {
-            rdISO.setSelected(preferenceModel.isUseISO8601Format());
-            rdLast = rdISO;
-          }
-        });
-      preferenceModel.addPropertyChangeListener(
-          "dateFormatTimeZone", new PropertyChangeListener() {
-              public void propertyChange(PropertyChangeEvent evt) {
-                  timeZone.setText(preferenceModel.getTimeZone());
-              }
-          }
+          "dateFormatTimeZone", evt -> timeZone.setText(preferenceModel.getTimeZone())
       );
 
-      ActionListener levelIconListener = new ActionListener()
-        {
-          public void actionPerformed(ActionEvent e)
-          {
-            preferenceModel.setLevelIcons(rdLevelIcons.isSelected());
-          }
-        };
+      ActionListener levelIconListener = e -> preferenceModel.setLevelIcons(rdLevelIcons.isSelected());
 
       rdLevelIcons.addActionListener(levelIconListener);
       rdLevelText.addActionListener(levelIconListener);
 
       preferenceModel.addPropertyChangeListener(
-        "levelIcons", new PropertyChangeListener()
-        {
-          public void propertyChange(PropertyChangeEvent evt)
-          {
-            boolean value = (Boolean) evt.getNewValue();
-            rdLevelIcons.setSelected(value);
-            rdLevelText.setSelected(!value);
-          }
+        "levelIcons", evt -> {
+          boolean value = (Boolean) evt.getNewValue();
+          rdLevelIcons.setSelected(value);
+          rdLevelText.setSelected(!value);
         });
     }
   }
@@ -609,211 +541,107 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel
     */
     private void setupListeners()
     {
-        ActionListener wrapMessageListener = new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e)
-            {
-                preferenceModel.setWrapMessage(wrapMessage.isSelected());
-            }
-        };
+        ActionListener wrapMessageListener = e -> preferenceModel.setWrapMessage(wrapMessage.isSelected());
 
         wrapMessage.addActionListener(wrapMessageListener);
 
-        ActionListener searchResultsVisibleListener = new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e)
-            {
-                preferenceModel.setSearchResultsVisible(searchResultsVisible.isSelected());
-            }
-        };
+        ActionListener searchResultsVisibleListener = e -> preferenceModel.setSearchResultsVisible(searchResultsVisible.isSelected());
 
         searchResultsVisible.addActionListener(searchResultsVisibleListener);
 
-        ActionListener highlightSearchMatchTextListener = new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e)
-            {
-                preferenceModel.setHighlightSearchMatchText(highlightSearchMatchText.isSelected());
-            }
-        };
+        ActionListener highlightSearchMatchTextListener = e -> preferenceModel.setHighlightSearchMatchText(highlightSearchMatchText.isSelected());
 
         highlightSearchMatchText.addActionListener(highlightSearchMatchTextListener);
 
         preferenceModel.addPropertyChangeListener(
-          "wrapMessage", new PropertyChangeListener()
-          {
-            public void propertyChange(PropertyChangeEvent evt)
-            {
-              boolean value = (Boolean) evt.getNewValue();
-              wrapMessage.setSelected(value);
-            }
+          "wrapMessage", evt -> {
+            boolean value = (Boolean) evt.getNewValue();
+            wrapMessage.setSelected(value);
           });
 
       preferenceModel.addPropertyChangeListener(
-        "searchResultsVisible", new PropertyChangeListener()
-        {
-          public void propertyChange(PropertyChangeEvent evt)
-          {
-            boolean value = (Boolean) evt.getNewValue();
-            searchResultsVisible.setSelected(value);
-          }
+        "searchResultsVisible", evt -> {
+          boolean value = (Boolean) evt.getNewValue();
+          searchResultsVisible.setSelected(value);
         });
 
         preferenceModel.addPropertyChangeListener(
-          "highlightSearchMatchText", new PropertyChangeListener()
-          {
-            public void propertyChange(PropertyChangeEvent evt)
-            {
-              boolean value = (Boolean) evt.getNewValue();
-              highlightSearchMatchText.setSelected(value);
-            }
+          "highlightSearchMatchText", evt -> {
+            boolean value = (Boolean) evt.getNewValue();
+            highlightSearchMatchText.setSelected(value);
           });
 
-      toolTips.addActionListener(new ActionListener()
-        {
-          public void actionPerformed(ActionEvent e)
-          {
-            preferenceModel.setToolTips(toolTips.isSelected());
-          }
-        });
+      toolTips.addActionListener(e -> preferenceModel.setToolTips(toolTips.isSelected()));
 
-      thumbnailBarToolTips.addActionListener(new ActionListener() {
-          public void actionPerformed(ActionEvent e) {
-              preferenceModel.setThumbnailBarToolTips(thumbnailBarToolTips.isSelected());
-          }
-      });
+      thumbnailBarToolTips.addActionListener(e -> preferenceModel.setThumbnailBarToolTips(thumbnailBarToolTips.isSelected()));
 
-      getOkButton().addActionListener(new ActionListener() {
-          public void actionPerformed(ActionEvent e) {
-              preferenceModel.setClearTableExpression(clearTableExpression.getText().trim());
-          }
-      });
+      getOkButton().addActionListener(e -> preferenceModel.setClearTableExpression(clearTableExpression.getText().trim()));
 
       preferenceModel.addPropertyChangeListener(
-        "toolTips", new PropertyChangeListener()
-        {
-          public void propertyChange(PropertyChangeEvent evt)
-          {
-            boolean value = (Boolean) evt.getNewValue();
-            toolTips.setSelected(value);
-          }
+        "toolTips", evt -> {
+          boolean value = (Boolean) evt.getNewValue();
+          toolTips.setSelected(value);
         });
 
     preferenceModel.addPropertyChangeListener(
-      "thumbnailBarToolTips", new PropertyChangeListener()
-      {
-        public void propertyChange(PropertyChangeEvent evt)
-        {
+      "thumbnailBarToolTips", evt -> {
+        boolean value = (Boolean) evt.getNewValue();
+        thumbnailBarToolTips.setSelected(value);
+      });
+
+      detailPanelVisible.addActionListener(e -> preferenceModel.setDetailPaneVisible(detailPanelVisible.isSelected()));
+
+      preferenceModel.addPropertyChangeListener(
+        "detailPaneVisible", evt -> {
           boolean value = (Boolean) evt.getNewValue();
-          thumbnailBarToolTips.setSelected(value);
-        }
-      });
-
-      detailPanelVisible.addActionListener(new ActionListener()
-        {
-          public void actionPerformed(ActionEvent e)
-          {
-            preferenceModel.setDetailPaneVisible(detailPanelVisible.isSelected());
-          }
+          detailPanelVisible.setSelected(value);
         });
 
-      preferenceModel.addPropertyChangeListener(
-        "detailPaneVisible", new PropertyChangeListener()
-        {
-          public void propertyChange(PropertyChangeEvent evt)
-          {
-            boolean value = (Boolean) evt.getNewValue();
-            detailPanelVisible.setSelected(value);
-          }
-        });
+      scrollToBottom.addActionListener(e -> preferenceModel.setScrollToBottom(scrollToBottom.isSelected()));
 
-      scrollToBottom.addActionListener(new ActionListener()
-        {
-          public void actionPerformed(ActionEvent e)
-          {
-            preferenceModel.setScrollToBottom(scrollToBottom.isSelected());
-          }
-        });
+      showMillisDeltaAsGap.addActionListener(e -> preferenceModel.setShowMillisDeltaAsGap(showMillisDeltaAsGap.isSelected()));
 
-      showMillisDeltaAsGap.addActionListener(new ActionListener()
-      {
-          public void actionPerformed(ActionEvent e)
-          {
-              preferenceModel.setShowMillisDeltaAsGap(showMillisDeltaAsGap.isSelected());
-          }
-      });
-
-      preferenceModel.addPropertyChangeListener("showMillisDeltaAsGap", new PropertyChangeListener()
-      {
-          public void propertyChange(PropertyChangeEvent evt)
-          {
-              boolean value = (Boolean) evt.getNewValue();
-              showMillisDeltaAsGap.setSelected(value);
-          }
+      preferenceModel.addPropertyChangeListener("showMillisDeltaAsGap", evt -> {
+          boolean value = (Boolean) evt.getNewValue();
+          showMillisDeltaAsGap.setSelected(value);
       });
       preferenceModel.addPropertyChangeListener(
-        "scrollToBottom", new PropertyChangeListener()
-        {
-          public void propertyChange(PropertyChangeEvent evt)
-          {
-            boolean value = (Boolean) evt.getNewValue();
-            scrollToBottom.setSelected(value);
-          }
+        "scrollToBottom", evt -> {
+          boolean value = (Boolean) evt.getNewValue();
+          scrollToBottom.setSelected(value);
         });
 
-      loggerTreePanel.addActionListener(new ActionListener()
-        {
-          public void actionPerformed(ActionEvent e)
-          {
-            preferenceModel.setLogTreePanelVisible(loggerTreePanel.isSelected());
-          }
-        });
+      loggerTreePanel.addActionListener(e -> preferenceModel.setLogTreePanelVisible(loggerTreePanel.isSelected()));
 
       preferenceModel.addPropertyChangeListener(
-        "logTreePanelVisible", new PropertyChangeListener()
-        {
-          public void propertyChange(PropertyChangeEvent evt)
-          {
-            boolean value = (Boolean) evt.getNewValue();
-            loggerTreePanel.setSelected(value);
-          }
+        "logTreePanelVisible", evt -> {
+          boolean value = (Boolean) evt.getNewValue();
+          loggerTreePanel.setSelected(value);
         });
 
-      preferenceModel.addPropertyChangeListener("columns", new PropertyChangeListener() {
-        	public void propertyChange(PropertyChangeEvent evt) {
-      	  List cols = (List)evt.getNewValue();
-              for (Object col1 : cols) {
-                TableColumn col = (TableColumn) col1;
-                Enumeration enumeration = columnListModel.elements();
-                boolean found = false;
-                while (enumeration.hasMoreElements()) {
-                  TableColumn thisCol = (TableColumn) enumeration.nextElement();
-                  if (thisCol.getHeaderValue().equals(col.getHeaderValue())) {
-                    found = true;
-                  }
-                }
-                if (!found) {
-                  columnListModel.addElement(col);
-                  columnListModel.fireContentsChanged();
-                }
-              }
-        }});
+      preferenceModel.addPropertyChangeListener("columns", evt -> {
+      List cols = (List)evt.getNewValue();
+for (Object col1 : cols) {
+TableColumn col = (TableColumn) col1;
+Enumeration enumeration = columnListModel.elements();
+boolean found = false;
+while (enumeration.hasMoreElements()) {
+TableColumn thisCol = (TableColumn) enumeration.nextElement();
+if (thisCol.getHeaderValue().equals(col.getHeaderValue())) {
+found = true;
+}
+}
+if (!found) {
+columnListModel.addElement(col);
+columnListModel.fireContentsChanged();
+}
+}
+});
 
         preferenceModel.addPropertyChangeListener(
-                "visibleColumns", new PropertyChangeListener()
-                {
-                  public void propertyChange(PropertyChangeEvent evt)
-                  {
-                    columnListModel.fireContentsChanged();
-                  }
-                });
+                "visibleColumns", evt -> columnListModel.fireContentsChanged());
 
-        preferenceModel.addPropertyChangeListener("clearTableExpression", new PropertyChangeListener()
-        {
-            public void propertyChange(PropertyChangeEvent evt) {
-                clearTableExpression.setText(((LogPanelPreferenceModel)evt.getSource()).getClearTableExpression());
-            }
-        });
+        preferenceModel.addPropertyChangeListener("clearTableExpression", evt -> clearTableExpression.setText(((LogPanelPreferenceModel)evt.getSource()).getClearTableExpression()));
     }
   }
 }

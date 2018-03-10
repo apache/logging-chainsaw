@@ -70,11 +70,7 @@ public class PluginClassLoaderFactory {
          return PluginClassLoaderFactory.class.getClassLoader();
         }
         
-        String[] strings = pluginDirectory.list(new FilenameFilter() {
-
-			public boolean accept(File dir, String name) {
-                return name.toUpperCase().endsWith(".JAR");
-			}});
+        String[] strings = pluginDirectory.list((dir, name) -> name.toUpperCase().endsWith(".JAR"));
         
       
         List list = new ArrayList();

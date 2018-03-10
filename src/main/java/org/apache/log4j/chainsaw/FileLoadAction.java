@@ -123,19 +123,17 @@ class FileLoadAction extends AbstractAction {
         decoder.setAdditionalProperties(additionalProperties);
 
         final URL urlToUse = url;
-        new Thread(new Runnable() {
-            public void run() {
-                try {
-                    Vector events = decoder.decode(urlToUse);
-                    for (Object event : events) {
-                        handler.append((LoggingEvent) event);
-                    }
-                } catch (IOException e1) {
-                    // TODO Handle the error with a nice msg
-                    LOG.error(e1);
+        new Thread(() -> {
+            try {
+                Vector events = decoder.decode(urlToUse);
+                for (Object event : events) {
+                    handler.append((LoggingEvent) event);
                 }
-                MRUFileList.log4jMRU().opened(urlToUse);
+            } catch (IOException e1) {
+                // TODO Handle the error with a nice msg
+                LOG.error(e1);
             }
+            MRUFileList.log4jMRU().opened(urlToUse);
         }).start();
     }
 }

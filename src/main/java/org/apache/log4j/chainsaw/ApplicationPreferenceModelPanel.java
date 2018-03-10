@@ -84,35 +84,31 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
     logger = LogManager.getLogger(ApplicationPreferenceModelPanel.class);
     initComponents();
     getOkButton().addActionListener(
-      new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          uncommittedPreferenceModel.setConfigurationURL((String)configurationURL.getSelectedItem());
-          uncommittedPreferenceModel.setIdentifierExpression(
-            identifierExpression.getText());
-            try {
-                int millis = Integer.parseInt(toolTipDisplayMillis.getText());
-                if (millis >= 0) {
-                    uncommittedPreferenceModel.setToolTipDisplayMillis(millis);
-                }
-            } catch (NumberFormatException nfe) {}
-            try {
-                int bufferSize = Integer.parseInt(cyclicBufferSize.getText());
-                if (bufferSize >= 0) {
-                    uncommittedPreferenceModel.setCyclicBufferSize(bufferSize);
-                }
-            } catch (NumberFormatException nfe) {}
-          committedPreferenceModel.apply(uncommittedPreferenceModel);
-          hidePanel();
-        }
-      });
+            e -> {
+              uncommittedPreferenceModel.setConfigurationURL((String)configurationURL.getSelectedItem());
+              uncommittedPreferenceModel.setIdentifierExpression(
+                identifierExpression.getText());
+                try {
+                    int millis = Integer.parseInt(toolTipDisplayMillis.getText());
+                    if (millis >= 0) {
+                        uncommittedPreferenceModel.setToolTipDisplayMillis(millis);
+                    }
+                } catch (NumberFormatException nfe) {}
+                try {
+                    int bufferSize = Integer.parseInt(cyclicBufferSize.getText());
+                    if (bufferSize >= 0) {
+                        uncommittedPreferenceModel.setCyclicBufferSize(bufferSize);
+                    }
+                } catch (NumberFormatException nfe) {}
+              committedPreferenceModel.apply(uncommittedPreferenceModel);
+              hidePanel();
+            });
 
     getCancelButton().addActionListener(
-      new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          uncommittedPreferenceModel.apply(committedPreferenceModel);
-          hidePanel();
-        }
-      });
+            e -> {
+              uncommittedPreferenceModel.apply(committedPreferenceModel);
+              hidePanel();
+            });
   }
 
 
@@ -125,11 +121,7 @@ public static void main(String[] args) {
 
     model.addPropertyChangeListener(System.out::println);
     panel.setOkCancelActionListener(
-      new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          System.exit(1);
-        }
-      });
+            e -> System.exit(1));
 
     f.setSize(640, 480);
     f.setVisible(true);
@@ -205,94 +197,58 @@ public static void main(String[] args) {
      */
     private void setupListeners() {
       topPlacement.addActionListener(
-        new ActionListener() {
-          public void actionPerformed(ActionEvent e) {
-            uncommittedPreferenceModel.setTabPlacement(SwingConstants.TOP);
-          }
-        });
+              e -> uncommittedPreferenceModel.setTabPlacement(SwingConstants.TOP));
       bottomPlacement.addActionListener(
-        new ActionListener() {
-          public void actionPerformed(ActionEvent e) {
-            uncommittedPreferenceModel.setTabPlacement(SwingConstants.BOTTOM);
-          }
-        });
+              e -> uncommittedPreferenceModel.setTabPlacement(SwingConstants.BOTTOM));
 
       statusBar.addActionListener(
-        new ActionListener() {
-          public void actionPerformed(ActionEvent e) {
-            uncommittedPreferenceModel.setStatusBar(statusBar.isSelected());
-          }
-        });
+              e -> uncommittedPreferenceModel.setStatusBar(statusBar.isSelected()));
 
       toolBar.addActionListener(
-        new ActionListener() {
-          public void actionPerformed(ActionEvent e) {
-            uncommittedPreferenceModel.setToolbar(toolBar.isSelected());
-          }
-        });
+              e -> uncommittedPreferenceModel.setToolbar(toolBar.isSelected()));
 
       receivers.addActionListener(
-        new ActionListener() {
-          public void actionPerformed(ActionEvent e) {
-            uncommittedPreferenceModel.setReceivers(receivers.isSelected());
-          }
-        });
+              e -> uncommittedPreferenceModel.setReceivers(receivers.isSelected()));
 
       uncommittedPreferenceModel.addPropertyChangeListener(
         "tabPlacement",
-        new PropertyChangeListener() {
-          public void propertyChange(PropertyChangeEvent evt) {
-            int value = (Integer) evt.getNewValue();
+              evt -> {
+                int value = (Integer) evt.getNewValue();
 
-            configureTabPlacement(value);
-          }
-        });
+                configureTabPlacement(value);
+              });
 
       uncommittedPreferenceModel.addPropertyChangeListener(
         "statusBar",
-        new PropertyChangeListener() {
-          public void propertyChange(PropertyChangeEvent evt) {
-            statusBar.setSelected(
-                    (Boolean) evt.getNewValue());
-          }
-        });
+              evt -> statusBar.setSelected(
+                      (Boolean) evt.getNewValue()));
 
       uncommittedPreferenceModel.addPropertyChangeListener(
         "toolbar",
-        new PropertyChangeListener() {
-          public void propertyChange(PropertyChangeEvent evt) {
-            toolBar.setSelected((Boolean) evt.getNewValue());
-          }
-        });
+              evt -> toolBar.setSelected((Boolean) evt.getNewValue()));
 
       uncommittedPreferenceModel.addPropertyChangeListener(
         "receivers",
-        new PropertyChangeListener() {
-          public void propertyChange(PropertyChangeEvent evt) {
-            receivers.setSelected(
-                    (Boolean) evt.getNewValue());
-          }
-        });
+              evt -> receivers.setSelected(
+                      (Boolean) evt.getNewValue()));
 
       uncommittedPreferenceModel.addPropertyChangeListener(
         "lookAndFeelClassName",
-        new PropertyChangeListener() {
-          public void propertyChange(PropertyChangeEvent evt) {
-            String lf = evt.getNewValue().toString();
+              evt -> {
+                String lf = evt.getNewValue().toString();
 
-            Enumeration enumeration = lookAndFeelGroup.getElements();
+                Enumeration enumeration = lookAndFeelGroup.getElements();
 
-            while (enumeration.hasMoreElements()) {
-              JRadioButton button = (JRadioButton) enumeration.nextElement();
+                while (enumeration.hasMoreElements()) {
+                  JRadioButton button = (JRadioButton) enumeration.nextElement();
 
-              if (button.getName()!=null && button.getName().equals(lf)) {
-                button.setSelected(true);
+                  if (button.getName()!=null && button.getName().equals(lf)) {
+                    button.setSelected(true);
 
-                break;
-              }
-            }
-          }
-        });
+                    break;
+                  }
+                }
+              });
     }
 
     /**
@@ -336,12 +292,8 @@ public static void main(String[] args) {
             final JRadioButton lfItem = new JRadioButton(" " + lfInfo.getName() + " ");
             lfItem.setName(lfInfo.getClassName());
             lfItem.addActionListener(
-                    new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            uncommittedPreferenceModel.setLookAndFeelClassName(
-                                    lfInfo.getClassName());
-                        }
-                    });
+                    e -> uncommittedPreferenceModel.setLookAndFeelClassName(
+                            lfInfo.getClassName()));
             lookAndFeelGroup.add(lfItem);
             lfPanel.add(lfItem);
         }
@@ -351,12 +303,8 @@ public static void main(String[] args) {
           Class.forName("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
         final JRadioButton lfIGTK = new JRadioButton(" GTK+ 2.0 ");
         lfIGTK.addActionListener(
-          new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-              uncommittedPreferenceModel.setLookAndFeelClassName(
-                gtkLF.getName());
-            }
-          });
+                e -> uncommittedPreferenceModel.setLookAndFeelClassName(
+                  gtkLF.getName()));
         lookAndFeelGroup.add(lfIGTK);
         lfPanel.add(lfIGTK);
       } catch (Exception e) {
@@ -500,13 +448,7 @@ public static void main(String[] args) {
       p6.add(configURLPanel);
 
       JButton browseButton = new JButton(" Open File... ");
-      browseButton.addActionListener(new ActionListener()
-      {
-          public void actionPerformed(ActionEvent e)
-          {
-              browseForConfiguration();
-          }
-      });
+      browseButton.addActionListener(e -> browseForConfiguration());
       Box browsePanel = new Box(BoxLayout.X_AXIS);
       browsePanel.add(Box.createHorizontalGlue());
       browsePanel.add(browseButton);
@@ -584,147 +526,105 @@ public static void main(String[] args) {
     private void setupListeners() {
       uncommittedPreferenceModel.addPropertyChangeListener(
         "showNoReceiverWarning",
-        new PropertyChangeListener() {
-          public void propertyChange(PropertyChangeEvent evt) {
-            showNoReceiverWarning.setSelected(
-                    (Boolean) evt.getNewValue());
-          }
-        });
+              evt -> showNoReceiverWarning.setSelected(
+                      (Boolean) evt.getNewValue()));
       
-      uncommittedPreferenceModel.addPropertyChangeListener("showSplash", new PropertyChangeListener() {
-
-        public void propertyChange(PropertyChangeEvent evt) {
-          boolean value = (Boolean) evt.getNewValue();
-          showSplash.setSelected(value);
-        }});
+      uncommittedPreferenceModel.addPropertyChangeListener("showSplash", evt -> {
+        boolean value = (Boolean) evt.getNewValue();
+        showSplash.setSelected(value);
+      });
       
-      uncommittedPreferenceModel.addPropertyChangeListener("okToRemoveSecurityManager", new PropertyChangeListener() {
+      uncommittedPreferenceModel.addPropertyChangeListener("okToRemoveSecurityManager", evt -> {
+boolean newValue = (Boolean) evt.getNewValue();
+if(newValue) {
+okToRemoveSecurityManager.setSelected(newValue);
+}else {
+okToRemoveSecurityManager.setSelected(false);
+}
 
-		public void propertyChange(PropertyChangeEvent evt) {
-            boolean newValue = (Boolean) evt.getNewValue();
-            if(newValue) {
-            okToRemoveSecurityManager.setSelected(newValue);
-            }else {
-                okToRemoveSecurityManager.setSelected(false);
-            }
-            
-		}});
+      });
       
       
       uncommittedPreferenceModel.addPropertyChangeListener(
         "identifierExpression",
-        new PropertyChangeListener() {
-          public void propertyChange(PropertyChangeEvent evt) {
-            identifierExpression.setText(evt.getNewValue().toString());
-          }
-        });
+              evt -> identifierExpression.setText(evt.getNewValue().toString()));
 
       uncommittedPreferenceModel.addPropertyChangeListener(
         "responsiveness",
-        new PropertyChangeListener() {
-          public void propertyChange(PropertyChangeEvent evt) {
-            int value = (Integer) evt.getNewValue();
+              evt -> {
+                int value = (Integer) evt.getNewValue();
 
-            if (value >= 1000) {
-              int newValue = (value - 750) / 1000;
-              logger.debug(
-                "Adjusting old Responsiveness value from " + value + " to "
-                + newValue);
-              value = newValue;
-            }
+                if (value >= 1000) {
+                  int newValue = (value - 750) / 1000;
+                  logger.debug(
+                    "Adjusting old Responsiveness value from " + value + " to "
+                    + newValue);
+                  value = newValue;
+                }
 
-            responsiveSlider.setValue(value);
-          }
-        });
+                responsiveSlider.setValue(value);
+              });
 
         uncommittedPreferenceModel.addPropertyChangeListener(
           "toolTipDisplayMillis",
-          new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-              toolTipDisplayMillis.setText(evt.getNewValue().toString());
-            }
-          });
+                evt -> toolTipDisplayMillis.setText(evt.getNewValue().toString()));
 
         uncommittedPreferenceModel.addPropertyChangeListener(
           "cyclicBufferSize",
-          new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-              cyclicBufferSize.setText(evt.getNewValue().toString());
-            }
-          });
+                evt -> cyclicBufferSize.setText(evt.getNewValue().toString()));
 
       showNoReceiverWarning.addActionListener(
-        new ActionListener() {
-          public void actionPerformed(ActionEvent e) {
-            uncommittedPreferenceModel.setShowNoReceiverWarning(
-              showNoReceiverWarning.isSelected());
-          }
-        });
+              e -> uncommittedPreferenceModel.setShowNoReceiverWarning(
+                showNoReceiverWarning.isSelected()));
 
-      showSplash.addActionListener(new ActionListener() {
-
-        public void actionPerformed(ActionEvent e) {
-          uncommittedPreferenceModel.setShowSplash(showSplash.isSelected());
-        }});
+      showSplash.addActionListener(e -> uncommittedPreferenceModel.setShowSplash(showSplash.isSelected()));
       
-      okToRemoveSecurityManager.addActionListener(new ActionListener() {
+      okToRemoveSecurityManager.addActionListener(e -> {
 
-        public void actionPerformed(ActionEvent e) {
-            
-          if(okToRemoveSecurityManager.isSelected() && JOptionPane.showConfirmDialog(okToRemoveSecurityManager, "By ticking this option, you are authorizing Chainsaw to remove Java's Security Manager.\n\n" +
-                    "This is required under Java Web Start so that it can access Jars/classes locally.  Without this, Receivers like JMSReceiver + DBReceiver that require" +
-                    " specific driver jars will NOT be able to be run.  \n\n" +
-                    "By ticking this, you are saying that this is ok.", "Please Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-          	uncommittedPreferenceModel.setOkToRemoveSecurityManager(true);
-          }else {
-            uncommittedPreferenceModel.setOkToRemoveSecurityManager(false);
-          }
-                
-        }});
+        if(okToRemoveSecurityManager.isSelected() && JOptionPane.showConfirmDialog(okToRemoveSecurityManager, "By ticking this option, you are authorizing Chainsaw to remove Java's Security Manager.\n\n" +
+                  "This is required under Java Web Start so that it can access Jars/classes locally.  Without this, Receivers like JMSReceiver + DBReceiver that require" +
+                  " specific driver jars will NOT be able to be run.  \n\n" +
+                  "By ticking this, you are saying that this is ok.", "Please Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+            uncommittedPreferenceModel.setOkToRemoveSecurityManager(true);
+        }else {
+          uncommittedPreferenceModel.setOkToRemoveSecurityManager(false);
+        }
+
+      });
       
       
       responsiveSlider.getModel().addChangeListener(
-        new ChangeListener() {
-          public void stateChanged(ChangeEvent e) {
-            if (responsiveSlider.getValueIsAdjusting()) {
-              /**
-               * We'll wait until it stops.
-               */
-            } else {
-              int value = responsiveSlider.getValue();
+              e -> {
+                if (responsiveSlider.getValueIsAdjusting()) {
+                  /**
+                   * We'll wait until it stops.
+                   */
+                } else {
+                  int value = responsiveSlider.getValue();
 
-              if (value == 0) {
-                value = 1;
-              }
+                  if (value == 0) {
+                    value = 1;
+                  }
 
-              logger.debug("Adjust responsiveness to " + value);
-              uncommittedPreferenceModel.setResponsiveness(value);
-            }
-          }
-        });
+                  logger.debug("Adjust responsiveness to " + value);
+                  uncommittedPreferenceModel.setResponsiveness(value);
+                }
+              });
 
       uncommittedPreferenceModel.addPropertyChangeListener(
         "confirmExit",
-        new PropertyChangeListener() {
-          public void propertyChange(PropertyChangeEvent evt) {
-            boolean value = (Boolean) evt.getNewValue();
-            confirmExit.setSelected(value);
-          }
-        });
+              evt -> {
+                boolean value = (Boolean) evt.getNewValue();
+                confirmExit.setSelected(value);
+              });
 
-      uncommittedPreferenceModel.addPropertyChangeListener("configurationURL", new PropertyChangeListener() {
-
-          public void propertyChange(PropertyChangeEvent evt) {
-            String value = evt.getNewValue().toString();
-            configurationURL.setSelectedItem(value);
-          }});
+      uncommittedPreferenceModel.addPropertyChangeListener("configurationURL", evt -> {
+        String value = evt.getNewValue().toString();
+        configurationURL.setSelectedItem(value);
+      });
       confirmExit.addActionListener(
-        new ActionListener() {
-          public void actionPerformed(ActionEvent e) {
-            uncommittedPreferenceModel.setConfirmExit(
-              confirmExit.isSelected());
-          }
-        });
+              e -> uncommittedPreferenceModel.setConfirmExit(
+                confirmExit.isSelected()));
     }
 
     private void setupInitialValues() {

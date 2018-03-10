@@ -433,12 +433,7 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
 
         public void actionPerformed(final ActionEvent e)
         {
-             SwingUtilities.invokeLater(new Runnable() {
-
-                public void run()
-                {
-                    clearIgnoreListAction.actionPerformed(e);
-                }}); 
+             SwingUtilities.invokeLater(() -> clearIgnoreListAction.actionPerformed(e));
             
         }});
     ignoreListButtonPanel.add(unhideAll);
@@ -1195,13 +1190,7 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
 
     final DefaultMutableTreeNode root =
       (DefaultMutableTreeNode) logTreeModel.getRoot();
-    SwingUtilities.invokeLater(new Runnable()
-      {
-        public void run()
-        {
-          logTree.expandPath(new TreePath(root));
-        }
-      });
+    SwingUtilities.invokeLater(() -> logTree.expandPath(new TreePath(root)));
   }
 
   private void findNextUsingCurrentlySelectedNode()
@@ -1358,63 +1347,59 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
     /**
        * Enable the actions depending on state of the tree selection
        */
-    logTree.addTreeSelectionListener(new TreeSelectionListener()
+    logTree.addTreeSelectionListener(e -> {
+      TreePath path = e.getNewLeadSelectionPath();
+      TreeNode node = null;
+
+      if (path != null)
       {
-        public void valueChanged(TreeSelectionEvent e)
-        {
-          TreePath path = e.getNewLeadSelectionPath();
-          TreeNode node = null;
+        node = (TreeNode) path.getLastPathComponent();
+      }
+      boolean focusOnSelected = isFocusOnSelected();
+      //          editLoggerAction.setEnabled(path != null);
+      currentlySelectedLoggerName = getCurrentlySelectedLoggerName();
+      focusOnAction.setEnabled(
+        (path != null) && (node != null) && (node.getParent() != null)
+        && !hiddenSet.contains(currentlySelectedLoggerName));
+      hideAction.setEnabled(
+        (path != null) && (node != null) && (node.getParent() != null));
+      if (!focusOnAction.isEnabled())
+      {
+        setFocusOnSelected(false);
+      }
+      else
+      {
+      }
 
-          if (path != null)
-          {
-            node = (TreeNode) path.getLastPathComponent();
-          }
-          boolean focusOnSelected = isFocusOnSelected();
-          //          editLoggerAction.setEnabled(path != null);
-          currentlySelectedLoggerName = getCurrentlySelectedLoggerName();
-          focusOnAction.setEnabled(
-            (path != null) && (node != null) && (node.getParent() != null)
-            && !hiddenSet.contains(currentlySelectedLoggerName));
-          hideAction.setEnabled(
-            (path != null) && (node != null) && (node.getParent() != null));
-          if (!focusOnAction.isEnabled())
-          {
-            setFocusOnSelected(false);
-          }
-          else
-          {
-          }
+      expandAction.setEnabled(path != null);
+      findAction.setEnabled(path != null);
+      clearFindNextAction.setEnabled(true);
+      defineColorRuleForLoggerAction.setEnabled(path != null);
+      setRefineFocusAction.setEnabled(path != null);
+      updateRefineFocusAction.setEnabled(path != null);
+      updateFindAction.setEnabled(path != null);
+      clearRefineFocusAction.setEnabled(true);
 
-          expandAction.setEnabled(path != null);
-          findAction.setEnabled(path != null);
-          clearFindNextAction.setEnabled(true);
-          defineColorRuleForLoggerAction.setEnabled(path != null);
-          setRefineFocusAction.setEnabled(path != null);
-          updateRefineFocusAction.setEnabled(path != null);
-          updateFindAction.setEnabled(path != null);
-          clearRefineFocusAction.setEnabled(true);
+      if (currentlySelectedLoggerName != null)
+      {
+        boolean isHidden = hiddenSet.contains(currentlySelectedLoggerName);
+        popupMenu.hideCheck.setSelected(isHidden);
+        ignoreLoggerButton.setSelected(isHidden);
+      }
 
-          if (currentlySelectedLoggerName != null)
-          {
-            boolean isHidden = hiddenSet.contains(currentlySelectedLoggerName);
-            popupMenu.hideCheck.setSelected(isHidden);
-            ignoreLoggerButton.setSelected(isHidden);
-          }
+      collapseAction.setEnabled(path != null);
 
-          collapseAction.setEnabled(path != null);
-
-          reconfigureMenuText();
-          if (isFocusOnSelected()) {
-              fireChangeEvent();
-          }
-          //fire change event if we toggled focus off
-          if (focusOnSelected && !isFocusOnSelected()) {
-              fireChangeEvent();
-          }
-          //trigger a table repaint
-          logPanel.repaint();
-        }
-      });
+      reconfigureMenuText();
+      if (isFocusOnSelected()) {
+          fireChangeEvent();
+      }
+      //fire change event if we toggled focus off
+      if (focusOnSelected && !isFocusOnSelected()) {
+          fireChangeEvent();
+      }
+      //trigger a table repaint
+      logPanel.repaint();
+    });
 
     logTree.addMouseListener(popupListener);
 
@@ -1423,32 +1408,24 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
      * stay in sync, plus notifies all the ChangeListeners that
      * an effective filter criteria has been modified
      */
-    focusOnAction.addPropertyChangeListener(new PropertyChangeListener()
-      {
-        public void propertyChange(PropertyChangeEvent evt)
-        {
-          popupMenu.focusOnCheck.setSelected(isFocusOnSelected());
-          focusOnLoggerButton.setSelected(isFocusOnSelected());
+    focusOnAction.addPropertyChangeListener(evt -> {
+      popupMenu.focusOnCheck.setSelected(isFocusOnSelected());
+      focusOnLoggerButton.setSelected(isFocusOnSelected());
 
-          if (logTree.getSelectionPath() != null)
-          {
-            logTreeModel.nodeChanged(
-              (TreeNode) logTree.getSelectionPath().getLastPathComponent());
-          }
-        }
-      });
-
-    hideAction.addPropertyChangeListener(new PropertyChangeListener()
+      if (logTree.getSelectionPath() != null)
       {
-        public void propertyChange(PropertyChangeEvent evt)
-        {
-          if (logTree.getSelectionPath() != null)
-          {
-            logTreeModel.nodeChanged(
-              (TreeNode) logTree.getSelectionPath().getLastPathComponent());
-          }
-        }
-      });
+        logTreeModel.nodeChanged(
+          (TreeNode) logTree.getSelectionPath().getLastPathComponent());
+      }
+    });
+
+    hideAction.addPropertyChangeListener(evt -> {
+      if (logTree.getSelectionPath() != null)
+      {
+        logTreeModel.nodeChanged(
+          (TreeNode) logTree.getSelectionPath().getLastPathComponent());
+      }
+    });
 
     //    /**
     //     * Now add a MouseListener that fires the expansion
@@ -1476,24 +1453,16 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
      * We listen for when the FocusOn action changes, and then  translate
      * that to a RuleChange
      */
-    addChangeListener(new ChangeListener()
-      {
-        public void stateChanged(ChangeEvent evt)
-        {
-          visibilityRuleDelegate.firePropertyChange("rule", null, null);
-          updateDisplay();
-        }
-      });
+    addChangeListener(evt -> {
+      visibilityRuleDelegate.firePropertyChange("rule", null, null);
+      updateDisplay();
+    });
 
-    visibilityRuleDelegate.addPropertyChangeListener(new PropertyChangeListener()
-      {
-        public void propertyChange(PropertyChangeEvent event)
-        {
-          if (event.getPropertyName().equals("hiddenSet")) {
-            updateDisplay();
-          }
-        }
-      });
+    visibilityRuleDelegate.addPropertyChangeListener(event -> {
+      if (event.getPropertyName().equals("hiddenSet")) {
+        updateDisplay();
+      }
+    });
   }
 
   private void updateDisplay() {
@@ -1582,11 +1551,7 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
 
         //loggernameAdded runs on EDT
         logTreeModel.loggerNameAdded(logger);
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                setFocusOn(logger);
-            }
-        });
+        EventQueue.invokeLater(() -> setFocusOn(logger));
     }
 
     //~ Inner Classes ===========================================================

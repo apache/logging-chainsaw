@@ -159,22 +159,18 @@ class ChainsawToolBarAndMenus implements ChangeListener {
 
     logui.getApplicationPreferenceModel().addPropertyChangeListener(
       "statusBar",
-      new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-          boolean value = (Boolean) evt.getNewValue();
-          toggleStatusBarCheck.setSelected(value);
-        }
-      });
+            evt -> {
+              boolean value = (Boolean) evt.getNewValue();
+              toggleStatusBarCheck.setSelected(value);
+            });
 
     logui.getApplicationPreferenceModel().addPropertyChangeListener(
       "receivers",
-      new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-          boolean value = (Boolean) evt.getNewValue();
-          showReceiversButton.setSelected(value);
-          toggleShowReceiversCheck.setSelected(value);
-        }
-      });
+            evt -> {
+              boolean value = (Boolean) evt.getNewValue();
+              showReceiversButton.setSelected(value);
+              toggleShowReceiversCheck.setSelected(value);
+            });
   }
 
   /**
@@ -423,12 +419,10 @@ class ChainsawToolBarAndMenus implements ChangeListener {
 
     logui.getApplicationPreferenceModel().addPropertyChangeListener(
       "toolbar",
-      new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-          boolean value = (Boolean) evt.getNewValue();
-          showToolbarCheck.setSelected(value);
-        }
-      });
+            evt -> {
+              boolean value = (Boolean) evt.getNewValue();
+              showToolbarCheck.setSelected(value);
+            });
 
     menuShowWelcome.setAction(toggleWelcomeVisibleAction);
 
@@ -452,11 +446,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
       new JMenuItem("Show Application-wide Preferences...");
 
     showAppPrefs.addActionListener(
-      new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          logui.showApplicationPreferences();
-        }
-      });
+            e -> logui.showApplicationPreferences());
 
     toggleDetailMenuItem.setAction(toggleDetailPaneAction);
     toggleDetailMenuItem.setSelected(true);
@@ -530,11 +520,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     JMenuItem about = new JMenuItem("About Chainsaw v2...");
     about.setMnemonic('A');
     about.addActionListener(
-      new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          logui.showAboutBox();
-        }
-      });
+            e -> logui.showAboutBox());
 
     Action startTutorial =
       new AbstractAction("Tutorial...", new ImageIcon(ChainsawIcons.HELP)) {

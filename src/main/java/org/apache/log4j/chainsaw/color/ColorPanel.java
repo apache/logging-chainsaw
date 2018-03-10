@@ -128,11 +128,7 @@ public class ColorPanel extends JPanel
 
     currentLogPanelColorizer.addPropertyChangeListener(
     	      "colorrule",
-    	      new PropertyChangeListener() {
-    	        public void propertyChange(PropertyChangeEvent evt) {
-    	        	updateColors();
-    	        }
-    	      });
+            evt -> updateColors());
 
     tableModel = new DefaultTableModel();
     table = new JTable(tableModel);
@@ -194,11 +190,7 @@ public class ColorPanel extends JPanel
     searchTable.getColumnModel().getColumn(0).setMaxWidth(80);
     searchTable.getColumnModel().getColumn(1).setMaxWidth(80);
     //building color choosers needs to be done on the EDT
-    SwingHelper.invokeOnEDT(new Runnable() {
-      public void run() {
-        configureSingleEntryColorTable(searchTable);
-      }
-    });
+    SwingHelper.invokeOnEDT(() -> configureSingleEntryColorTable(searchTable));
 
     alternatingColorTable.sizeColumnsToFit(0);
     alternatingColorTable.getColumnModel().getColumn(0).setPreferredWidth(80);
@@ -206,11 +198,7 @@ public class ColorPanel extends JPanel
     alternatingColorTable.getColumnModel().getColumn(0).setMaxWidth(80);
     alternatingColorTable.getColumnModel().getColumn(1).setMaxWidth(80);
     //building color choosers needs to be done on the EDT
-    SwingHelper.invokeOnEDT(new Runnable() {
-      public void run() {
-        configureSingleEntryColorTable(alternatingColorTable);
-      }
-    });
+    SwingHelper.invokeOnEDT(() -> configureSingleEntryColorTable(alternatingColorTable));
 
     configureTable();
 
@@ -280,13 +268,11 @@ public class ColorPanel extends JPanel
           }
       };
         
-      loadPanelColorizersComboBox.addActionListener(new ActionListener() {
-          public void actionPerformed(ActionEvent e) {
-              Object selectedItem = loadPanelColorizersComboBox.getSelectedItem();
-              if (selectedItem != null) {
-                String selectedColorizerName = selectedItem.toString();
-                copyRulesAction.setEnabled(!(noTab.equals(selectedColorizerName)));
-              }
+      loadPanelColorizersComboBox.addActionListener(e -> {
+          Object selectedItem = loadPanelColorizersComboBox.getSelectedItem();
+          if (selectedItem != null) {
+            String selectedColorizerName = selectedItem.toString();
+            copyRulesAction.setEnabled(!(noTab.equals(selectedColorizerName)));
           }
       });
 
@@ -596,30 +582,28 @@ public class ColorPanel extends JPanel
     downButton.setEnabled(false);
 
     table.getSelectionModel().addListSelectionListener(
-      new ListSelectionListener() {
-        public void valueChanged(ListSelectionEvent e) {
-          if (!e.getValueIsAdjusting()) {
-            int index = table.getSelectionModel().getMaxSelectionIndex();
+            e -> {
+              if (!e.getValueIsAdjusting()) {
+                int index = table.getSelectionModel().getMaxSelectionIndex();
 
-            if (index < 0) {
-              downButton.setEnabled(false);
-              upButton.setEnabled(false);
-            } else if ((index == 0) && (tableModel.getRowCount() == 1)) {
-              downButton.setEnabled(false);
-              upButton.setEnabled(false);
-            } else if ((index == 0) && (tableModel.getRowCount() > 1)) {
-              downButton.setEnabled(true);
-              upButton.setEnabled(false);
-            } else if (index == (tableModel.getRowCount() - 1)) {
-              downButton.setEnabled(false);
-              upButton.setEnabled(true);
-            } else {
-              downButton.setEnabled(true);
-              upButton.setEnabled(true);
-            }
-          }
-        }
-      });
+                if (index < 0) {
+                  downButton.setEnabled(false);
+                  upButton.setEnabled(false);
+                } else if ((index == 0) && (tableModel.getRowCount() == 1)) {
+                  downButton.setEnabled(false);
+                  upButton.setEnabled(false);
+                } else if ((index == 0) && (tableModel.getRowCount() > 1)) {
+                  downButton.setEnabled(true);
+                  upButton.setEnabled(false);
+                } else if (index == (tableModel.getRowCount() - 1)) {
+                  downButton.setEnabled(false);
+                  upButton.setEnabled(true);
+                } else {
+                  downButton.setEnabled(true);
+                  upButton.setEnabled(true);
+                }
+              }
+            });
 
     JPanel upPanel = new JPanel();
 
@@ -733,19 +717,17 @@ public class ColorPanel extends JPanel
       });
 
     table.getSelectionModel().addListSelectionListener(
-      new ListSelectionListener() {
-        public void valueChanged(ListSelectionEvent e) {
-          if (!e.getValueIsAdjusting()) {
-            int index = table.getSelectionModel().getMaxSelectionIndex();
+            e -> {
+              if (!e.getValueIsAdjusting()) {
+                int index = table.getSelectionModel().getMaxSelectionIndex();
 
-            if (index < 0) {
-              deleteButton.setEnabled(false);
-            } else {
-              deleteButton.setEnabled(true);
-            }
-          }
-        }
-      });
+                if (index < 0) {
+                  deleteButton.setEnabled(false);
+                } else {
+                  deleteButton.setEnabled(true);
+                }
+              }
+            });
 
     deletePanel.add(deleteButton);
 
@@ -807,17 +789,11 @@ public class ColorPanel extends JPanel
         JColorChooser.createDialog(
           box, "Pick a Color", true, //modal
           colorChooser,
-          new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-              box.insertItemAt(colorChooser.getColor(), 0);
-              box.setSelectedIndex(0);
-            }
-          }, //OK button handler
-          new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                box.setSelectedItem(lastColor);
-            }
-          }); //CANCEL button handler
+                e -> {
+                  box.insertItemAt(colorChooser.getColor(), 0);
+                  box.setSelectedIndex(0);
+                }, //OK button handler
+                e -> box.setSelectedItem(lastColor)); //CANCEL button handler
       dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
     }
 

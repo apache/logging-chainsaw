@@ -186,26 +186,24 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
       });
 
     receiversTree.addTreeSelectionListener(
-      new TreeSelectionListener() {
-        public void valueChanged(TreeSelectionEvent e) {
-          TreePath path = e.getNewLeadSelectionPath();
+            e -> {
+              TreePath path = e.getNewLeadSelectionPath();
 
-          if (path != null) {
-            DefaultMutableTreeNode node =
-              (DefaultMutableTreeNode) path.getLastPathComponent();
+              if (path != null) {
+                DefaultMutableTreeNode node =
+                  (DefaultMutableTreeNode) path.getLastPathComponent();
 
-            if (
-              (node != null) && (node.getUserObject() != null)
-                && (node.getUserObject() instanceof Plugin)) {
-              Plugin p = (Plugin) node.getUserObject();
-              logger.debug("plugin=" + p);
-              pluginEditorPanel.setPlugin(p);
-            } else {
-              pluginEditorPanel.setPlugin(null);
-            }
-          }
-        }
-      });
+                if (
+                  (node != null) && (node.getUserObject() != null)
+                    && (node.getUserObject() instanceof Plugin)) {
+                  Plugin p = (Plugin) node.getUserObject();
+                  logger.debug("plugin=" + p);
+                  pluginEditorPanel.setPlugin(p);
+                } else {
+                  pluginEditorPanel.setPlugin(null);
+                }
+              }
+            });
 
     receiversTree.setToolTipText("Allows you to manage Log4j Receivers");
     newReceiverButtonAction =
@@ -352,22 +350,20 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
                   "This will cause any active Receiver to stop, and disconnect.  Is this ok?",
                   "Confirm", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
               new Thread(
-                new Runnable() {
-                  public void run() {
-                    Collection allReceivers =
-                        pluginRegistry.getPlugins(Receiver.class);
+                      () -> {
+                        Collection allReceivers =
+                            pluginRegistry.getPlugins(Receiver.class);
 
-                      for (Object allReceiver : allReceivers) {
-                          Receiver item = (Receiver) allReceiver;
-                          item.shutdown();
-                          item.activateOptions();
-                      }
+                          for (Object allReceiver : allReceivers) {
+                              Receiver item = (Receiver) allReceiver;
+                              item.shutdown();
+                              item.activateOptions();
+                          }
 
-                    updateReceiverTreeInDispatchThread();
-                    MessageCenter.getInstance().getLogger().info(
-                      "All Receivers have been (re)started");
-                  }
-                }).start();
+                        updateReceiverTreeInDispatchThread();
+                        MessageCenter.getInstance().getLogger().info(
+                          "All Receivers have been (re)started");
+                      }).start();
             }
           }
         };
@@ -444,20 +440,18 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
    */
   protected void updateCurrentlySelectedNodeInDispatchThread() {
     SwingUtilities.invokeLater(
-      new Runnable() {
-        public void run() {
-          DefaultMutableTreeNode node =
-            (DefaultMutableTreeNode) receiversTree
-            .getLastSelectedPathComponent();
+            () -> {
+              DefaultMutableTreeNode node =
+                (DefaultMutableTreeNode) receiversTree
+                .getLastSelectedPathComponent();
 
-          if (node == null) {
-            return;
-          }
+              if (node == null) {
+                return;
+              }
 
-          getReceiverTreeModel().nodeChanged(node);
-          updateActions();
-        }
-      });
+              getReceiverTreeModel().nodeChanged(node);
+              updateActions();
+            });
   }
 
   /**
@@ -527,16 +521,14 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
    */
   private void pauseCurrentlySelectedReceiver() {
     new Thread(
-      new Runnable() {
-        public void run() {
-          Object obj = getCurrentlySelectedUserObject();
+            () -> {
+              Object obj = getCurrentlySelectedUserObject();
 
-          if ((obj != null) && obj instanceof Pauseable) {
-            ((Pauseable) obj).setPaused(true);
-            updateCurrentlySelectedNodeInDispatchThread();
-          }
-        }
-      }).start();
+              if ((obj != null) && obj instanceof Pauseable) {
+                ((Pauseable) obj).setPaused(true);
+                updateCurrentlySelectedNodeInDispatchThread();
+              }
+            }).start();
   }
 
   /**
@@ -546,17 +538,15 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
    */
   private void playCurrentlySelectedReceiver() {
     new Thread(
-      new Runnable() {
-        public void run() {
-          Object obj = getCurrentlySelectedUserObject();
+            () -> {
+              Object obj = getCurrentlySelectedUserObject();
 
-          if ((obj != null) && obj instanceof Pauseable) {
-            ((Pauseable) obj).setPaused(false);
+              if ((obj != null) && obj instanceof Pauseable) {
+                ((Pauseable) obj).setPaused(false);
 
-            updateCurrentlySelectedNodeInDispatchThread();
-          }
-        }
-      }).start();
+                updateCurrentlySelectedNodeInDispatchThread();
+              }
+            }).start();
   }
 
   /**
@@ -573,17 +563,15 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
           "Are you sure you wish to shutdown this receiver?\n\nThis will disconnect any network resources, and remove it from the PluginRegistry.",
           "Confirm stop of Receiver", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
       new Thread(
-        new Runnable() {
-          public void run() {
-            Receiver[] receivers = getSelectedReceivers();
+              () -> {
+                Receiver[] receivers = getSelectedReceivers();
 
-            if (receivers != null) {
-                for (Receiver receiver : receivers) {
-                    pluginRegistry.stopPlugin(receiver.getName());
+                if (receivers != null) {
+                    for (Receiver receiver : receivers) {
+                        pluginRegistry.stopPlugin(receiver.getName());
+                    }
                 }
-            }
-          }
-        }).start();
+              }).start();
     }
   }
 
@@ -713,17 +701,15 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
 
 
                                   panel.getOkPanel().getOkButton().addActionListener(
-                                          new ActionListener() {
-                                              public void actionPerformed(ActionEvent e2) {
-                                                  Plugin plugin = panel.getPlugin();
-                                                  if (plugin.getName() != null && !plugin.getName().trim().equals("")) {
-                                                      dialog.dispose();
-                                                      pluginRegistry.addPlugin(plugin);
-                                                      plugin.activateOptions();
-                                                      MessageCenter.getInstance().addMessage("Plugin '" + plugin.getName() + "' started");
-                                                  } else {
-                                                      MessageCenter.getInstance().getLogger().error("Name required to create receiver");
-                                                  }
+                                          e2 -> {
+                                              Plugin plugin = panel.getPlugin();
+                                              if (plugin.getName() != null && !plugin.getName().trim().equals("")) {
+                                                  dialog.dispose();
+                                                  pluginRegistry.addPlugin(plugin);
+                                                  plugin.activateOptions();
+                                                  MessageCenter.getInstance().addMessage("Plugin '" + plugin.getName() + "' started");
+                                              } else {
+                                                  MessageCenter.getInstance().getLogger().error("Name required to create receiver");
                                               }
                                           });
                                   dialog.setVisible(true);

@@ -64,11 +64,7 @@ class ChainsawAbout extends JDialog {
         getContentPane().setLayout(new BorderLayout());
 
         JButton closeButton = new JButton(" Close ");
-        closeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setVisible(false);
-            }
-        });
+        closeButton.addActionListener(e -> setVisible(false));
         closeButton.setDefaultCapable(true);
 
         try {
@@ -82,13 +78,11 @@ class ChainsawAbout extends JDialog {
 
         editPane.setEditable(false);
         editPane.addHyperlinkListener(
-                new HyperlinkListener() {
-                    public void hyperlinkUpdate(HyperlinkEvent e) {
-                      if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                          HelpManager.getInstance().setHelpURL(e.getURL());
-                      }
-                    }
-                  });
+                e -> {
+                  if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                      HelpManager.getInstance().setHelpURL(e.getURL());
+                  }
+                });
         
         setSize(320, 240);
         new Thread(new Scroller()).start();
@@ -106,21 +100,13 @@ class ChainsawAbout extends JDialog {
                         synchronized (guard) {
                             guard.wait();
                         }
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    scrollPane.getViewport().setViewPosition(
-                                            new Point(0, 0));
-                                }
-                            });
+                            SwingUtilities.invokeLater(() -> scrollPane.getViewport().setViewPosition(
+                                    new Point(0, 0)));
                         continue;
                     }
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            scrollPane.getViewport().setViewPosition(
-                                    new Point(0, scrollPane.getViewport()
-                                            .getViewPosition().y + 1));
-                        }
-                    });
+                    SwingUtilities.invokeLater(() -> scrollPane.getViewport().setViewPosition(
+                            new Point(0, scrollPane.getViewport()
+                                    .getViewPosition().y + 1)));
                     Thread.sleep(100);
                 } catch (Exception e) {
                     LOG.error("Error during scrolling", e);
