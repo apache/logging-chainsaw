@@ -50,20 +50,17 @@ public class RuleMediator extends AbstractRule {
    * @see org.apache.log4j.chainsaw.rule.Rule#evaluate(org.apache.log4j.spi.LoggingEvent)
    */
   public boolean evaluate(LoggingEvent e, Map matches) {
-    if (findRuleRequired) {
-      if (findRule == null) {
-        return false;
+      if (findRuleRequired) {
+          if (findRule == null) {
+              return false;
+          }
+          if (!findRule.evaluate(e, null)) {
+              return false;
+          }
       }
-      if (!findRule.evaluate(e, null)) {
-        return false;
-      }
-    }
 
-    if (loggerRule != null && !loggerRule.evaluate(e, null)) {
-      return false;
-    }
+      return (loggerRule == null || loggerRule.evaluate(e, null)) && (filterRule == null || filterRule.evaluate(e, null));
 
-      return filterRule == null || filterRule.evaluate(e, null);
   }
 
   public boolean isFindRuleRequired() {

@@ -195,19 +195,14 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
     colorRuleDelegate = 
         new AbstractRule()
         {
-          public boolean evaluate(LoggingEvent e, Map matches)
-          {
+          public boolean evaluate(LoggingEvent e, Map matches) {
             boolean hiddenLogger = e.getLoggerName() != null && isHiddenLogger(e.getLoggerName());
             boolean hiddenExpression = (ignoreExpressionRule != null && ignoreExpressionRule.evaluate(e, null));
             boolean alwaysDisplayExpression = (alwaysDisplayExpressionRule != null && alwaysDisplayExpressionRule.evaluate(e, null));
             boolean hidden = (!alwaysDisplayExpression) && (hiddenLogger || hiddenExpression);
             String currentlySelectedLoggerName = getCurrentlySelectedLoggerName();
 
-            if (!isFocusOnSelected() && !hidden && currentlySelectedLoggerName != null && !"".equals(currentlySelectedLoggerName))
-            {
-            	return (e.getLoggerName().startsWith(currentlySelectedLoggerName+".") || e.getLoggerName().endsWith(currentlySelectedLoggerName)) ;
-            }
-            return false;
+            return !isFocusOnSelected() && !hidden && currentlySelectedLoggerName != null && !"".equals(currentlySelectedLoggerName) && (e.getLoggerName().startsWith(currentlySelectedLoggerName + ".") || e.getLoggerName().endsWith(currentlySelectedLoggerName));
           }
         };
 

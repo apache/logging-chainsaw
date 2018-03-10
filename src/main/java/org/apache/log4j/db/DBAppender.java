@@ -167,27 +167,23 @@ public class DBAppender extends AppenderSkeleton implements UnrecognizedElementH
   }
 
   public void activateOptions() {
-    LogLog.debug("DBAppender.activateOptions called");
+      LogLog.debug("DBAppender.activateOptions called");
 
-    if (connectionSource == null) {
-      throw new IllegalStateException(
-        "DBAppender cannot function without a connection source");
-    }
+      if (connectionSource == null) {
+          throw new IllegalStateException(
+                  "DBAppender cannot function without a connection source");
+      }
 
-    sqlDialect = Util.getDialectFromCode(connectionSource.getSQLDialectCode());
-    if (GET_GENERATED_KEYS_METHOD != null) {
-        cnxSupportsGetGeneratedKeys = connectionSource.supportsGetGeneratedKeys();
-    } else {
-        cnxSupportsGetGeneratedKeys = false;
-    }
-    cnxSupportsBatchUpdates = connectionSource.supportsBatchUpdates();
-    if (!cnxSupportsGetGeneratedKeys && (sqlDialect == null)) {
-      throw new IllegalStateException(
-        "DBAppender cannot function if the JDBC driver does not support getGeneratedKeys method *and* without a specific SQL dialect");
-    }
-    
-    // all nice and dandy on the eastern front
-    super.activateOptions();
+      sqlDialect = Util.getDialectFromCode(connectionSource.getSQLDialectCode());
+      cnxSupportsGetGeneratedKeys = GET_GENERATED_KEYS_METHOD != null && connectionSource.supportsGetGeneratedKeys();
+      cnxSupportsBatchUpdates = connectionSource.supportsBatchUpdates();
+      if (!cnxSupportsGetGeneratedKeys && (sqlDialect == null)) {
+          throw new IllegalStateException(
+                  "DBAppender cannot function if the JDBC driver does not support getGeneratedKeys method *and* without a specific SQL dialect");
+      }
+
+      // all nice and dandy on the eastern front
+      super.activateOptions();
   }
 
   /**

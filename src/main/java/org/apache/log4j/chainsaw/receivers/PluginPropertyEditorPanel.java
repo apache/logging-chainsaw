@@ -318,12 +318,8 @@ public class PluginPropertyEditorPanel extends JPanel {
         public boolean isCellEditable(int rowIndex, int columnIndex) {
 
 //        TODO Determine if the property is one of the ones a User could edit
-            if (columnIndex == 1) {
+            return columnIndex == 1 && descriptors[rowIndex].getWriteMethod() != null;
 
-                return descriptors[rowIndex].getWriteMethod() != null;
-            }
-
-            return false;
         }
 
         /* (non-Javadoc)

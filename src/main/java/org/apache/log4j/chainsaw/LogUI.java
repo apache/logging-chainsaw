@@ -1580,11 +1580,7 @@ e.printStackTrace();
           Map.Entry entry = (Map.Entry) aPanelSet;
           Object o = entry.getValue();
           boolean valueToSend;
-          if (o instanceof LogPanel) {
-              valueToSend = ((DockablePanel) entry.getValue()).isDocked();
-          } else {
-              valueToSend = true;
-          }
+          valueToSend = !(o instanceof LogPanel) || ((DockablePanel) entry.getValue()).isDocked();
           m.put(entry.getKey(), valueToSend);
       }
 
@@ -1780,11 +1776,8 @@ e.printStackTrace();
    * @return log tree panel visible flag
    */
   public boolean isLogTreePanelVisible() {
-    if (getCurrentLogPanel() == null) {
-      return false;
-    }
+      return getCurrentLogPanel() != null && getCurrentLogPanel().isLogTreeVisible();
 
-    return getCurrentLogPanel().isLogTreeVisible();
   }
 
   /**

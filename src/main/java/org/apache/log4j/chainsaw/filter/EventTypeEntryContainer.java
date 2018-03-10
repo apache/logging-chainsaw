@@ -75,10 +75,7 @@ public class EventTypeEntryContainer {
   }
   
   public boolean modelExists(String fieldName) {
-      if (fieldName != null) {
-        return modelMap.keySet().contains(fieldName.toUpperCase());
-      }
-      return false;
+      return fieldName != null && modelMap.keySet().contains(fieldName.toUpperCase());
   }
   
   public ListModel getModel(String fieldName) {

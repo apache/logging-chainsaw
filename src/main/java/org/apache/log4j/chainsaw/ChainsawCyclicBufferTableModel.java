@@ -766,15 +766,12 @@ fireTableRowsInserted(begin, end);
    * @see javax.swing.table.TableModel#isCellEditable(int, int)
    */
   public boolean isCellEditable(int rowIndex, int columnIndex) {
-    if (getColumnName(columnIndex).equalsIgnoreCase(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE)) {
-      return true;
-    }
+      if (getColumnName(columnIndex).equalsIgnoreCase(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE)) {
+          return true;
+      }
 
-    if (columnIndex >= columnNames.size()) {
-        return false;
-    }
+      return columnIndex < columnNames.size() && super.isCellEditable(rowIndex, columnIndex);
 
-    return super.isCellEditable(rowIndex, columnIndex);
   }
 
   /* (non-Javadoc)
