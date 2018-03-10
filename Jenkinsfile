@@ -23,14 +23,9 @@ pipeline {
         label 'ubuntu'
     }
     stages {
-        stage('Checkout') {
-            steps {
-                deleteDir()
-                checkout scm
-            }
-        }
         stage('Build') {
             steps {
+                deleteDir()
                 checkout scm
                 docker.image('maven:3-alpine').inside {
                     ansiColor
