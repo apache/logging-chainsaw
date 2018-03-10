@@ -52,13 +52,13 @@ public class OSXIntegration {
             applicationInstance = applicationClazz.newInstance();
             
 //            now register that we want that Preferences menu
-            Method enablePreferenceMethod = applicationClazz.getMethod("setEnabledPreferencesMenu", new Class[] {boolean.class});
-            enablePreferenceMethod.invoke(applicationInstance, new Object[] {Boolean.TRUE});
+            Method enablePreferenceMethod = applicationClazz.getMethod("setEnabledPreferencesMenu", boolean.class);
+            enablePreferenceMethod.invoke(applicationInstance, Boolean.TRUE);
             
             
             // no About menu for us for now.
-            Method enableAboutMethod = applicationClazz.getMethod("setEnabledAboutMenu", new Class[] {boolean.class});
-            enableAboutMethod.invoke(applicationInstance, new Object[] {Boolean.TRUE});
+            Method enableAboutMethod = applicationClazz.getMethod("setEnabledAboutMenu", boolean.class);
+            enableAboutMethod.invoke(applicationInstance, Boolean.TRUE);
             
             // Need to create a Proxy object to represent an anonymous impl of the ApplicationListener class
             Object listenerProxy = Proxy.newProxyInstance(OSXIntegration.class.getClassLoader(), 
@@ -81,12 +81,12 @@ public class OSXIntegration {
                 }
 
                 private void setHandled(Object event, Boolean val) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-                    Method handleMethod =   event.getClass().getMethod("setHandled", new Class[] {boolean.class});
-                    handleMethod.invoke(event, new Object[] {val});
+                    Method handleMethod =   event.getClass().getMethod("setHandled", boolean.class);
+                    handleMethod.invoke(event, val);
                 }});           
             // register the proxy object via the addApplicationListener method, cross fingers...
-            Method registerListenerMethod = applicationClazz.getMethod("addApplicationListener", new Class[] {listenerClass});
-            registerListenerMethod.invoke(applicationInstance, new Object[] {listenerProxy});
+            Method registerListenerMethod = applicationClazz.getMethod("addApplicationListener", listenerClass);
+            registerListenerMethod.invoke(applicationInstance, listenerProxy);
         } catch (Exception e) {
             LOG.error("Failed to setup OSXIntegration", e);
         }

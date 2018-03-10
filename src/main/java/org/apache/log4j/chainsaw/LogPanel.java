@@ -735,8 +735,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         public void eventCountChanged(int currentCount, int totalCount) {
           if (preferenceModel.isCyclic()) {
             double percent =
-              ((double) totalCount) / ((ChainsawCyclicBufferTableModel) tableModel)
-              .getMaxSize();
+              ((double) totalCount) / tableModel.getMaxSize();
             String msg = null;
             boolean wasWarning = warning75 || warning100;
             if ((percent > 0.75) && (percent < 1.0) && !warning75) {
@@ -4273,11 +4272,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 
             ThumbnailLoggingEventWrapper that = (ThumbnailLoggingEventWrapper) o;
 
-            if (loggingEventWrapper != null ? !loggingEventWrapper.equals(that.loggingEventWrapper) : that.loggingEventWrapper != null) {
-                return false;
-            }
-
-            return true;
+            return loggingEventWrapper != null ? loggingEventWrapper.equals(that.loggingEventWrapper) : that.loggingEventWrapper == null;
         }
 
         public int hashCode() {

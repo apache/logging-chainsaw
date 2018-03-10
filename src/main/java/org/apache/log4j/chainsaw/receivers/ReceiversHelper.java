@@ -179,7 +179,7 @@ public class ReceiversHelper {
                     if (d.getReadMethod().getName().equals("getLoggerRepository")) {
                         continue;
                     }
-                    Object o = d.getReadMethod().invoke(receiver, new Object[] {} );
+                    Object o = d.getReadMethod().invoke(receiver);
                     if (o != null) {
                         Element paramElement = document.createElement("param");
                         paramElement.setAttribute("name", d.getName());

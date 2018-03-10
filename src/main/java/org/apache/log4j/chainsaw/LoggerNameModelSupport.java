@@ -61,7 +61,7 @@ public class LoggerNameModelSupport implements LoggerNameModel {
 
   public void reset() {
       loggerNameSet.clear();
-      LoggerNameListener[] eventListeners = (LoggerNameListener[]) listenerList.getListeners(LoggerNameListener.class);
+      LoggerNameListener[] eventListeners = listenerList.getListeners(LoggerNameListener.class);
 
       for (int i = 0; i < eventListeners.length; i++)
       {
@@ -77,7 +77,7 @@ public class LoggerNameModelSupport implements LoggerNameModel {
    */
   private void notifyListeners(String loggerName)
   {
-    LoggerNameListener[] eventListeners = (LoggerNameListener[]) listenerList.getListeners(LoggerNameListener.class);
+    LoggerNameListener[] eventListeners = listenerList.getListeners(LoggerNameListener.class);
 
     for (int i = 0; i < eventListeners.length; i++)
     {

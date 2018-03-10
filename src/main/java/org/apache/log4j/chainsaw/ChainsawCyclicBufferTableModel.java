@@ -285,9 +285,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   }
 
   public void notifyCountListeners() {
-    EventCountListener[] listeners =
-      (EventCountListener[]) eventListenerList.getListeners(
-        EventCountListener.class);
+    EventCountListener[] listeners = eventListenerList.getListeners(EventCountListener.class);
 
     int filteredListSize;
     int unfilteredListSize;
@@ -753,7 +751,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   */
   private void fireNewKeyColumnAdded(NewKeyEvent e) {
     NewKeyListener[] listeners =
-      (NewKeyListener[]) eventListenerList.getListeners(NewKeyListener.class);
+            eventListenerList.getListeners(NewKeyListener.class);
 
     for (int i = 0; i < listeners.length; i++) {
       NewKeyListener listener = listeners[i];

@@ -328,7 +328,7 @@ public class ChainsawAppenderHandler extends AppenderSkeleton {
        * @param eventBatch
        */
       private void dispatchEventBatch(ChainsawEventBatch eventBatch) {
-        EventBatchListener[] listeners = (EventBatchListener[]) listenerList
+        EventBatchListener[] listeners = listenerList
             .getListeners(EventBatchListener.class);
         for (Iterator iter = eventBatch.identifierIterator(); iter.hasNext();) {
           String identifier = (String) iter.next();

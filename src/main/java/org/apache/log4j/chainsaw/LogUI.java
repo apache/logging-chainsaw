@@ -1165,8 +1165,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
       new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
           stopTutorial.setEnabled(
-            ((Boolean) startTutorial.getValue("TutorialStarted")).equals(
-              Boolean.TRUE));
+            startTutorial.getValue("TutorialStarted").equals(Boolean.TRUE));
           startButton.setSelected(stopTutorial.isEnabled());
         }
       };
@@ -1281,7 +1280,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
           if (method != null) {
             try {
-              method.invoke(e.getPlugin(), new Object[] { socketListener });
+              method.invoke(e.getPlugin(), socketListener);
             } catch (Exception ex) {
               MessageCenter.getInstance().getLogger().error(
                 "Failed to add a SocketNodeEventListener", ex);
@@ -1293,7 +1292,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
           try {
             return p.getClass().getMethod(
               "removeSocketNodeEventListener",
-              new Class[] { SocketNodeEventListener.class });
+                    SocketNodeEventListener.class);
           } catch (Exception e) {
             return null;
           }
@@ -1303,7 +1302,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
           try {
             return p.getClass().getMethod(
               "addSocketNodeEventListener",
-              new Class[] { SocketNodeEventListener.class });
+                    SocketNodeEventListener.class);
           } catch (Exception e) {
             return null;
           }
@@ -1314,7 +1313,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
           if (method != null) {
             try {
-              method.invoke(e.getPlugin(), new Object[] { socketListener });
+              method.invoke(e.getPlugin(), socketListener);
             } catch (Exception ex) {
               MessageCenter.getInstance().getLogger().error(
                 "Failed to remove SocketNodeEventListener", ex);
@@ -1470,9 +1469,9 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
                 Method portMethod =
                   networkReceiver.getClass().getMethod(
-                    "setPort", new Class[] { int.class });
+                    "setPort", int.class);
                 portMethod.invoke(
-                  networkReceiver, new Object[] { new Integer(port) });
+                  networkReceiver, new Integer(port));
 
                 networkReceiver.setThreshold(Level.TRACE);
 
@@ -1772,8 +1771,8 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
    */
   private void fireShutdownEvent() {
     ShutdownListener[] listeners =
-      (ShutdownListener[]) shutdownListenerList.getListeners(
-        ShutdownListener.class);
+            shutdownListenerList.getListeners(
+              ShutdownListener.class);
 
     for (int i = 0; i < listeners.length; i++) {
       listeners[i].shuttingDown();

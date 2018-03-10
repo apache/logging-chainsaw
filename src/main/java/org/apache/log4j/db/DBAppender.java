@@ -301,7 +301,7 @@ public class DBAppender extends AppenderSkeleton implements UnrecognizedElementH
               
               for (Iterator i = propertiesKeys.iterator(); i.hasNext();) {
                   String key = (String) i.next();
-                  String value = (String) event.getProperty(key);
+                  String value = event.getProperty(key);
                   
                   //LogLog.info("id " + eventId + ", key " + key + ", value " + value);
                   insertPropertiesStatement.setInt(1, eventId);

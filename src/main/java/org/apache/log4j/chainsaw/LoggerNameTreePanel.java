@@ -591,7 +591,7 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
       hiddenSet.remove(logger);
     }
 
-    visibilityRuleDelegate.firePropertyChange("hiddenSet", (Object) null, (Object) null);
+    visibilityRuleDelegate.firePropertyChange("hiddenSet", null, null);
   }
 
   /**
@@ -1317,7 +1317,7 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
   private void fireChangeEvent()
   {
     ChangeListener[] listeners =
-      (ChangeListener[]) listenerList.getListeners(ChangeListener.class);
+            listenerList.getListeners(ChangeListener.class);
     ChangeEvent e = null;
 
     for (int i = 0; i < listeners.length; i++)

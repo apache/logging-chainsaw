@@ -282,8 +282,7 @@ public class PluginPropertyEditorPanel extends JPanel {
 
                 try {
 
-                    Object object = d.getReadMethod().invoke(plugin,
-                            new Object[0]);
+                    Object object = d.getReadMethod().invoke(plugin);
 
                     if (object != null) {
 
@@ -360,7 +359,7 @@ public class PluginPropertyEditorPanel extends JPanel {
 
                 try {
                     descriptors[rowIndex].getWriteMethod().invoke(plugin,
-                        new Object[] { aValue });
+                            aValue);
                     fireTableCellUpdated(rowIndex, columnIndex);
                 } catch (IllegalArgumentException e) {
                     // ignore
