@@ -115,9 +115,8 @@ class FileSaveAction extends AbstractAction {
       } else {
           writer = new BufferedWriter(new FileWriter(selectedFile));
       }
-      Iterator iter = v.iterator();
-      while (iter.hasNext()) {
-        LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) iter.next();
+      for (Object aV : v) {
+        LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) aV;
         layout.setLocationInfo(loggingEventWrapper.getLoggingEvent().getThrowableInformation() != null);
         writer.write(layout.format(loggingEventWrapper.getLoggingEvent()));
       }

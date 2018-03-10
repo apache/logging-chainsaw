@@ -1666,19 +1666,18 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
   Map getPanels() {
     Map m = new HashMap();
     Set panelSet = getPanelMap().entrySet();
-    Iterator iter = panelSet.iterator();
 
-    while (iter.hasNext()) {
-      Map.Entry entry = (Map.Entry) iter.next();
-      Object o = entry.getValue();
-      boolean valueToSend;
-      if (o instanceof LogPanel){
-        valueToSend = ((DockablePanel) entry.getValue()).isDocked();
-      } else {
-        valueToSend = true;
+      for (Object aPanelSet : panelSet) {
+          Map.Entry entry = (Map.Entry) aPanelSet;
+          Object o = entry.getValue();
+          boolean valueToSend;
+          if (o instanceof LogPanel) {
+              valueToSend = ((DockablePanel) entry.getValue()).isDocked();
+          } else {
+              valueToSend = true;
+          }
+          m.put(entry.getKey(), valueToSend);
       }
-      m.put(entry.getKey(), valueToSend);
-    }
 
     return m;
   }
@@ -2094,17 +2093,15 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     try {
       List list = new ArrayList();
       Rule rule = ExpressionRule.getRule(ident);
-      Iterator iter = identifierPanels.iterator();
 
-      while (iter.hasNext()) {
-        LogPanel panel = (LogPanel) iter.next();
-        Iterator iter2 = panel.getMatchingEvents(rule).iterator();
+        for (Object identifierPanel : identifierPanels) {
+            LogPanel panel = (LogPanel) identifierPanel;
 
-        while (iter2.hasNext()) {
-          LoggingEventWrapper e = (LoggingEventWrapper) iter2.next();
-          list.add(e.getLoggingEvent());
+            for (Object o : panel.getMatchingEvents(rule)) {
+                LoggingEventWrapper e = (LoggingEventWrapper) o;
+                list.add(e.getLoggingEvent());
+            }
         }
-      }
 
       buildLogPanel(true, ident, list);
     } catch (IllegalArgumentException iae) {

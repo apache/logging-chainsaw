@@ -123,15 +123,14 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     synchronized (mutex) {
         unfilteredCopy = new ArrayList(unfilteredList);
     }
-    Iterator iter = unfilteredCopy.iterator();
 
-    while (iter.hasNext()) {
-      LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) iter.next();
+      for (Object anUnfilteredCopy : unfilteredCopy) {
+          LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) anUnfilteredCopy;
 
-      if (rule.evaluate(loggingEventWrapper.getLoggingEvent(), null)) {
-        list.add(loggingEventWrapper);
+          if (rule.evaluate(loggingEventWrapper.getLoggingEvent(), null)) {
+              list.add(loggingEventWrapper);
+          }
       }
-    }
 
     return list;
   }

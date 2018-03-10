@@ -127,9 +127,8 @@ class FileLoadAction extends AbstractAction {
             public void run() {
                 try {
                     Vector events = decoder.decode(urlToUse);
-                    Iterator iter = events.iterator();
-                    while (iter.hasNext()) {
-                        handler.append((LoggingEvent) iter.next());
+                    for (Object event : events) {
+                        handler.append((LoggingEvent) event);
                     }
                 } catch (IOException e1) {
                     // TODO Handle the error with a nice msg

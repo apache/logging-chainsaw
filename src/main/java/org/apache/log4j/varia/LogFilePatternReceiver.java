@@ -731,15 +731,14 @@ public class LogFilePatternReceiver extends Receiver {
      * contain only one of these per entry...properties are the only 'keyword'
      * that can occur multiple times in an entry
      */
-    Iterator iter = keywords.iterator();
-    while (iter.hasNext()) {
-      String keyword = (String) iter.next();
-      int index2 = newPattern.indexOf(keyword);
-      if (index2 > -1) {
-        buildingKeywords.add(keyword);
-        newPattern = singleReplace(newPattern, keyword, new Integer(buildingKeywords.size() -1).toString());
+      for (Object keyword1 : keywords) {
+          String keyword = (String) keyword1;
+          int index2 = newPattern.indexOf(keyword);
+          if (index2 > -1) {
+              buildingKeywords.add(keyword);
+              newPattern = singleReplace(newPattern, keyword, new Integer(buildingKeywords.size() - 1).toString());
+          }
       }
-    }
 
     String buildingInt = "";
 

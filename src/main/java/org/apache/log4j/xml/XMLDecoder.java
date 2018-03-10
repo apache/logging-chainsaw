@@ -425,11 +425,10 @@ public class XMLDecoder implements Decoder {
               if (properties == null) {
                   properties = new Hashtable(additionalProperties);
               }
-              Iterator i = additionalProperties.entrySet().iterator();
-              while (i.hasNext()) {
-                  Map.Entry e = (Map.Entry) i.next();
-                  properties.put(e.getKey(), e.getValue());
-              }
+            for (Object o : additionalProperties.entrySet()) {
+              Map.Entry e = (Map.Entry) o;
+              properties.put(e.getKey(), e.getValue());
+            }
           }
       }
 

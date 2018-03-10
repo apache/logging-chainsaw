@@ -165,10 +165,9 @@ public final class PluginRegistry {
     public List getPlugins() {
         synchronized (pluginMap) {
             List pluginList = new ArrayList(pluginMap.size());
-            Iterator iter = pluginMap.values().iterator();
 
-            while (iter.hasNext()) {
-                pluginList.add(iter.next());
+            for (Object o : pluginMap.values()) {
+                pluginList.add(o);
             }
             return pluginList;
         }
@@ -185,11 +184,8 @@ public final class PluginRegistry {
     public List getPlugins(final Class pluginClass) {
         synchronized (pluginMap) {
             List pluginList = new ArrayList(pluginMap.size());
-            Iterator iter = pluginMap.values().iterator();
 
-            while (iter.hasNext()) {
-                Object plugin = iter.next();
-
+            for (Object plugin : pluginMap.values()) {
                 if (pluginClass.isInstance(plugin)) {
                     pluginList.add(plugin);
                 }
@@ -234,10 +230,8 @@ public final class PluginRegistry {
             // remove the listener for this repository
             loggerRepository.removeLoggerRepositoryEventListener(listener);
 
-            Iterator iter = pluginMap.values().iterator();
-
-            while (iter.hasNext()) {
-                Plugin plugin = (Plugin) iter.next();
+            for (Object o : pluginMap.values()) {
+                Plugin plugin = (Plugin) o;
                 plugin.shutdown();
                 firePluginStopped(plugin);
             }

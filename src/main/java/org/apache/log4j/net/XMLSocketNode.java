@@ -140,35 +140,34 @@ public class XMLSocketNode extends ComponentBase implements Runnable {
           List v = decoder.decodeEvents(new String(b, 0, length));
 
           if (v != null) {
-            Iterator iter = v.iterator();
 
-            while (iter.hasNext()) {
-              LoggingEvent e = (LoggingEvent) iter.next();
-              e.setProperty(Constants.HOSTNAME_KEY, hostName);
+              for (Object aV : v) {
+                  LoggingEvent e = (LoggingEvent) aV;
+                  e.setProperty(Constants.HOSTNAME_KEY, hostName);
 
-              // store the known remote info in an event property
-              e.setProperty("log4j.remoteSourceInfo", remoteInfo);
+                  // store the known remote info in an event property
+                  e.setProperty("log4j.remoteSourceInfo", remoteInfo);
 
-              // if configured with a receiver, tell it to post the event
-              if (receiver != null) {
-                receiver.doPost(e);
+                  // if configured with a receiver, tell it to post the event
+                  if (receiver != null) {
+                      receiver.doPost(e);
 
-                // else post it via the hierarchy
-              } else {
-                // get a logger from the hierarchy. The name of the logger
-                // is taken to be the name contained in the event.
-                remoteLogger = repository.getLogger(e.getLoggerName());
+                      // else post it via the hierarchy
+                  } else {
+                      // get a logger from the hierarchy. The name of the logger
+                      // is taken to be the name contained in the event.
+                      remoteLogger = repository.getLogger(e.getLoggerName());
 
-                //event.logger = remoteLogger;
-                // apply the logger-level filter
-                if (
-                  e.getLevel().isGreaterOrEqual(
-                      remoteLogger.getEffectiveLevel())) {
-                  // finally log the event as if was generated locally
-                  remoteLogger.callAppenders(e);
-                }
+                      //event.logger = remoteLogger;
+                      // apply the logger-level filter
+                      if (
+                              e.getLevel().isGreaterOrEqual(
+                                      remoteLogger.getEffectiveLevel())) {
+                          // finally log the event as if was generated locally
+                          remoteLogger.callAppenders(e);
+                      }
+                  }
               }
-            }
           }
         }
       } catch (java.io.EOFException e) {

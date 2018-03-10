@@ -408,9 +408,8 @@ public class UtilLoggingXMLDecoder implements Decoder {
             if (properties == null) {
                 properties = new Hashtable(additionalProperties);
             }
-            Iterator i = additionalProperties.entrySet().iterator();
-            while (i.hasNext()) {
-                Map.Entry e = (Map.Entry) i.next();
+            for (Object o : additionalProperties.entrySet()) {
+                Map.Entry e = (Map.Entry) o;
                 properties.put(e.getKey(), e.getValue());
             }
         }

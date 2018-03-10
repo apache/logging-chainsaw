@@ -366,22 +366,20 @@ public class ColorPanel extends JPanel
   private Vector getColorizerVector() {
       Vector data = new Vector();
       Map map = colorizer.getRules();
-      Iterator iter = map.entrySet().iterator();
-      while (iter.hasNext()) {
-        Map.Entry entry = (Map.Entry)iter.next();
-        //update ruleset list
-        if (entry.getKey().equals(currentRuleSet)) {
-            Iterator iter2 = ((List)entry.getValue()).iterator();
+      for (Object o1 : map.entrySet()) {
+          Map.Entry entry = (Map.Entry) o1;
+          //update ruleset list
+          if (entry.getKey().equals(currentRuleSet)) {
 
-            while (iter2.hasNext()) {
-                ColorRule rule = (ColorRule)iter2.next();
-                Vector v = new Vector();
-                v.add(rule.getExpression());
-                v.add(rule.getBackgroundColor());
-                v.add(rule.getForegroundColor());
-                data.add(v);
-            }
-         }
+              for (Object o : ((List) entry.getValue())) {
+                  ColorRule rule = (ColorRule) o;
+                  Vector v = new Vector();
+                  v.add(rule.getExpression());
+                  v.add(rule.getBackgroundColor());
+                  v.add(rule.getForegroundColor());
+                  data.add(v);
+              }
+          }
       }
       return data;
   }

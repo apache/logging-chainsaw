@@ -215,22 +215,20 @@ public class UDPReceiver extends Receiver implements PortBased, Pauseable {
         }
 
         if (list2.size() > 0) {
-          Iterator iter = list2.iterator();
 
-          while (iter.hasNext()) {
-            String data = (String) iter.next();
-            List v = decoderImpl.decodeEvents(data);
+            for (Object aList2 : list2) {
+                String data = (String) aList2;
+                List v = decoderImpl.decodeEvents(data);
 
-            if (v != null) {
-              Iterator eventIter = v.iterator();
+                if (v != null) {
 
-              while (eventIter.hasNext()) {
-                if (!isPaused()) {
-                  doPost((LoggingEvent) eventIter.next());
+                    for (Object aV : v) {
+                        if (!isPaused()) {
+                            doPost((LoggingEvent) aV);
+                        }
+                    }
                 }
-              }
             }
-          }
 
           list2.clear();
         } else {

@@ -127,17 +127,16 @@ public class RuleColorizer implements Colorizer {
   }
 
   public void addRules(Map newRules) {
-    Iterator iter = newRules.entrySet().iterator();
 
-    while (iter.hasNext()) {
-      Map.Entry entry = (Map.Entry) iter.next();
+      for (Object o : newRules.entrySet()) {
+          Map.Entry entry = (Map.Entry) o;
 
-      if (rules.containsKey(entry.getKey())) {
-        ((List) rules.get(entry.getKey())).addAll((List) entry.getValue());
-      } else {
-        rules.put(entry.getKey(), entry.getValue());
+          if (rules.containsKey(entry.getKey())) {
+              ((List) rules.get(entry.getKey())).addAll((List) entry.getValue());
+          } else {
+              rules.put(entry.getKey(), entry.getValue());
+          }
       }
-    }
 
     colorChangeSupport.firePropertyChange("colorrule", false, true);
   }
@@ -177,15 +176,14 @@ public class RuleColorizer implements Colorizer {
   public Color getBackgroundColor(LoggingEvent event) {
     if (rules.containsKey(currentRuleSet)) {
       List list = (List) rules.get(currentRuleSet);
-      Iterator iter = list.iterator();
 
-      while (iter.hasNext()) {
-        ColorRule rule = (ColorRule) iter.next();
+        for (Object aList : list) {
+            ColorRule rule = (ColorRule) aList;
 
-        if ((rule.getBackgroundColor() != null) && (rule.evaluate(event, null))) {
-          return rule.getBackgroundColor();
+            if ((rule.getBackgroundColor() != null) && (rule.evaluate(event, null))) {
+                return rule.getBackgroundColor();
+            }
         }
-      }
     }
 
     return null;
@@ -194,15 +192,14 @@ public class RuleColorizer implements Colorizer {
   public Color getForegroundColor(LoggingEvent event) {
     if (rules.containsKey(currentRuleSet)) {
       List list = (List) rules.get(currentRuleSet);
-      Iterator iter = list.iterator();
 
-      while (iter.hasNext()) {
-        ColorRule rule = (ColorRule) iter.next();
+        for (Object aList : list) {
+            ColorRule rule = (ColorRule) aList;
 
-        if ((rule.getForegroundColor() != null) && (rule.evaluate(event, null))) {
-          return rule.getForegroundColor();
+            if ((rule.getForegroundColor() != null) && (rule.evaluate(event, null))) {
+                return rule.getForegroundColor();
+            }
         }
-      }
     }
 
     return null;
