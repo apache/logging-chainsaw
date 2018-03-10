@@ -152,14 +152,10 @@ public class LogFilePatternLayoutBuilder
   public static Map getAppenderConfiguration(File file) {
     try {
       return getXMLFileAppenderConfiguration(file);
-    } catch (IOException e) {
-      //ignore
-    } catch (ParserConfigurationException e) {
-      //ignore
-    } catch (SAXException e) {
+    } catch (IOException | SAXException | ParserConfigurationException e) {
       //ignore
     }
-    try {
+      try {
       return getPropertiesFileAppenderConfiguration(file);
     } catch (Exception e) {
       //ignore

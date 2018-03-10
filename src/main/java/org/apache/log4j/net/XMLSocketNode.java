@@ -63,13 +63,11 @@ public class XMLSocketNode extends ComponentBase implements Runnable {
       }
     } catch (ClassNotFoundException cnfe) {
       getLogger().warn("Unable to find decoder", cnfe);
-    } catch (IllegalAccessException iae) {
+    } catch (IllegalAccessException | InstantiationException iae) {
       getLogger().warn("Unable to construct decoder", iae);
-    } catch (InstantiationException ie) {
-      getLogger().warn("Unable to construct decoder", ie);
     }
 
-    this.socket = socket;
+      this.socket = socket;
   }
 
   /**
@@ -84,13 +82,11 @@ public class XMLSocketNode extends ComponentBase implements Runnable {
       }
     } catch (ClassNotFoundException cnfe) {
       getLogger().warn("Unable to find decoder", cnfe);
-    } catch (IllegalAccessException iae) {
+    } catch (IllegalAccessException | InstantiationException iae) {
       getLogger().warn("Unable to construct decoder", iae);
-    } catch (InstantiationException ie) {
-      getLogger().warn("Unable to construct decoder", ie);
     }
 
-    this.socket = socket;
+      this.socket = socket;
     this.receiver = receiver;
   }
 

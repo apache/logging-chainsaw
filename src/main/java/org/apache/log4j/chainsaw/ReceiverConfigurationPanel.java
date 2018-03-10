@@ -842,12 +842,10 @@ class ReceiverConfigurationPanel extends JPanel {
       try {
         URL newConfigurationURL = new URL(log4jConfigURLTextField.getText());
         return new File(newConfigurationURL.toURI());
-      } catch (URISyntaxException e) {
-        e.printStackTrace();
-      } catch (MalformedURLException e) {
+      } catch (URISyntaxException | MalformedURLException e) {
         e.printStackTrace();
       }
-      return null;
+        return null;
     }
   }
 }

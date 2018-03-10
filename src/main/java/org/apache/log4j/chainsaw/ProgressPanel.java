@@ -72,10 +72,7 @@ public class ProgressPanel extends JPanel {
     }else {
         runnable.run();
     }
-    } catch (InterruptedException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (InvocationTargetException e) {
+    } catch (InterruptedException | InvocationTargetException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }

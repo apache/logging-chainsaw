@@ -138,13 +138,11 @@ public class MulticastReceiver extends Receiver implements PortBased,
       }
     } catch (ClassNotFoundException cnfe) {
       getLogger().warn("Unable to find decoder", cnfe);
-    } catch (IllegalAccessException iae) {
+    } catch (IllegalAccessException | InstantiationException iae) {
       getLogger().warn("Could not construct decoder", iae);
-    } catch (InstantiationException ie) {
-      getLogger().warn("Could not construct decoder", ie);
     }
 
-    try {
+      try {
       addr = InetAddress.getByName(address);
     } catch (UnknownHostException uhe) {
       uhe.printStackTrace();

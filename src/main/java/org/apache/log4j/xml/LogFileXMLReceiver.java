@@ -212,13 +212,7 @@ public class LogFileXMLReceiver extends Receiver {
                     if (o instanceof Decoder) {
                         decoderInstance = (Decoder) o;
                     }
-                } catch (ClassNotFoundException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                } catch (InstantiationException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
+                } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }

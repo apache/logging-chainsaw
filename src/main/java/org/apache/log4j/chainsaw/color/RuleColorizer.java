@@ -235,8 +235,6 @@ public class RuleColorizer implements Colorizer {
 
         o.writeObject(getRules());
         o.flush();
-      } catch (FileNotFoundException fnfe) {
-        fnfe.printStackTrace();
       } catch (IOException ioe) {
         ioe.printStackTrace();
       } finally {

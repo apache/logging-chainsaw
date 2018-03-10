@@ -446,11 +446,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                     } else {
                         logger.info("Updated configuration but file does not exist");
                     }
-                } catch (MalformedURLException e) {
-                    logger.error("Updated configuration - failed to convert config string to URL", e);
-                }
-                catch (URISyntaxException e)
-                {
+                } catch (MalformedURLException | URISyntaxException e) {
                     logger.error("Updated configuration - failed to convert config string to URL", e);
                 }
             }

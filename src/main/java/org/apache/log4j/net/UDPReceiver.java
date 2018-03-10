@@ -151,13 +151,11 @@ public class UDPReceiver extends Receiver implements PortBased, Pauseable {
       }
     } catch (ClassNotFoundException cnfe) {
       getLogger().warn("Unable to find decoder", cnfe);
-    } catch (IllegalAccessException iae) {
+    } catch (IllegalAccessException | InstantiationException iae) {
       getLogger().warn("Could not construct decoder", iae);
-    } catch (InstantiationException ie) {
-      getLogger().warn("Could not construct decoder", ie);
     }
 
-    try {
+      try {
       socket = new DatagramSocket(port);
       receiverThread = new UDPReceiverThread();
       receiverThread.start();
