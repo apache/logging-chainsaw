@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -118,25 +118,19 @@ public class ColumnComparator implements Comparator {
         }
 
         break;
-        
+
        case ChainsawColumns.INDEX_TIMESTAMP_COL_NAME:
-       		sort = (e1.getTimeStamp()<e2.getTimeStamp() ? -1 : (e1.getTimeStamp()==e2.getTimeStamp() ? 0 : 1));
+       		sort = (Long.compare(e1.getTimeStamp(), e2.getTimeStamp()));
        		break;
-       		
+
        case ChainsawColumns.INDEX_THREAD_COL_NAME:
        		sort = e1.getThreadName().compareToIgnoreCase(e2.getThreadName());
        		break;
-            
+
        case ChainsawColumns.INDEX_ID_COL_NAME:
             int id1 = Integer.parseInt(e1.getProperty(Constants.LOG4J_ID_KEY));
-            int id2 = Integer.parseInt(e2.getProperty(Constants.LOG4J_ID_KEY)); 
-            if (id1 == id2) {
-                sort = 0;
-            } else if (id1 < id2) {
-                sort = 1;
-            } else {
-                sort = -1;
-            }
+            int id2 = Integer.parseInt(e2.getProperty(Constants.LOG4J_ID_KEY));
+            sort = Integer.compare(id2, id1);
             break;
 
        case ChainsawColumns.INDEX_THROWABLE_COL_NAME:
@@ -163,8 +157,8 @@ public class ColumnComparator implements Comparator {
                     e2.getLocationInformation().getLineNumber());
             }
             break;
-            
-      //other columns may be Property values - see if there is an Property value matching column name 
+
+      //other columns may be Property values - see if there is an Property value matching column name
       default:
           if (e1.getProperty(columnName) != null && e2.getProperty(columnName) != null) {
               sort = e1.getProperty(columnName).toString().compareToIgnoreCase(e2.getProperty(columnName).toString());
@@ -172,7 +166,7 @@ public class ColumnComparator implements Comparator {
       }
     }
 
-    sort = (sort == 0) ? 0 : ((sort < 0) ? (-1) : 1);
+    sort = Integer.compare(sort, 0);
 
     if (!ascending && (sort != 0)) {
       sort = (sort < 0) ? 1 : (-1);
