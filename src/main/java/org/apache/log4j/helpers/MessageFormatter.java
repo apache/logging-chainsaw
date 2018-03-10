@@ -78,7 +78,7 @@ public final class MessageFormatter {
                 // present
                 return messagePattern;
             } else {
-                StringBuffer sbuf = new StringBuffer(len + 20);
+                StringBuilder sbuf = new StringBuilder(len + 20);
                 sbuf.append(messagePattern.substring(0, j));
                 sbuf.append(argument);
                 sbuf.append(messagePattern.substring(j + 2));
@@ -114,7 +114,7 @@ public final class MessageFormatter {
         int i = 0;
         int len = messagePattern.length();
 
-        StringBuffer sbuf = new StringBuffer(messagePattern.length() + 50);
+        StringBuilder sbuf = new StringBuilder(messagePattern.length() + 50);
 
         for (int l = 0; l < 2; l++) {
             int j = messagePattern.indexOf(DELIM_START, i);

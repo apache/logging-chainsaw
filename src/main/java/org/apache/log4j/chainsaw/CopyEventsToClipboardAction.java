@@ -49,7 +49,7 @@ public class CopyEventsToClipboardAction extends AbstractAction {
     
     public void actionPerformed(ActionEvent e) {
         List filteredEvents = logUi.getCurrentLogPanel().getFilteredEvents();
-        StringBuffer writer = new StringBuffer(filteredEvents.size() * EVENTSIZE_FUDGE_FACTOR);
+        StringBuilder writer = new StringBuilder(filteredEvents.size() * EVENTSIZE_FUDGE_FACTOR);
         for (Object filteredEvent : filteredEvents) {
             LoggingEvent event = ((LoggingEventWrapper) filteredEvent).getLoggingEvent();
             writer.append(layout.format(event));

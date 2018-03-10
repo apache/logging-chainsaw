@@ -141,7 +141,7 @@ public final class SimpleULogger implements ULogger {
   private void log(final String level,
                    final String message,
                    final Throwable t) {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
 
     long millis  = System.currentTimeMillis();
     buf.append(millis - startTime);

@@ -474,7 +474,7 @@ public class ColorPanel extends JPanel
 
     List list = new ArrayList();
     Vector vector = tableModel.getDataVector();
-    StringBuffer result = new StringBuffer();
+    StringBuilder result = new StringBuilder();
 
     for (int i = 0; i < vector.size(); i++) {
       Vector v = (Vector) vector.elementAt(i);

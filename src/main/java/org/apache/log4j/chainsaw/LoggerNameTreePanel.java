@@ -627,7 +627,7 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
     if (path != null)
     {
       Object[] objects = path.getPath();
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
 
       for (int i = 1; i < objects.length; i++)
       {

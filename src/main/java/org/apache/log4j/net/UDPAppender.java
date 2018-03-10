@@ -220,7 +220,7 @@ public class UDPAppender extends AppenderSkeleton implements PortBased{
       }
 
       try {
-        StringBuffer buf = new StringBuffer(layout.format(event));
+        StringBuilder buf = new StringBuilder(layout.format(event));
 
         byte[] payload;
         if(encoding == null) {

@@ -1656,7 +1656,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
           }
           int start = currentTable.getSelectionModel().getMinSelectionIndex();
           int end = currentTable.getSelectionModel().getMaxSelectionIndex();
-          StringBuffer result = new StringBuffer();
+          StringBuilder result = new StringBuilder();
           for (int row=start;row<end+1;row++) {
             for (int column=0;column<currentTable.getColumnCount();column++) {
               result.append(getValueOf(row, column));
@@ -3245,7 +3245,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
   }
 
   private String getToolTipTextForEvent(LoggingEventWrapper loggingEventWrapper) {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append(detailLayout.getHeader()).append(detailLayout.format(loggingEventWrapper.getLoggingEvent())).append(detailLayout.getFooter());
     return buf.toString();
   }
@@ -3650,7 +3650,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 	        loggingEventWrapper = tableModel.getRow(selectedRow);
 	
 	        if (loggingEventWrapper != null) {
-	          final StringBuffer buf = new StringBuffer();
+	          final StringBuilder buf = new StringBuilder();
 	          buf.append(detailLayout.getHeader())
 	             .append(detailLayout.format(loggingEventWrapper.getLoggingEvent())).append(
 	            detailLayout.getFooter());
@@ -3736,7 +3736,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             String[] ti = loggingEventWrapper.getLoggingEvent().getThrowableStrRep();
             if (ti != null && ti.length > 0 && (!(ti.length == 1 && ti[0].equals("")))) {
                  detailDialog.setTitle(throwableTable.getColumnName(throwableTable.getSelectedColumn()) + " detail...");
-                  StringBuffer buf = new StringBuffer();
+                  StringBuilder buf = new StringBuilder();
                   buf.append(loggingEventWrapper.getLoggingEvent().getMessage());
                   buf.append("\n");
               for (String aTi : ti) {

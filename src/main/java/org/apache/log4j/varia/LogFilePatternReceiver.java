@@ -435,7 +435,7 @@ public class LogFilePatternReceiver extends Receiver {
     if (additionalLines.size() == 0) {
       return firstMessageLine;
     }
-    StringBuffer message = new StringBuffer();
+    StringBuilder message = new StringBuilder();
     if (firstMessageLine != null) {
       message.append(firstMessageLine);
     }
@@ -809,7 +809,7 @@ public class LogFilePatternReceiver extends Receiver {
 
     private String quoteTimeStampChars(String input) {
         //put single quotes around text that isn't a supported dateformat char
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         //ok to default to false because we also check for index zero below
         boolean lastCharIsDateFormat = false;
         for (int i = 0;i<input.length();i++) {

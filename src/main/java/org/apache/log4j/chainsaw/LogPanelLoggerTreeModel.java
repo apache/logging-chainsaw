@@ -117,7 +117,7 @@ outerFor:
        */
       final LogPanelTreeNode newChild = new LogPanelTreeNode(packageName);
 
-      StringBuffer fullPackageBuf = new StringBuffer();
+      StringBuilder fullPackageBuf = new StringBuilder();
 
       for (int j = 0; j <= i; j++) {
         fullPackageBuf.append(packages[j]);

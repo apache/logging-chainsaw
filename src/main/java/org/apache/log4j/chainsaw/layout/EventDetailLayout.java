@@ -134,7 +134,7 @@ public class EventDetailLayout extends Layout {
       return "";
     }
 
-    final StringBuffer buf = new StringBuffer();
+    final StringBuilder buf = new StringBuilder();
 
     for (int i = 0; i < string.length(); i++) {
       char c = string.charAt(i);

@@ -152,7 +152,7 @@ public class UtilLoggingXMLDecoder implements Decoder {
        * resetting the length of the StringBuffer is dangerous, particularly
        * on some JDK 1.4 impls, there's a known Bug that causes a memory leak
        */
-      StringBuffer buf = new StringBuffer(1024);
+      StringBuilder buf = new StringBuilder(1024);
 
       if (!data.startsWith("<?xml")) {
         buf.append(BEGIN_PART);
@@ -205,7 +205,7 @@ public class UtilLoggingXMLDecoder implements Decoder {
       Vector events;
       try {
           while ((line = reader.readLine()) != null) {
-              StringBuffer buffer = new StringBuffer(line);
+              StringBuilder buffer = new StringBuilder(line);
               for (int i = 0; i < 1000; i++) {
                   buffer.append(reader.readLine()).append("\n");
               }
@@ -450,7 +450,7 @@ public class UtilLoggingXMLDecoder implements Decoder {
      * @return text content of all text or CDATA children of node.
      */
   private String getCData(final Node n) {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     NodeList nl = n.getChildNodes();
 
     for (int x = 0; x < nl.getLength(); x++) {
