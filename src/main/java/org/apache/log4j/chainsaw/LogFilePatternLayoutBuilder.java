@@ -168,7 +168,7 @@ public class LogFilePatternLayoutBuilder
     return new HashMap();
   }
 
-  public static Map getPropertiesFileAppenderConfiguration(File propertyFile) throws IOException, ParserConfigurationException, SAXException {
+  public static Map getPropertiesFileAppenderConfiguration(File propertyFile) throws IOException {
     Map result = new HashMap();
     String appenderPrefix = "log4j.appender";
     Properties props = new Properties();

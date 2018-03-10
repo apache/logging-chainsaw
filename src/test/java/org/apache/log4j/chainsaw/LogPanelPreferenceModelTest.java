@@ -23,7 +23,7 @@ import junit.framework.TestCase;
 
 public class LogPanelPreferenceModelTest extends TestCase {
 
-    public void testLogPanelPreferenceModelSerialization() throws Exception {
+    public void testLogPanelPreferenceModelSerialization() {
         LogPanelPreferenceModel model = new LogPanelPreferenceModel();
         
         

@@ -181,8 +181,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
           }
         }
 
-        public void treeWillExpand(TreeExpansionEvent event)
-          throws ExpandVetoException {
+        public void treeWillExpand(TreeExpansionEvent event) {
         }
       });
 

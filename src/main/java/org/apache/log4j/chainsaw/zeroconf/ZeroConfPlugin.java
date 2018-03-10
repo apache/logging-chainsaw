@@ -612,7 +612,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         return null;
     }
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
 
         BasicConfigurator.resetConfiguration();
         BasicConfigurator.configure();

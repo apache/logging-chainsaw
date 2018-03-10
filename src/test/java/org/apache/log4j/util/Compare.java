@@ -142,7 +142,7 @@ public class Compare {
     public static boolean gzCompare(final Class testClass,
                                     final String actual,
                                     final String expected)
-      throws FileNotFoundException, IOException {
+      throws IOException {
       String resourceName = expected;
       int lastSlash = expected.lastIndexOf("/");
       if (lastSlash >= 0) {
