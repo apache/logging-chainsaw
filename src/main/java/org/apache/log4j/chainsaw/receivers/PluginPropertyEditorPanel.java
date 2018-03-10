@@ -253,17 +253,17 @@ public class PluginPropertyEditorPanel extends JPanel {
             List list = new ArrayList(Arrays.asList(
                         beanInfo.getPropertyDescriptors()));
 
-            Collections.sort(list, new Comparator() {
+            list.sort(new Comparator() {
 
-                    public int compare(Object o1, Object o2) {
+                public int compare(Object o1, Object o2) {
 
-                        PropertyDescriptor d1 = (PropertyDescriptor) o1;
-                        PropertyDescriptor d2 = (PropertyDescriptor) o2;
+                    PropertyDescriptor d1 = (PropertyDescriptor) o1;
+                    PropertyDescriptor d2 = (PropertyDescriptor) o2;
 
-                        return d1.getDisplayName().compareToIgnoreCase(
+                    return d1.getDisplayName().compareToIgnoreCase(
                             d2.getDisplayName());
-                    }
-                });
+                }
+            });
             this.plugin = p;
             this.descriptors = (PropertyDescriptor[]) list.toArray(
                     new PropertyDescriptor[0]);

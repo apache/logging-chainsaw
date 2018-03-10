@@ -197,7 +197,7 @@ outerFor:
       super.insert(newChild, childIndex);
 
       //	  logger.debug("Children after insert: " + this.children);
-      Collections.sort(this.children, nodeComparator);
+      this.children.sort(nodeComparator);
 
       //	  logger.debug("Children after sort: " + this.children);
     }

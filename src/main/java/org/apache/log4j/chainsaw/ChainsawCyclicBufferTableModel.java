@@ -336,11 +336,9 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
                 updateEventMillisDelta(e, lastEvent);
                 lastEvent = e;
             }
-            Collections.sort(
-              filteredList,
-              new ColumnComparator(
-                getColumnName(currentSortColumn), currentSortColumn,
-                currentSortAscending));
+            filteredList.sort(new ColumnComparator(
+                    getColumnName(currentSortColumn), currentSortColumn,
+                    currentSortAscending));
         }
       }
       if (sort) {

@@ -51,22 +51,20 @@ final class ThresholdSlider extends JSlider {
 
     priorityList = Arrays.asList(levels);
 
-    Collections.sort(
-      priorityList,
-      new Comparator() {
+    priorityList.sort(new Comparator() {
         public int compare(Object o1, Object o2) {
-          Level p1 = (Level) o1;
-          Level p2 = (Level) o2;
+            Level p1 = (Level) o1;
+            Level p2 = (Level) o2;
 
-          if (p1.toInt() == p2.toInt()) {
-            return 0;
-          } else if (p1.toInt() < p2.toInt()) {
-            return -1;
-          }
+            if (p1.toInt() == p2.toInt()) {
+                return 0;
+            } else if (p1.toInt() < p2.toInt()) {
+                return -1;
+            }
 
-          return 1;
+            return 1;
         }
-      });
+    });
 
     setModel(
       new DefaultBoundedRangeModel(
