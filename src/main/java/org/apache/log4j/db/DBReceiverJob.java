@@ -174,19 +174,16 @@ class DBReceiverJob extends ComponentBase implements Job {
   void getProperties(Connection connection, long id, LoggingEvent event)
       throws SQLException {
 
-    PreparedStatement statement = connection.prepareStatement(sqlProperties);
-    try {
-      statement.setLong(1, id);
-      ResultSet rs = statement.executeQuery();
+      try (PreparedStatement statement = connection.prepareStatement(sqlProperties)) {
+          statement.setLong(1, id);
+          ResultSet rs = statement.executeQuery();
 
-      while (rs.next()) {
-        String key = rs.getString(1);
-        String value = rs.getString(2);
-        event.setProperty(key, value);
+          while (rs.next()) {
+              String key = rs.getString(1);
+              String value = rs.getString(2);
+              event.setProperty(key, value);
+          }
       }
-    } finally {
-      statement.close();
-    }
   }
 
   /**

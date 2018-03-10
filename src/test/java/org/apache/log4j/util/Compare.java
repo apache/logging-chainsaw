@@ -56,15 +56,11 @@ public class Compare {
                                 final String file1,
                                 final String file2)
     throws IOException {
-    BufferedReader in1 = new BufferedReader(new FileReader(file1));
-    BufferedReader in2 = new BufferedReader(new InputStreamReader(
-            open(testClass, file2)));
-    try {
-      return compare(testClass, file1, file2, in1, in2);
-    } finally {
-      in1.close();
-      in2.close();
-    }
+      try (BufferedReader in1 = new BufferedReader(new FileReader(file1));
+           BufferedReader in2 = new BufferedReader(new InputStreamReader(
+              open(testClass, file2)))) {
+          return compare(testClass, file1, file2, in1, in2);
+      }
   }
     
  public static boolean compare(
@@ -153,14 +149,10 @@ public class Compare {
           throw new FileNotFoundException("Could not locate resource " + resourceName);
       }
 
-      BufferedReader in1 = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(actual))));
-      BufferedReader in2 = new BufferedReader(new InputStreamReader(new GZIPInputStream(resourceStream)));
-      try {
-        return gzCompare(testClass, actual, expected, in1, in2);
-      } finally {
-        in1.close();
-        in2.close();
-      }
+        try (BufferedReader in1 = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(actual))));
+             BufferedReader in2 = new BufferedReader(new InputStreamReader(new GZIPInputStream(resourceStream)))) {
+            return gzCompare(testClass, actual, expected, in1, in2);
+        }
     }
 
     public static boolean gzCompare(Class testClass, String file1, String file2, BufferedReader in1, BufferedReader in2) throws IOException {

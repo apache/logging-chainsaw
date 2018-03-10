@@ -85,40 +85,37 @@ public class FullCycleDBTest
     //      will throw exception if already defined.
     //
         Class.forName("org.hsqldb.jdbcDriver");
-        Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:testdb");
-        try {
-            Statement s = connection.createStatement();
-            s.executeUpdate("CREATE TABLE logging_event " +
-              "( sequence_number   BIGINT NOT NULL, " +
-               " timestamp         BIGINT NOT NULL, " +
-               " rendered_message  LONGVARCHAR NOT NULL, " +
-               " logger_name       VARCHAR NOT NULL, " +
-               " level_string      VARCHAR NOT NULL, " +
-               " ndc               LONGVARCHAR, " +
-               " thread_name       VARCHAR, " +
-               " reference_flag    SMALLINT, " +
-               " caller_filename   VARCHAR, " +
-               " caller_class      VARCHAR, " +
-               " caller_method     VARCHAR, " +
-               " caller_line       CHAR(4), " +
-               " event_id          INT NOT NULL IDENTITY)");
-            s.executeUpdate("CREATE TABLE logging_event_property " +
-              "( event_id	      INT NOT NULL, " +
-               " mapped_key        VARCHAR(254) NOT NULL, " +
-               " mapped_value      LONGVARCHAR, " +
-               " PRIMARY KEY(event_id, mapped_key), " +
-               " FOREIGN KEY (event_id) REFERENCES logging_event(event_id))");
-            s.executeUpdate("CREATE TABLE logging_event_exception" +
-                    "  ( event_id         INT NOT NULL, " +
-                    "    i                SMALLINT NOT NULL," +
-                    "    trace_line       VARCHAR NOT NULL," +
-                    "    PRIMARY KEY(event_id, i)," +
-                    "    FOREIGN KEY (event_id) REFERENCES logging_event(event_id))");
-        } catch(SQLException ex) {
-            String s = ex.toString();
-        } finally {
-            connection.close();
-        }
+      try (Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:testdb")) {
+          Statement s = connection.createStatement();
+          s.executeUpdate("CREATE TABLE logging_event " +
+                  "( sequence_number   BIGINT NOT NULL, " +
+                  " timestamp         BIGINT NOT NULL, " +
+                  " rendered_message  LONGVARCHAR NOT NULL, " +
+                  " logger_name       VARCHAR NOT NULL, " +
+                  " level_string      VARCHAR NOT NULL, " +
+                  " ndc               LONGVARCHAR, " +
+                  " thread_name       VARCHAR, " +
+                  " reference_flag    SMALLINT, " +
+                  " caller_filename   VARCHAR, " +
+                  " caller_class      VARCHAR, " +
+                  " caller_method     VARCHAR, " +
+                  " caller_line       CHAR(4), " +
+                  " event_id          INT NOT NULL IDENTITY)");
+          s.executeUpdate("CREATE TABLE logging_event_property " +
+                  "( event_id	      INT NOT NULL, " +
+                  " mapped_key        VARCHAR(254) NOT NULL, " +
+                  " mapped_value      LONGVARCHAR, " +
+                  " PRIMARY KEY(event_id, mapped_key), " +
+                  " FOREIGN KEY (event_id) REFERENCES logging_event(event_id))");
+          s.executeUpdate("CREATE TABLE logging_event_exception" +
+                  "  ( event_id         INT NOT NULL, " +
+                  "    i                SMALLINT NOT NULL," +
+                  "    trace_line       VARCHAR NOT NULL," +
+                  "    PRIMARY KEY(event_id, i)," +
+                  "    FOREIGN KEY (event_id) REFERENCES logging_event(event_id))");
+      } catch (SQLException ex) {
+          String s = ex.toString();
+      }
 
   }
 
