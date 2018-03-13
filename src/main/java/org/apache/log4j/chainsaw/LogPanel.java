@@ -3122,9 +3122,7 @@ detailPaneUpdater.setAndUpdateSelectedRow(table.getSelectedRow());
   }
 
   private String getToolTipTextForEvent(LoggingEventWrapper loggingEventWrapper) {
-    StringBuilder buf = new StringBuilder();
-    buf.append(detailLayout.getHeader()).append(detailLayout.format(loggingEventWrapper.getLoggingEvent())).append(detailLayout.getFooter());
-    return buf.toString();
+      return detailLayout.getHeader() + detailLayout.format(loggingEventWrapper.getLoggingEvent()) + detailLayout.getFooter();
   }
 
   /**

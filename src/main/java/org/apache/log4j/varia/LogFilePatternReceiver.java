@@ -715,7 +715,7 @@ public class LogFilePatternReceiver extends Receiver {
             buildingKeywords.add(shortProp);
             propertyNames.add(longPropertyName);
             current = current.substring(longPropertyName.length() + 1 + index);
-            newPattern = singleReplace(newPattern, longPropertyName, new Integer(buildingKeywords.size() -1).toString());
+            newPattern = singleReplace(newPattern, longPropertyName, Integer.toString(buildingKeywords.size() - 1));
         } else {
             //no properties
             index = -1;
@@ -735,7 +735,7 @@ public class LogFilePatternReceiver extends Receiver {
           int index2 = newPattern.indexOf(keyword);
           if (index2 > -1) {
               buildingKeywords.add(keyword);
-              newPattern = singleReplace(newPattern, keyword, new Integer(buildingKeywords.size() - 1).toString());
+              newPattern = singleReplace(newPattern, keyword, Integer.toString(buildingKeywords.size() - 1));
           }
       }
 

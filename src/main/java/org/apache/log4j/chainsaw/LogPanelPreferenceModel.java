@@ -361,12 +361,12 @@ public class LogPanelPreferenceModel implements Serializable{
     if (isVisible && !wasVisible) {
 		visibleColumns.add(col);
 		visibleColumnOrder.add(col);
-	    propertySupport.firePropertyChange("visibleColumns", new Boolean(isVisible), new Boolean(wasVisible));
+	    propertySupport.firePropertyChange("visibleColumns", Boolean.valueOf(isVisible), Boolean.valueOf(wasVisible));
 	}
     if (!isVisible && wasVisible) {
 		visibleColumns.remove(col);
 		visibleColumnOrder.remove(col);
-	    propertySupport.firePropertyChange("visibleColumns", new Boolean(isVisible), new Boolean(wasVisible));
+	    propertySupport.firePropertyChange("visibleColumns", Boolean.valueOf(isVisible), Boolean.valueOf(wasVisible));
 	}
   }
   

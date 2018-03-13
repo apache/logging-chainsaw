@@ -161,7 +161,7 @@ public class ColumnComparator implements Comparator {
       //other columns may be Property values - see if there is an Property value matching column name
       default:
           if (e1.getProperty(columnName) != null && e2.getProperty(columnName) != null) {
-              sort = e1.getProperty(columnName).toString().compareToIgnoreCase(e2.getProperty(columnName).toString());
+              sort = e1.getProperty(columnName).compareToIgnoreCase(e2.getProperty(columnName));
           }
       }
     }

@@ -165,9 +165,7 @@ public final class PluginRegistry {
         synchronized (pluginMap) {
             List pluginList = new ArrayList(pluginMap.size());
 
-            for (Object o : pluginMap.values()) {
-                pluginList.add(o);
-            }
+            pluginList.addAll(pluginMap.values());
             return pluginList;
         }
     }

@@ -78,11 +78,10 @@ public final class MessageFormatter {
                 // present
                 return messagePattern;
             } else {
-                StringBuilder sbuf = new StringBuilder(len + 20);
-                sbuf.append(messagePattern.substring(0, j));
-                sbuf.append(argument);
-                sbuf.append(messagePattern.substring(j + 2));
-                return sbuf.toString();
+                String sbuf = messagePattern.substring(0, j) +
+                        argument +
+                        messagePattern.substring(j + 2);
+                return sbuf;
             }
         }
     }

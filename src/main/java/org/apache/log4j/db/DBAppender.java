@@ -126,22 +126,21 @@ public class DBAppender extends AppenderSkeleton implements UnrecognizedElementH
 
 
   static {
-    StringBuilder sql = new StringBuilder();
-    sql.append("INSERT INTO logging_event (");
-    sql.append("sequence_number, ");
-    sql.append("timestamp, ");
-    sql.append("rendered_message, ");
-    sql.append("logger_name, ");
-    sql.append("level_string, ");
-    sql.append("ndc, ");
-    sql.append("thread_name, ");
-    sql.append("reference_flag, ");
-    sql.append("caller_filename, ");
-    sql.append("caller_class, ");
-    sql.append("caller_method, ");
-    sql.append("caller_line) ");
-    sql.append(" VALUES (?, ?, ? ,?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    insertSQL = sql.toString();
+      String sql = "INSERT INTO logging_event (" +
+              "sequence_number, " +
+              "timestamp, " +
+              "rendered_message, " +
+              "logger_name, " +
+              "level_string, " +
+              "ndc, " +
+              "thread_name, " +
+              "reference_flag, " +
+              "caller_filename, " +
+              "caller_class, " +
+              "caller_method, " +
+              "caller_line) " +
+              " VALUES (?, ?, ? ,?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      insertSQL = sql;
     //
     //   PreparedStatement.getGeneratedKeys added in JDK 1.4
     //

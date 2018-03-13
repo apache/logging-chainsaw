@@ -161,14 +161,8 @@ public class XMLDecoder implements Decoder {
        * resetting the length of the StringBuffer is dangerous, particularly
        * on some JDK 1.4 impls, there's a known Bug that causes a memory leak
        */
-      StringBuilder buf = new StringBuilder(1024);
-
-      buf.append(BEGINPART);
-      buf.append(data);
-      buf.append(ENDPART);
-
-      InputSource inputSource =
-        new InputSource(new StringReader(buf.toString()));
+      String buf = BEGINPART + data + ENDPART;
+      InputSource inputSource = new InputSource(new StringReader(buf));
       document = docBuilder.parse(inputSource);
     } catch (Exception e) {
       e.printStackTrace();
