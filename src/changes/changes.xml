@@ -20,11 +20,19 @@
     <title>Apache Chainsaw&#x2122;</title>
   </properties>
   <body>
+    <release version="2.1.0" date="2018-??-??" description="Apache Chainsaw 2.1.0">
+      <action issue="CHAINSAW-1" type="chore" dev="mattsicker">
+        Modernize syntax for newer Java versions up to 1.8.
+      </action>
+      <action issue="CHAINSAW-3" type="add" dev="mattsicker">
+        Add automated Jenkins pipeline configuration for branches and pull requests.
+      </action>
+    </release>
     <release version="2.0.0" date="2018-01-20" description="Apache Chainsaw 2.0.0">
       <action dev="sdeboy" type="fix">
         Doc updates
       </action>
-      <action dev="mattsicker" type="fix">
+      <action dev="mattsicker" type="chore">
         Update to minimum Java 1.6
       </action>
       <action dev="mattsicker" type="fix">
