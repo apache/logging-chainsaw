@@ -20,36 +20,36 @@
     <title>Apache Chainsaw&#x2122;</title>
   </properties>
   <body>
-      <release version="2.0.0" date="2018-01-20" description="Apache Chainsaw 2.0.0">
+    <release version="2.0.0" date="2018-01-20" description="Apache Chainsaw 2.0.0">
       <action dev="sdeboy" type="fix">
-          Doc updates
+        Doc updates
       </action>
       <action dev="mattsicker" type="fix">
-          Update to minimum Java 1.6
+        Update to minimum Java 1.6
       </action>
       <action dev="mattsicker" type="fix">
-          Branding fixes
+        Branding fixes
       </action>
       <action dev="bodewig" type="fix">
-          Update to support maven3
+        Update to support maven3
       </action>
       <action dev="psmith" issue="42789" type="add" due-to="Isuru Suriarachchi" due-to-email="">
-		Added support for remembering filter expressions for each LogPanel
+        Added support for remembering filter expressions for each LogPanel
       </action>
       <action dev="psmith" issue="42851" type="add" due-to="Isuru Suriarachchi" due-to-email="">
-		Added 'Go To Line' feature to navigate to a particular event #
+        Added 'Go To Line' feature to navigate to a particular event #
       </action>
       <action dev="psmith" issue="42883" type="add" due-to="Isuru Suriarachchi" due-to-email="">
-		Added ability to hide Welcome and Drag and Drop panels.
+        Added ability to hide Welcome and Drag and Drop panels.
       </action>
-	<action dev="psmith" issue="43158" type="add" due-to="Isuru Suriarachchi" due-to-email="">
-		Added ability to remember last created receivers in an xml file, and load them at startup.
-	</action>
-	<action dev="psmith" issue="42883" type="add" due-to="Isuru Suriarachchi" due-to-email="">
-		Added ability to remember hidden log panels.
-	</action>
-	<action dev="psmith" issue="42670" type="fix">Address memory leak when using cyclic model</action>
-       <action issue="49078" action="fix">javadoc.jar was missing NOTICE and LICENSE.</action>
+      <action dev="psmith" issue="43158" type="add" due-to="Isuru Suriarachchi" due-to-email="">
+        Added ability to remember last created receivers in an xml file, and load them at startup.
+      </action>
+      <action dev="psmith" issue="42883" type="add" due-to="Isuru Suriarachchi" due-to-email="">
+        Added ability to remember hidden log panels.
+      </action>
+      <action dev="psmith" issue="42670" type="fix">Address memory leak when using cyclic model</action>
+      <action issue="49078" action="fix">javadoc.jar was missing NOTICE and LICENSE.</action>
     </release>
   </body>
 </document>
