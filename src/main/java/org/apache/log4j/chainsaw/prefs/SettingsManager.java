@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,19 +16,11 @@
  */
 package org.apache.log4j.chainsaw.prefs;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import javax.swing.event.EventListenerList;
+import java.io.*;
 import java.net.URLEncoder;
 import java.util.EventListener;
 import java.util.Properties;
-
-import javax.swing.event.EventListenerList;
 
 
 /**
@@ -37,7 +29,6 @@ import javax.swing.event.EventListenerList;
  *
  * @author Paul Smith &lt;psmith@apache.org&gt;
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
- *
  */
 public final class SettingsManager {
     private static final SettingsManager instance = new SettingsManager();
@@ -49,7 +40,6 @@ public final class SettingsManager {
     /**
      * Initialises the SettingsManager by loading the default Properties from
      * a resource
-     *
      */
     private SettingsManager() {
         //	load the default properties as a Resource
@@ -57,8 +47,8 @@ public final class SettingsManager {
 
         try {
             is = this.getClass().getClassLoader()
-                     .getResource("org/apache/log4j/chainsaw/prefs/default.properties")
-                     .openStream();
+                .getResource("org/apache/log4j/chainsaw/prefs/default.properties")
+                .openStream();
             defaultProperties.load(is);
 
             //      defaultProperties.list(System.out);
@@ -77,6 +67,7 @@ public final class SettingsManager {
 
     /**
      * Returns the singleton instance of the SettingsManager
+     *
      * @return settings manager
      */
     public static SettingsManager getInstance() {
@@ -85,6 +76,7 @@ public final class SettingsManager {
 
     /**
      * Registers the listener with the manager
+     *
      * @param listener
      */
     public void addSettingsListener(SettingsListener listener) {
@@ -95,7 +87,6 @@ public final class SettingsManager {
      * Requests that the settings be loaded, all listeners will be notified of
      * this call, and configure themselves according to the values found in the
      * loaded settings
-     *
      */
     public void loadSettings() {
         /*
@@ -137,7 +128,7 @@ public final class SettingsManager {
         Properties loadedProperties = new Properties();
         loadedProperties.putAll(getDefaultSettings());
         loadedProperties.putAll(loadProperties(p));
-        
+
 
         LoadSettingsEvent event = new LoadSettingsEvent(this, loadedProperties);
 
@@ -153,11 +144,11 @@ public final class SettingsManager {
         InputStream is = null;
 
         File f = new File(getSettingsDirectory(),
-        		URLEncoder.encode(p.getNamespace() + ".properties"));
-        
+            URLEncoder.encode(p.getNamespace() + ".properties"));
+
         if (!f.exists()) {
-        	f = new File(getSettingsDirectory(),
-            		p.getNamespace() + ".properties");        	
+            f = new File(getSettingsDirectory(),
+                p.getNamespace() + ".properties");
         }
 
         if (f.exists()) {
@@ -204,7 +195,6 @@ public final class SettingsManager {
     /**
      * Creates a SaveSettingsEvent and calls all the SettingsListeners
      * to populate the properties with configuration information
-     *
      */
     public void saveSettings() {
         /*
@@ -225,6 +215,7 @@ public final class SettingsManager {
      * Looks up all the Profileable's that have been registered
      * and creates a new event for each of them, and ensures that they
      * are saved within a separate external store
+     *
      * @param settingsDir
      */
     private void saveProfileableSetting(File settingsDir) {
@@ -244,8 +235,8 @@ public final class SettingsManager {
 
                 try {
                     os = new BufferedOutputStream(new FileOutputStream(
-                            new File(settingsDir,
-                                    URLEncoder.encode(profileable.getNamespace()) + ".properties")));
+                        new File(settingsDir,
+                            URLEncoder.encode(profileable.getNamespace()) + ".properties")));
                     event.getProperties().store(os, HEADER);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -282,7 +273,7 @@ public final class SettingsManager {
 
         try {
             os = new BufferedOutputStream(new FileOutputStream(
-                        new File(settingsDir, GLOBAL_SETTINGS_FILE_NAME)));
+                new File(settingsDir, GLOBAL_SETTINGS_FILE_NAME)));
             event.getProperties().store(os, HEADER);
         } catch (Exception e) {
             e.printStackTrace();
@@ -307,7 +298,7 @@ public final class SettingsManager {
         } else {
             Properties loadedProperties = loadGlobalProperties();
             LoadSettingsEvent event = new LoadSettingsEvent(this,
-                    loadedProperties);
+                loadedProperties);
             listener.loadSettings(event);
         }
     }
@@ -350,6 +341,7 @@ public final class SettingsManager {
     /**
      * Returns the loaded default settings, which can be used by
      * other classes within this package.
+     *
      * @return Properties defaults
      */
     public Properties getDefaultSettings() {

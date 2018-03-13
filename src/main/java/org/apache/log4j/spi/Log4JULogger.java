@@ -16,10 +16,10 @@
  */
 package org.apache.log4j.spi;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.ULogger;
 import org.apache.log4j.helpers.MessageFormatter;
-import org.apache.log4j.Level;
 
 
 /**
@@ -66,7 +66,7 @@ public final class Log4JULogger implements ULogger {
                       final Object param1) {
         if (logger.isDebugEnabled()) {
             logger.debug(MessageFormatter.format(
-                    parameterizedMsg.toString(), param1));
+                parameterizedMsg.toString(), param1));
         }
     }
 
@@ -78,7 +78,7 @@ public final class Log4JULogger implements ULogger {
                       final Object param2) {
         if (logger.isDebugEnabled()) {
             logger.debug(MessageFormatter.format(
-                    parameterizedMsg, param1, param2));
+                parameterizedMsg, param1, param2));
         }
     }
 
@@ -113,7 +113,7 @@ public final class Log4JULogger implements ULogger {
                      final Object param1) {
         if (logger.isInfoEnabled()) {
             logger.info(MessageFormatter.format(
-                    parameterizedMsg.toString(), param1));
+                parameterizedMsg.toString(), param1));
         }
     }
 
@@ -125,9 +125,9 @@ public final class Log4JULogger implements ULogger {
                      final Object param2) {
         if (logger.isInfoEnabled()) {
             logger.info(MessageFormatter.format(
-                    parameterizedMsg,
-                    param1,
-                    param2));
+                parameterizedMsg,
+                param1,
+                param2));
         }
     }
 
@@ -159,7 +159,7 @@ public final class Log4JULogger implements ULogger {
                      final Object param1) {
         if (logger.isEnabledFor(Level.WARN)) {
             logger.warn(MessageFormatter.format(
-                    parameterizedMsg.toString(), param1));
+                parameterizedMsg.toString(), param1));
         }
     }
 
@@ -171,7 +171,7 @@ public final class Log4JULogger implements ULogger {
                      final Object param2) {
         if (logger.isEnabledFor(Level.WARN)) {
             logger.warn(MessageFormatter.format(
-                    parameterizedMsg, param1, param2));
+                parameterizedMsg, param1, param2));
         }
     }
 
@@ -203,7 +203,7 @@ public final class Log4JULogger implements ULogger {
     public void error(final Object parameterizedMsg, final Object param1) {
         if (logger.isEnabledFor(Level.ERROR)) {
             logger.error(MessageFormatter.format(
-                    parameterizedMsg.toString(), param1));
+                parameterizedMsg.toString(), param1));
         }
     }
 
@@ -215,7 +215,7 @@ public final class Log4JULogger implements ULogger {
                       final Object param2) {
         if (logger.isEnabledFor(Level.ERROR)) {
             logger.error(MessageFormatter.format(
-                    parameterizedMsg, param1, param2));
+                parameterizedMsg, param1, param2));
         }
     }
 

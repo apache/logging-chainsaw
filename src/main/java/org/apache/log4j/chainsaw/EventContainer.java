@@ -17,169 +17,180 @@
 
 package org.apache.log4j.chainsaw;
 
+import org.apache.log4j.rule.Rule;
+
 import java.beans.PropertyChangeListener;
 import java.util.List;
-
-import org.apache.log4j.rule.Rule;
 
 
 /**
  * To allow pluggable TableModel implementations for Chainsaw, this interface has been factored out.
- *
+ * <p>
  * This interface is still subject to change.
  *
  * @author Paul Smith &lt;psmith@apache.org&gt;
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  * @author Stephen Pain
- *
  */
 public interface EventContainer extends SortTableModel, LoggerNameModel {
-  /**
-   * Adds an EventCountListener, to be notified when the # of events changes
-   * @param listener
-   */
-  void addEventCountListener(EventCountListener listener);
+    /**
+     * Adds an EventCountListener, to be notified when the # of events changes
+     *
+     * @param listener
+     */
+    void addEventCountListener(EventCountListener listener);
 
-  void addPropertyChangeListener(PropertyChangeListener l);
+    void addPropertyChangeListener(PropertyChangeListener l);
 
-  void addPropertyChangeListener(
-    String propertyName, PropertyChangeListener l);
+    void addPropertyChangeListener(
+        String propertyName, PropertyChangeListener l);
 
-  /**
-   * Adds a NewKeyListener to be notified when unique Key (Property keys)
-   * arrive into this EventContainer
-   * @param l
-   */
-  void addNewKeyListener(NewKeyListener l);
+    /**
+     * Adds a NewKeyListener to be notified when unique Key (Property keys)
+     * arrive into this EventContainer
+     *
+     * @param l
+     */
+    void addNewKeyListener(NewKeyListener l);
 
-  /**
-   * Removes a listener from being notified of NewKey events.
-   * @param l
-   */
-  void removeNewKeyListener(NewKeyListener l);
+    /**
+     * Removes a listener from being notified of NewKey events.
+     *
+     * @param l
+     */
+    void removeNewKeyListener(NewKeyListener l);
 
-  /**
-   * Clears the model completely
-   *
-   */
-  void clearModel();
+    /**
+     * Clears the model completely
+     */
+    void clearModel();
 
-  List<LoggingEventWrapper> getMatchingEvents(Rule rule);
+    List<LoggingEventWrapper> getMatchingEvents(Rule rule);
 
-  /**
-   * Configures this model to use Cyclic or non-cyclic models.
-   * This method should fire a property Change event if
-   * it involves an actual change in the underlying model.
-   *
-   * This method does nothing if there is no change in proprty.
-   * @param cyclic
-   */
-  void setCyclic(boolean cyclic);
+    /**
+     * Configures this model to use Cyclic or non-cyclic models.
+     * This method should fire a property Change event if
+     * it involves an actual change in the underlying model.
+     * <p>
+     * This method does nothing if there is no change in proprty.
+     *
+     * @param cyclic
+     */
+    void setCyclic(boolean cyclic);
 
-  /**
-   * If this container is in Cyclic mode, returns the Size of the cyclic buffer,
-   * otherwise this method throws an IllegalStateException, when in unlimited
-   * mode, this method has no meaning.
-   *
-   * @throws IllegalStateException if this containers isCyclic() method returns false.
-   * @return int size of the cyclic buffer
-   */
-  int getMaxSize();
+    /**
+     * If this container is in Cyclic mode, returns the Size of the cyclic buffer,
+     * otherwise this method throws an IllegalStateException, when in unlimited
+     * mode, this method has no meaning.
+     *
+     * @return int size of the cyclic buffer
+     * @throws IllegalStateException if this containers isCyclic() method returns false.
+     */
+    int getMaxSize();
 
-  /**
-   * Locates a row number, starting from startRow, matching the rule provided
-   *
-   * @param rule
-   * @param startRow
-   * @param searchForward
-   */
-  int locate(Rule rule, int startRow, boolean searchForward);
+    /**
+     * Locates a row number, starting from startRow, matching the rule provided
+     *
+     * @param rule
+     * @param startRow
+     * @param searchForward
+     */
+    int locate(Rule rule, int startRow, boolean searchForward);
 
-  /**
-   * Returns a copied list of all the event in the model.
-   */
-  List getAllEvents();
+    /**
+     * Returns a copied list of all the event in the model.
+     */
+    List getAllEvents();
 
-  /**
-   * Returns a copied list containing the events in the model with filter applied
-   */
-  List getFilteredEvents();
-  
-  /**
-   * Returns the total number of events currently in the model (all, not just filtered)
-   * @return size
-   */
-  int size();
+    /**
+     * Returns a copied list containing the events in the model with filter applied
+     */
+    List getFilteredEvents();
 
-  /**
-   * Returns the vector representing the row.
-   */
-  LoggingEventWrapper getRow(int row);
+    /**
+     * Returns the total number of events currently in the model (all, not just filtered)
+     *
+     * @return size
+     */
+    int size();
 
-  /**
-   * Adds a row to the model.
-   * @param e event
-   * @return flag representing whether or not the row is being displayed (not filtered)
-   */
-  boolean isAddRow(LoggingEventWrapper e);
+    /**
+     * Returns the vector representing the row.
+     */
+    LoggingEventWrapper getRow(int row);
 
-  /**
-   * Fire appropriate table update events for the range.
-   */
-  void fireTableEvent(int begin, int end, int count);
+    /**
+     * Adds a row to the model.
+     *
+     * @param e event
+     * @return flag representing whether or not the row is being displayed (not filtered)
+     */
+    boolean isAddRow(LoggingEventWrapper e);
+
+    /**
+     * Fire appropriate table update events for the range.
+     */
+    void fireTableEvent(int begin, int end, int count);
 
     /**
      * A row was updated
+     *
      * @param row
      * @param checkForNewColumns
      */
-  void fireRowUpdated(int row, boolean checkForNewColumns);
-  /**
-   * Allow a forced notification of the EventCountListeners
-   *
-   */
-  void notifyCountListeners();
+    void fireRowUpdated(int row, boolean checkForNewColumns);
 
-  /**
-   * Force a re-processing of the table layout
-   */
-  void reFilter();
-  /**
-   * Sets the RuleMediator in operation
-   * @param ruleMediator
-   */
-  void setRuleMediator(RuleMediator ruleMediator);
+    /**
+     * Allow a forced notification of the EventCountListeners
+     */
+    void notifyCountListeners();
 
-  /**
-   * Returns the index of the LoggingEventWrapper
-   * @param loggingEventWrapper
-   */
-  int getRowIndex(LoggingEventWrapper loggingEventWrapper);
+    /**
+     * Force a re-processing of the table layout
+     */
+    void reFilter();
 
-  /**
-   * Remove property from all events in container
-   * @param propName the property name to remove
-   */
-  void removePropertyFromEvents(String propName);
+    /**
+     * Sets the RuleMediator in operation
+     *
+     * @param ruleMediator
+     */
+    void setRuleMediator(RuleMediator ruleMediator);
 
-  /**
-   * Evaluate all events against the find rule
-   * @param findRule
-   */
-  int updateEventsWithFindRule(Rule findRule);
+    /**
+     * Returns the index of the LoggingEventWrapper
+     *
+     * @param loggingEventWrapper
+     */
+    int getRowIndex(LoggingEventWrapper loggingEventWrapper);
 
-  /**
-   * Determine next row with a non-default color 
-   * @param currentRow
-   * @param forward
-   * @return
-   */
-  int findColoredRow(int currentRow, boolean forward);
+    /**
+     * Remove property from all events in container
+     *
+     * @param propName the property name to remove
+     */
+    void removePropertyFromEvents(String propName);
 
-  /**
-   * Return the visible search match count
-   *
-   * @return
-   */
-  int getSearchMatchCount();
+    /**
+     * Evaluate all events against the find rule
+     *
+     * @param findRule
+     */
+    int updateEventsWithFindRule(Rule findRule);
+
+    /**
+     * Determine next row with a non-default color
+     *
+     * @param currentRow
+     * @param forward
+     * @return
+     */
+    int findColoredRow(int currentRow, boolean forward);
+
+    /**
+     * Return the visible search match count
+     *
+     * @return
+     */
+    int getSearchMatchCount();
 }

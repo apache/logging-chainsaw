@@ -16,15 +16,14 @@
  */
 package org.apache.log4j.chainsaw;
 
-import javax.swing.DefaultListModel;
+import javax.swing.*;
 
 /**
  * @author Paul Smith &lt;psmith@apache.org&gt;
- *
  */
 public class ModifiableListModel extends DefaultListModel {
-  public void fireContentsChanged(){
-    fireContentsChanged(this,0, this.size());
-  }
+    public void fireContentsChanged() {
+        fireContentsChanged(this, 0, this.size());
+    }
 
 }

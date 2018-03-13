@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,20 +16,18 @@
  */
 package org.apache.log4j.chainsaw;
 
-import java.awt.Color;
+import javax.swing.*;
+import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
-import javax.swing.UIManager;
-
 /**
  * Encapsulates the Chainsaw Application wide properties
  *
  * @author Paul Smith &lt;psmith@apache.org&gt;
- *
  */
 public class ApplicationPreferenceModel {
 
@@ -53,13 +51,13 @@ public class ApplicationPreferenceModel {
 
     private transient final PropertyChangeSupport propertySupport =
         new PropertyChangeSupport(this);
-    
+
     private int tabPlacement = 3;
-    
+
     /**
      * If not 'empty', this property will be used as the URL to load log4j configuration at startup
      */
-    private Vector<String> configurationURLs=new Vector<>();
+    private Vector<String> configurationURLs = new Vector<>();
 
     private String configurationURL = "";
 
@@ -68,8 +66,8 @@ public class ApplicationPreferenceModel {
      */
     private transient String bypassConfigurationURL = null;
     /**
-     *    this means for Receivers that require optional jars that can't be delivered
-     *    by the Web start classloader, we need to be able to remove the SecurityManager in place
+     * this means for Receivers that require optional jars that can't be delivered
+     * by the Web start classloader, we need to be able to remove the SecurityManager in place
      */
     private boolean okToRemoveSecurityManager = false;
     private static final int CONFIGURATION_URL_ENTRY_COUNT = 10;
@@ -77,7 +75,7 @@ public class ApplicationPreferenceModel {
     private boolean defaultColumnsSet;
     private boolean bypassSearchColors = false;
 
-  /**
+    /**
      * @param listener
      */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -89,7 +87,7 @@ public class ApplicationPreferenceModel {
      * @param listener
      */
     public void addPropertyChangeListener(String propertyName,
-        PropertyChangeListener listener) {
+                                          PropertyChangeListener listener) {
         propertySupport.addPropertyChangeListener(propertyName, listener);
     }
 
@@ -99,7 +97,7 @@ public class ApplicationPreferenceModel {
      * @param newValue
      */
     private void firePropertyChange(String propertyName, boolean oldValue,
-        boolean newValue) {
+                                    boolean newValue) {
         propertySupport.firePropertyChange(propertyName, oldValue, newValue);
     }
 
@@ -109,7 +107,7 @@ public class ApplicationPreferenceModel {
      * @param newValue
      */
     private void firePropertyChange(String propertyName, int oldValue,
-        int newValue) {
+                                    int newValue) {
         propertySupport.firePropertyChange(propertyName, oldValue, newValue);
     }
 
@@ -119,7 +117,7 @@ public class ApplicationPreferenceModel {
      * @param newValue
      */
     private void firePropertyChange(String propertyName, Object oldValue,
-        Object newValue) {
+                                    Object newValue) {
         propertySupport.firePropertyChange(propertyName, oldValue, newValue);
     }
 
@@ -145,7 +143,7 @@ public class ApplicationPreferenceModel {
 
         return showNoReceiverWarning;
     }
-    
+
     public final String getIdentifierExpression() {
         return identifierExpression;
     }
@@ -155,7 +153,7 @@ public class ApplicationPreferenceModel {
         cyclicBufferSize = newCyclicBufferSize;
         firePropertyChange("cyclicBufferSize", oldCyclicBufferSize, newCyclicBufferSize);
     }
-    
+
     public final int getCyclicBufferSize() {
         return cyclicBufferSize;
     }
@@ -165,13 +163,13 @@ public class ApplicationPreferenceModel {
         toolTipDisplayMillis = newToolTipDisplayMillis;
         firePropertyChange("toolTipDisplayMillis", oldToolTipDisplayMillis, newToolTipDisplayMillis);
     }
-    
+
     public final int getToolTipDisplayMillis() {
         return toolTipDisplayMillis;
     }
 
     public final void setIdentifierExpression(String newIdentifierExpression) {
-        String oldIdentifierExpression=identifierExpression;
+        String oldIdentifierExpression = identifierExpression;
         this.identifierExpression = newIdentifierExpression;
         firePropertyChange("identifierExpression", oldIdentifierExpression, newIdentifierExpression);
     }
@@ -180,7 +178,7 @@ public class ApplicationPreferenceModel {
      * @param newShowNoReceiverWarning The showNoReceiverWarning to set.
      */
     public final void setShowNoReceiverWarning(boolean newShowNoReceiverWarning) {
-        boolean oldShowNoReceiverWarning=showNoReceiverWarning;
+        boolean oldShowNoReceiverWarning = showNoReceiverWarning;
         this.showNoReceiverWarning = newShowNoReceiverWarning;
         firePropertyChange("showNoReceiverWarning", oldShowNoReceiverWarning, newShowNoReceiverWarning);
     }
@@ -188,54 +186,54 @@ public class ApplicationPreferenceModel {
 
     /**
      * Takes another model and copies all the values into this model
+     *
      * @param model
      */
-    public void apply(ApplicationPreferenceModel model)
-    {
-      setIdentifierExpression(model.getIdentifierExpression());
-      setShowNoReceiverWarning(model.isShowNoReceiverWarning() || (model.getConfigurationURL() == null || model.getConfigurationURL().trim().equals("")));
-      setResponsiveness(model.getResponsiveness());
-      setTabPlacement(model.getTabPlacement());
-      setStatusBar(model.isStatusBar());
-      setToolbar(model.isToolbar());
-      setReceivers(model.isReceivers());
-      if (model.getLookAndFeelClassName() != null && !model.getLookAndFeelClassName().trim().equals("")) {
-          setLookAndFeelClassName(model.getLookAndFeelClassName());
-      } else {
-          //ensure current look and feel is selected
-          setLookAndFeelClassName(UIManager.getLookAndFeel().getClass().getName());
-      }
-      setConfirmExit(model.isConfirmExit());
-      setShowSplash(model.isShowSplash());
-      setToolTipDisplayMillis(model.getToolTipDisplayMillis());
-      setCyclicBufferSize(model.getCyclicBufferSize());
-      Vector<String> configurationURLs = model.getConfigurationURLs();
-      if (configurationURLs != null) {
-        setConfigurationURLs(configurationURLs);
-      }
-      //only set current config URL if bypass is null
-      if (model.getBypassConfigurationURL() == null) {
-        setConfigurationURL(model.getConfigurationURL());
-      }
-      setLastUsedVersion(model.getLastUsedVersion());
-      setOkToRemoveSecurityManager(model.isOkToRemoveSecurityManager());
-      Color searchForeground = model.getSearchForegroundColor();
-      Color searchBackground = model.getSearchBackgroundColor();
-      if (searchForeground != null && searchBackground != null) {
-        setSearchBackgroundColor(searchBackground);
-        setSearchForegroundColor(searchForeground);
-      }
+    public void apply(ApplicationPreferenceModel model) {
+        setIdentifierExpression(model.getIdentifierExpression());
+        setShowNoReceiverWarning(model.isShowNoReceiverWarning() || (model.getConfigurationURL() == null || model.getConfigurationURL().trim().equals("")));
+        setResponsiveness(model.getResponsiveness());
+        setTabPlacement(model.getTabPlacement());
+        setStatusBar(model.isStatusBar());
+        setToolbar(model.isToolbar());
+        setReceivers(model.isReceivers());
+        if (model.getLookAndFeelClassName() != null && !model.getLookAndFeelClassName().trim().equals("")) {
+            setLookAndFeelClassName(model.getLookAndFeelClassName());
+        } else {
+            //ensure current look and feel is selected
+            setLookAndFeelClassName(UIManager.getLookAndFeel().getClass().getName());
+        }
+        setConfirmExit(model.isConfirmExit());
+        setShowSplash(model.isShowSplash());
+        setToolTipDisplayMillis(model.getToolTipDisplayMillis());
+        setCyclicBufferSize(model.getCyclicBufferSize());
+        Vector<String> configurationURLs = model.getConfigurationURLs();
+        if (configurationURLs != null) {
+            setConfigurationURLs(configurationURLs);
+        }
+        //only set current config URL if bypass is null
+        if (model.getBypassConfigurationURL() == null) {
+            setConfigurationURL(model.getConfigurationURL());
+        }
+        setLastUsedVersion(model.getLastUsedVersion());
+        setOkToRemoveSecurityManager(model.isOkToRemoveSecurityManager());
+        Color searchForeground = model.getSearchForegroundColor();
+        Color searchBackground = model.getSearchBackgroundColor();
+        if (searchForeground != null && searchBackground != null) {
+            setSearchBackgroundColor(searchBackground);
+            setSearchForegroundColor(searchForeground);
+        }
 
-      Color alternatingForeground = model.getAlternatingColorForegroundColor();
-      Color alternatingBackground = model.getAlternatingColorBackgroundColor();
-      if (alternatingForeground != null && alternatingBackground != null) {
-        setAlternatingBackgroundColor(alternatingBackground);
-        setAlternatingForegroundColor(alternatingForeground);
-      }
-      if (model.isDefaultColumnsSet()) {
-        setDefaultColumnNames(model.getDefaultColumnNames());
-      }
-      setBypassSearchColors(model.isBypassSearchColors());
+        Color alternatingForeground = model.getAlternatingColorForegroundColor();
+        Color alternatingBackground = model.getAlternatingColorBackgroundColor();
+        if (alternatingForeground != null && alternatingBackground != null) {
+            setAlternatingBackgroundColor(alternatingBackground);
+            setAlternatingForegroundColor(alternatingForeground);
+        }
+        if (model.isDefaultColumnsSet()) {
+            setDefaultColumnNames(model.getDefaultColumnNames());
+        }
+        setBypassSearchColors(model.isBypassSearchColors());
     }
 
     //use a lighter version of search color as the delta color
@@ -243,58 +241,58 @@ public class ApplicationPreferenceModel {
         float factor = 1.3F;
         Color search = getSearchBackgroundColor();
 
-        return new Color(boundColorValue((int)(search.getRed() * factor)),
-                boundColorValue((int)(search.getGreen() * factor)),
-                boundColorValue((int)(search.getBlue() * factor)));
+        return new Color(boundColorValue((int) (search.getRed() * factor)),
+            boundColorValue((int) (search.getGreen() * factor)),
+            boundColorValue((int) (search.getBlue() * factor)));
     }
 
     private int boundColorValue(int colorValue) {
-      return Math.min(Math.max(0, colorValue), 255);
+        return Math.min(Math.max(0, colorValue), 255);
     }
 
 
     /**
      * @return Returns the responsiveness.
      */
-    public final int getResponsiveness()
-    {
-      return responsiveness;
+    public final int getResponsiveness() {
+        return responsiveness;
     }
+
     /**
      * @param newValue The responsiveness to set.
      */
-    public final void setResponsiveness(int newValue)
-    {
-      int oldvalue = responsiveness;
-      
-      if (newValue >= 1000) {
-        responsiveness = (newValue - 750) / 1000;
-      } else {
-        responsiveness = newValue;
-      }
-      firePropertyChange("responsiveness", oldvalue, responsiveness);
+    public final void setResponsiveness(int newValue) {
+        int oldvalue = responsiveness;
+
+        if (newValue >= 1000) {
+            responsiveness = (newValue - 750) / 1000;
+        } else {
+            responsiveness = newValue;
+        }
+        firePropertyChange("responsiveness", oldvalue, responsiveness);
     }
 
     /**
      * @param i
      */
     public void setTabPlacement(int i) {
-      int oldValue = this.tabPlacement;
-       this.tabPlacement = i;
-       firePropertyChange("tabPlacement",oldValue,this.tabPlacement);
+        int oldValue = this.tabPlacement;
+        this.tabPlacement = i;
+        firePropertyChange("tabPlacement", oldValue, this.tabPlacement);
     }
+
     /**
      * @return Returns the tabPlacement.
      */
     public final int getTabPlacement() {
-      return tabPlacement;
+        return tabPlacement;
     }
 
     /**
      * @return Returns the statusBar.
      */
     public final boolean isStatusBar() {
-      return statusBar;
+        return statusBar;
     }
 
     public Vector<String> getConfigurationURLs() {
@@ -311,9 +309,9 @@ public class ApplicationPreferenceModel {
      * @param statusBar The statusBar to set.
      */
     public final void setStatusBar(boolean statusBar) {
-      boolean oldValue = this.statusBar;
-      this.statusBar = statusBar;
-      firePropertyChange("statusBar", oldValue, this.statusBar);
+        boolean oldValue = this.statusBar;
+        this.statusBar = statusBar;
+        firePropertyChange("statusBar", oldValue, this.statusBar);
     }
 
     public void setAlternatingForegroundColor(Color alternatingColorForegroundColor) {
@@ -355,92 +353,94 @@ public class ApplicationPreferenceModel {
     /**
      * @return Returns the receivers.
      */
-    public final boolean isReceivers()
-    {
-      return receivers;
+    public final boolean isReceivers() {
+        return receivers;
     }
+
     /**
      * @param receivers The receivers to set.
      */
-    public final void setReceivers(boolean receivers)
-    {
-      boolean oldValue = this.receivers;
-      this.receivers = receivers;
-      firePropertyChange("receivers", oldValue, this.receivers);
+    public final void setReceivers(boolean receivers) {
+        boolean oldValue = this.receivers;
+        this.receivers = receivers;
+        firePropertyChange("receivers", oldValue, this.receivers);
     }
+
     /**
      * @return Returns the toolbar.
      */
-    public final boolean isToolbar()
-    {
-      return toolbar;
+    public final boolean isToolbar() {
+        return toolbar;
     }
+
     /**
      * @param toolbar The toolbar to set.
      */
-    public final void setToolbar(boolean toolbar)
-    {
-      boolean oldValue = this.toolbar;
-      this.toolbar = toolbar;
-      firePropertyChange("toolbar", oldValue, this.toolbar);
+    public final void setToolbar(boolean toolbar) {
+        boolean oldValue = this.toolbar;
+        this.toolbar = toolbar;
+        firePropertyChange("toolbar", oldValue, this.toolbar);
     }
+
     /**
      * @return Returns the lookAndFeelClassName.
      */
     public final String getLookAndFeelClassName() {
-      return lookAndFeelClassName;
+        return lookAndFeelClassName;
     }
 
     /**
      * @param lookAndFeelClassName The lookAndFeelClassName to set.
      */
     public final void setLookAndFeelClassName(String lookAndFeelClassName) {
-      String oldValue = this.lookAndFeelClassName;
-      this.lookAndFeelClassName = lookAndFeelClassName;
-      firePropertyChange("lookAndFeelClassName", oldValue, this.lookAndFeelClassName);
+        String oldValue = this.lookAndFeelClassName;
+        this.lookAndFeelClassName = lookAndFeelClassName;
+        firePropertyChange("lookAndFeelClassName", oldValue, this.lookAndFeelClassName);
     }
 
     /**
      * @return Returns the confirmExit.
      */
     public final boolean isConfirmExit() {
-      return confirmExit;
+        return confirmExit;
     }
 
     /**
      * @param confirmExit The confirmExit to set.
      */
     public final void setConfirmExit(boolean confirmExit) {
-      boolean oldValue = this.confirmExit;
-      this.confirmExit = confirmExit;
-      firePropertyChange("confirmExit", oldValue, this.confirmExit);
+        boolean oldValue = this.confirmExit;
+        this.confirmExit = confirmExit;
+        firePropertyChange("confirmExit", oldValue, this.confirmExit);
     }
 
     /**
      * @return Returns the showSplash.
      */
     public final boolean isShowSplash() {
-      return showSplash;
+        return showSplash;
     }
+
     /**
      * @param showSplash The showSplash to set.
      */
     public final void setShowSplash(boolean showSplash) {
-      boolean oldValue = this.showSplash;
-      this.showSplash = showSplash;
-      firePropertyChange("showSplash", oldValue,this.showSplash);
+        boolean oldValue = this.showSplash;
+        this.showSplash = showSplash;
+        firePropertyChange("showSplash", oldValue, this.showSplash);
     }
+
     /**
      * @return Returns the configurationURL.
      */
-    public final String getConfigurationURL()
-    {
+    public final String getConfigurationURL() {
         return this.configurationURL;
     }
 
     public final String getBypassConfigurationURL() {
         return bypassConfigurationURL;
     }
+
     /*
       Set to null to un-bypass
      */
@@ -455,10 +455,9 @@ public class ApplicationPreferenceModel {
     /**
      * @param configurationURL The configurationURL to set.
      */
-    public final void setConfigurationURL(String configurationURL)
-    {
+    public final void setConfigurationURL(String configurationURL) {
         //don't add empty entries, but allow the current configuration URL to be set to an empty string
-        Object oldValue = this.bypassConfigurationURL != null? this.bypassConfigurationURL:this.configurationURL;
+        Object oldValue = this.bypassConfigurationURL != null ? this.bypassConfigurationURL : this.configurationURL;
         bypassConfigurationURL = null;
         if (configurationURL == null || configurationURL.trim().equals("")) {
             this.configurationURL = "";
@@ -467,65 +466,66 @@ public class ApplicationPreferenceModel {
         }
         //add entry to MRU list
         if (!configurationURLs.contains(configurationURL)) {
-          if (configurationURLs.size() == CONFIGURATION_URL_ENTRY_COUNT) {
-              configurationURLs.remove(CONFIGURATION_URL_ENTRY_COUNT - 1);
-          }
-          configurationURLs.add(0, configurationURL);
+            if (configurationURLs.size() == CONFIGURATION_URL_ENTRY_COUNT) {
+                configurationURLs.remove(CONFIGURATION_URL_ENTRY_COUNT - 1);
+            }
+            configurationURLs.add(0, configurationURL);
         }
-      this.configurationURL = configurationURL;
-      firePropertyChange("configurationURL", oldValue, this.configurationURL);
+        this.configurationURL = configurationURL;
+        firePropertyChange("configurationURL", oldValue, this.configurationURL);
     }
+
     /**
      * @return Returns the lastUsedVersion.
      */
-    public final String getLastUsedVersion()
-    {
+    public final String getLastUsedVersion() {
         return this.lastUsedVersion;
     }
+
     /**
      * @param lastUsedVersion The lastUsedVersion to set.
      */
-    public final void setLastUsedVersion(String lastUsedVersion)
-    {
+    public final void setLastUsedVersion(String lastUsedVersion) {
         String oldValue = this.lastUsedVersion;
         this.lastUsedVersion = lastUsedVersion;
         firePropertyChange("lastUsedVersion", oldValue, this.lastUsedVersion);
     }
 
-	/**
-	 * @return ok to remove security manager flag
-	 */
-	public final boolean isOkToRemoveSecurityManager() {
-		return this.okToRemoveSecurityManager;
-	}
-	/**
-	 * @param okToRemoveSecurityManager The okToRemoveSecurityManager to set.
-	 */
-	public final void setOkToRemoveSecurityManager(boolean okToRemoveSecurityManager) {
-		boolean oldValue = this.okToRemoveSecurityManager;
+    /**
+     * @return ok to remove security manager flag
+     */
+    public final boolean isOkToRemoveSecurityManager() {
+        return this.okToRemoveSecurityManager;
+    }
+
+    /**
+     * @param okToRemoveSecurityManager The okToRemoveSecurityManager to set.
+     */
+    public final void setOkToRemoveSecurityManager(boolean okToRemoveSecurityManager) {
+        boolean oldValue = this.okToRemoveSecurityManager;
         this.okToRemoveSecurityManager = okToRemoveSecurityManager;
         firePropertyChange("okToRemoveSecurityManager", oldValue, this.okToRemoveSecurityManager);
-	}
+    }
 
-  public void setDefaultColumnNames(List defaultColumnNames) {
-    defaultColumnsSet = true;
-    this.defaultColumnNames.clear();
-    this.defaultColumnNames.addAll(defaultColumnNames);
-  }
+    public void setDefaultColumnNames(List defaultColumnNames) {
+        defaultColumnsSet = true;
+        this.defaultColumnNames.clear();
+        this.defaultColumnNames.addAll(defaultColumnNames);
+    }
 
-  public boolean isDefaultColumnsSet() {
-    return defaultColumnsSet;
-  }
+    public boolean isDefaultColumnsSet() {
+        return defaultColumnsSet;
+    }
 
-  public List getDefaultColumnNames() {
-    return defaultColumnNames;
-  }
+    public List getDefaultColumnNames() {
+        return defaultColumnNames;
+    }
 
-  public void setBypassSearchColors(boolean bypassSearchColors) {
-    this.bypassSearchColors = bypassSearchColors;
-  }
+    public void setBypassSearchColors(boolean bypassSearchColors) {
+        this.bypassSearchColors = bypassSearchColors;
+    }
 
-  public boolean isBypassSearchColors() {
-    return bypassSearchColors;
-  }
+    public boolean isBypassSearchColors() {
+        return bypassSearchColors;
+    }
 }

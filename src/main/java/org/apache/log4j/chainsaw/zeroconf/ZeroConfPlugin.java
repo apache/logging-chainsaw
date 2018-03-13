@@ -16,26 +16,8 @@
  */
 package org.apache.log4j.chainsaw.zeroconf;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
-import javax.jmdns.JmDNS;
-import javax.jmdns.ServiceEvent;
-import javax.jmdns.ServiceInfo;
-import javax.jmdns.ServiceListener;
-import javax.swing.*;
-
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -48,33 +30,38 @@ import org.apache.log4j.chainsaw.plugins.GUIPluginSkeleton;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.chainsaw.vfs.VFSLogFilePatternReceiver;
 import org.apache.log4j.helpers.LogLog;
-import org.apache.log4j.net.MulticastReceiver;
-import org.apache.log4j.net.SocketHubReceiver;
-import org.apache.log4j.net.SocketReceiver;
-import org.apache.log4j.net.UDPReceiver;
-import org.apache.log4j.net.XMLSocketReceiver;
-import org.apache.log4j.net.ZeroConfSupport;
+import org.apache.log4j.net.*;
 import org.apache.log4j.plugins.Plugin;
 import org.apache.log4j.plugins.PluginEvent;
 import org.apache.log4j.plugins.PluginListener;
 import org.apache.log4j.plugins.Receiver;
 import org.apache.log4j.spi.LoggerRepositoryEx;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceEvent;
+import javax.jmdns.ServiceInfo;
+import javax.jmdns.ServiceListener;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.util.*;
 
 /**
  * This plugin is designed to detect specific Zeroconf zones (Rendevouz/Bonjour,
  * whatever people are calling it) and allow the user to double click on
  * 'devices' to try and connect to them with no configuration needed.
- * 
+ * <p>
  * TODO need to handle
- * NON-log4j devices that may be broadcast in the interested zones 
+ * NON-log4j devices that may be broadcast in the interested zones
  * TODO add the
  * default Zone, and the list of user-specified zones to a preferenceModel
- * 
+ *
  * @author psmith
- * 
  */
 public class ZeroConfPlugin extends GUIPluginSkeleton {
 
@@ -83,23 +70,23 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
     private ZeroConfDeviceModel discoveredDevices = new ZeroConfDeviceModel();
 
     private JTable deviceTable = new JTable(discoveredDevices);
-    
+
     private final JScrollPane scrollPane = new JScrollPane(deviceTable);
 
     private ZeroConfPreferenceModel preferenceModel;
-    
+
     private final Map<ServiceInfo, Plugin> serviceInfoToReceiveMap = new HashMap<>();
 
     private JMenu connectToMenu = new JMenu("Connect to");
     private JMenuItem helpItem = new JMenuItem(new AbstractAction("Learn more about ZeroConf...",
-            ChainsawIcons.ICON_HELP) {
+        ChainsawIcons.ICON_HELP) {
 
         public void actionPerformed(ActionEvent e) {
             HelpManager.getInstance()
-                    .showHelpForClass(ZeroConfPlugin.class);
+                .showHelpForClass(ZeroConfPlugin.class);
         }
-    });  
-    
+    });
+
     private JMenuItem nothingToConnectTo = new JMenuItem("No devices discovered");
     private static final String MULTICAST_APPENDER_SERVICE_NAME = "_log4j_xml_mcast_appender.local.";
     private static final String UDP_APPENDER_SERVICE_NAME = "_log4j_xml_udp_appender.local.";
@@ -133,7 +120,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         try {
             stream.toXML(preferenceModel, new FileWriter(fileLocation));
         } catch (Exception e) {
-            LOG.error("Failed to save ZeroConfPlugin configuration file",e);
+            LOG.error("Failed to save ZeroConfPlugin configuration file", e);
         }
     }
 
@@ -149,7 +136,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
 
         deviceTable.addMouseListener(new ConnectorMouseListener());
 
-        
+
         JToolBar toolbar = new JToolBar();
         SmallButton helpButton = new SmallButton(helpItem.getAction());
         helpButton.setText(helpItem.getText());
@@ -157,47 +144,47 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         toolbar.setFloatable(false);
         add(toolbar, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
-        
+
         injectMenu();
-        
-        ((LoggerRepositoryEx)LogManager.getLoggerRepository()).getPluginRegistry().addPluginListener(new PluginListener() {
+
+        ((LoggerRepositoryEx) LogManager.getLoggerRepository()).getPluginRegistry().addPluginListener(new PluginListener() {
 
             public void pluginStarted(PluginEvent e) {
-                
+
             }
 
             public void pluginStopped(PluginEvent e) {
                 Plugin plugin = e.getPlugin();
-                synchronized(serviceInfoToReceiveMap) {
-                    for (Iterator<Map.Entry<ServiceInfo, Plugin>> iter = serviceInfoToReceiveMap.entrySet().iterator(); iter.hasNext();) {
+                synchronized (serviceInfoToReceiveMap) {
+                    for (Iterator<Map.Entry<ServiceInfo, Plugin>> iter = serviceInfoToReceiveMap.entrySet().iterator(); iter.hasNext(); ) {
                         Map.Entry<ServiceInfo, Plugin> entry = iter.next();
-                        if(entry.getValue() == plugin) {
-                                iter.remove();
+                        if (entry.getValue() == plugin) {
+                            iter.remove();
                         }
                     }
                 }
 //                 need to make sure that the menu item tracking this item has it's icon and enabled state updade
                 discoveredDevices.fireTableDataChanged();
-            }});
+            }
+        });
 
         File fileLocation = getPreferenceFileLocation();
         XStream stream = new XStream(new DomDriver());
         if (fileLocation.exists()) {
             try {
                 this.preferenceModel = (ZeroConfPreferenceModel) stream
-                        .fromXML(new FileReader(fileLocation));
+                    .fromXML(new FileReader(fileLocation));
             } catch (Exception e) {
-                LOG.error("Failed to load ZeroConfPlugin configuration file",e);
+                LOG.error("Failed to load ZeroConfPlugin configuration file", e);
             }
-        }else {
+        } else {
             this.preferenceModel = new ZeroConfPreferenceModel();
         }
         discoveredDevices.setZeroConfPreferenceModel(preferenceModel);
         discoveredDevices.setZeroConfPluginParent(this);
     }
 
-    private void registerServiceListenersForAppenders()
-    {
+    private void registerServiceListenersForAppenders() {
         Set<String> serviceNames = new HashSet<>();
         serviceNames.add(MULTICAST_APPENDER_SERVICE_NAME);
         serviceNames.add(SOCKET_APPENDER_SERVICE_NAME);
@@ -210,8 +197,8 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         for (Object serviceName1 : serviceNames) {
             String serviceName = serviceName1.toString();
             jmDNS.addServiceListener(
-                    serviceName,
-                    new ZeroConfServiceListener());
+                serviceName,
+                new ZeroConfServiceListener());
 
             jmDNS.addServiceListener(serviceName, discoveredDevices);
         }
@@ -221,31 +208,30 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
 
     /**
      * Attempts to find a JFrame container as a parent,and addse a "Connect to" menu
-     *
      */
     private void injectMenu() {
-        
+
         JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
-        if(frame == null) {
+        if (frame == null) {
             LOG.info("Could not locate parent JFrame to add menu to");
-        }else {
+        } else {
             JMenuBar menuBar = frame.getJMenuBar();
-            if(menuBar==null ) {
+            if (menuBar == null) {
                 menuBar = new JMenuBar();
                 frame.setJMenuBar(menuBar);
             }
             insertToLeftOfHelp(menuBar, connectToMenu);
             connectToMenu.add(nothingToConnectTo);
-            
+
             discoveredDevices.addTableModelListener(e -> {
-                if(discoveredDevices.getRowCount()==0) {
-                    connectToMenu.add(nothingToConnectTo,0);
-                }else if(discoveredDevices.getRowCount()>0) {
+                if (discoveredDevices.getRowCount() == 0) {
+                    connectToMenu.add(nothingToConnectTo, 0);
+                } else if (discoveredDevices.getRowCount() > 0) {
                     connectToMenu.remove(nothingToConnectTo);
                 }
 
             });
-            
+
             nothingToConnectTo.setEnabled(false);
 
             connectToMenu.addSeparator();
@@ -256,14 +242,15 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
     /**
      * Hack method to locate the JMenu that is the Help menu, and inserts the new menu
      * just to the left of it.
+     *
      * @param menuBar
      * @param item
      */
     private void insertToLeftOfHelp(JMenuBar menuBar, JMenu item) {
         for (int i = 0; i < menuBar.getMenuCount(); i++) {
             JMenu menu = menuBar.getMenu(i);
-            if(menu.getText().equalsIgnoreCase("help")) {
-                menuBar.add(item, i-1);
+            if (menu.getText().equalsIgnoreCase("help")) {
+                menuBar.add(item, i - 1);
             }
         }
         LOG.warn("menu '" + item.getText() + "' was NOT added because the 'Help' menu could not be located");
@@ -273,21 +260,23 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
      * When a device is discovered, we create a menu item for it so it can be connected to via that
      * GUI mechanism, and also if the device is one of the auto-connect devices then a background thread
      * is created to connect the device.
+     *
      * @param info
      */
     private void deviceDiscovered(final ServiceInfo info) {
         final String name = info.getName();
 //        TODO currently adding ALL devices to autoConnectlist
 //        preferenceModel.addAutoConnectDevice(name);
-        
-        
+
+
         JMenuItem connectToDeviceMenuItem = new JMenuItem(new AbstractAction(info.getName()) {
 
             public void actionPerformed(ActionEvent e) {
                 connectTo(info);
-            }});
-        
-        if(discoveredDevices.getRowCount()>0) {
+            }
+        });
+
+        if (discoveredDevices.getRowCount() > 0) {
             Component[] menuComponents = connectToMenu.getMenuComponents();
             boolean located = false;
             for (int i = 0; i < menuComponents.length; i++) {
@@ -301,11 +290,11 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
                     }
                 }
             }
-            if(!located) {
-                connectToMenu.insert(connectToDeviceMenuItem,0);
+            if (!located) {
+                connectToMenu.insert(connectToDeviceMenuItem, 0);
             }
-        }else {
-            connectToMenu.insert(connectToDeviceMenuItem,0);
+        } else {
+            connectToMenu.insert(connectToDeviceMenuItem, 0);
         }
 //         if the device name is one of the autoconnect devices, then connect immediately
         if (preferenceModel != null && preferenceModel.getAutoConnectDevices() != null && preferenceModel.getAutoConnectDevices().contains(name)) {
@@ -315,9 +304,10 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
             }).start();
         }
     }
-    
+
     /**
      * When a device is removed or disappears we need to remove any JMenu item associated with it.
+     *
      * @param name
      */
     private void deviceRemoved(String name) {
@@ -332,11 +322,10 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
             }
         }
     }
-        
+
     /**
      * Listens out on the JmDNS/ZeroConf network for new devices that appear
      * and adds/removes these device information from the list/model.
-     *
      */
     private class ZeroConfServiceListener implements ServiceListener {
 
@@ -348,9 +337,9 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
              * thread, so I'm thinking it probably should be a background thread
              */
             Runnable runnable = () -> ZeroConfPlugin.this.jmDNS.requestServiceInfo(event
-                    .getType(), event.getName());
+                .getType(), event.getName());
             Thread thread = new Thread(runnable,
-                    "ChainsawZeroConfRequestResolutionThread");
+                "ChainsawZeroConfRequestResolutionThread");
             thread.setPriority(Thread.MIN_PRIORITY);
             thread.start();
         }
@@ -377,11 +366,11 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         public void mouseClicked(MouseEvent e) {
             if (e.getClickCount() == 2) {
                 int row = deviceTable.rowAtPoint(e.getPoint());
-                if(deviceTable.columnAtPoint(e.getPoint())==2) {
+                if (deviceTable.columnAtPoint(e.getPoint()) == 2) {
                     return;
                 }
                 ServiceInfo info = discoveredDevices.getServiceInfoAtRow(row);
-                
+
                 if (!isConnectedTo(info)) {
                     connectTo(info);
                 } else {
@@ -417,31 +406,35 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
     }
 
     private void disconnectFrom(ServiceInfo info) {
-        if(!isConnectedTo(info)) {
+        if (!isConnectedTo(info)) {
             return; // not connected, who cares
         }
         Plugin plugin;
         synchronized (serviceInfoToReceiveMap) {
             plugin = serviceInfoToReceiveMap.get(info);
         }
-        ((LoggerRepositoryEx)LogManager.getLoggerRepository()).getPluginRegistry().stopPlugin(plugin.getName());
-        
+        ((LoggerRepositoryEx) LogManager.getLoggerRepository()).getPluginRegistry().stopPlugin(plugin.getName());
+
         JMenuItem item = locateMatchingMenuItem(info.getName());
-        if (item!=null) {
+        if (item != null) {
             item.setIcon(null);
             item.setEnabled(true);
         }
     }
+
     /**
      * returns true if the serviceInfo record already has a matching connected receiver
+     *
      * @param info
      * @return
      */
     boolean isConnectedTo(ServiceInfo info) {
         return serviceInfoToReceiveMap.containsKey(info);
     }
+
     /**
      * Starts a receiver to the appender referenced within the ServiceInfo
+     *
      * @param info
      */
     private void connectTo(ServiceInfo info) {
@@ -452,18 +445,18 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         if (receiver == null) {
             return;
         }
-        ((LoggerRepositoryEx)LogManager.getLoggerRepository()).getPluginRegistry().addPlugin(receiver);
+        ((LoggerRepositoryEx) LogManager.getLoggerRepository()).getPluginRegistry().addPlugin(receiver);
         receiver.activateOptions();
         LOG.info("Receiver '" + receiver.getName() + "' has been started");
-        
+
         // ServiceInfo obeys equals() and hashCode() contracts, so this should be safe.
         synchronized (serviceInfoToReceiveMap) {
             serviceInfoToReceiveMap.put(info, receiver);
         }
-        
+
 //         this instance of the menu item needs to be disabled, and have an icon added
         JMenuItem item = locateMatchingMenuItem(info.getName());
-        if (item!=null) {
+        if (item != null) {
             item.setIcon(new ImageIcon(ChainsawIcons.ANIM_NET_CONNECT));
             item.setEnabled(false);
         }
@@ -478,8 +471,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         String name = info.getName();
         String decoderClass = info.getPropertyString("decoder");
 
-        if (NEW_UDP_APPENDER_SERVICE_NAME.equals(zone))
-        {
+        if (NEW_UDP_APPENDER_SERVICE_NAME.equals(zone)) {
             UDPReceiver receiver = new UDPReceiver();
             receiver.setPort(port);
             receiver.setName(name + "-receiver");
@@ -493,16 +485,14 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
             //text/plain = VFSLogFilePatternReceiver (if structured=false)
             String contentType = info.getPropertyString("contentType").toLowerCase();
             //won't work with log4j2, as Chainsaw depends on log4j1.x
-            if ("application/octet-stream".equals(contentType))
-            {
+            if ("application/octet-stream".equals(contentType)) {
                 SocketReceiver receiver = new SocketReceiver();
                 receiver.setPort(port);
                 receiver.setName(name + "-receiver");
                 return receiver;
             }
             //this will work - regular text log files are fine
-            if ("text/plain".equals(contentType))
-            {
+            if ("text/plain".equals(contentType)) {
                 VFSLogFilePatternReceiver receiver = new VFSLogFilePatternReceiver();
                 receiver.setAppendNonMatches(true);
                 receiver.setFileURL(info.getPropertyString("fileURI"));
@@ -572,7 +562,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
 
     /**
      * Finds the matching JMenuItem based on name, may return null if there is no match.
-     * 
+     *
      * @param name
      * @return
      */

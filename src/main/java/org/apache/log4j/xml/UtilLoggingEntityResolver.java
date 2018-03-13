@@ -26,7 +26,6 @@ import java.io.ByteArrayInputStream;
 /**
  * An {@link EntityResolver} specifically designed to return
  * an empty InputSource for logger.dtd.
- *
  */
 public final class UtilLoggingEntityResolver implements EntityResolver {
 
@@ -38,13 +37,15 @@ public final class UtilLoggingEntityResolver implements EntityResolver {
     }
 
 
-    /** {@inheritDoc} */
-  public InputSource resolveEntity(final String publicId,
-                                   final String systemId) {
-    if (systemId.endsWith("logger.dtd")) {
-      return new InputSource(new ByteArrayInputStream(new byte[0]));
-    } else {
-      return null;
+    /**
+     * {@inheritDoc}
+     */
+    public InputSource resolveEntity(final String publicId,
+                                     final String systemId) {
+        if (systemId.endsWith("logger.dtd")) {
+            return new InputSource(new ByteArrayInputStream(new byte[0]));
+        } else {
+            return null;
+        }
     }
-  }
 }

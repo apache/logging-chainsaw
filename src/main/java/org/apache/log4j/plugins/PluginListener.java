@@ -31,13 +31,15 @@ import java.util.EventListener;
 public interface PluginListener extends EventListener {
     /**
      * Notification that plugin has started.
+     *
      * @param e event
      */
-  void pluginStarted(PluginEvent e);
+    void pluginStarted(PluginEvent e);
 
     /**
      * Notification that plugin has stopped.
+     *
      * @param e event
      */
-  void pluginStopped(PluginEvent e);
+    void pluginStopped(PluginEvent e);
 }

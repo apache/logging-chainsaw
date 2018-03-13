@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,14 +16,19 @@
  */
 package org.apache.log4j.chainsaw;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+import org.apache.log4j.chainsaw.helper.SwingHelper;
+import org.apache.log4j.chainsaw.prefs.SettingsManager;
+import org.apache.log4j.net.SocketReceiver;
+import org.apache.log4j.net.UDPReceiver;
+import org.apache.log4j.plugins.Receiver;
+
+import javax.swing.*;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -33,20 +38,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
-
 import java.util.Locale;
-import javax.swing.*;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
-
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.apache.log4j.chainsaw.helper.SwingHelper;
-import org.apache.log4j.chainsaw.prefs.SettingsManager;
-import org.apache.log4j.net.SocketReceiver;
-import org.apache.log4j.net.UDPReceiver;
-import org.apache.log4j.plugins.Receiver;
 
 
 /**
@@ -112,7 +104,7 @@ class ReceiverConfigurationPanel extends JPanel {
     //used as frame for file open dialogs
     private Container dialog;
 
-  ReceiverConfigurationPanel() {
+    ReceiverConfigurationPanel() {
         setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
         setLayout(new GridBagLayout());
 
@@ -163,7 +155,7 @@ class ReceiverConfigurationPanel extends JPanel {
         c.fill = GridBagConstraints.HORIZONTAL;
         c.insets = new Insets(10, 10, 10, 0);
         add(lowerPanel, c);
-        
+
         c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = yPos++;
@@ -183,7 +175,7 @@ class ReceiverConfigurationPanel extends JPanel {
          * This listener activates/deactivates certain controls based on the current
          * state of the options
          */
-        ActionListener al = e -> updateEnabledState((Component)e.getSource());
+        ActionListener al = e -> updateEnabledState((Component) e.getSource());
 
         logFileReceiverRadioButton.addActionListener(al);
         log4jConfigReceiverRadioButton.addActionListener(al);
@@ -231,40 +223,36 @@ class ReceiverConfigurationPanel extends JPanel {
         c.gridy = 0;
         panel.add(okCancelButtons.get(1), c);
 
-        cancelButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e)
-            {
+        cancelButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
                 panelModel.setCancelled(true);
                 completionActionListener.actionPerformed(new ActionEvent(this, -1, "cancelled"));
             }
         });
 
-        okButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e)
-            {
+        okButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
                 panelModel.setCancelled(false);
                 if (logFileFormatComboBox.getSelectedItem() != null && !(logFileFormatComboBox.getSelectedItem().toString().trim().equals(""))) {
-                  panelModel.setLogFormat(logFileFormatComboBox.getSelectedItem().toString());
+                    panelModel.setLogFormat(logFileFormatComboBox.getSelectedItem().toString());
                 }
                 completionActionListener.actionPerformed(new ActionEvent(this, -1, "ok"));
             }
         });
 
-      saveButton.addActionListener(e -> {
-        try {
-            URL url = browseFile("Choose a path and file name to save", false);
-            if (url != null) {
-              File file = new File(url.toURI());
-              panelModel.setSaveConfigFile(file);
+        saveButton.addActionListener(e -> {
+            try {
+                URL url = browseFile("Choose a path and file name to save", false);
+                if (url != null) {
+                    File file = new File(url.toURI());
+                    panelModel.setSaveConfigFile(file);
+                }
+            } catch (Exception ex) {
+                logger.error(
+                    "Error browsing for log file", ex);
             }
-        } catch (Exception ex) {
-            logger.error(
-                "Error browsing for log file", ex);
-        }
-      });
-      return panel;
+        });
+        return panel;
     }
 
     private JPanel buildBottomDescriptionPanel() {
@@ -333,20 +321,20 @@ class ReceiverConfigurationPanel extends JPanel {
     private JPanel buildLog4jConfigReceiverPanel() {
         log4jConfigURLTextField = new JTextField();
         browseLog4jConfigButton = new JButton(new AbstractAction(" Open File... ") {
-                    public void actionPerformed(ActionEvent e) {
-                        try {
+            public void actionPerformed(ActionEvent e) {
+                try {
 
-                            URL url = browseConfig();
+                    URL url = browseConfig();
 
-                            if (url != null) {
-                                log4jConfigURLTextField.setText(url.toExternalForm());
-                            }
-                        } catch (Exception ex) {
-                            logger.error(
-                                "Error browsing for log4j config file", ex);
-                        }
+                    if (url != null) {
+                        log4jConfigURLTextField.setText(url.toExternalForm());
                     }
-                });
+                } catch (Exception ex) {
+                    logger.error(
+                        "Error browsing for log4j config file", ex);
+                }
+            }
+        });
 
         browseLog4jConfigButton.setToolTipText(
             "Shows a File Open dialog to allow you to find a log4j configuration file");
@@ -487,14 +475,13 @@ class ReceiverConfigurationPanel extends JPanel {
         c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = 5;
-        c.gridwidth=5;
+        c.gridwidth = 5;
         c.insets = new Insets(15, 5, 0, 5);
         panel.add(new JLabel("<html> See PatternLayout or LogFilePatternReceiver JavaDoc for details </html>"), c);
         return panel;
     }
 
-    private void seedLogFileFormatComboBoxModel()
-    {
+    private void seedLogFileFormatComboBoxModel() {
         logFileFormatComboBoxModel.addElement("MESSAGE");
         logFileFormatComboBoxModel.addElement("%p %t %c - %m%n");
         logFileFormatComboBoxModel.addElement("LEVEL THREAD LOGGER - MESSAGE");
@@ -502,8 +489,7 @@ class ReceiverConfigurationPanel extends JPanel {
         logFileFormatComboBoxModel.addElement("TIMESTAMP LEVEL [LOGGER] MESSAGE");
     }
 
-    private void seedLogFileFormatTimestampComboBoxModel()
-    {
+    private void seedLogFileFormatTimestampComboBoxModel() {
         logFileFormatTimestampFormatComboBoxModel.addElement("yyyy-MM-dd HH:mm:ss,SSS");
         logFileFormatTimestampFormatComboBoxModel.addElement("yyyyMMdd HH:mm:ss.SSS");
         logFileFormatTimestampFormatComboBoxModel.addElement("yyyy/MM/dd HH:mm:ss");
@@ -536,22 +522,22 @@ class ReceiverConfigurationPanel extends JPanel {
             });
 
         browseForAnExistingConfigurationButton = new JButton(new AbstractAction(" Open File... ") {
-                    public void actionPerformed(ActionEvent e) {
-                        try {
+            public void actionPerformed(ActionEvent e) {
+                try {
 
-                            URL url = browseConfig();
+                    URL url = browseConfig();
 
-                            if (url != null) {
-                                existingConfigurationComboBoxModel.addElement(url.toExternalForm());
-                                existingConfigurationComboBox.getModel().setSelectedItem(
-                                    url);
-                            }
-                        } catch (Exception ex) {
-                            logger.error(
-                                "Error browsing for Configuration file", ex);
-                        }
+                    if (url != null) {
+                        existingConfigurationComboBoxModel.addElement(url.toExternalForm());
+                        existingConfigurationComboBox.getModel().setSelectedItem(
+                            url);
                     }
-                });
+                } catch (Exception ex) {
+                    logger.error(
+                        "Error browsing for Configuration file", ex);
+                }
+            }
+        });
 
         browseForAnExistingConfigurationButton.setToolTipText(
             "Shows a File Open dialog to allow you to find a configuration file");
@@ -583,6 +569,7 @@ class ReceiverConfigurationPanel extends JPanel {
 
     /**
      * Returns the current Model/state of the chosen options by the user.
+     *
      * @return model
      */
     PanelModel getModel() {
@@ -593,6 +580,7 @@ class ReceiverConfigurationPanel extends JPanel {
      * Clients of this panel can configure the ActionListener to be used
      * when the user presses the OK button, so they can read
      * back this Panel's model top determine what to do.
+     *
      * @param actionListener listener which will be notified that ok was selected
      */
     void setCompletionActionListener(ActionListener actionListener) {
@@ -633,7 +621,7 @@ class ReceiverConfigurationPanel extends JPanel {
             result = null;
         }
         if (selectedFile != null) {
-          result = selectedFile.toURI().toURL();
+            result = selectedFile.toURI().toURL();
         }
         EventQueue.invokeLater(() -> dialog.setVisible(true));
         return result;
@@ -655,7 +643,7 @@ class ReceiverConfigurationPanel extends JPanel {
             result = null;
         }
         if (selectedFile != null) {
-          result = selectedFile.toURI().toURL();
+            result = selectedFile.toURI().toURL();
         }
         EventQueue.invokeLater(() -> dialog.setVisible(true));
         return result;
@@ -678,24 +666,23 @@ class ReceiverConfigurationPanel extends JPanel {
         return dontwarnIfNoReceiver.isSelected();
     }
 
-  public void setDialog(Container dialog) {
-    this.dialog = dialog;
-  }
+    public void setDialog(Container dialog) {
+        this.dialog = dialog;
+    }
 
-  /**
+    /**
      * This class represents the model of the chosen options the user
      * has configured.
-     *
      */
     class PanelModel {
 
-    private File file;
-    //default to cancelled
-    private boolean cancelled = true;
-    private String lastLogFormat;
-    private File saveConfigFile;
+        private File file;
+        //default to cancelled
+        private boolean cancelled = true;
+        private String lastLogFormat;
+        private File saveConfigFile;
 
-    public PanelModel(){
+        public PanelModel() {
             file = new File(SettingsManager.getInstance().getSettingsDirectory(), "receiver-config.xml");
         }
 
@@ -728,12 +715,9 @@ class ReceiverConfigurationPanel extends JPanel {
 
         URL getConfigToLoad() {
 
-            try
-            {
+            try {
                 return new URL(existingConfigurationComboBoxModel.getSelectedItem().toString());
-            }
-            catch (MalformedURLException e)
-            {
+            } catch (MalformedURLException e) {
                 return null;
             }
         }
@@ -748,23 +732,20 @@ class ReceiverConfigurationPanel extends JPanel {
         }
 
         File getSaveConfigFile() {
-          return saveConfigFile;
+            return saveConfigFile;
         }
 
         void setSaveConfigFile(File file) {
-          this.saveConfigFile = file;
+            this.saveConfigFile = file;
         }
 
         URL getLogFileURL() {
-            try
-            {
+            try {
                 Object item = logFileURLTextField.getText();
                 if (item != null) {
                     return new URL(item.toString());
                 }
-            }
-            catch (MalformedURLException e)
-            {
+            } catch (MalformedURLException e) {
                 logger.error("Error retrieving log file URL", e);
             }
             return null;
@@ -772,7 +753,7 @@ class ReceiverConfigurationPanel extends JPanel {
 
         String getLogFormat() {
             if (cancelled) {
-              return lastLogFormat;
+                return lastLogFormat;
             }
             Object item = logFileFormatComboBox.getSelectedItem();
             if (item != null) {
@@ -795,30 +776,29 @@ class ReceiverConfigurationPanel extends JPanel {
             return null;
         }
 
-        public void setCancelled(boolean cancelled)
-        {
+        public void setCancelled(boolean cancelled) {
             this.cancelled = cancelled;
         }
 
         public void setLogFormat(String lastLogFormat) {
-          this.lastLogFormat = lastLogFormat;
-          logFileFormatComboBoxModel.removeElement(lastLogFormat);
-          logFileFormatComboBoxModel.insertElementAt(lastLogFormat, 0);
-          logFileFormatComboBox.setSelectedIndex(0);
+            this.lastLogFormat = lastLogFormat;
+            logFileFormatComboBoxModel.removeElement(lastLogFormat);
+            logFileFormatComboBoxModel.insertElementAt(lastLogFormat, 0);
+            logFileFormatComboBox.setSelectedIndex(0);
         }
 
         public boolean isCancelled() {
-          return cancelled;
+            return cancelled;
         }
 
-    public File getLog4jConfigFile() {
-      try {
-        URL newConfigurationURL = new URL(log4jConfigURLTextField.getText());
-        return new File(newConfigurationURL.toURI());
-      } catch (URISyntaxException | MalformedURLException e) {
-        e.printStackTrace();
-      }
-        return null;
+        public File getLog4jConfigFile() {
+            try {
+                URL newConfigurationURL = new URL(log4jConfigURLTextField.getText());
+                return new File(newConfigurationURL.toURI());
+            } catch (URISyntaxException | MalformedURLException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
     }
-  }
 }

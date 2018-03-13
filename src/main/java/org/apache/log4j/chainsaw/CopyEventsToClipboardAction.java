@@ -10,17 +10,15 @@
  */
 package org.apache.log4j.chainsaw;
 
-import java.awt.Toolkit;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.util.List;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-
 import org.apache.log4j.EnhancedPatternLayout;
 import org.apache.log4j.Layout;
 import org.apache.log4j.spi.LoggingEvent;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
+import java.util.List;
 
 public class CopyEventsToClipboardAction extends AbstractAction {
 
@@ -33,19 +31,19 @@ public class CopyEventsToClipboardAction extends AbstractAction {
      * useful columns before the message. Nice format for pasting into issue trackers.
      */
     private final Layout layout = new EnhancedPatternLayout(
-            "[%d{ISO8601} %-5p][%20.20c][%t] %m%n");
+        "[%d{ISO8601} %-5p][%20.20c][%t] %m%n");
 
     public CopyEventsToClipboardAction(LogUI parent) {
         super("Copy events to clipboard");
         this.logUi = parent;
         layout.activateOptions();
-        
+
         putValue(Action.SHORT_DESCRIPTION,
-                "Copies to the clipboard currently visible events to a human-readable, log-like format");
+            "Copies to the clipboard currently visible events to a human-readable, log-like format");
 
     }
-    
-    
+
+
     public void actionPerformed(ActionEvent e) {
         List filteredEvents = logUi.getCurrentLogPanel().getFilteredEvents();
         StringBuilder writer = new StringBuilder(filteredEvents.size() * EVENTSIZE_FUDGE_FACTOR);
@@ -56,7 +54,7 @@ public class CopyEventsToClipboardAction extends AbstractAction {
 
         StringSelection stringSelection = new StringSelection(writer.toString());
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(stringSelection,
-                stringSelection);
+            stringSelection);
     }
 
 }

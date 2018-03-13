@@ -19,35 +19,38 @@ package org.apache.log4j.spi;
 
 
 /**
-  Interface used to listen for LoggerRepository related
-  events such as startup, reset, and shutdown.  Clients register
-  an instance of the interface and the instance is called back
-  when the various events occur.
-
-  LoggerRepository provides methods for adding and removing
-  LoggerRepositoryEventListener instances.
-
-  @author Ceki G&uuml;lc&uuml;
-  @author Mark Womack
-*/
+ * Interface used to listen for LoggerRepository related
+ * events such as startup, reset, and shutdown.  Clients register
+ * an instance of the interface and the instance is called back
+ * when the various events occur.
+ * <p>
+ * LoggerRepository provides methods for adding and removing
+ * LoggerRepositoryEventListener instances.
+ *
+ * @author Ceki G&uuml;lc&uuml;
+ * @author Mark Womack
+ */
 public interface LoggerRepositoryEventListener {
-  /**
-    Called when the repository configuration is reset.
-   @param repository repository
-   */
-  void configurationResetEvent(LoggerRepository repository);
+    /**
+     * Called when the repository configuration is reset.
+     *
+     * @param repository repository
+     */
+    void configurationResetEvent(LoggerRepository repository);
 
-  /**
-    Called when the repository configuration is changed.
-   @param repository repository
-   */
-  void configurationChangedEvent(LoggerRepository repository);
+    /**
+     * Called when the repository configuration is changed.
+     *
+     * @param repository repository
+     */
+    void configurationChangedEvent(LoggerRepository repository);
 
-  /**
-    Called when the repository is shutdown. When this method is
-    invoked, the repository is still valid (ie it has not been
-    shutdown, but will be after this method returns).
-    @param repository repository.
-   */
-  void shutdownEvent(LoggerRepository repository);
+    /**
+     * Called when the repository is shutdown. When this method is
+     * invoked, the repository is still valid (ie it has not been
+     * shutdown, but will be after this method returns).
+     *
+     * @param repository repository.
+     */
+    void shutdownEvent(LoggerRepository repository);
 }

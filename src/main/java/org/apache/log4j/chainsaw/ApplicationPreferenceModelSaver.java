@@ -16,34 +16,32 @@
  */
 package org.apache.log4j.chainsaw;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
-
 import org.apache.log4j.chainsaw.prefs.LoadSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SettingsListener;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+
 /**
  * Helper class that helps delegate the work of loading and saving the  values
  * of the ApplicationPreferenceModel, allowing that class to remain a simple
  * bean.
- * 
+ * <p>
  * The Model passed to this class' constructor is the instance of the ApplicationPreference
  * that will be saved, and will have properties modified by loading from the
  * 'chainsaw.settings.xml' file in the .chainsaw directory of the user's home directory.
- * 
- * @author psmith
  *
+ * @author psmith
  */
 public class ApplicationPreferenceModelSaver implements SettingsListener {
 
     private final ApplicationPreferenceModel model;
-    
+
     /**
      * @param model
      */
@@ -58,7 +56,7 @@ public class ApplicationPreferenceModelSaver implements SettingsListener {
             if (file.exists()) {
                 FileReader reader = new FileReader(file);
                 ApplicationPreferenceModel loadedModel = (ApplicationPreferenceModel) stream
-                        .fromXML(reader);
+                    .fromXML(reader);
                 model.apply(loadedModel);
                 reader.close();
             }

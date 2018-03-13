@@ -43,5 +43,5 @@ public class PluginEvent extends EventObject {
      */
     public Plugin getPlugin() {
         return (Plugin) getSource();
-  }
+    }
 }

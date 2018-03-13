@@ -16,45 +16,41 @@
  */
 package org.apache.log4j.chainsaw.helper;
 
-import javax.swing.DefaultCellEditor;
-import javax.swing.JComboBox;
-import javax.swing.table.TableCellEditor;
-
 import org.apache.log4j.Level;
+
+import javax.swing.*;
+import javax.swing.table.TableCellEditor;
 
 /**
  * @author Paul Smith &lt;psmith@apache.org&gt;
- *
  */
-public class TableCellEditorFactory
-{
+public class TableCellEditorFactory {
 
-  
-  /**
-   * Creates a TableCellEditor to be used for editing boolean values
-   * @return TableCellEditor
-   */ 
-  public static final TableCellEditor createBooleanTableCellEditor() {
-  
-    JComboBox<Boolean> comboBox = new JComboBox<>(new Boolean[] {Boolean.TRUE, Boolean.FALSE});
-    return new DefaultCellEditor(comboBox);
-    
-  }
-  
-  /**
-   * 
-   */
-  private TableCellEditorFactory()
-  {
-  }
 
-  /**
-   * @return table cell editor
-   */
-  public static Object createLevelTableCellEditor()
-  {
-    JComboBox<Level> comboBox = new JComboBox<>(new Level[] {Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL, Level.OFF, Level.ALL});
-    return new DefaultCellEditor(comboBox); 
-  }
+    /**
+     * Creates a TableCellEditor to be used for editing boolean values
+     *
+     * @return TableCellEditor
+     */
+    public static final TableCellEditor createBooleanTableCellEditor() {
+
+        JComboBox<Boolean> comboBox = new JComboBox<>(new Boolean[]{Boolean.TRUE, Boolean.FALSE});
+        return new DefaultCellEditor(comboBox);
+
+    }
+
+    /**
+     *
+     */
+    private TableCellEditorFactory() {
+    }
+
+    /**
+     * @return table cell editor
+     */
+    public static Object createLevelTableCellEditor() {
+        JComboBox<Level> comboBox = new JComboBox<>(new Level[]{Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL, Level.OFF, Level.ALL});
+        return new DefaultCellEditor(comboBox);
+    }
 
 }

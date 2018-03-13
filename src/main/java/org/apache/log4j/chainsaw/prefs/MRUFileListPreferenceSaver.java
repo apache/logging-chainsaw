@@ -16,31 +16,32 @@
  */
 package org.apache.log4j.chainsaw.prefs;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
-
 /**
  * Loads/Saves the MRU lists from preferences
- * 
- * @author psmith
  *
+ * @author psmith
  */
-public class MRUFileListPreferenceSaver implements SettingsListener{
+public class MRUFileListPreferenceSaver implements SettingsListener {
 
     private static final MRUFileListPreferenceSaver instance = new MRUFileListPreferenceSaver();
-    
+
     public static final MRUFileListPreferenceSaver getInstance() {
         return instance;
     }
-    private MRUFileListPreferenceSaver() {}
-    
+
+    private MRUFileListPreferenceSaver() {
+    }
+
     public void loadSettings(LoadSettingsEvent event) {
         File file = getMRULocation(SettingsManager.getInstance().getSettingsDirectory());
-        if(file.exists()) {
+        if (file.exists()) {
             try {
                 MRUFileList.loadLog4jMRUListFromReader(new FileReader(file));
             } catch (Exception e) {
@@ -48,7 +49,7 @@ public class MRUFileListPreferenceSaver implements SettingsListener{
                 e.printStackTrace();
             }
         }
-        
+
     }
 
     public void saveSettings(SaveSettingsEvent event) {
@@ -64,6 +65,7 @@ public class MRUFileListPreferenceSaver implements SettingsListener{
             e.printStackTrace();
         }
     }
+
     private File getMRULocation(File dir) {
         File file = new File(dir, "mru.xml");
         return file;

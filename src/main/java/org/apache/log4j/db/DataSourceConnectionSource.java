@@ -29,77 +29,77 @@ import java.util.Properties;
 
 
 /**
- *  The DataSourceConnectionSource is an implementation of {@link ConnectionSource}
- *  that obtains the Connection in the recommended JDBC manner based on
- *  a {@link javax.sql.DataSource DataSource}.
- *  <p>
+ * The DataSourceConnectionSource is an implementation of {@link ConnectionSource}
+ * that obtains the Connection in the recommended JDBC manner based on
+ * a {@link javax.sql.DataSource DataSource}.
+ * <p>
  *
- *  @author Ray DeCampo
- *  @author Ceki G&uuml;lc&uuml;
+ * @author Ray DeCampo
+ * @author Ceki G&uuml;lc&uuml;
  */
 public class DataSourceConnectionSource extends ConnectionSourceSkeleton
-        implements UnrecognizedElementHandler {
+    implements UnrecognizedElementHandler {
 
-  private DataSource dataSource;
+    private DataSource dataSource;
 
-  
-  public void activateOptions() {
-    //LogLog.debug("**********DataSourceConnectionSource.activateOptions called");
-    if (dataSource == null) {
-      getLogger().warn("WARNING: No data source specified");
-    } else {
-      Connection connection = null;
-      try {
-        connection = getConnection();
-      } catch(SQLException se) {
-        getLogger().warn("Could not get a connection to discover the dialect to use.", se);
-      }
-      if(connection != null) {
-        discoverConnnectionProperties();
-      } 
-      if(!supportsGetGeneratedKeys() && getSQLDialectCode() == ConnectionSource.UNKNOWN_DIALECT) {
-        getLogger().warn("Connection does not support GetGeneratedKey method and could not discover the dialect.");
-      }
-    }
-  }
 
-  /**
-   * @see org.apache.log4j.db.ConnectionSource#getConnection()
-   */
-  public Connection getConnection() throws SQLException {
-    if (dataSource == null) {
-      getLogger().error("WARNING: No data source specified");
-      return null;
+    public void activateOptions() {
+        //LogLog.debug("**********DataSourceConnectionSource.activateOptions called");
+        if (dataSource == null) {
+            getLogger().warn("WARNING: No data source specified");
+        } else {
+            Connection connection = null;
+            try {
+                connection = getConnection();
+            } catch (SQLException se) {
+                getLogger().warn("Could not get a connection to discover the dialect to use.", se);
+            }
+            if (connection != null) {
+                discoverConnnectionProperties();
+            }
+            if (!supportsGetGeneratedKeys() && getSQLDialectCode() == ConnectionSource.UNKNOWN_DIALECT) {
+                getLogger().warn("Connection does not support GetGeneratedKey method and could not discover the dialect.");
+            }
+        }
     }
 
-    if (getUser() == null) {
-      return dataSource.getConnection();
-    } else {
-      return dataSource.getConnection(getUser(), getPassword());
+    /**
+     * @see org.apache.log4j.db.ConnectionSource#getConnection()
+     */
+    public Connection getConnection() throws SQLException {
+        if (dataSource == null) {
+            getLogger().error("WARNING: No data source specified");
+            return null;
+        }
+
+        if (getUser() == null) {
+            return dataSource.getConnection();
+        } else {
+            return dataSource.getConnection(getUser(), getPassword());
+        }
     }
-  }
 
-  public DataSource getDataSource() {
-    return dataSource;
-  }
+    public DataSource getDataSource() {
+        return dataSource;
+    }
 
-  public void setDataSource(DataSource dataSource) {
-    this.dataSource = dataSource;
-  }
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     /**
      * {@inheritDoc}
      */
-  public boolean parseUnrecognizedElement(Element element, Properties props) throws Exception {
+    public boolean parseUnrecognizedElement(Element element, Properties props) throws Exception {
         if ("dataSource".equals(element.getNodeName())) {
             Object instance =
-                    DOMConfigurator.parseElement(element, props, DataSource.class);
+                DOMConfigurator.parseElement(element, props, DataSource.class);
             if (instance instanceof DataSource) {
-               setDataSource((DataSource) instance);
+                setDataSource((DataSource) instance);
             }
             return true;
         }
         return false;
-  }
+    }
 
 }

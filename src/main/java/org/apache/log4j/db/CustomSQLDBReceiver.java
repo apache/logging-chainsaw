@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,14 +16,6 @@
  */
 
 package org.apache.log4j.db;
-
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Hashtable;
-import java.util.Properties;
-import java.util.StringTokenizer;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -39,10 +31,18 @@ import org.apache.log4j.xml.DOMConfigurator;
 import org.apache.log4j.xml.UnrecognizedElementHandler;
 import org.w3c.dom.Element;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Hashtable;
+import java.util.Properties;
+import java.util.StringTokenizer;
+
 /**
  * Converts log data stored in a database into LoggingEvents.
  * <p>
- * <b>NOTE:</b> This receiver cannot yet be created through Chainsaw's receiver panel.  
+ * <b>NOTE:</b> This receiver cannot yet be created through Chainsaw's receiver panel.
  * It must be created through an XML configuration file.
  * <p>
  * This receiver supports database configuration via ConnectionSource, in the
@@ -58,7 +58,7 @@ import org.w3c.dom.Element;
  * other numeric value, the SQL will be executed on a recurring basis every
  * 'refreshMillis' milliseconds.
  * <p>
- * The receiver closes the connection and acquires a new connection on each 
+ * The receiver closes the connection and acquires a new connection on each
  * execution of the SQL (use pooled connections if possible).
  * <p>
  * If the SQL will be executing on a recurring basis, specify the IDField param -
@@ -128,6 +128,7 @@ import org.w3c.dom.Element;
  * concat("{{application,databaselogs,hostname,mymachine, log4jid,",
  * COUNTER,"}}") as PROPERTIES, "" as THROWABLE from logtable
  * <p>
+ *
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  * <p>
  */
@@ -139,7 +140,7 @@ public class CustomSQLDBReceiver extends Receiver implements Pauseable, Unrecogn
 
     /**
      * By default we refresh data every 1000 milliseconds.
-     * 
+     *
      * @see #setRefreshMillis
      */
     static int DEFAULT_REFRESH_MILLIS = 1000;
@@ -165,28 +166,27 @@ public class CustomSQLDBReceiver extends Receiver implements Pauseable, Unrecogn
     private Job customReceiverJob;
 
     public void activateOptions() {
-      
-      if(connectionSource == null)  {
-        throw new IllegalStateException(
-          "CustomSQLDBReceiver cannot function without a connection source");
-      }
-      whereExists = (sqlStatement.toUpperCase().contains(WHERE_CLAUSE));
-    
-      customReceiverJob = new CustomReceiverJob();
-        
-      if(this.repository == null) {
-        throw new IllegalStateException(
-        "CustomSQLDBReceiver cannot function without a reference to its owning repository");
-      }
-     
-    
 
-      if (repository instanceof LoggerRepositoryEx) {
-        Scheduler scheduler = ((LoggerRepositoryEx) repository).getScheduler();
-      
-        scheduler.schedule(
-          customReceiverJob, System.currentTimeMillis() + 500, refreshMillis);
-      }
+        if (connectionSource == null) {
+            throw new IllegalStateException(
+                "CustomSQLDBReceiver cannot function without a connection source");
+        }
+        whereExists = (sqlStatement.toUpperCase().contains(WHERE_CLAUSE));
+
+        customReceiverJob = new CustomReceiverJob();
+
+        if (this.repository == null) {
+            throw new IllegalStateException(
+                "CustomSQLDBReceiver cannot function without a reference to its owning repository");
+        }
+
+
+        if (repository instanceof LoggerRepositoryEx) {
+            Scheduler scheduler = ((LoggerRepositoryEx) repository).getScheduler();
+
+            scheduler.schedule(
+                customReceiverJob, System.currentTimeMillis() + 500, refreshMillis);
+        }
 
     }
 
@@ -217,8 +217,7 @@ public class CustomSQLDBReceiver extends Receiver implements Pauseable, Unrecogn
     }
 
     /**
-     * @param connectionSource
-     *            The connectionSource to set.
+     * @param connectionSource The connectionSource to set.
      */
     public void setConnectionSource(ConnectionSource connectionSource) {
         this.connectionSource = connectionSource;
@@ -243,15 +242,15 @@ public class CustomSQLDBReceiver extends Receiver implements Pauseable, Unrecogn
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.log4j.plugins.Plugin#shutdown()
      */
     public void shutdown() {
         getLogger().info("removing receiverJob from the Scheduler.");
 
-        if(this.repository instanceof LoggerRepositoryEx) {
-          Scheduler scheduler = ((LoggerRepositoryEx) repository).getScheduler();
-          scheduler.delete(customReceiverJob);
+        if (this.repository instanceof LoggerRepositoryEx) {
+            Scheduler scheduler = ((LoggerRepositoryEx) repository).getScheduler();
+            scheduler.delete(customReceiverJob);
         }
 
         lastID = -1;
@@ -305,10 +304,10 @@ public class CustomSQLDBReceiver extends Receiver implements Pauseable, Unrecogn
                 String currentSQLStatement;
                 if (whereExists) {
                     currentSQLStatement = sqlStatement + AND_CLAUSE + idField
-                            + " > " + lastID;
+                        + " > " + lastID;
                 } else {
                     currentSQLStatement = sqlStatement + WHERE_CLAUSE + idField
-                            + " > " + lastID;
+                        + " > " + lastID;
                 }
 
                 ResultSet rs = statement.executeQuery(currentSQLStatement);
@@ -342,21 +341,21 @@ public class CustomSQLDBReceiver extends Receiver implements Pauseable, Unrecogn
                         // or
                         // just name, value
                         if ((mdcString.contains("{{"))
-                                && (mdcString.contains("}}"))) {
+                            && (mdcString.contains("}}"))) {
                             mdcString = mdcString
-                                    .substring(mdcString.indexOf("{{") + 2,
-                                            mdcString.indexOf("}}"));
+                                .substring(mdcString.indexOf("{{") + 2,
+                                    mdcString.indexOf("}}"));
                         }
 
                         StringTokenizer tok = new StringTokenizer(mdcString,
-                                ",");
+                            ",");
 
                         while (tok.countTokens() > 1) {
                             mdc.put(tok.nextToken(), tok.nextToken());
                         }
                     }
 
-                    throwable = new String[] { rs.getString("THROWABLE") };
+                    throwable = new String[]{rs.getString("THROWABLE")};
                     className = rs.getString("CLASS");
                     methodName = rs.getString("METHOD");
                     fileName = rs.getString("FILE");
@@ -375,14 +374,14 @@ public class CustomSQLDBReceiver extends Receiver implements Pauseable, Unrecogn
                         // support properties being wrapped in {{name,
                         // value}} or just name, value
                         if ((propertiesString.contains("{{"))
-                                && (propertiesString.contains("}}"))) {
+                            && (propertiesString.contains("}}"))) {
                             propertiesString = propertiesString.substring(
-                                    propertiesString.indexOf("{{") + 2,
-                                    propertiesString.indexOf("}}"));
+                                propertiesString.indexOf("{{") + 2,
+                                propertiesString.indexOf("}}"));
                         }
 
                         StringTokenizer tok2 = new StringTokenizer(
-                                propertiesString, ",");
+                            propertiesString, ",");
                         while (tok2.countTokens() > 1) {
                             String tokenName = tok2.nextToken();
                             String value = tok2.nextToken();
@@ -403,21 +402,21 @@ public class CustomSQLDBReceiver extends Receiver implements Pauseable, Unrecogn
                     Level levelImpl = Level.toLevel(level);
 
 
-					LocationInfo locationInfo = new LocationInfo(fileName,
-	                            className, methodName, lineNumber);
-	
-					ThrowableInformation throwableInfo =  new ThrowableInformation(
-		                            throwable);
-	
-					properties.putAll(mdc);
-		
-				    LoggingEvent event = new LoggingEvent(eventLogger.getName(),
-				            eventLogger, timeStamp, levelImpl, message,
-				            threadName,
-				            throwableInfo,
-				            ndc,
-				            locationInfo,
-				            properties);
+                    LocationInfo locationInfo = new LocationInfo(fileName,
+                        className, methodName, lineNumber);
+
+                    ThrowableInformation throwableInfo = new ThrowableInformation(
+                        throwable);
+
+                    properties.putAll(mdc);
+
+                    LoggingEvent event = new LoggingEvent(eventLogger.getName(),
+                        eventLogger, timeStamp, levelImpl, message,
+                        threadName,
+                        throwableInfo,
+                        ndc,
+                        locationInfo,
+                        properties);
 
                     doPost(event);
                 }
@@ -429,7 +428,7 @@ public class CustomSQLDBReceiver extends Receiver implements Pauseable, Unrecogn
                 statement.close();
             } catch (SQLException sqle) {
                 getLogger()
-                        .error("*************Problem receiving events", sqle);
+                    .error("*************Problem receiving events", sqle);
             } finally {
                 closeConnection();
             }
@@ -449,18 +448,18 @@ public class CustomSQLDBReceiver extends Receiver implements Pauseable, Unrecogn
     /**
      * {@inheritDoc}
      */
-  public boolean parseUnrecognizedElement(Element element, Properties props) throws Exception {
+    public boolean parseUnrecognizedElement(Element element, Properties props) throws Exception {
         if ("connectionSource".equals(element.getNodeName())) {
             Object instance =
-                    DOMConfigurator.parseElement(element, props, ConnectionSource.class);
+                DOMConfigurator.parseElement(element, props, ConnectionSource.class);
             if (instance instanceof ConnectionSource) {
-               ConnectionSource source = (ConnectionSource) instance;
-               source.activateOptions();
-               setConnectionSource(source);
+                ConnectionSource source = (ConnectionSource) instance;
+                source.activateOptions();
+                setConnectionSource(source);
             }
             return true;
         }
         return false;
-  }
-    
+    }
+
 }

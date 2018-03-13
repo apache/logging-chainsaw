@@ -17,113 +17,8 @@
 
 package org.apache.log4j.chainsaw;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Toolkit;
-import java.awt.Window;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionAdapter;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.text.DateFormat;
-import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.EventObject;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.Vector;
-
-import javax.swing.AbstractAction;
-import javax.swing.AbstractListModel;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.ComboBoxEditor;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JColorChooser;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JEditorPane;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JRadioButtonMenuItem;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
-import javax.swing.JSplitPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.JToolBar;
-import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
-import javax.swing.MutableComboBoxModel;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.WindowConstants;
-import javax.swing.event.CellEditorListener;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
-import javax.swing.event.TableColumnModelEvent;
-import javax.swing.event.TableColumnModelListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
-import javax.swing.text.Document;
-
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -150,8 +45,25 @@ import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.LoggingEventFieldResolver;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
+import javax.swing.*;
+import javax.swing.event.*;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import javax.swing.text.Document;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.*;
+import java.net.URLEncoder;
+import java.text.DateFormat;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.List;
 
 
 /**
@@ -193,597 +105,595 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
  * CHAINSAW_CAPACITY system property) or ArrayList (no max size)
  * <li>use the mouse context menu to 'best-fit' columns, define display
  * expression filters based on mouse location and access other capabilities
- *</ul>
+ * </ul>
  *
- *@see org.apache.log4j.chainsaw.color.ColorPanel
- *@see org.apache.log4j.rule.ExpressionRule
- *@see org.apache.log4j.spi.LoggingEventFieldResolver
- *
- *@author Scott Deboy (sdeboy at apache.org)
- *@author Paul Smith (psmith at apache.org)
- *@author Stephen Pain
- *@author Isuru Suriarachchi
- *
+ * @author Scott Deboy (sdeboy at apache.org)
+ * @author Paul Smith (psmith at apache.org)
+ * @author Stephen Pain
+ * @author Isuru Suriarachchi
+ * @see org.apache.log4j.chainsaw.color.ColorPanel
+ * @see org.apache.log4j.rule.ExpressionRule
+ * @see org.apache.log4j.spi.LoggingEventFieldResolver
  */
 public class LogPanel extends DockablePanel implements EventBatchListener, Profileable {
-  private static final DateFormat TIMESTAMP_DATE_FORMAT = new SimpleDateFormat(Constants.TIMESTAMP_RULE_FORMAT);
-  private static final double DEFAULT_DETAIL_SPLIT_LOCATION = 0.71d;
-  private static final double DEFAULT_LOG_TREE_SPLIT_LOCATION = 0.2d;
-  private final String identifier;
-  private final ChainsawStatusBar statusBar;
-  private final JFrame logPanelPreferencesFrame = new JFrame();
-  private ColorPanel colorPanel;
-  private final JFrame colorFrame = new JFrame();
-  private final JFrame undockedFrame;
-  private final DockablePanel externalPanel;
-  private final Action dockingAction;
-  private final JToolBar undockedToolbar;
-  private final JSortTable table;
-  private final TableColorizingRenderer renderer;
-  private final EventContainer tableModel;
-  private final JEditorPane detail;
-  private final JSplitPane lowerPanel;
-  private final DetailPaneUpdater detailPaneUpdater;
-  private final JPanel detailPanel = new JPanel(new BorderLayout());
-  private final JSplitPane nameTreeAndMainPanelSplit;
-  private final LoggerNameTreePanel logTreePanel;
-  private final LogPanelPreferenceModel preferenceModel = new LogPanelPreferenceModel();
-  private ApplicationPreferenceModel applicationPreferenceModel;
-  private final LogPanelPreferencePanel logPanelPreferencesPanel;
-  private final FilterModel filterModel = new FilterModel();
-  private final RuleColorizer colorizer = new RuleColorizer();
-  private final RuleMediator tableRuleMediator = new RuleMediator(false);
-  private final RuleMediator searchRuleMediator = new RuleMediator(true);
-  private final EventDetailLayout detailLayout = new EventDetailLayout();
-  private double lastLogTreePanelSplitLocation = DEFAULT_LOG_TREE_SPLIT_LOCATION;
-  private Point currentPoint;
-  private JTable currentTable;
-  private boolean paused = false;
-  private Rule findRule;
-  private String currentFindRuleText;
-  private Rule findMarkerRule;
-  private final int dividerSize;
-  static final String TABLE_COLUMN_ORDER = "table.columns.order";
-  static final String TABLE_COLUMN_WIDTHS = "table.columns.widths";
-  static final String COLORS_EXTENSION = ".colors";
-  private static final int LOG_PANEL_SERIALIZATION_VERSION_NUMBER = 2; //increment when format changes
-  private int previousLastIndex = -1;
-  private final Logger logger = LogManager.getLogger(LogPanel.class);
-  private AutoFilterComboBox filterCombo;
-  private AutoFilterComboBox findCombo;
-  private JScrollPane eventsPane;
-  private int currentSearchMatchCount;
-  private Rule clearTableExpressionRule;
-  private int lowerPanelDividerLocation;
-  private EventContainer searchModel;
-  private final JSortTable searchTable;
-  private TableColorizingRenderer searchRenderer;
-  private ToggleToolTips mainToggleToolTips;
-  private ToggleToolTips searchToggleToolTips;
-  private JScrollPane detailPane;
-  private JScrollPane searchPane;
-  //only one tableCellEditor, shared by both tables
-  private TableCellEditor markerCellEditor;
-  private JToolBar detailToolbar;
-  private boolean searchResultsDisplayed;
-  private ColorizedEventAndSearchMatchThumbnail colorizedEventAndSearchMatchThumbnail;
-  private EventTimeDeltaMatchThumbnail eventTimeDeltaMatchThumbnail;
-  private boolean isDetailPanelVisible;
+    private static final DateFormat TIMESTAMP_DATE_FORMAT = new SimpleDateFormat(Constants.TIMESTAMP_RULE_FORMAT);
+    private static final double DEFAULT_DETAIL_SPLIT_LOCATION = 0.71d;
+    private static final double DEFAULT_LOG_TREE_SPLIT_LOCATION = 0.2d;
+    private final String identifier;
+    private final ChainsawStatusBar statusBar;
+    private final JFrame logPanelPreferencesFrame = new JFrame();
+    private ColorPanel colorPanel;
+    private final JFrame colorFrame = new JFrame();
+    private final JFrame undockedFrame;
+    private final DockablePanel externalPanel;
+    private final Action dockingAction;
+    private final JToolBar undockedToolbar;
+    private final JSortTable table;
+    private final TableColorizingRenderer renderer;
+    private final EventContainer tableModel;
+    private final JEditorPane detail;
+    private final JSplitPane lowerPanel;
+    private final DetailPaneUpdater detailPaneUpdater;
+    private final JPanel detailPanel = new JPanel(new BorderLayout());
+    private final JSplitPane nameTreeAndMainPanelSplit;
+    private final LoggerNameTreePanel logTreePanel;
+    private final LogPanelPreferenceModel preferenceModel = new LogPanelPreferenceModel();
+    private ApplicationPreferenceModel applicationPreferenceModel;
+    private final LogPanelPreferencePanel logPanelPreferencesPanel;
+    private final FilterModel filterModel = new FilterModel();
+    private final RuleColorizer colorizer = new RuleColorizer();
+    private final RuleMediator tableRuleMediator = new RuleMediator(false);
+    private final RuleMediator searchRuleMediator = new RuleMediator(true);
+    private final EventDetailLayout detailLayout = new EventDetailLayout();
+    private double lastLogTreePanelSplitLocation = DEFAULT_LOG_TREE_SPLIT_LOCATION;
+    private Point currentPoint;
+    private JTable currentTable;
+    private boolean paused = false;
+    private Rule findRule;
+    private String currentFindRuleText;
+    private Rule findMarkerRule;
+    private final int dividerSize;
+    static final String TABLE_COLUMN_ORDER = "table.columns.order";
+    static final String TABLE_COLUMN_WIDTHS = "table.columns.widths";
+    static final String COLORS_EXTENSION = ".colors";
+    private static final int LOG_PANEL_SERIALIZATION_VERSION_NUMBER = 2; //increment when format changes
+    private int previousLastIndex = -1;
+    private final Logger logger = LogManager.getLogger(LogPanel.class);
+    private AutoFilterComboBox filterCombo;
+    private AutoFilterComboBox findCombo;
+    private JScrollPane eventsPane;
+    private int currentSearchMatchCount;
+    private Rule clearTableExpressionRule;
+    private int lowerPanelDividerLocation;
+    private EventContainer searchModel;
+    private final JSortTable searchTable;
+    private TableColorizingRenderer searchRenderer;
+    private ToggleToolTips mainToggleToolTips;
+    private ToggleToolTips searchToggleToolTips;
+    private JScrollPane detailPane;
+    private JScrollPane searchPane;
+    //only one tableCellEditor, shared by both tables
+    private TableCellEditor markerCellEditor;
+    private JToolBar detailToolbar;
+    private boolean searchResultsDisplayed;
+    private ColorizedEventAndSearchMatchThumbnail colorizedEventAndSearchMatchThumbnail;
+    private EventTimeDeltaMatchThumbnail eventTimeDeltaMatchThumbnail;
+    private boolean isDetailPanelVisible;
 
-  /**
-   * Creates a new LogPanel object.  If a LogPanel with this identifier has
-   * been loaded previously, reload settings saved on last exit.
-   *
-   * @param statusBar shared status bar, provided by main application
-   * @param identifier used to load and save settings
-   */
-  public LogPanel(final ChainsawStatusBar statusBar, final String identifier, int cyclicBufferSize,
-                  Map<String, RuleColorizer> allColorizers, final ApplicationPreferenceModel applicationPreferenceModel) {
-    this.identifier = identifier;
-    this.statusBar = statusBar;
-    this.applicationPreferenceModel = applicationPreferenceModel;
-    this.logPanelPreferencesPanel = new LogPanelPreferencePanel(preferenceModel, applicationPreferenceModel);
-    logger.debug("creating logpanel for " + identifier);
+    /**
+     * Creates a new LogPanel object.  If a LogPanel with this identifier has
+     * been loaded previously, reload settings saved on last exit.
+     *
+     * @param statusBar  shared status bar, provided by main application
+     * @param identifier used to load and save settings
+     */
+    public LogPanel(final ChainsawStatusBar statusBar, final String identifier, int cyclicBufferSize,
+                    Map<String, RuleColorizer> allColorizers, final ApplicationPreferenceModel applicationPreferenceModel) {
+        this.identifier = identifier;
+        this.statusBar = statusBar;
+        this.applicationPreferenceModel = applicationPreferenceModel;
+        this.logPanelPreferencesPanel = new LogPanelPreferencePanel(preferenceModel, applicationPreferenceModel);
+        logger.debug("creating logpanel for " + identifier);
 
-    setLayout(new BorderLayout());
+        setLayout(new BorderLayout());
 
-    String prototypeValue = "1231231231231231231231";
+        String prototypeValue = "1231231231231231231231";
 
-    filterCombo = new AutoFilterComboBox();
-    findCombo = new AutoFilterComboBox();
+        filterCombo = new AutoFilterComboBox();
+        findCombo = new AutoFilterComboBox();
 
-    filterCombo.setPrototypeDisplayValue(prototypeValue);
-    buildCombo(filterCombo, true, findCombo.model);
+        filterCombo.setPrototypeDisplayValue(prototypeValue);
+        buildCombo(filterCombo, true, findCombo.model);
 
-    findCombo.setPrototypeDisplayValue(prototypeValue);
-    buildCombo(findCombo, false, filterCombo.model);
+        findCombo.setPrototypeDisplayValue(prototypeValue);
+        buildCombo(findCombo, false, filterCombo.model);
 
-    final Map<Object, String> columnNameKeywordMap = new HashMap<>();
-    columnNameKeywordMap.put(ChainsawConstants.CLASS_COL_NAME, LoggingEventFieldResolver.CLASS_FIELD);
-    columnNameKeywordMap.put(ChainsawConstants.FILE_COL_NAME, LoggingEventFieldResolver.FILE_FIELD);
-    columnNameKeywordMap.put(ChainsawConstants.LEVEL_COL_NAME, LoggingEventFieldResolver.LEVEL_FIELD);
-    columnNameKeywordMap.put(ChainsawConstants.LINE_COL_NAME, LoggingEventFieldResolver.LINE_FIELD);
-    columnNameKeywordMap.put(ChainsawConstants.LOGGER_COL_NAME, LoggingEventFieldResolver.LOGGER_FIELD);
-    columnNameKeywordMap.put(ChainsawConstants.NDC_COL_NAME, LoggingEventFieldResolver.NDC_FIELD);
-    columnNameKeywordMap.put(ChainsawConstants.MESSAGE_COL_NAME, LoggingEventFieldResolver.MSG_FIELD);
-    columnNameKeywordMap.put(ChainsawConstants.THREAD_COL_NAME, LoggingEventFieldResolver.THREAD_FIELD);
-    columnNameKeywordMap.put(ChainsawConstants.THROWABLE_COL_NAME, LoggingEventFieldResolver.EXCEPTION_FIELD);
-    columnNameKeywordMap.put(ChainsawConstants.TIMESTAMP_COL_NAME, LoggingEventFieldResolver.TIMESTAMP_FIELD);
-    columnNameKeywordMap.put(ChainsawConstants.ID_COL_NAME.toUpperCase(), LoggingEventFieldResolver.PROP_FIELD + Constants.LOG4J_ID_KEY);
-    columnNameKeywordMap.put(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE.toUpperCase(), LoggingEventFieldResolver.PROP_FIELD + ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
-    columnNameKeywordMap.put(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE.toUpperCase(), LoggingEventFieldResolver.PROP_FIELD + ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
+        final Map<Object, String> columnNameKeywordMap = new HashMap<>();
+        columnNameKeywordMap.put(ChainsawConstants.CLASS_COL_NAME, LoggingEventFieldResolver.CLASS_FIELD);
+        columnNameKeywordMap.put(ChainsawConstants.FILE_COL_NAME, LoggingEventFieldResolver.FILE_FIELD);
+        columnNameKeywordMap.put(ChainsawConstants.LEVEL_COL_NAME, LoggingEventFieldResolver.LEVEL_FIELD);
+        columnNameKeywordMap.put(ChainsawConstants.LINE_COL_NAME, LoggingEventFieldResolver.LINE_FIELD);
+        columnNameKeywordMap.put(ChainsawConstants.LOGGER_COL_NAME, LoggingEventFieldResolver.LOGGER_FIELD);
+        columnNameKeywordMap.put(ChainsawConstants.NDC_COL_NAME, LoggingEventFieldResolver.NDC_FIELD);
+        columnNameKeywordMap.put(ChainsawConstants.MESSAGE_COL_NAME, LoggingEventFieldResolver.MSG_FIELD);
+        columnNameKeywordMap.put(ChainsawConstants.THREAD_COL_NAME, LoggingEventFieldResolver.THREAD_FIELD);
+        columnNameKeywordMap.put(ChainsawConstants.THROWABLE_COL_NAME, LoggingEventFieldResolver.EXCEPTION_FIELD);
+        columnNameKeywordMap.put(ChainsawConstants.TIMESTAMP_COL_NAME, LoggingEventFieldResolver.TIMESTAMP_FIELD);
+        columnNameKeywordMap.put(ChainsawConstants.ID_COL_NAME.toUpperCase(), LoggingEventFieldResolver.PROP_FIELD + Constants.LOG4J_ID_KEY);
+        columnNameKeywordMap.put(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE.toUpperCase(), LoggingEventFieldResolver.PROP_FIELD + ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
+        columnNameKeywordMap.put(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE.toUpperCase(), LoggingEventFieldResolver.PROP_FIELD + ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
 
-    logPanelPreferencesFrame.setTitle("'" + identifier + "' Log Panel Preferences");
-    logPanelPreferencesFrame.setIconImage(
-      ((ImageIcon) ChainsawIcons.ICON_PREFERENCES).getImage());
-    logPanelPreferencesFrame.getContentPane().add(new JScrollPane(logPanelPreferencesPanel));
+        logPanelPreferencesFrame.setTitle("'" + identifier + "' Log Panel Preferences");
+        logPanelPreferencesFrame.setIconImage(
+            ((ImageIcon) ChainsawIcons.ICON_PREFERENCES).getImage());
+        logPanelPreferencesFrame.getContentPane().add(new JScrollPane(logPanelPreferencesPanel));
 
-    logPanelPreferencesFrame.setSize(740, 520);
+        logPanelPreferencesFrame.setSize(740, 520);
 
-    logPanelPreferencesPanel.setOkCancelActionListener(
+        logPanelPreferencesPanel.setOkCancelActionListener(
             e -> logPanelPreferencesFrame.setVisible(false));
 
         KeyStroke escape = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false);
-            Action closeLogPanelPreferencesFrameAction = new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                  logPanelPreferencesFrame.setVisible(false);
+        Action closeLogPanelPreferencesFrameAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                logPanelPreferencesFrame.setVisible(false);
+            }
+        };
+        logPanelPreferencesFrame.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escape, "ESCAPE");
+        logPanelPreferencesFrame.getRootPane().
+            getActionMap().put("ESCAPE", closeLogPanelPreferencesFrameAction);
+
+
+        setDetailPaneConversionPattern(
+            DefaultLayoutFactory.getDefaultPatternLayout());
+        detailLayout.setConversionPattern(
+            DefaultLayoutFactory.getDefaultPatternLayout());
+
+        undockedFrame = new JFrame(identifier);
+        undockedFrame.setDefaultCloseOperation(
+            WindowConstants.DO_NOTHING_ON_CLOSE);
+
+        if (ChainsawIcons.UNDOCKED_ICON != null) {
+            undockedFrame.setIconImage(
+                new ImageIcon(ChainsawIcons.UNDOCKED_ICON).getImage());
+        }
+
+        externalPanel = new DockablePanel();
+        externalPanel.setLayout(new BorderLayout());
+
+        undockedFrame.addWindowListener(
+            new WindowAdapter() {
+                public void windowClosing(WindowEvent e) {
+                    dock();
+                }
+            });
+
+        undockedToolbar = createDockwindowToolbar();
+        externalPanel.add(undockedToolbar, BorderLayout.NORTH);
+        undockedFrame.getContentPane().add(externalPanel);
+        undockedFrame.setSize(new Dimension(1024, 768));
+        undockedFrame.pack();
+
+        preferenceModel.addPropertyChangeListener(
+            "scrollToBottom",
+            evt -> {
+                boolean value = (Boolean) evt.getNewValue();
+                if (value) {
+                    scrollToBottom();
+                }
+            });
+        /*
+         * Menus on which the preferencemodels rely
+         */
+
+        /**
+         * Setup a popup menu triggered for Timestamp column to allow time stamp
+         * format changes
+         */
+        final JPopupMenu dateFormatChangePopup = new JPopupMenu();
+        final JRadioButtonMenuItem isoButton =
+            new JRadioButtonMenuItem(
+                new AbstractAction("Use ISO8601Format") {
+                    public void actionPerformed(ActionEvent e) {
+                        preferenceModel.setDateFormatPattern("ISO8601");
+                    }
+                });
+        final JRadioButtonMenuItem simpleTimeButton =
+            new JRadioButtonMenuItem(
+                new AbstractAction("Use simple time") {
+                    public void actionPerformed(ActionEvent e) {
+                        preferenceModel.setDateFormatPattern("HH:mm:ss");
+                    }
+                });
+
+        ButtonGroup dfBG = new ButtonGroup();
+        dfBG.add(isoButton);
+        dfBG.add(simpleTimeButton);
+        simpleTimeButton.setSelected(true);
+        dateFormatChangePopup.add(isoButton);
+        dateFormatChangePopup.add(simpleTimeButton);
+
+        final JCheckBoxMenuItem menuItemLoggerTree =
+            new JCheckBoxMenuItem("Show Logger Tree");
+        menuItemLoggerTree.addActionListener(
+            e -> preferenceModel.setLogTreePanelVisible(
+                menuItemLoggerTree.isSelected()));
+        menuItemLoggerTree.setIcon(new ImageIcon(ChainsawIcons.WINDOW_ICON));
+
+        final JCheckBoxMenuItem menuItemToggleDetails =
+            new JCheckBoxMenuItem("Show Detail Pane");
+        menuItemToggleDetails.addActionListener(
+            e -> preferenceModel.setDetailPaneVisible(
+                menuItemToggleDetails.isSelected()));
+
+        menuItemToggleDetails.setIcon(new ImageIcon(ChainsawIcons.INFO));
+
+        /*
+         * add preferencemodel listeners
+         */
+        preferenceModel.addPropertyChangeListener("levelIcons",
+            new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    boolean useIcons = (Boolean) evt.getNewValue();
+                    renderer.setLevelUseIcons(useIcons);
+                    table.tableChanged(new TableModelEvent(tableModel));
+                    searchRenderer.setLevelUseIcons(useIcons);
+                    searchTable.tableChanged(new TableModelEvent(searchModel));
+                }
+            });
+
+        /*
+         * add preferencemodel listeners
+         */
+        preferenceModel.addPropertyChangeListener("wrapMessage",
+            new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    boolean wrap = (Boolean) evt.getNewValue();
+                    renderer.setWrapMessage(wrap);
+                    table.tableChanged(new TableModelEvent(tableModel));
+                    searchRenderer.setWrapMessage(wrap);
+                    searchTable.tableChanged(new TableModelEvent(searchModel));
+                }
+            });
+
+        preferenceModel.addPropertyChangeListener("searchResultsVisible",
+            evt -> {
+                boolean displaySearchResultsInDetailsIfAvailable = (Boolean) evt.getNewValue();
+                if (displaySearchResultsInDetailsIfAvailable) {
+                    showSearchResults();
+                } else {
+                    hideSearchResults();
+                }
+            });
+
+        preferenceModel.addPropertyChangeListener("highlightSearchMatchText",
+            new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    boolean highlightText = (Boolean) evt.getNewValue();
+                    renderer.setHighlightSearchMatchText(highlightText);
+                    table.tableChanged(new TableModelEvent(tableModel));
+                    searchRenderer.setHighlightSearchMatchText(highlightText);
+                    searchTable.tableChanged(new TableModelEvent(searchModel));
+                }
+            });
+
+        preferenceModel.addPropertyChangeListener(
+            "detailPaneVisible",
+            evt -> {
+                boolean detailPaneVisible = (Boolean) evt.getNewValue();
+
+                if (detailPaneVisible) {
+                    showDetailPane();
+                } else {
+                    //don't hide the detail pane if search results are being displayed
+                    if (!searchResultsDisplayed) {
+                        hideDetailPane();
+                    }
+                }
+            });
+
+        preferenceModel.addPropertyChangeListener(
+            "logTreePanelVisible",
+            evt -> {
+                boolean newValue = (Boolean) evt.getNewValue();
+
+                if (newValue) {
+                    showLogTreePanel();
+                } else {
+                    hideLogTreePanel();
+                }
+            });
+
+        preferenceModel.addPropertyChangeListener("toolTips",
+            new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    boolean toolTips = (Boolean) evt.getNewValue();
+                    renderer.setToolTipsVisible(toolTips);
+                    searchRenderer.setToolTipsVisible(toolTips);
+                }
+            });
+
+        preferenceModel.addPropertyChangeListener("visibleColumns",
+            new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    //remove all columns and re-add visible
+                    TableColumnModel columnModel = table.getColumnModel();
+                    while (columnModel.getColumnCount() > 0) {
+                        columnModel.removeColumn(columnModel.getColumn(0));
+                    }
+                    for (Object o1 : preferenceModel.getVisibleColumnOrder()) {
+                        TableColumn c = (TableColumn) o1;
+                        if (c.getHeaderValue().toString().equalsIgnoreCase(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE)) {
+                            c.setCellEditor(markerCellEditor);
+                        }
+                        columnModel.addColumn(c);
+                    }
+                    TableColumnModel searchColumnModel = searchTable.getColumnModel();
+                    while (searchColumnModel.getColumnCount() > 0) {
+                        searchColumnModel.removeColumn(searchColumnModel.getColumn(0));
+                    }
+                    for (Object o : preferenceModel.getVisibleColumnOrder()) {
+                        TableColumn c = (TableColumn) o;
+                        searchColumnModel.addColumn(c);
+                    }
+                }
+            });
+
+        PropertyChangeListener datePrefsChangeListener =
+            new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    LogPanelPreferenceModel model = (LogPanelPreferenceModel) evt.getSource();
+
+                    isoButton.setSelected(model.isUseISO8601Format());
+                    simpleTimeButton.setSelected(!model.isUseISO8601Format() && !model.isCustomDateFormat());
+
+                    if (model.getTimeZone() != null) {
+                        renderer.setTimeZone(model.getTimeZone());
+                        searchRenderer.setTimeZone(model.getTimeZone());
+                    }
+
+                    if (model.isUseISO8601Format()) {
+                        renderer.setDateFormatter(new SimpleDateFormat(Constants.ISO8601_PATTERN));
+                        searchRenderer.setDateFormatter(new SimpleDateFormat(Constants.ISO8601_PATTERN));
+                    } else {
+                        try {
+                            renderer.setDateFormatter(new SimpleDateFormat(model.getDateFormatPattern()));
+                        } catch (IllegalArgumentException iae) {
+                            model.setDefaultDatePatternFormat();
+                            renderer.setDateFormatter(new SimpleDateFormat(Constants.ISO8601_PATTERN));
+                        }
+                        try {
+                            searchRenderer.setDateFormatter(new SimpleDateFormat(model.getDateFormatPattern()));
+                        } catch (IllegalArgumentException iae) {
+                            model.setDefaultDatePatternFormat();
+                            searchRenderer.setDateFormatter(new SimpleDateFormat(Constants.ISO8601_PATTERN));
+                        }
+                    }
+
+                    table.tableChanged(new TableModelEvent(tableModel));
+                    searchTable.tableChanged(new TableModelEvent(searchModel));
                 }
             };
-            logPanelPreferencesFrame.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escape, "ESCAPE"); logPanelPreferencesFrame.getRootPane().
-                    getActionMap().put("ESCAPE", closeLogPanelPreferencesFrameAction);
 
+        preferenceModel.addPropertyChangeListener("dateFormatPattern", datePrefsChangeListener);
+        preferenceModel.addPropertyChangeListener("dateFormatTimeZone", datePrefsChangeListener);
 
-    setDetailPaneConversionPattern(
-      DefaultLayoutFactory.getDefaultPatternLayout());
-      detailLayout.setConversionPattern(
-      DefaultLayoutFactory.getDefaultPatternLayout());
-
-    undockedFrame = new JFrame(identifier);
-    undockedFrame.setDefaultCloseOperation(
-      WindowConstants.DO_NOTHING_ON_CLOSE);
-
-    if (ChainsawIcons.UNDOCKED_ICON != null) {
-      undockedFrame.setIconImage(
-        new ImageIcon(ChainsawIcons.UNDOCKED_ICON).getImage());
-    }
-
-    externalPanel = new DockablePanel();
-    externalPanel.setLayout(new BorderLayout());
-
-    undockedFrame.addWindowListener(
-      new WindowAdapter() {
-        public void windowClosing(WindowEvent e) {
-          dock();
-        }
-      });
-
-    undockedToolbar = createDockwindowToolbar();
-    externalPanel.add(undockedToolbar, BorderLayout.NORTH);
-    undockedFrame.getContentPane().add(externalPanel);
-    undockedFrame.setSize(new Dimension(1024, 768));
-    undockedFrame.pack();
-
-    preferenceModel.addPropertyChangeListener(
-      "scrollToBottom",
-            evt -> {
-              boolean value = (Boolean) evt.getNewValue();
-              if (value) {
-                scrollToBottom();
-              }
-            });
-    /*
-     * Menus on which the preferencemodels rely
-     */
-
-    /**
-     * Setup a popup menu triggered for Timestamp column to allow time stamp
-     * format changes
-     */
-    final JPopupMenu dateFormatChangePopup = new JPopupMenu();
-    final JRadioButtonMenuItem isoButton =
-      new JRadioButtonMenuItem(
-        new AbstractAction("Use ISO8601Format") {
-          public void actionPerformed(ActionEvent e) {
-            preferenceModel.setDateFormatPattern("ISO8601");
-          }
-        });
-    final JRadioButtonMenuItem simpleTimeButton =
-      new JRadioButtonMenuItem(
-        new AbstractAction("Use simple time") {
-          public void actionPerformed(ActionEvent e) {
-            preferenceModel.setDateFormatPattern("HH:mm:ss");
-          }
+        preferenceModel.addPropertyChangeListener("clearTableExpression", evt -> {
+            LogPanelPreferenceModel model = (LogPanelPreferenceModel) evt.getSource();
+            String expression = model.getClearTableExpression();
+            try {
+                clearTableExpressionRule = ExpressionRule.getRule(expression);
+                logger.info("clearTableExpressionRule set to: " + expression);
+            } catch (Exception e) {
+                logger.info("clearTableExpressionRule invalid - ignoring: " + expression);
+                clearTableExpressionRule = null;
+            }
         });
 
-    ButtonGroup dfBG = new ButtonGroup();
-    dfBG.add(isoButton);
-    dfBG.add(simpleTimeButton);
-    simpleTimeButton.setSelected(true);
-    dateFormatChangePopup.add(isoButton);
-    dateFormatChangePopup.add(simpleTimeButton);
+        preferenceModel.addPropertyChangeListener("loggerPrecision",
+            new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    LogPanelPreferenceModel model = (LogPanelPreferenceModel) evt.getSource();
 
-    final JCheckBoxMenuItem menuItemLoggerTree =
-      new JCheckBoxMenuItem("Show Logger Tree");
-    menuItemLoggerTree.addActionListener(
-            e -> preferenceModel.setLogTreePanelVisible(
-              menuItemLoggerTree.isSelected()));
-    menuItemLoggerTree.setIcon(new ImageIcon(ChainsawIcons.WINDOW_ICON));
+                    renderer.setLoggerPrecision(model.getLoggerPrecision());
+                    table.tableChanged(new TableModelEvent(tableModel));
 
-    final JCheckBoxMenuItem menuItemToggleDetails =
-      new JCheckBoxMenuItem("Show Detail Pane");
-    menuItemToggleDetails.addActionListener(
-            e -> preferenceModel.setDetailPaneVisible(
-              menuItemToggleDetails.isSelected()));
-
-    menuItemToggleDetails.setIcon(new ImageIcon(ChainsawIcons.INFO));
-
-    /*
-     * add preferencemodel listeners
-     */
-    preferenceModel.addPropertyChangeListener("levelIcons",
-      new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-          boolean useIcons = (Boolean) evt.getNewValue();
-          renderer.setLevelUseIcons(useIcons);
-          table.tableChanged(new TableModelEvent(tableModel));
-          searchRenderer.setLevelUseIcons(useIcons);
-          searchTable.tableChanged(new TableModelEvent(searchModel));
-        }
-      });
-
-    /*
-     * add preferencemodel listeners
-     */
-    preferenceModel.addPropertyChangeListener("wrapMessage",
-      new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-          boolean wrap = (Boolean) evt.getNewValue();
-          renderer.setWrapMessage(wrap);
-          table.tableChanged(new TableModelEvent(tableModel));
-          searchRenderer.setWrapMessage(wrap);
-          searchTable.tableChanged(new TableModelEvent(searchModel));
-        }
-      });
-
-    preferenceModel.addPropertyChangeListener("searchResultsVisible",
-            evt -> {
-              boolean displaySearchResultsInDetailsIfAvailable = (Boolean) evt.getNewValue();
-              if (displaySearchResultsInDetailsIfAvailable) {
-                showSearchResults();
-              } else {
-                hideSearchResults();
-              }
-            });
-
-      preferenceModel.addPropertyChangeListener("highlightSearchMatchText",
-        new PropertyChangeListener() {
-          public void propertyChange(PropertyChangeEvent evt) {
-            boolean highlightText = (Boolean) evt.getNewValue();
-            renderer.setHighlightSearchMatchText(highlightText);
-            table.tableChanged(new TableModelEvent(tableModel));
-            searchRenderer.setHighlightSearchMatchText(highlightText);
-            searchTable.tableChanged(new TableModelEvent(searchModel));
-          }
-        });
-
-    preferenceModel.addPropertyChangeListener(
-      "detailPaneVisible",
-            evt -> {
-              boolean detailPaneVisible = (Boolean) evt.getNewValue();
-
-              if (detailPaneVisible) {
-                showDetailPane();
-              } else {
-                //don't hide the detail pane if search results are being displayed
-                if (!searchResultsDisplayed) {
-                  hideDetailPane();
+                    searchRenderer.setLoggerPrecision(model.getLoggerPrecision());
+                    searchTable.tableChanged(new TableModelEvent(searchModel));
                 }
-              }
             });
 
-    preferenceModel.addPropertyChangeListener(
-      "logTreePanelVisible",
+        preferenceModel.addPropertyChangeListener("toolTips",
             evt -> {
-              boolean newValue = (Boolean) evt.getNewValue();
-
-              if (newValue) {
-                showLogTreePanel();
-              } else {
-                hideLogTreePanel();
-              }
+                boolean value = (Boolean) evt.getNewValue();
+                searchToggleToolTips.setSelected(value);
+                mainToggleToolTips.setSelected(value);
             });
-    
-    preferenceModel.addPropertyChangeListener("toolTips",
-      new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-          boolean toolTips = (Boolean) evt.getNewValue();
-          renderer.setToolTipsVisible(toolTips);
-          searchRenderer.setToolTipsVisible(toolTips);
-        }
-      });
 
-    preferenceModel.addPropertyChangeListener("visibleColumns",
-      new PropertyChangeListener() {
-    	public void propertyChange(PropertyChangeEvent evt) {
-    		//remove all columns and re-add visible
-            TableColumnModel columnModel = table.getColumnModel();
-            while (columnModel.getColumnCount() > 0) {
-                columnModel.removeColumn(columnModel.getColumn(0));
-        		}
-          for (Object o1 : preferenceModel.getVisibleColumnOrder()) {
-            TableColumn c = (TableColumn) o1;
-            if (c.getHeaderValue().toString().equalsIgnoreCase(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE)) {
-              c.setCellEditor(markerCellEditor);
-            }
-            columnModel.addColumn(c);
-          }
-          TableColumnModel searchColumnModel = searchTable.getColumnModel();
-          while (searchColumnModel.getColumnCount() > 0) {
-              searchColumnModel.removeColumn(searchColumnModel.getColumn(0));
-          }
-          for (Object o : preferenceModel.getVisibleColumnOrder()) {
-            TableColumn c = (TableColumn) o;
-            searchColumnModel.addColumn(c);
-          }
-      	}
-      });
-
-    PropertyChangeListener datePrefsChangeListener =
-      new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-          LogPanelPreferenceModel model = (LogPanelPreferenceModel) evt.getSource();
-
-          isoButton.setSelected(model.isUseISO8601Format());
-          simpleTimeButton.setSelected(!model.isUseISO8601Format() && !model.isCustomDateFormat());
-
-          if (model.getTimeZone() != null) {
-            renderer.setTimeZone(model.getTimeZone());
-            searchRenderer.setTimeZone(model.getTimeZone());
-          }
-          
-          if (model.isUseISO8601Format()) {
-            renderer.setDateFormatter(new SimpleDateFormat(Constants.ISO8601_PATTERN));
-            searchRenderer.setDateFormatter(new SimpleDateFormat(Constants.ISO8601_PATTERN));
-          } else {
-      		try {
-              renderer.setDateFormatter(new SimpleDateFormat(model.getDateFormatPattern()));
-          } catch (IllegalArgumentException iae) {
-            model.setDefaultDatePatternFormat();
-            renderer.setDateFormatter(new SimpleDateFormat(Constants.ISO8601_PATTERN));
-          }
-  		    try {
-              searchRenderer.setDateFormatter(new SimpleDateFormat(model.getDateFormatPattern()));
-          } catch (IllegalArgumentException iae) {
-            model.setDefaultDatePatternFormat();
-            searchRenderer.setDateFormatter(new SimpleDateFormat(Constants.ISO8601_PATTERN));
-          }
-        }
-
-        table.tableChanged(new TableModelEvent(tableModel));
-        searchTable.tableChanged(new TableModelEvent(searchModel));
-        }
-      };
-
-    preferenceModel.addPropertyChangeListener("dateFormatPattern", datePrefsChangeListener);
-    preferenceModel.addPropertyChangeListener("dateFormatTimeZone", datePrefsChangeListener);
-
-    preferenceModel.addPropertyChangeListener("clearTableExpression", evt -> {
-        LogPanelPreferenceModel model = (LogPanelPreferenceModel)evt.getSource();
-        String expression = model.getClearTableExpression();
-        try {
-            clearTableExpressionRule = ExpressionRule.getRule(expression);
-            logger.info("clearTableExpressionRule set to: " + expression);
-        } catch (Exception e) {
-            logger.info("clearTableExpressionRule invalid - ignoring: " + expression);
-            clearTableExpressionRule = null;
-        }
-    });
-
-    preferenceModel.addPropertyChangeListener("loggerPrecision",
-      new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-          LogPanelPreferenceModel model = (LogPanelPreferenceModel) evt.getSource();
-
-          renderer.setLoggerPrecision(model.getLoggerPrecision());
-          table.tableChanged(new TableModelEvent(tableModel));
-
-          searchRenderer.setLoggerPrecision(model.getLoggerPrecision());
-          searchTable.tableChanged(new TableModelEvent(searchModel));
-        }
-      });
-
-    preferenceModel.addPropertyChangeListener("toolTips",
+        preferenceModel.addPropertyChangeListener(
+            "logTreePanelVisible",
             evt -> {
-              boolean value = (Boolean) evt.getNewValue();
-              searchToggleToolTips.setSelected(value);
-              mainToggleToolTips.setSelected(value);
+                boolean value = (Boolean) evt.getNewValue();
+                menuItemLoggerTree.setSelected(value);
             });
 
-    preferenceModel.addPropertyChangeListener(
-      "logTreePanelVisible",
+        preferenceModel.addPropertyChangeListener(
+            "detailPaneVisible",
             evt -> {
-              boolean value = (Boolean) evt.getNewValue();
-              menuItemLoggerTree.setSelected(value);
+                boolean value = (Boolean) evt.getNewValue();
+                menuItemToggleDetails.setSelected(value);
             });
 
-    preferenceModel.addPropertyChangeListener(
-      "detailPaneVisible",
-            evt -> {
-              boolean value = (Boolean) evt.getNewValue();
-              menuItemToggleDetails.setSelected(value);
-            });
-
-    applicationPreferenceModel.addPropertyChangeListener("searchColor", new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt)
-        {
-            if (table != null) {
-              table.repaint();
+        applicationPreferenceModel.addPropertyChangeListener("searchColor", new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (table != null) {
+                    table.repaint();
+                }
+                if (searchTable != null) {
+                    searchTable.repaint();
+                }
             }
-            if (searchTable != null) {
-              searchTable.repaint();
+        });
+
+        applicationPreferenceModel.addPropertyChangeListener("alternatingColor", new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (table != null) {
+                    table.repaint();
+                }
+                if (searchTable != null) {
+                    searchTable.repaint();
+                }
             }
-        }
-    });
+        });
 
-    applicationPreferenceModel.addPropertyChangeListener("alternatingColor", new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt)
-        {
-            if (table != null) {
-              table.repaint();
-            }
-            if (searchTable != null) {
-              searchTable.repaint();
-           }
-        }
-    });
+        /*
+         *End of preferenceModel listeners
+         */
+        tableModel = new ChainsawCyclicBufferTableModel(cyclicBufferSize, colorizer, "main");
+        table = new JSortTable(tableModel);
 
-    /*
-     *End of preferenceModel listeners
-     */
-    tableModel = new ChainsawCyclicBufferTableModel(cyclicBufferSize, colorizer, "main");
-    table = new JSortTable(tableModel);
+        markerCellEditor = new MarkerCellEditor();
+        table.setName("main");
+        table.setColumnSelectionAllowed(false);
+        table.setRowSelectionAllowed(true);
 
-    markerCellEditor = new MarkerCellEditor();
-    table.setName("main");
-    table.setColumnSelectionAllowed(false);
-    table.setRowSelectionAllowed(true);
+        searchModel = new ChainsawCyclicBufferTableModel(cyclicBufferSize, colorizer, "search");
+        searchTable = new JSortTable(searchModel);
 
-    searchModel = new ChainsawCyclicBufferTableModel(cyclicBufferSize, colorizer, "search");
-    searchTable = new JSortTable(searchModel);
+        searchTable.setName("search");
+        searchTable.setColumnSelectionAllowed(false);
+        searchTable.setRowSelectionAllowed(true);
 
-    searchTable.setName("search");
-    searchTable.setColumnSelectionAllowed(false);
-    searchTable.setRowSelectionAllowed(true);
+        //we've mapped f2, shift f2 and ctrl-f2 to marker-related actions, unmap them from the table
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke("F2"), "none");
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.SHIFT_MASK), "none");
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "none");
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | InputEvent.SHIFT_MASK), "none");
 
-    //we've mapped f2, shift f2 and ctrl-f2 to marker-related actions, unmap them from the table
-    table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke("F2"), "none");
-    table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.SHIFT_MASK), "none");
-    table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "none");
-    table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | InputEvent.SHIFT_MASK), "none");
+        //we're also mapping ctrl-a to scroll-to-top, unmap from the table
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_A, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "none");
 
-    //we're also mapping ctrl-a to scroll-to-top, unmap from the table
-    table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_A, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "none");
-        
-    searchTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke("F2"), "none");
-    searchTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.SHIFT_MASK), "none");
-    searchTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "none");
-    searchTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | InputEvent.SHIFT_MASK), "none");
+        searchTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke("F2"), "none");
+        searchTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.SHIFT_MASK), "none");
+        searchTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "none");
+        searchTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | InputEvent.SHIFT_MASK), "none");
 
-    //we're also mapping ctrl-a to scroll-to-top, unmap from the table
-    searchTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_A, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "none");
+        //we're also mapping ctrl-a to scroll-to-top, unmap from the table
+        searchTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_A, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "none");
 
-    //add a listener to update the 'refine focus'
-    tableModel.addNewKeyListener(e -> columnNameKeywordMap.put(e.getKey(), "PROP." + e.getKey()));
+        //add a listener to update the 'refine focus'
+        tableModel.addNewKeyListener(e -> columnNameKeywordMap.put(e.getKey(), "PROP." + e.getKey()));
 
-    /*
-     * Set the Display rule to use the mediator, the model will add itself as
-     * a property change listener and update itself when the rule changes.
-     */
-    tableModel.setRuleMediator(tableRuleMediator);
-    searchModel.setRuleMediator(searchRuleMediator);
+        /*
+         * Set the Display rule to use the mediator, the model will add itself as
+         * a property change listener and update itself when the rule changes.
+         */
+        tableModel.setRuleMediator(tableRuleMediator);
+        searchModel.setRuleMediator(searchRuleMediator);
 
-    tableModel.addEventCountListener(
+        tableModel.addEventCountListener(
             (currentCount, totalCount) -> {
-              if (LogPanel.this.isVisible()) {
-                statusBar.setSelectedLine(
-                  table.getSelectedRow() + 1, currentCount, totalCount, getIdentifier());
-              }
+                if (LogPanel.this.isVisible()) {
+                    statusBar.setSelectedLine(
+                        table.getSelectedRow() + 1, currentCount, totalCount, getIdentifier());
+                }
             });
 
-    tableModel.addEventCountListener(
-      new EventCountListener() {
-        final NumberFormat formatter = NumberFormat.getPercentInstance();
-        boolean warning75 = false;
-        boolean warning100 = false;
+        tableModel.addEventCountListener(
+            new EventCountListener() {
+                final NumberFormat formatter = NumberFormat.getPercentInstance();
+                boolean warning75 = false;
+                boolean warning100 = false;
 
-        public void eventCountChanged(int currentCount, int totalCount) {
-          if (preferenceModel.isCyclic()) {
-            double percent =
-              ((double) totalCount) / tableModel.getMaxSize();
-            String msg;
-            boolean wasWarning = warning75 || warning100;
-            if ((percent > 0.75) && (percent < 1.0) && !warning75) {
-              msg =
-                "Warning :: " + formatter.format(percent) + " of the '"
-                + getIdentifier() + "' buffer has been used";
-              warning75 = true;
-            } else if ((percent >= 1.0) && !warning100) {
-              msg =
-                "Warning :: " + formatter.format(percent) + " of the '"
-                + getIdentifier()
-                + "' buffer has been used.  Older events are being discarded.";
-              warning100 = true;
-            } else {
-                //clear msg
-                msg = "";
-                warning75 = false;
-                warning100 = false;
+                public void eventCountChanged(int currentCount, int totalCount) {
+                    if (preferenceModel.isCyclic()) {
+                        double percent =
+                            ((double) totalCount) / tableModel.getMaxSize();
+                        String msg;
+                        boolean wasWarning = warning75 || warning100;
+                        if ((percent > 0.75) && (percent < 1.0) && !warning75) {
+                            msg =
+                                "Warning :: " + formatter.format(percent) + " of the '"
+                                    + getIdentifier() + "' buffer has been used";
+                            warning75 = true;
+                        } else if ((percent >= 1.0) && !warning100) {
+                            msg =
+                                "Warning :: " + formatter.format(percent) + " of the '"
+                                    + getIdentifier()
+                                    + "' buffer has been used.  Older events are being discarded.";
+                            warning100 = true;
+                        } else {
+                            //clear msg
+                            msg = "";
+                            warning75 = false;
+                            warning100 = false;
+                        }
+
+                        if (msg != null && wasWarning) {
+                            MessageCenter.getInstance().getLogger().info(msg);
+                        }
+                    }
+                }
+            });
+
+        /*
+         * Logger tree panel
+         *
+         */
+        LogPanelLoggerTreeModel logTreeModel = new LogPanelLoggerTreeModel();
+        logTreePanel = new LoggerNameTreePanel(logTreeModel, preferenceModel, this, colorizer, filterModel);
+        logTreePanel.getLoggerVisibilityRule().addPropertyChangeListener(evt -> {
+            if (evt.getPropertyName().equals("searchExpression")) {
+                findCombo.setSelectedItem(evt.getNewValue().toString());
+                findNext();
             }
+        });
 
-            if (msg != null && wasWarning) {
-              MessageCenter.getInstance().getLogger().info(msg);
-            }
-          }
-        }
-      });
+        tableModel.addLoggerNameListener(logTreeModel);
+        tableModel.addLoggerNameListener(logTreePanel);
 
-    /*
-     * Logger tree panel
-     *
-     */
-    LogPanelLoggerTreeModel logTreeModel = new LogPanelLoggerTreeModel();
-    logTreePanel = new LoggerNameTreePanel(logTreeModel, preferenceModel, this, colorizer, filterModel);
-    logTreePanel.getLoggerVisibilityRule().addPropertyChangeListener(evt -> {
-        if (evt.getPropertyName().equals("searchExpression")) {
-            findCombo.setSelectedItem(evt.getNewValue().toString());
-            findNext();
-        }
-    });
-      
-    tableModel.addLoggerNameListener(logTreeModel);
-    tableModel.addLoggerNameListener(logTreePanel);
+        /**
+         * Set the LoggerRule to be the LoggerTreePanel, as this visual component
+         * is a rule itself, and the RuleMediator will automatically listen when
+         * it's rule state changes.
+         */
+        tableRuleMediator.setLoggerRule(logTreePanel.getLoggerVisibilityRule());
+        searchRuleMediator.setLoggerRule(logTreePanel.getLoggerVisibilityRule());
 
-    /**
-     * Set the LoggerRule to be the LoggerTreePanel, as this visual component
-     * is a rule itself, and the RuleMediator will automatically listen when
-     * it's rule state changes.
-     */
-    tableRuleMediator.setLoggerRule(logTreePanel.getLoggerVisibilityRule());
-    searchRuleMediator.setLoggerRule(logTreePanel.getLoggerVisibilityRule());
+        colorizer.setLoggerRule(logTreePanel.getLoggerColorRule());
 
-    colorizer.setLoggerRule(logTreePanel.getLoggerColorRule());
+        /*
+         * Color rule frame and panel
+         */
+        colorFrame.setTitle("'" + identifier + "' color settings");
+        colorFrame.setIconImage(
+            ((ImageIcon) ChainsawIcons.ICON_PREFERENCES).getImage());
 
-    /*
-     * Color rule frame and panel
-     */
-    colorFrame.setTitle("'" + identifier + "' color settings");
-    colorFrame.setIconImage(
-      ((ImageIcon) ChainsawIcons.ICON_PREFERENCES).getImage());
+        allColorizers.put(identifier, colorizer);
+        colorPanel = new ColorPanel(colorizer, filterModel, allColorizers, applicationPreferenceModel);
 
-    allColorizers.put(identifier, colorizer);
-    colorPanel = new ColorPanel(colorizer, filterModel, allColorizers, applicationPreferenceModel);
-
-    colorFrame.getContentPane().add(colorPanel);
+        colorFrame.getContentPane().add(colorPanel);
 
         Action closeColorPanelAction = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-              colorPanel.hidePanel();
+                colorPanel.hidePanel();
             }
         };
-        colorFrame.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escape, "ESCAPE"); colorFrame.getRootPane().
-                getActionMap().put("ESCAPE", closeColorPanelAction);
+        colorFrame.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escape, "ESCAPE");
+        colorFrame.getRootPane().
+            getActionMap().put("ESCAPE", closeColorPanelAction);
 
-    colorPanel.setCloseActionListener(
+        colorPanel.setCloseActionListener(
             e -> colorFrame.setVisible(false));
 
-    colorizer.addPropertyChangeListener(
-      "colorrule",
-      new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-          for (Object o : tableModel.getAllEvents()) {
-            LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) o;
-            loggingEventWrapper.updateColorRuleColors(colorizer.getBackgroundColor(loggingEventWrapper.getLoggingEvent()), colorizer.getForegroundColor(loggingEventWrapper.getLoggingEvent()));
-          }
+        colorizer.addPropertyChangeListener(
+            "colorrule",
+            new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    for (Object o : tableModel.getAllEvents()) {
+                        LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) o;
+                        loggingEventWrapper.updateColorRuleColors(colorizer.getBackgroundColor(loggingEventWrapper.getLoggingEvent()), colorizer.getForegroundColor(loggingEventWrapper.getLoggingEvent()));
+                    }
 //          no need to update searchmodel events since tablemodel and searchmodel share all events, and color rules aren't different between the two
 //          if that changes, un-do the color syncing in loggingeventwrapper & re-enable this code
 //
@@ -791,1537 +701,1536 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
 //             LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper)iter.next();
 //             loggingEventWrapper.updateColorRuleColors(colorizer.getBackgroundColor(loggingEventWrapper.getLoggingEvent()), colorizer.getForegroundColor(loggingEventWrapper.getLoggingEvent()));
 //           }
-          colorizedEventAndSearchMatchThumbnail.configureColors();
-          lowerPanel.revalidate();
-          lowerPanel.repaint();
+                    colorizedEventAndSearchMatchThumbnail.configureColors();
+                    lowerPanel.revalidate();
+                    lowerPanel.repaint();
 
-          searchTable.revalidate();
-          searchTable.repaint();
-        }
-      });
-
-    /*
-     * Table definition.  Actual construction is above (next to tablemodel)
-     */
-    table.setRowHeight(ChainsawConstants.DEFAULT_ROW_HEIGHT);
-    table.setRowMargin(0);
-    table.getColumnModel().setColumnMargin(0);
-    table.setShowGrid(false);
-    table.getColumnModel().addColumnModelListener(new ChainsawTableColumnModelListener(table));
-    table.setAutoCreateColumnsFromModel(false);
-    table.addMouseMotionListener(new TableColumnDetailMouseListener(table, tableModel));
-    table.addMouseListener(new TableMarkerListener(table, tableModel, searchModel));
-    table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-
-    searchTable.setRowHeight(ChainsawConstants.DEFAULT_ROW_HEIGHT);
-    searchTable.setRowMargin(0);
-    searchTable.getColumnModel().setColumnMargin(0);
-    searchTable.setShowGrid(false);
-    searchTable.getColumnModel().addColumnModelListener(new ChainsawTableColumnModelListener(searchTable));
-    searchTable.setAutoCreateColumnsFromModel(false);
-    searchTable.addMouseMotionListener(new TableColumnDetailMouseListener(searchTable, searchModel));
-    searchTable.addMouseListener(new TableMarkerListener(searchTable, searchModel, tableModel));
-    searchTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-
-
-    //set valueisadjusting if holding down a key - don't process setdetail events
-    table.addKeyListener(
-      new KeyListener() {
-        public void keyTyped(KeyEvent e) {
-        }
-
-        public void keyPressed(KeyEvent e) {
-          synchronized (detail) {
-            table.getSelectionModel().setValueIsAdjusting(true);
-            detail.notify();
-          }
-        }
-
-        public void keyReleased(KeyEvent e) {
-          synchronized (detail) {
-            table.getSelectionModel().setValueIsAdjusting(false);
-            detail.notify();
-          }
-        }
-      });
-
-    table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    searchTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-    table.getSelectionModel().addListSelectionListener(evt -> {
-        if (((evt.getFirstIndex() == evt.getLastIndex())
-            && (evt.getFirstIndex() > 0) && previousLastIndex != -1) || (evt.getValueIsAdjusting())) {
-          return;
-        }
-        boolean lastIndexOnLastRow = (evt.getLastIndex() == (table.getRowCount() - 1));
-        boolean lastIndexSame = (previousLastIndex == evt.getLastIndex());
+                    searchTable.revalidate();
+                    searchTable.repaint();
+                }
+            });
 
         /*
-         * when scroll-to-bottom is active, here is what events look like:
-         * rowcount-1: 227, last: 227, previous last: 191..first: 191
-         *
-         * when the user has unselected the bottom row, here is what the events look like:
-         * rowcount-1: 227, last: 227, previous last: 227..first: 222
-         *
-         * note: previouslast is set after it is evaluated in the bypass scroll check
-        */
-       //System.out.println("rowcount: " + (table.getRowCount() - 1) + ", last: " + evt.getLastIndex() +", previous last: " + previousLastIndex + "..first: " + evt.getFirstIndex() + ", isadjusting: " + evt.getValueIsAdjusting());
+         * Table definition.  Actual construction is above (next to tablemodel)
+         */
+        table.setRowHeight(ChainsawConstants.DEFAULT_ROW_HEIGHT);
+        table.setRowMargin(0);
+        table.getColumnModel().setColumnMargin(0);
+        table.setShowGrid(false);
+        table.getColumnModel().addColumnModelListener(new ChainsawTableColumnModelListener(table));
+        table.setAutoCreateColumnsFromModel(false);
+        table.addMouseMotionListener(new TableColumnDetailMouseListener(table, tableModel));
+        table.addMouseListener(new TableMarkerListener(table, tableModel, searchModel));
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-        boolean disableScrollToBottom = (lastIndexOnLastRow && lastIndexSame && previousLastIndex != evt.getFirstIndex());
-        if (disableScrollToBottom && isScrollToBottom() && table.getRowCount() > 0) {
-          preferenceModel.setScrollToBottom(false);
-        }
-        previousLastIndex = evt.getLastIndex();
-      }
-    );
+        searchTable.setRowHeight(ChainsawConstants.DEFAULT_ROW_HEIGHT);
+        searchTable.setRowMargin(0);
+        searchTable.getColumnModel().setColumnMargin(0);
+        searchTable.setShowGrid(false);
+        searchTable.getColumnModel().addColumnModelListener(new ChainsawTableColumnModelListener(searchTable));
+        searchTable.setAutoCreateColumnsFromModel(false);
+        searchTable.addMouseMotionListener(new TableColumnDetailMouseListener(searchTable, searchModel));
+        searchTable.addMouseListener(new TableMarkerListener(searchTable, searchModel, tableModel));
+        searchTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-    table.getSelectionModel().addListSelectionListener(
-      new ListSelectionListener() {
-        public void valueChanged(ListSelectionEvent evt) {
-          if (((evt.getFirstIndex() == evt.getLastIndex())
-              && (evt.getFirstIndex() > 0) && previousLastIndex != -1) || (evt.getValueIsAdjusting())) {
-            return;
-          }
 
-          final ListSelectionModel lsm = (ListSelectionModel) evt.getSource();
-
-          if (lsm.isSelectionEmpty()) {
-            if (isVisible()) {
-              statusBar.setNothingSelected();
-            }
-
-            if (detail.getDocument().getDefaultRootElement() != null) {
-              detailPaneUpdater.setSelectedRow(-1);
-            }
-          } else {
-            if (table.getSelectedRow() > -1) {
-              int selectedRow = table.getSelectedRow();
-
-              if (isVisible()) {
-                updateStatusBar();
-              }
-
-              try {
-                if (tableModel.getRowCount() >= selectedRow) {
-                  detailPaneUpdater.setSelectedRow(table.getSelectedRow());
-                } else {
-                  detailPaneUpdater.setSelectedRow(-1);
+        //set valueisadjusting if holding down a key - don't process setdetail events
+        table.addKeyListener(
+            new KeyListener() {
+                public void keyTyped(KeyEvent e) {
                 }
-              } catch (Exception e) {
-                e.printStackTrace();
-                detailPaneUpdater.setSelectedRow(-1);
-              }
+
+                public void keyPressed(KeyEvent e) {
+                    synchronized (detail) {
+                        table.getSelectionModel().setValueIsAdjusting(true);
+                        detail.notify();
+                    }
+                }
+
+                public void keyReleased(KeyEvent e) {
+                    synchronized (detail) {
+                        table.getSelectionModel().setValueIsAdjusting(false);
+                        detail.notify();
+                    }
+                }
+            });
+
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        searchTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        table.getSelectionModel().addListSelectionListener(evt -> {
+                if (((evt.getFirstIndex() == evt.getLastIndex())
+                    && (evt.getFirstIndex() > 0) && previousLastIndex != -1) || (evt.getValueIsAdjusting())) {
+                    return;
+                }
+                boolean lastIndexOnLastRow = (evt.getLastIndex() == (table.getRowCount() - 1));
+                boolean lastIndexSame = (previousLastIndex == evt.getLastIndex());
+
+                /*
+                 * when scroll-to-bottom is active, here is what events look like:
+                 * rowcount-1: 227, last: 227, previous last: 191..first: 191
+                 *
+                 * when the user has unselected the bottom row, here is what the events look like:
+                 * rowcount-1: 227, last: 227, previous last: 227..first: 222
+                 *
+                 * note: previouslast is set after it is evaluated in the bypass scroll check
+                 */
+                //System.out.println("rowcount: " + (table.getRowCount() - 1) + ", last: " + evt.getLastIndex() +", previous last: " + previousLastIndex + "..first: " + evt.getFirstIndex() + ", isadjusting: " + evt.getValueIsAdjusting());
+
+                boolean disableScrollToBottom = (lastIndexOnLastRow && lastIndexSame && previousLastIndex != evt.getFirstIndex());
+                if (disableScrollToBottom && isScrollToBottom() && table.getRowCount() > 0) {
+                    preferenceModel.setScrollToBottom(false);
+                }
+                previousLastIndex = evt.getLastIndex();
             }
-          }
-        }
-      });
+        );
 
-    renderer = new TableColorizingRenderer(colorizer, applicationPreferenceModel, tableModel, preferenceModel, true);
-    renderer.setToolTipsVisible(preferenceModel.isToolTips());
+        table.getSelectionModel().addListSelectionListener(
+            new ListSelectionListener() {
+                public void valueChanged(ListSelectionEvent evt) {
+                    if (((evt.getFirstIndex() == evt.getLastIndex())
+                        && (evt.getFirstIndex() > 0) && previousLastIndex != -1) || (evt.getValueIsAdjusting())) {
+                        return;
+                    }
 
-    table.setDefaultRenderer(Object.class, renderer);
+                    final ListSelectionModel lsm = (ListSelectionModel) evt.getSource();
 
-    searchRenderer = new TableColorizingRenderer(colorizer, applicationPreferenceModel, searchModel, preferenceModel, false);
-    searchRenderer.setToolTipsVisible(preferenceModel.isToolTips());
+                    if (lsm.isSelectionEmpty()) {
+                        if (isVisible()) {
+                            statusBar.setNothingSelected();
+                        }
 
-    searchTable.setDefaultRenderer(Object.class, searchRenderer);
+                        if (detail.getDocument().getDefaultRootElement() != null) {
+                            detailPaneUpdater.setSelectedRow(-1);
+                        }
+                    } else {
+                        if (table.getSelectedRow() > -1) {
+                            int selectedRow = table.getSelectedRow();
 
-    /*
-     * Throwable popup
-     */
-    table.addMouseListener(new ThrowableDisplayMouseAdapter(table, tableModel));
-    searchTable.addMouseListener(new ThrowableDisplayMouseAdapter(searchTable, searchModel));
+                            if (isVisible()) {
+                                updateStatusBar();
+                            }
 
-    //select a row in the main table when a row in the search table is selected
-    searchTable.addMouseListener(new MouseAdapter() {
-      public void mouseClicked(MouseEvent e) {
-        LoggingEventWrapper loggingEventWrapper = searchModel.getRow(searchTable.getSelectedRow());
-        if (loggingEventWrapper != null) {
-          int id = new Integer(loggingEventWrapper.getLoggingEvent().getProperty("log4jid"));
-          //preserve the table's viewble column
-          setSelectedEvent(id);
-        }
-      }
-    });
+                            try {
+                                if (tableModel.getRowCount() >= selectedRow) {
+                                    detailPaneUpdater.setSelectedRow(table.getSelectedRow());
+                                } else {
+                                    detailPaneUpdater.setSelectedRow(-1);
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                detailPaneUpdater.setSelectedRow(-1);
+                            }
+                        }
+                    }
+                }
+            });
 
-    /*
-     * We listen for new Key's coming in so we can get them automatically
-     * added as columns
-     */
-    tableModel.addNewKeyListener(
+        renderer = new TableColorizingRenderer(colorizer, applicationPreferenceModel, tableModel, preferenceModel, true);
+        renderer.setToolTipsVisible(preferenceModel.isToolTips());
+
+        table.setDefaultRenderer(Object.class, renderer);
+
+        searchRenderer = new TableColorizingRenderer(colorizer, applicationPreferenceModel, searchModel, preferenceModel, false);
+        searchRenderer.setToolTipsVisible(preferenceModel.isToolTips());
+
+        searchTable.setDefaultRenderer(Object.class, searchRenderer);
+
+        /*
+         * Throwable popup
+         */
+        table.addMouseListener(new ThrowableDisplayMouseAdapter(table, tableModel));
+        searchTable.addMouseListener(new ThrowableDisplayMouseAdapter(searchTable, searchModel));
+
+        //select a row in the main table when a row in the search table is selected
+        searchTable.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                LoggingEventWrapper loggingEventWrapper = searchModel.getRow(searchTable.getSelectedRow());
+                if (loggingEventWrapper != null) {
+                    int id = new Integer(loggingEventWrapper.getLoggingEvent().getProperty("log4jid"));
+                    //preserve the table's viewble column
+                    setSelectedEvent(id);
+                }
+            }
+        });
+
+        /*
+         * We listen for new Key's coming in so we can get them automatically
+         * added as columns
+         */
+        tableModel.addNewKeyListener(
             e -> SwingHelper.invokeOnEDT(() -> {
 // don't add the column if we already know about it, this could be if we've seen it before and saved the column preferences
 //this may throw an illegalargexception - ignore it because we need to add only if not already added
-              //if the column is already added, don't add again
+                //if the column is already added, don't add again
 
-              try {
-                if (table.getColumn(e.getKey()) != null) {
-                  return;
-                }
+                try {
+                    if (table.getColumn(e.getKey()) != null) {
+                        return;
+                    }
 //no need to check search table - we use the same columns
-              } catch (IllegalArgumentException iae) {
-              }
-              TableColumn col = new TableColumn(e.getNewModelIndex());
-              col.setHeaderValue(e.getKey());
-
-              if (preferenceModel.addColumn(col)) {
-                if (preferenceModel.isColumnVisible(col) || !applicationPreferenceModel.isDefaultColumnsSet() || applicationPreferenceModel.isDefaultColumnsSet() &&
-                        applicationPreferenceModel.getDefaultColumnNames().contains(col.getHeaderValue())) {
-                  table.addColumn(col);
-                  searchTable.addColumn(col);
-                  preferenceModel.setColumnVisible(e.getKey().toString(), true);
+                } catch (IllegalArgumentException iae) {
                 }
-              }
+                TableColumn col = new TableColumn(e.getNewModelIndex());
+                col.setHeaderValue(e.getKey());
+
+                if (preferenceModel.addColumn(col)) {
+                    if (preferenceModel.isColumnVisible(col) || !applicationPreferenceModel.isDefaultColumnsSet() || applicationPreferenceModel.isDefaultColumnsSet() &&
+                        applicationPreferenceModel.getDefaultColumnNames().contains(col.getHeaderValue())) {
+                        table.addColumn(col);
+                        searchTable.addColumn(col);
+                        preferenceModel.setColumnVisible(e.getKey().toString(), true);
+                    }
+                }
             }));
 
-    //if the table is refiltered, try to reselect the last selected row
-    //refilter with a newValue of TRUE means refiltering is about to begin
-    //refilter with a newValue of FALSE means refiltering is complete
-    //assuming notification is called on the EDT so we can in the current EDT call update the scroll & selection
-    tableModel.addPropertyChangeListener("refilter", new PropertyChangeListener() {
-        private LoggingEventWrapper currentEvent;
-        public void propertyChange(PropertyChangeEvent evt) {
-            //if new value is true, filtering is about to begin
-            //if new value is false, filtering is complete
-            if (evt.getNewValue().equals(Boolean.TRUE)) {
-                int currentRow = table.getSelectedRow();
-                if (currentRow > -1) {
-                    currentEvent = tableModel.getRow(currentRow);
-                }
-            } else {
-                if (currentEvent != null) {
-                    table.scrollToRow(tableModel.getRowIndex(currentEvent));
-                }
-            }
-        }
-    });
+        //if the table is refiltered, try to reselect the last selected row
+        //refilter with a newValue of TRUE means refiltering is about to begin
+        //refilter with a newValue of FALSE means refiltering is complete
+        //assuming notification is called on the EDT so we can in the current EDT call update the scroll & selection
+        tableModel.addPropertyChangeListener("refilter", new PropertyChangeListener() {
+            private LoggingEventWrapper currentEvent;
 
-    table.getTableHeader().addMouseListener(
-      new MouseAdapter() {
-        public void mouseClicked(MouseEvent e) {
-          checkEvent(e);
-        }
-
-        public void mousePressed(MouseEvent e) {
-          checkEvent(e);
-        }
-
-        public void mouseReleased(MouseEvent e) {
-          checkEvent(e);
-        }
-
-        private void checkEvent(MouseEvent e) {
-          if (e.isPopupTrigger()) {
-            TableColumnModel colModel = table.getColumnModel();
-            int index = colModel.getColumnIndexAtX(e.getX());
-            int modelIndex = colModel.getColumn(index).getModelIndex();
-
-            if ((modelIndex + 1) == ChainsawColumns.INDEX_TIMESTAMP_COL_NAME) {
-              dateFormatChangePopup.show(e.getComponent(), e.getX(), e.getY());
-            }
-          }
-        }
-      });
-
-    /*
-     * Upper panel definition
-     */
-    JPanel upperPanel = new JPanel();
-    upperPanel.setLayout(new BoxLayout(upperPanel, BoxLayout.X_AXIS));
-    upperPanel.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 0));
-
-    final JLabel filterLabel = new JLabel("Refine focus on: ");
-    filterLabel.setFont(filterLabel.getFont().deriveFont(Font.BOLD));
-
-    upperPanel.add(filterLabel);
-    upperPanel.add(Box.createHorizontalStrut(3));
-    upperPanel.add(filterCombo);
-    upperPanel.add(Box.createHorizontalStrut(3));
-
-    final JTextField filterText =(JTextField) filterCombo.getEditor().getEditorComponent();
-    final JTextField findText =(JTextField) findCombo.getEditor().getEditorComponent();
-
-
-    //Adding a button to clear filter expressions which are currently remembered by Chainsaw...
-    final JButton removeFilterButton = new JButton(" Remove ");
-
-    removeFilterButton.setToolTipText("Click here to remove the selected expression from the list");
-    removeFilterButton.addActionListener(
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent e){
-                	Object selectedItem = filterCombo.getSelectedItem();
-                    if (e.getSource() == removeFilterButton && selectedItem != null && !selectedItem.toString().trim().equals("")){
-                      //don't just remove the entry from the store, clear the field
-                      int index = filterCombo.getSelectedIndex();
-                      filterText.setText(null);
-                      filterCombo.setSelectedIndex(-1);
-                      filterCombo.removeItemAt(index);
-                      if (!(findCombo.getSelectedItem() != null && findCombo.getSelectedItem().equals(selectedItem))) {
-                        //now remove the entry from the other model
-                        ((AutoFilterComboBox.AutoFilterComboBoxModel)findCombo.getModel()).removeElement(selectedItem);
-                      }
+            public void propertyChange(PropertyChangeEvent evt) {
+                //if new value is true, filtering is about to begin
+                //if new value is false, filtering is complete
+                if (evt.getNewValue().equals(Boolean.TRUE)) {
+                    int currentRow = table.getSelectedRow();
+                    if (currentRow > -1) {
+                        currentEvent = tableModel.getRow(currentRow);
+                    }
+                } else {
+                    if (currentEvent != null) {
+                        table.scrollToRow(tableModel.getRowIndex(currentEvent));
                     }
                 }
             }
-    );
-    upperPanel.add(removeFilterButton);
-    //add some space between refine focus and search sections of the panel
-    upperPanel.add(Box.createHorizontalStrut(25));
+        });
 
-    final JLabel findLabel = new JLabel("Find: ");
-    findLabel.setFont(filterLabel.getFont().deriveFont(Font.BOLD));
+        table.getTableHeader().addMouseListener(
+            new MouseAdapter() {
+                public void mouseClicked(MouseEvent e) {
+                    checkEvent(e);
+                }
 
-    upperPanel.add(findLabel);
-    upperPanel.add(Box.createHorizontalStrut(3));
+                public void mousePressed(MouseEvent e) {
+                    checkEvent(e);
+                }
 
-    upperPanel.add(findCombo);
-    upperPanel.add(Box.createHorizontalStrut(3));
+                public void mouseReleased(MouseEvent e) {
+                    checkEvent(e);
+                }
 
-    Action findNextAction = getFindNextAction();
-    Action findPreviousAction = getFindPreviousAction();
-    //add up & down search
-    JButton findNextButton = new SmallButton(findNextAction);
-    findNextButton.setText("");
-    findNextButton.getActionMap().put(
-      findNextAction.getValue(Action.NAME), findNextAction);
-    findNextButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-      (KeyStroke) findNextAction.getValue(Action.ACCELERATOR_KEY),
-      findNextAction.getValue(Action.NAME));
+                private void checkEvent(MouseEvent e) {
+                    if (e.isPopupTrigger()) {
+                        TableColumnModel colModel = table.getColumnModel();
+                        int index = colModel.getColumnIndexAtX(e.getX());
+                        int modelIndex = colModel.getColumn(index).getModelIndex();
 
-    JButton findPreviousButton = new SmallButton(findPreviousAction);
-    findPreviousButton.setText("");
-    findPreviousButton.getActionMap().put(
-      findPreviousAction.getValue(Action.NAME), findPreviousAction);
-    findPreviousButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-      (KeyStroke) findPreviousAction.getValue(Action.ACCELERATOR_KEY),
-      findPreviousAction.getValue(Action.NAME));
+                        if ((modelIndex + 1) == ChainsawColumns.INDEX_TIMESTAMP_COL_NAME) {
+                            dateFormatChangePopup.show(e.getComponent(), e.getX(), e.getY());
+                        }
+                    }
+                }
+            });
 
-    upperPanel.add(findNextButton);
+        /*
+         * Upper panel definition
+         */
+        JPanel upperPanel = new JPanel();
+        upperPanel.setLayout(new BoxLayout(upperPanel, BoxLayout.X_AXIS));
+        upperPanel.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 0));
 
-    upperPanel.add(findPreviousButton);
-    upperPanel.add(Box.createHorizontalStrut(3));
-    
-    //Adding a button to clear filter expressions which are currently remembered by Chainsaw...
-    final JButton removeFindButton = new JButton(" Remove ");
-    removeFindButton.setToolTipText("Click here to remove the selected expression from the list");
-    removeFindButton.addActionListener(
+        final JLabel filterLabel = new JLabel("Refine focus on: ");
+        filterLabel.setFont(filterLabel.getFont().deriveFont(Font.BOLD));
+
+        upperPanel.add(filterLabel);
+        upperPanel.add(Box.createHorizontalStrut(3));
+        upperPanel.add(filterCombo);
+        upperPanel.add(Box.createHorizontalStrut(3));
+
+        final JTextField filterText = (JTextField) filterCombo.getEditor().getEditorComponent();
+        final JTextField findText = (JTextField) findCombo.getEditor().getEditorComponent();
+
+
+        //Adding a button to clear filter expressions which are currently remembered by Chainsaw...
+        final JButton removeFilterButton = new JButton(" Remove ");
+
+        removeFilterButton.setToolTipText("Click here to remove the selected expression from the list");
+        removeFilterButton.addActionListener(
             new AbstractAction() {
-                public void actionPerformed(ActionEvent e){
-                	Object selectedItem = findCombo.getSelectedItem();
-                    if (e.getSource() == removeFindButton && selectedItem != null && !selectedItem.toString().trim().equals("")){
-                      //don't just remove the entry from the store, clear the field
-                      int index = findCombo.getSelectedIndex();
-                      findText.setText(null);
-                      findCombo.setSelectedIndex(-1);
-                      findCombo.removeItemAt(index);
-                      if (!(filterCombo.getSelectedItem() != null && filterCombo.getSelectedItem().equals(selectedItem))) {
-                        //now remove the entry from the other model if it wasn't selected
-                        ((AutoFilterComboBox.AutoFilterComboBoxModel)filterCombo.getModel()).removeElement(selectedItem);
-                      }
+                public void actionPerformed(ActionEvent e) {
+                    Object selectedItem = filterCombo.getSelectedItem();
+                    if (e.getSource() == removeFilterButton && selectedItem != null && !selectedItem.toString().trim().equals("")) {
+                        //don't just remove the entry from the store, clear the field
+                        int index = filterCombo.getSelectedIndex();
+                        filterText.setText(null);
+                        filterCombo.setSelectedIndex(-1);
+                        filterCombo.removeItemAt(index);
+                        if (!(findCombo.getSelectedItem() != null && findCombo.getSelectedItem().equals(selectedItem))) {
+                            //now remove the entry from the other model
+                            ((AutoFilterComboBox.AutoFilterComboBoxModel) findCombo.getModel()).removeElement(selectedItem);
+                        }
                     }
                 }
             }
-    );
-    upperPanel.add(removeFindButton);
+        );
+        upperPanel.add(removeFilterButton);
+        //add some space between refine focus and search sections of the panel
+        upperPanel.add(Box.createHorizontalStrut(25));
 
-    //define search and refine focus selection and clear actions
-    Action findFocusAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent actionEvent) {
-        findCombo.requestFocus();
-      }
-    };
+        final JLabel findLabel = new JLabel("Find: ");
+        findLabel.setFont(filterLabel.getFont().deriveFont(Font.BOLD));
 
-    Action filterFocusAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent actionEvent) {
-        filterCombo.requestFocus();
-      }
-    };
+        upperPanel.add(findLabel);
+        upperPanel.add(Box.createHorizontalStrut(3));
 
-    Action findClearAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent actionEvent) {
-        findCombo.setSelectedIndex(-1);
-        findNext();
-      }
-    };
+        upperPanel.add(findCombo);
+        upperPanel.add(Box.createHorizontalStrut(3));
 
-    Action filterClearAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent actionEvent) {
-        setRefineFocusText("");
-        filterCombo.refilter();
-      }
-    };
+        Action findNextAction = getFindNextAction();
+        Action findPreviousAction = getFindPreviousAction();
+        //add up & down search
+        JButton findNextButton = new SmallButton(findNextAction);
+        findNextButton.setText("");
+        findNextButton.getActionMap().put(
+            findNextAction.getValue(Action.NAME), findNextAction);
+        findNextButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+            (KeyStroke) findNextAction.getValue(Action.ACCELERATOR_KEY),
+            findNextAction.getValue(Action.NAME));
 
-    //now add them to the action and input maps for the logpanel
+        JButton findPreviousButton = new SmallButton(findPreviousAction);
+        findPreviousButton.setText("");
+        findPreviousButton.getActionMap().put(
+            findPreviousAction.getValue(Action.NAME), findPreviousAction);
+        findPreviousButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+            (KeyStroke) findPreviousAction.getValue(Action.ACCELERATOR_KEY),
+            findPreviousAction.getValue(Action.NAME));
+
+        upperPanel.add(findNextButton);
+
+        upperPanel.add(findPreviousButton);
+        upperPanel.add(Box.createHorizontalStrut(3));
+
+        //Adding a button to clear filter expressions which are currently remembered by Chainsaw...
+        final JButton removeFindButton = new JButton(" Remove ");
+        removeFindButton.setToolTipText("Click here to remove the selected expression from the list");
+        removeFindButton.addActionListener(
+            new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    Object selectedItem = findCombo.getSelectedItem();
+                    if (e.getSource() == removeFindButton && selectedItem != null && !selectedItem.toString().trim().equals("")) {
+                        //don't just remove the entry from the store, clear the field
+                        int index = findCombo.getSelectedIndex();
+                        findText.setText(null);
+                        findCombo.setSelectedIndex(-1);
+                        findCombo.removeItemAt(index);
+                        if (!(filterCombo.getSelectedItem() != null && filterCombo.getSelectedItem().equals(selectedItem))) {
+                            //now remove the entry from the other model if it wasn't selected
+                            ((AutoFilterComboBox.AutoFilterComboBoxModel) filterCombo.getModel()).removeElement(selectedItem);
+                        }
+                    }
+                }
+            }
+        );
+        upperPanel.add(removeFindButton);
+
+        //define search and refine focus selection and clear actions
+        Action findFocusAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                findCombo.requestFocus();
+            }
+        };
+
+        Action filterFocusAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                filterCombo.requestFocus();
+            }
+        };
+
+        Action findClearAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                findCombo.setSelectedIndex(-1);
+                findNext();
+            }
+        };
+
+        Action filterClearAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                setRefineFocusText("");
+                filterCombo.refilter();
+            }
+        };
+
+        //now add them to the action and input maps for the logpanel
         KeyStroke ksFindFocus =
-      KeyStroke.getKeyStroke(KeyEvent.VK_F, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
-    KeyStroke ksFilterFocus =
-      KeyStroke.getKeyStroke(KeyEvent.VK_R, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+            KeyStroke.getKeyStroke(KeyEvent.VK_F, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+        KeyStroke ksFilterFocus =
+            KeyStroke.getKeyStroke(KeyEvent.VK_R, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
         KeyStroke ksFindClear =
-      KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.SHIFT_MASK |Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
-    KeyStroke ksFilterClear =
-      KeyStroke.getKeyStroke(KeyEvent.VK_R,  InputEvent.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+            KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+        KeyStroke ksFilterClear =
+            KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
 
-    getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksFindFocus, "FindFocus");
-    getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksFilterFocus, "FilterFocus");
-    getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksFindClear, "FindClear");
-    getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksFilterClear, "FilterClear");
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksFindFocus, "FindFocus");
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksFilterFocus, "FilterFocus");
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksFindClear, "FindClear");
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksFilterClear, "FilterClear");
 
-    getActionMap().put("FindFocus", findFocusAction);
-    getActionMap().put("FilterFocus", filterFocusAction);
-    getActionMap().put("FindClear", findClearAction);
-    getActionMap().put("FilterClear", filterClearAction);
+        getActionMap().put("FindFocus", findFocusAction);
+        getActionMap().put("FilterFocus", filterFocusAction);
+        getActionMap().put("FindClear", findClearAction);
+        getActionMap().put("FilterClear", filterClearAction);
 
-    /*
-     * Detail pane definition
-     */
-    detail = new JEditorPane(ChainsawConstants.DETAIL_CONTENT_TYPE, "");
-    detail.setEditable(false);
+        /*
+         * Detail pane definition
+         */
+        detail = new JEditorPane(ChainsawConstants.DETAIL_CONTENT_TYPE, "");
+        detail.setEditable(false);
 
-    detailPaneUpdater = new DetailPaneUpdater();
+        detailPaneUpdater = new DetailPaneUpdater();
 
-    //if the panel gets focus, update the detail pane
-    addFocusListener(new FocusListener() {
+        //if the panel gets focus, update the detail pane
+        addFocusListener(new FocusListener() {
 
-        public void focusGained(FocusEvent e) {
-            detailPaneUpdater.updateDetailPane();
-        }
+            public void focusGained(FocusEvent e) {
+                detailPaneUpdater.updateDetailPane();
+            }
 
-        public void focusLost(FocusEvent e) {
-            
-        }
-    });
-    findMarkerRule = ExpressionRule.getRule("prop." + ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE + " exists");
-        
-    tableModel.addTableModelListener(e -> {
-int currentRow = table.getSelectedRow();
-if (e.getFirstRow() <= currentRow && e.getLastRow() >= currentRow) {
+            public void focusLost(FocusEvent e) {
+
+            }
+        });
+        findMarkerRule = ExpressionRule.getRule("prop." + ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE + " exists");
+
+        tableModel.addTableModelListener(e -> {
+            int currentRow = table.getSelectedRow();
+            if (e.getFirstRow() <= currentRow && e.getLastRow() >= currentRow) {
 //current row has changed - update
-detailPaneUpdater.setAndUpdateSelectedRow(table.getSelectedRow());
-}
-    });
-    addPropertyChangeListener("detailPaneConversionPattern", detailPaneUpdater);
+                detailPaneUpdater.setAndUpdateSelectedRow(table.getSelectedRow());
+            }
+        });
+        addPropertyChangeListener("detailPaneConversionPattern", detailPaneUpdater);
 
-    searchPane = new JScrollPane(searchTable);
-    searchPane.getVerticalScrollBar().setUnitIncrement(ChainsawConstants.DEFAULT_ROW_HEIGHT * 2);
-    searchPane.setPreferredSize(new Dimension(900, 50));
+        searchPane = new JScrollPane(searchTable);
+        searchPane.getVerticalScrollBar().setUnitIncrement(ChainsawConstants.DEFAULT_ROW_HEIGHT * 2);
+        searchPane.setPreferredSize(new Dimension(900, 50));
 
-    //default detail panel to contain detail panel - if searchResultsVisible is true, when a search if triggered, update detail pane to contain search results
-    detailPane = new JScrollPane(detail);
-    detailPane.setPreferredSize(new Dimension(900, 50));
+        //default detail panel to contain detail panel - if searchResultsVisible is true, when a search if triggered, update detail pane to contain search results
+        detailPane = new JScrollPane(detail);
+        detailPane.setPreferredSize(new Dimension(900, 50));
 
-    detailPanel.add(detailPane, BorderLayout.CENTER);
+        detailPanel.add(detailPane, BorderLayout.CENTER);
 
-    JPanel eventsAndStatusPanel = new JPanel(new BorderLayout());
+        JPanel eventsAndStatusPanel = new JPanel(new BorderLayout());
 
-    eventsPane = new JScrollPane(table);
-    eventsPane.getVerticalScrollBar().setUnitIncrement(ChainsawConstants.DEFAULT_ROW_HEIGHT * 2);
+        eventsPane = new JScrollPane(table);
+        eventsPane.getVerticalScrollBar().setUnitIncrement(ChainsawConstants.DEFAULT_ROW_HEIGHT * 2);
 
-    eventsAndStatusPanel.add(eventsPane, BorderLayout.CENTER);
+        eventsAndStatusPanel.add(eventsPane, BorderLayout.CENTER);
 
-    Integer scrollBarWidth = (Integer) UIManager.get("ScrollBar.width");
+        Integer scrollBarWidth = (Integer) UIManager.get("ScrollBar.width");
 
-    JPanel rightPanel = new JPanel();
-    rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
+        JPanel rightPanel = new JPanel();
+        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
 
-    JPanel rightThumbNailPanel = new JPanel();
-    rightThumbNailPanel.setLayout(new BoxLayout(rightThumbNailPanel, BoxLayout.Y_AXIS));
-    rightThumbNailPanel.add(Box.createVerticalStrut(scrollBarWidth));
-    colorizedEventAndSearchMatchThumbnail = new ColorizedEventAndSearchMatchThumbnail();
-    rightThumbNailPanel.add(colorizedEventAndSearchMatchThumbnail);
-    rightThumbNailPanel.add(Box.createVerticalStrut(scrollBarWidth));
-    rightPanel.add(rightThumbNailPanel);
-    //set thumbnail width to be a bit narrower than scrollbar width
-    if (scrollBarWidth != null) {
-        rightThumbNailPanel.setPreferredSize(new Dimension(scrollBarWidth -4, -1));
-    }
-    eventsAndStatusPanel.add(rightPanel, BorderLayout.EAST);
+        JPanel rightThumbNailPanel = new JPanel();
+        rightThumbNailPanel.setLayout(new BoxLayout(rightThumbNailPanel, BoxLayout.Y_AXIS));
+        rightThumbNailPanel.add(Box.createVerticalStrut(scrollBarWidth));
+        colorizedEventAndSearchMatchThumbnail = new ColorizedEventAndSearchMatchThumbnail();
+        rightThumbNailPanel.add(colorizedEventAndSearchMatchThumbnail);
+        rightThumbNailPanel.add(Box.createVerticalStrut(scrollBarWidth));
+        rightPanel.add(rightThumbNailPanel);
+        //set thumbnail width to be a bit narrower than scrollbar width
+        if (scrollBarWidth != null) {
+            rightThumbNailPanel.setPreferredSize(new Dimension(scrollBarWidth - 4, -1));
+        }
+        eventsAndStatusPanel.add(rightPanel, BorderLayout.EAST);
 
-    JPanel leftPanel = new JPanel();
-    leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
+        JPanel leftPanel = new JPanel();
+        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
 
-    JPanel leftThumbNailPanel = new JPanel();
-    leftThumbNailPanel.setLayout(new BoxLayout(leftThumbNailPanel, BoxLayout.Y_AXIS));
-    leftThumbNailPanel.add(Box.createVerticalStrut(scrollBarWidth));
-    eventTimeDeltaMatchThumbnail = new EventTimeDeltaMatchThumbnail();
-    leftThumbNailPanel.add(eventTimeDeltaMatchThumbnail);
-    leftThumbNailPanel.add(Box.createVerticalStrut(scrollBarWidth));
-    leftPanel.add(leftThumbNailPanel);
+        JPanel leftThumbNailPanel = new JPanel();
+        leftThumbNailPanel.setLayout(new BoxLayout(leftThumbNailPanel, BoxLayout.Y_AXIS));
+        leftThumbNailPanel.add(Box.createVerticalStrut(scrollBarWidth));
+        eventTimeDeltaMatchThumbnail = new EventTimeDeltaMatchThumbnail();
+        leftThumbNailPanel.add(eventTimeDeltaMatchThumbnail);
+        leftThumbNailPanel.add(Box.createVerticalStrut(scrollBarWidth));
+        leftPanel.add(leftThumbNailPanel);
 
-    //set thumbnail width to be a bit narrower than scrollbar width
-    if (scrollBarWidth != null) {
-        leftThumbNailPanel.setPreferredSize(new Dimension(scrollBarWidth -4, -1));
-    }
-    eventsAndStatusPanel.add(leftPanel, BorderLayout.WEST);
+        //set thumbnail width to be a bit narrower than scrollbar width
+        if (scrollBarWidth != null) {
+            leftThumbNailPanel.setPreferredSize(new Dimension(scrollBarWidth - 4, -1));
+        }
+        eventsAndStatusPanel.add(leftPanel, BorderLayout.WEST);
 
-    final JPanel statusLabelPanel = new JPanel();
-    statusLabelPanel.setLayout(new BorderLayout());
+        final JPanel statusLabelPanel = new JPanel();
+        statusLabelPanel.setLayout(new BorderLayout());
 
-    statusLabelPanel.add(upperPanel, BorderLayout.CENTER);
-    eventsAndStatusPanel.add(statusLabelPanel, BorderLayout.NORTH);
+        statusLabelPanel.add(upperPanel, BorderLayout.CENTER);
+        eventsAndStatusPanel.add(statusLabelPanel, BorderLayout.NORTH);
 
-    /*
-     * Detail panel layout editor
-     */
-    detailToolbar = new JToolBar(SwingConstants.HORIZONTAL);
-    detailToolbar.setFloatable(false);
+        /*
+         * Detail panel layout editor
+         */
+        detailToolbar = new JToolBar(SwingConstants.HORIZONTAL);
+        detailToolbar.setFloatable(false);
 
-    final LayoutEditorPane layoutEditorPane = new LayoutEditorPane();
-    final JDialog layoutEditorDialog =
-      new JDialog((JFrame) null, "Pattern Editor");
-    layoutEditorDialog.getContentPane().add(layoutEditorPane);
-    layoutEditorDialog.setSize(640, 480);
+        final LayoutEditorPane layoutEditorPane = new LayoutEditorPane();
+        final JDialog layoutEditorDialog =
+            new JDialog((JFrame) null, "Pattern Editor");
+        layoutEditorDialog.getContentPane().add(layoutEditorPane);
+        layoutEditorDialog.setSize(640, 480);
 
-    layoutEditorPane.addCancelActionListener(
+        layoutEditorPane.addCancelActionListener(
             e -> layoutEditorDialog.setVisible(false));
 
-    layoutEditorPane.addOkActionListener(
+        layoutEditorPane.addOkActionListener(
             e -> {
-              setDetailPaneConversionPattern(
-                layoutEditorPane.getConversionPattern());
-              layoutEditorDialog.setVisible(false);
+                setDetailPaneConversionPattern(
+                    layoutEditorPane.getConversionPattern());
+                layoutEditorDialog.setVisible(false);
             });
 
-    Action copyToRefineFocusAction = new AbstractAction("Set 'refine focus' field") {
-        public void actionPerformed(ActionEvent e) {
-            String selectedText = detail.getSelectedText();
-            if (selectedText == null || selectedText.equals("")) {
-                //no-op empty searches
-                return;
+        Action copyToRefineFocusAction = new AbstractAction("Set 'refine focus' field") {
+            public void actionPerformed(ActionEvent e) {
+                String selectedText = detail.getSelectedText();
+                if (selectedText == null || selectedText.equals("")) {
+                    //no-op empty searches
+                    return;
+                }
+                filterText.setText("msg ~= '" + selectedText + "'");
             }
-            filterText.setText("msg ~= '" + selectedText + "'");
-        }
-    };
+        };
 
-    Action copyToSearchAction = new AbstractAction("Find next") {
-        public void actionPerformed(ActionEvent e) {
-            String selectedText = detail.getSelectedText();
-            if (selectedText == null || selectedText.equals("")) {
-                //no-op empty searches
-                return;
+        Action copyToSearchAction = new AbstractAction("Find next") {
+            public void actionPerformed(ActionEvent e) {
+                String selectedText = detail.getSelectedText();
+                if (selectedText == null || selectedText.equals("")) {
+                    //no-op empty searches
+                    return;
+                }
+                findCombo.setSelectedItem("msg ~= '" + selectedText + "'");
+                findNext();
             }
-            findCombo.setSelectedItem("msg ~= '" + selectedText + "'");
-            findNext();
-        }
-    };
+        };
 
-    Action editDetailAction =
-      new AbstractAction(
-        "Edit...", new ImageIcon(ChainsawIcons.ICON_EDIT_RECEIVER)) {
-        public void actionPerformed(ActionEvent e) {
-          layoutEditorPane.setConversionPattern(
-            getDetailPaneConversionPattern());
+        Action editDetailAction =
+            new AbstractAction(
+                "Edit...", new ImageIcon(ChainsawIcons.ICON_EDIT_RECEIVER)) {
+                public void actionPerformed(ActionEvent e) {
+                    layoutEditorPane.setConversionPattern(
+                        getDetailPaneConversionPattern());
 
-          Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
-          Point p =
-            new Point(
-              ((int) ((size.getWidth() / 2)
-              - (layoutEditorDialog.getSize().getWidth() / 2))),
-              ((int) ((size.getHeight() / 2)
-              - (layoutEditorDialog.getSize().getHeight() / 2))));
-          layoutEditorDialog.setLocation(p);
+                    Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
+                    Point p =
+                        new Point(
+                            ((int) ((size.getWidth() / 2)
+                                - (layoutEditorDialog.getSize().getWidth() / 2))),
+                            ((int) ((size.getHeight() / 2)
+                                - (layoutEditorDialog.getSize().getHeight() / 2))));
+                    layoutEditorDialog.setLocation(p);
 
-          layoutEditorDialog.setVisible(true);
-        }
-      };
+                    layoutEditorDialog.setVisible(true);
+                }
+            };
 
-    editDetailAction.putValue(
-      Action.SHORT_DESCRIPTION,
-      "opens a Dialog window to Edit the Pattern Layout text");
+        editDetailAction.putValue(
+            Action.SHORT_DESCRIPTION,
+            "opens a Dialog window to Edit the Pattern Layout text");
 
-    final SmallButton editDetailButton = new SmallButton(editDetailAction);
-    editDetailButton.setText(null);
-    detailToolbar.add(Box.createHorizontalGlue());
-    detailToolbar.add(editDetailButton);
-    detailToolbar.addSeparator();
-    detailToolbar.add(Box.createHorizontalStrut(5));
+        final SmallButton editDetailButton = new SmallButton(editDetailAction);
+        editDetailButton.setText(null);
+        detailToolbar.add(Box.createHorizontalGlue());
+        detailToolbar.add(editDetailButton);
+        detailToolbar.addSeparator();
+        detailToolbar.add(Box.createHorizontalStrut(5));
 
-    Action closeDetailAction =
-      new AbstractAction(null, LineIconFactory.createCloseIcon()) {
-        public void actionPerformed(ActionEvent arg0) {
-          preferenceModel.setDetailPaneVisible(false);
-        }
-      };
+        Action closeDetailAction =
+            new AbstractAction(null, LineIconFactory.createCloseIcon()) {
+                public void actionPerformed(ActionEvent arg0) {
+                    preferenceModel.setDetailPaneVisible(false);
+                }
+            };
 
-    closeDetailAction.putValue(
-      Action.SHORT_DESCRIPTION, "Hides the Detail Panel");
+        closeDetailAction.putValue(
+            Action.SHORT_DESCRIPTION, "Hides the Detail Panel");
 
-    SmallButton closeDetailButton = new SmallButton(closeDetailAction);
-    detailToolbar.add(closeDetailButton);
+        SmallButton closeDetailButton = new SmallButton(closeDetailAction);
+        detailToolbar.add(closeDetailButton);
 
-    detailPanel.add(detailToolbar, BorderLayout.NORTH);
+        detailPanel.add(detailToolbar, BorderLayout.NORTH);
 
-    lowerPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT, eventsAndStatusPanel, detailPanel);
+        lowerPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT, eventsAndStatusPanel, detailPanel);
 
-    dividerSize = lowerPanel.getDividerSize();
-    lowerPanel.setDividerLocation(-1);
+        dividerSize = lowerPanel.getDividerSize();
+        lowerPanel.setDividerLocation(-1);
 
-    lowerPanel.setResizeWeight(1.0);
-    lowerPanel.setBorder(null);
-    lowerPanel.setContinuousLayout(true);
+        lowerPanel.setResizeWeight(1.0);
+        lowerPanel.setBorder(null);
+        lowerPanel.setContinuousLayout(true);
 
-    JPopupMenu editDetailPopupMenu = new JPopupMenu();
+        JPopupMenu editDetailPopupMenu = new JPopupMenu();
 
-    editDetailPopupMenu.add(copyToRefineFocusAction);
-    editDetailPopupMenu.add(copyToSearchAction);
-    editDetailPopupMenu.addSeparator();
+        editDetailPopupMenu.add(copyToRefineFocusAction);
+        editDetailPopupMenu.add(copyToSearchAction);
+        editDetailPopupMenu.addSeparator();
 
-    editDetailPopupMenu.add(editDetailAction);
-    editDetailPopupMenu.addSeparator();
+        editDetailPopupMenu.add(editDetailAction);
+        editDetailPopupMenu.addSeparator();
 
-    final ButtonGroup layoutGroup = new ButtonGroup();
+        final ButtonGroup layoutGroup = new ButtonGroup();
 
-    JRadioButtonMenuItem defaultLayoutRadio =
-      new JRadioButtonMenuItem(
-        new AbstractAction("Set to Default Layout") {
-          public void actionPerformed(ActionEvent e) {
-            setDetailPaneConversionPattern(
-              DefaultLayoutFactory.getDefaultPatternLayout());
-          }
-        });
+        JRadioButtonMenuItem defaultLayoutRadio =
+            new JRadioButtonMenuItem(
+                new AbstractAction("Set to Default Layout") {
+                    public void actionPerformed(ActionEvent e) {
+                        setDetailPaneConversionPattern(
+                            DefaultLayoutFactory.getDefaultPatternLayout());
+                    }
+                });
 
         JRadioButtonMenuItem fullLayoutRadio =
-          new JRadioButtonMenuItem(
-            new AbstractAction("Set to Full Layout") {
-              public void actionPerformed(ActionEvent e) {
-                setDetailPaneConversionPattern(
-                  DefaultLayoutFactory.getFullPatternLayout());
-              }
-            });
+            new JRadioButtonMenuItem(
+                new AbstractAction("Set to Full Layout") {
+                    public void actionPerformed(ActionEvent e) {
+                        setDetailPaneConversionPattern(
+                            DefaultLayoutFactory.getFullPatternLayout());
+                    }
+                });
 
-    editDetailPopupMenu.add(defaultLayoutRadio);
-    editDetailPopupMenu.add(fullLayoutRadio);
+        editDetailPopupMenu.add(defaultLayoutRadio);
+        editDetailPopupMenu.add(fullLayoutRadio);
 
-    layoutGroup.add(defaultLayoutRadio);
-    layoutGroup.add(fullLayoutRadio);
-    defaultLayoutRadio.setSelected(true);
+        layoutGroup.add(defaultLayoutRadio);
+        layoutGroup.add(fullLayoutRadio);
+        defaultLayoutRadio.setSelected(true);
 
-    JRadioButtonMenuItem tccLayoutRadio =
-      new JRadioButtonMenuItem(
-        new AbstractAction("Set to TCCLayout") {
-          public void actionPerformed(ActionEvent e) {
-            setDetailPaneConversionPattern(
-              PatternLayout.TTCC_CONVERSION_PATTERN);
-          }
-        });
-    editDetailPopupMenu.add(tccLayoutRadio);
-    layoutGroup.add(tccLayoutRadio);
+        JRadioButtonMenuItem tccLayoutRadio =
+            new JRadioButtonMenuItem(
+                new AbstractAction("Set to TCCLayout") {
+                    public void actionPerformed(ActionEvent e) {
+                        setDetailPaneConversionPattern(
+                            PatternLayout.TTCC_CONVERSION_PATTERN);
+                    }
+                });
+        editDetailPopupMenu.add(tccLayoutRadio);
+        layoutGroup.add(tccLayoutRadio);
 
-    PopupListener editDetailPopupListener =
-      new PopupListener(editDetailPopupMenu);
-    detail.addMouseListener(editDetailPopupListener);
+        PopupListener editDetailPopupListener =
+            new PopupListener(editDetailPopupMenu);
+        detail.addMouseListener(editDetailPopupListener);
 
-    /*
-     * Logger tree splitpane definition
-     */
-    nameTreeAndMainPanelSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, logTreePanel, lowerPanel);
-    nameTreeAndMainPanelSplit.setDividerLocation(-1);
+        /*
+         * Logger tree splitpane definition
+         */
+        nameTreeAndMainPanelSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, logTreePanel, lowerPanel);
+        nameTreeAndMainPanelSplit.setDividerLocation(-1);
 
-    add(nameTreeAndMainPanelSplit, BorderLayout.CENTER);
+        add(nameTreeAndMainPanelSplit, BorderLayout.CENTER);
 
-    if (isLogTreeVisible()) {
-        showLogTreePanel();
-    } else {
-        hideLogTreePanel();
-    }
+        if (isLogTreeVisible()) {
+            showLogTreePanel();
+        } else {
+            hideLogTreePanel();
+        }
 
-    /*
-     * Other menu items
-     */
-    class BestFit extends JMenuItem {
-      public BestFit() {
-        super("Best fit column");
-    addActionListener(
-            evt -> {
-              if (currentPoint != null) {
-                int column = currentTable.columnAtPoint(currentPoint);
-                int maxWidth = getMaxColumnWidth(column);
-                currentTable.getColumnModel().getColumn(column).setPreferredWidth(
-                  maxWidth);
-              }
-            });
-      }
-    }
-
-    class ColorPanel extends JMenuItem {
-      public ColorPanel() {
-        super("Color settings...");
-        setIcon(ChainsawIcons.ICON_PREFERENCES);
-  addActionListener(
-          evt -> showColorPreferences());
-      }
-    }
-
-    class LogPanelPreferences extends JMenuItem {
-      public LogPanelPreferences() {
-        super("Tab Preferences...");
-        setIcon(ChainsawIcons.ICON_PREFERENCES);
-    addActionListener(
-            evt -> showPreferences());
-    }
-  }
-
-    class FocusOn extends JMenuItem {
-      public FocusOn() {
-        super("Set 'refine focus' field to value under pointer");
-    addActionListener(
-            evt -> {
-              if (currentPoint != null) {
-                String operator = "==";
-                int column = currentTable.columnAtPoint(currentPoint);
-                int row = currentTable.rowAtPoint(currentPoint);
-                String colName = currentTable.getColumnName(column).toUpperCase();
-                String value = getValueOf(row, column);
-
-                if (columnNameKeywordMap.containsKey(colName)) {
-                  filterText.setText(
-                    columnNameKeywordMap.get(colName).toString() + " " + operator
-                    + " '" + value + "'");
-                }
-              }
-            });
-      }
-    }
-
-    class DefineAddCustomFilter extends JMenuItem {
-      public DefineAddCustomFilter() {
-        super("Add value under pointer to 'refine focus' field");
-  addActionListener(
-          evt -> {
-            if (currentPoint != null) {
-              String operator = "==";
-              int column = currentTable.columnAtPoint(currentPoint);
-              int row = currentTable.rowAtPoint(currentPoint);
-              String value = getValueOf(row, column);
-              String colName = currentTable.getColumnName(column).toUpperCase();
-
-              if (columnNameKeywordMap.containsKey(colName)) {
-                filterText.setText(
-                  filterText.getText() + " && "
-                  + columnNameKeywordMap.get(colName).toString() + " "
-                  + operator + " '" + value + "'");
-              }
-
+        /*
+         * Other menu items
+         */
+        class BestFit extends JMenuItem {
+            public BestFit() {
+                super("Best fit column");
+                addActionListener(
+                    evt -> {
+                        if (currentPoint != null) {
+                            int column = currentTable.columnAtPoint(currentPoint);
+                            int maxWidth = getMaxColumnWidth(column);
+                            currentTable.getColumnModel().getColumn(column).setPreferredWidth(
+                                maxWidth);
+                        }
+                    });
             }
-          });
-      }
-    }
+        }
+
+        class ColorPanel extends JMenuItem {
+            public ColorPanel() {
+                super("Color settings...");
+                setIcon(ChainsawIcons.ICON_PREFERENCES);
+                addActionListener(
+                    evt -> showColorPreferences());
+            }
+        }
+
+        class LogPanelPreferences extends JMenuItem {
+            public LogPanelPreferences() {
+                super("Tab Preferences...");
+                setIcon(ChainsawIcons.ICON_PREFERENCES);
+                addActionListener(
+                    evt -> showPreferences());
+            }
+        }
+
+        class FocusOn extends JMenuItem {
+            public FocusOn() {
+                super("Set 'refine focus' field to value under pointer");
+                addActionListener(
+                    evt -> {
+                        if (currentPoint != null) {
+                            String operator = "==";
+                            int column = currentTable.columnAtPoint(currentPoint);
+                            int row = currentTable.rowAtPoint(currentPoint);
+                            String colName = currentTable.getColumnName(column).toUpperCase();
+                            String value = getValueOf(row, column);
+
+                            if (columnNameKeywordMap.containsKey(colName)) {
+                                filterText.setText(
+                                    columnNameKeywordMap.get(colName).toString() + " " + operator
+                                        + " '" + value + "'");
+                            }
+                        }
+                    });
+            }
+        }
+
+        class DefineAddCustomFilter extends JMenuItem {
+            public DefineAddCustomFilter() {
+                super("Add value under pointer to 'refine focus' field");
+                addActionListener(
+                    evt -> {
+                        if (currentPoint != null) {
+                            String operator = "==";
+                            int column = currentTable.columnAtPoint(currentPoint);
+                            int row = currentTable.rowAtPoint(currentPoint);
+                            String value = getValueOf(row, column);
+                            String colName = currentTable.getColumnName(column).toUpperCase();
+
+                            if (columnNameKeywordMap.containsKey(colName)) {
+                                filterText.setText(
+                                    filterText.getText() + " && "
+                                        + columnNameKeywordMap.get(colName).toString() + " "
+                                        + operator + " '" + value + "'");
+                            }
+
+                        }
+                    });
+            }
+        }
 
         class DefineAddCustomFind extends JMenuItem {
-      public DefineAddCustomFind() {
-        super("Add value under pointer to 'find' field");
-  addActionListener(
-          evt -> {
-            if (currentPoint != null) {
-              String operator = "==";
-              int column = currentTable.columnAtPoint(currentPoint);
-              int row = currentTable.rowAtPoint(currentPoint);
-              String value = getValueOf(row, column);
-              String colName = currentTable.getColumnName(column).toUpperCase();
+            public DefineAddCustomFind() {
+                super("Add value under pointer to 'find' field");
+                addActionListener(
+                    evt -> {
+                        if (currentPoint != null) {
+                            String operator = "==";
+                            int column = currentTable.columnAtPoint(currentPoint);
+                            int row = currentTable.rowAtPoint(currentPoint);
+                            String value = getValueOf(row, column);
+                            String colName = currentTable.getColumnName(column).toUpperCase();
 
-              if (columnNameKeywordMap.containsKey(colName)) {
-                findCombo.setSelectedItem(
-                  findText.getText() + " && "
-                  + columnNameKeywordMap.get(colName).toString() + " "
-                  + operator + " '" + value + "'");
-                findNext();
-              }
+                            if (columnNameKeywordMap.containsKey(colName)) {
+                                findCombo.setSelectedItem(
+                                    findText.getText() + " && "
+                                        + columnNameKeywordMap.get(colName).toString() + " "
+                                        + operator + " '" + value + "'");
+                                findNext();
+                            }
+                        }
+                    });
             }
-          });
-      }
-    }
+        }
 
-    class BuildColorRule extends JMenuItem {
-      public BuildColorRule() {
-        super("Define color rule for value under pointer");
-      addActionListener(
-              evt -> {
-                if (currentPoint != null) {
-                  String operator = "==";
-                  int column = currentTable.columnAtPoint(currentPoint);
-                  int row = currentTable.rowAtPoint(currentPoint);
-                  String colName = currentTable.getColumnName(column).toUpperCase();
-                  String value = getValueOf(row, column);
+        class BuildColorRule extends JMenuItem {
+            public BuildColorRule() {
+                super("Define color rule for value under pointer");
+                addActionListener(
+                    evt -> {
+                        if (currentPoint != null) {
+                            String operator = "==";
+                            int column = currentTable.columnAtPoint(currentPoint);
+                            int row = currentTable.rowAtPoint(currentPoint);
+                            String colName = currentTable.getColumnName(column).toUpperCase();
+                            String value = getValueOf(row, column);
 
-                  if (columnNameKeywordMap.containsKey(colName)) {
-                      Color c = JColorChooser.showDialog(getRootPane(), "Choose a color", Color.red);
-                      if (c != null) {
-                          String expression = columnNameKeywordMap.get(colName).toString() + " " + operator + " '" + value + "'";
-                          colorizer.addRule(ChainsawConstants.DEFAULT_COLOR_RULE_NAME, new ColorRule(expression,
-                                  ExpressionRule.getRule(expression), c, ChainsawConstants.COLOR_DEFAULT_FOREGROUND));
-                      }
-                  }
+                            if (columnNameKeywordMap.containsKey(colName)) {
+                                Color c = JColorChooser.showDialog(getRootPane(), "Choose a color", Color.red);
+                                if (c != null) {
+                                    String expression = columnNameKeywordMap.get(colName).toString() + " " + operator + " '" + value + "'";
+                                    colorizer.addRule(ChainsawConstants.DEFAULT_COLOR_RULE_NAME, new ColorRule(expression,
+                                        ExpressionRule.getRule(expression), c, ChainsawConstants.COLOR_DEFAULT_FOREGROUND));
+                                }
+                            }
+                        }
+                    });
+            }
+        }
+
+        final JPopupMenu mainPopup = new JPopupMenu();
+        final JPopupMenu searchPopup = new JPopupMenu();
+
+        class ClearFocus extends AbstractAction {
+            public ClearFocus() {
+                super("Clear 'refine focus' field");
+            }
+
+            public void actionPerformed(ActionEvent e) {
+                filterText.setText(null);
+                tableRuleMediator.setFilterRule(null);
+                searchRuleMediator.setFilterRule(null);
+            }
+        }
+
+        class CopySelection extends AbstractAction {
+            public CopySelection() {
+                super("Copy selection to clipboard");
+            }
+
+            public void actionPerformed(ActionEvent e) {
+                if (currentTable == null) {
+                    return;
                 }
-              });
-      }
-    }
-
-    final JPopupMenu mainPopup = new JPopupMenu();
-    final JPopupMenu searchPopup = new JPopupMenu();
-
-    class ClearFocus extends AbstractAction {
-      public ClearFocus() {
-        super("Clear 'refine focus' field");
-      }
-        public void actionPerformed(ActionEvent e) {
-          filterText.setText(null);
-          tableRuleMediator.setFilterRule(null);
-          searchRuleMediator.setFilterRule(null);
-        }
-      }
-
-    class CopySelection extends AbstractAction {
-      public CopySelection() {
-        super("Copy selection to clipboard");
-      }
-
-        public void actionPerformed(ActionEvent e) {
-          if (currentTable == null) {
-            return;
-          }
-          int start = currentTable.getSelectionModel().getMinSelectionIndex();
-          int end = currentTable.getSelectionModel().getMaxSelectionIndex();
-          StringBuilder result = new StringBuilder();
-          for (int row=start;row<end+1;row++) {
-            for (int column=0;column<currentTable.getColumnCount();column++) {
-              result.append(getValueOf(row, column));
-              if (column != (currentTable.getColumnCount() - 1)) {
-                result.append(" - ");
-              }
-            }
-            result.append(System.getProperty("line.separator"));
-          }
-          StringSelection selection = new StringSelection(result.toString());
-          Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-          clipboard.setContents(selection, null);
-      }
-    }
-
-    class CopyField extends AbstractAction {
-      public CopyField() {
-        super("Copy value under pointer to clipboard");
-      }
-
-        public void actionPerformed(ActionEvent e) {
-          if (currentPoint != null && currentTable != null) {
-            int column = currentTable.columnAtPoint(currentPoint);
-            int row = currentTable.rowAtPoint(currentPoint);
-            String value = getValueOf(row, column);
-            StringSelection selection = new StringSelection(value);
-            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-            clipboard.setContents(selection, null);
-        }
-      }
-    }
-    final JMenuItem menuItemToggleDock = new JMenuItem("Undock/dock");
-
-    dockingAction =
-      new AbstractAction("Undock") {
-          public void actionPerformed(ActionEvent evt) {
-            if (isDocked()) {
-              undock();
-            } else {
-              dock();
-            }
-          }
-        };
-    dockingAction.putValue(
-      Action.SMALL_ICON, new ImageIcon(ChainsawIcons.UNDOCK));
-    menuItemToggleDock.setAction(dockingAction);
-
-    /*
-     * Popup definition
-     */
-    mainPopup.add(new FocusOn());
-    searchPopup.add(new FocusOn());
-    mainPopup.add(new DefineAddCustomFilter());
-    searchPopup.add(new DefineAddCustomFilter());
-    mainPopup.add(new ClearFocus());
-    searchPopup.add(new ClearFocus());
-
-    mainPopup.add(new JSeparator());
-    searchPopup.add(new JSeparator());
-
-    class Search extends JMenuItem {
-      public Search() {
-        super("Find value under pointer");
-
-    addActionListener(
-            evt -> {
-              if (currentPoint != null) {
-                String operator = "==";
-                int column = currentTable.columnAtPoint(currentPoint);
-                int row = currentTable.rowAtPoint(currentPoint);
-                String colName = currentTable.getColumnName(column).toUpperCase();
-                String value = getValueOf(row, column);
-                if (columnNameKeywordMap.containsKey(colName)) {
-                  findCombo.setSelectedItem(
-                    columnNameKeywordMap.get(colName).toString() + " " + operator
-                    + " '" + value + "'");
-                  findNext();
-                }
-              }
-            });
-      }
-    }
-
-     class ClearSearch extends AbstractAction {
-       public ClearSearch() {
-         super("Clear find field");
-       }
-          public void actionPerformed(ActionEvent e) {
-            findCombo.setSelectedItem(null);
-            updateFindRule(null);
-          }
-        }
-
-    mainPopup.add(new Search());
-    searchPopup.add(new Search());
-    mainPopup.add(new DefineAddCustomFind());
-    searchPopup.add(new DefineAddCustomFind());
-    mainPopup.add(new ClearSearch());
-    searchPopup.add(new ClearSearch());
-
-    mainPopup.add(new JSeparator());
-    searchPopup.add(new JSeparator());
-
-    class DisplayNormalTimes extends JMenuItem {
-      public DisplayNormalTimes() {
-        super("Hide relative times");
-  addActionListener(
-          e -> {
-            if (currentPoint != null) {
-              ((TableColorizingRenderer)currentTable.getDefaultRenderer(Object.class)).setUseNormalTimes();
-              ((ChainsawCyclicBufferTableModel)currentTable.getModel()).reFilter();
-              setEnabled(true);
-            }
-          });
-      }
-    }
-
-    class DisplayRelativeTimesToRowUnderCursor extends JMenuItem {
-    public DisplayRelativeTimesToRowUnderCursor() {
-      super("Show times relative to this event");
-      addActionListener(
-              e -> {
-                  if (currentPoint != null) {
-                    int row = currentTable.rowAtPoint(currentPoint);
-                    ChainsawCyclicBufferTableModel cyclicBufferTableModel = (ChainsawCyclicBufferTableModel) currentTable.getModel();
-                    LoggingEventWrapper loggingEventWrapper = cyclicBufferTableModel.getRow(row);
-                    if (loggingEventWrapper != null)
-                    {
-                        ((TableColorizingRenderer)currentTable.getDefaultRenderer(Object.class)).setUseRelativeTimes(loggingEventWrapper.getLoggingEvent().getTimeStamp());
-                        cyclicBufferTableModel.reFilter();
+                int start = currentTable.getSelectionModel().getMinSelectionIndex();
+                int end = currentTable.getSelectionModel().getMaxSelectionIndex();
+                StringBuilder result = new StringBuilder();
+                for (int row = start; row < end + 1; row++) {
+                    for (int column = 0; column < currentTable.getColumnCount(); column++) {
+                        result.append(getValueOf(row, column));
+                        if (column != (currentTable.getColumnCount() - 1)) {
+                            result.append(" - ");
+                        }
                     }
-                    setEnabled(true);
-                  }
-              });
-    }
-    }
-
-    class DisplayRelativeTimesToPreviousRow extends JMenuItem {
-      public DisplayRelativeTimesToPreviousRow() {
-        super("Show times relative to previous rows");
-      addActionListener(
-              e -> {
-                  if (currentPoint != null) {
-                    ((TableColorizingRenderer)currentTable.getDefaultRenderer(Object.class)).setUseRelativeTimesToPreviousRow();
-                    ((ChainsawCyclicBufferTableModel)currentTable.getModel()).reFilter();
-                    setEnabled(true);
-                  }
-              });
-      }
-    }
-
-    mainPopup.add(new DisplayRelativeTimesToRowUnderCursor());
-    searchPopup.add(new DisplayRelativeTimesToRowUnderCursor());
-    mainPopup.add(new DisplayRelativeTimesToPreviousRow());
-    searchPopup.add(new DisplayRelativeTimesToPreviousRow());
-    mainPopup.add(new DisplayNormalTimes());
-    searchPopup.add(new DisplayNormalTimes());
-    mainPopup.add(new JSeparator());
-    searchPopup.add(new JSeparator());
-
-    mainPopup.add(new BuildColorRule());
-    searchPopup.add(new BuildColorRule());
-    mainPopup.add(new JSeparator());
-    searchPopup.add(new JSeparator());
-    mainPopup.add(new CopyField());
-    mainPopup.add(new CopySelection());
-    searchPopup.add(new CopyField());
-    searchPopup.add(new CopySelection());
-    mainPopup.add(new JSeparator());
-    searchPopup.add(new JSeparator());
-
-    mainPopup.add(menuItemToggleDetails);
-    mainPopup.add(menuItemLoggerTree);
-    mainToggleToolTips = new ToggleToolTips();
-    searchToggleToolTips = new ToggleToolTips();
-    mainPopup.add(mainToggleToolTips);
-    searchPopup.add(searchToggleToolTips);
-
-    mainPopup.add(new JSeparator());
-
-    mainPopup.add(menuItemToggleDock);
-
-    mainPopup.add(new BestFit());
-    searchPopup.add(new BestFit());
-
-    mainPopup.add(new JSeparator());
-
-    mainPopup.add(new ColorPanel());
-    searchPopup.add(new ColorPanel());
-    mainPopup.add(new LogPanelPreferences());
-    searchPopup.add(new LogPanelPreferences());
-
-    final PopupListener mainTablePopupListener = new PopupListener(mainPopup);
-    eventsPane.addMouseListener(mainTablePopupListener);
-    table.addMouseListener(mainTablePopupListener);
-
-    table.addMouseListener(new MouseListener(){
-      public void mouseClicked(MouseEvent mouseEvent) {
-        checkMultiSelect(mouseEvent);
-      }
-
-      public void mousePressed(MouseEvent mouseEvent) {
-        checkMultiSelect(mouseEvent);
-      }
-
-      public void mouseReleased(MouseEvent mouseEvent) {
-        checkMultiSelect(mouseEvent);
-      }
-
-      public void mouseEntered(MouseEvent mouseEvent) {
-        checkMultiSelect(mouseEvent);
-      }
-
-      public void mouseExited(MouseEvent mouseEvent) {
-        checkMultiSelect(mouseEvent);
-      }
-
-      private void checkMultiSelect(MouseEvent mouseEvent) {
-        if (mouseEvent.isAltDown()) {
-          table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-        } else {
-          table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        }
-      }
-    });
-
-
-    searchTable.addMouseListener(new MouseListener(){
-      public void mouseClicked(MouseEvent mouseEvent) {
-        checkMultiSelect(mouseEvent);
-      }
-
-      public void mousePressed(MouseEvent mouseEvent) {
-        checkMultiSelect(mouseEvent);
-      }
-
-      public void mouseReleased(MouseEvent mouseEvent) {
-        checkMultiSelect(mouseEvent);
-      }
-
-      public void mouseEntered(MouseEvent mouseEvent) {
-        checkMultiSelect(mouseEvent);
-      }
-
-      public void mouseExited(MouseEvent mouseEvent) {
-        checkMultiSelect(mouseEvent);
-      }
-
-      private void checkMultiSelect(MouseEvent mouseEvent) {
-        if (mouseEvent.isAltDown()) {
-          searchTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-        } else {
-          searchTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        }
-      }
-    });
-
-
-    final PopupListener searchTablePopupListener = new PopupListener(searchPopup);
-    searchPane.addMouseListener(searchTablePopupListener);
-    searchTable.addMouseListener(searchTablePopupListener);
-  }
-
-       private String getValueOf(int row, int column) {
-         if (currentTable == null) {
-           return "";
-         }
-
-         Object o = currentTable.getValueAt(row, column);
-
-         if (o instanceof Date) {
-           return TIMESTAMP_DATE_FORMAT.format((Date)o);
-         }
-
-         if (o instanceof String) {
-           return (String)o;
-         }
-
-         if (o instanceof Level) {
-           return o.toString();
-         }
-
-         if (o instanceof String[]) {
-           StringBuilder value = new StringBuilder();
-          //exception - build message + throwable
-          String[] ti = (String[])o;
-            if (ti.length > 0 && (!(ti.length == 1 && ti[0].equals("")))) {
-              LoggingEventWrapper loggingEventWrapper = ((ChainsawCyclicBufferTableModel)(currentTable.getModel())).getRow(row);
-              value = new StringBuilder(loggingEventWrapper.getLoggingEvent().getMessage().toString());
-              for (int i=0;i<((String[])o).length;i++) {
-                  value.append('\n').append(((String[]) o)[i]);
-              }
+                    result.append(System.getProperty("line.separator"));
+                }
+                StringSelection selection = new StringSelection(result.toString());
+                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                clipboard.setContents(selection, null);
             }
-           return value.toString();
-         }
-         return "";
-      }
+        }
+
+        class CopyField extends AbstractAction {
+            public CopyField() {
+                super("Copy value under pointer to clipboard");
+            }
+
+            public void actionPerformed(ActionEvent e) {
+                if (currentPoint != null && currentTable != null) {
+                    int column = currentTable.columnAtPoint(currentPoint);
+                    int row = currentTable.rowAtPoint(currentPoint);
+                    String value = getValueOf(row, column);
+                    StringSelection selection = new StringSelection(value);
+                    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                    clipboard.setContents(selection, null);
+                }
+            }
+        }
+        final JMenuItem menuItemToggleDock = new JMenuItem("Undock/dock");
+
+        dockingAction =
+            new AbstractAction("Undock") {
+                public void actionPerformed(ActionEvent evt) {
+                    if (isDocked()) {
+                        undock();
+                    } else {
+                        dock();
+                    }
+                }
+            };
+        dockingAction.putValue(
+            Action.SMALL_ICON, new ImageIcon(ChainsawIcons.UNDOCK));
+        menuItemToggleDock.setAction(dockingAction);
+
+        /*
+         * Popup definition
+         */
+        mainPopup.add(new FocusOn());
+        searchPopup.add(new FocusOn());
+        mainPopup.add(new DefineAddCustomFilter());
+        searchPopup.add(new DefineAddCustomFilter());
+        mainPopup.add(new ClearFocus());
+        searchPopup.add(new ClearFocus());
+
+        mainPopup.add(new JSeparator());
+        searchPopup.add(new JSeparator());
+
+        class Search extends JMenuItem {
+            public Search() {
+                super("Find value under pointer");
+
+                addActionListener(
+                    evt -> {
+                        if (currentPoint != null) {
+                            String operator = "==";
+                            int column = currentTable.columnAtPoint(currentPoint);
+                            int row = currentTable.rowAtPoint(currentPoint);
+                            String colName = currentTable.getColumnName(column).toUpperCase();
+                            String value = getValueOf(row, column);
+                            if (columnNameKeywordMap.containsKey(colName)) {
+                                findCombo.setSelectedItem(
+                                    columnNameKeywordMap.get(colName).toString() + " " + operator
+                                        + " '" + value + "'");
+                                findNext();
+                            }
+                        }
+                    });
+            }
+        }
+
+        class ClearSearch extends AbstractAction {
+            public ClearSearch() {
+                super("Clear find field");
+            }
+
+            public void actionPerformed(ActionEvent e) {
+                findCombo.setSelectedItem(null);
+                updateFindRule(null);
+            }
+        }
+
+        mainPopup.add(new Search());
+        searchPopup.add(new Search());
+        mainPopup.add(new DefineAddCustomFind());
+        searchPopup.add(new DefineAddCustomFind());
+        mainPopup.add(new ClearSearch());
+        searchPopup.add(new ClearSearch());
+
+        mainPopup.add(new JSeparator());
+        searchPopup.add(new JSeparator());
+
+        class DisplayNormalTimes extends JMenuItem {
+            public DisplayNormalTimes() {
+                super("Hide relative times");
+                addActionListener(
+                    e -> {
+                        if (currentPoint != null) {
+                            ((TableColorizingRenderer) currentTable.getDefaultRenderer(Object.class)).setUseNormalTimes();
+                            ((ChainsawCyclicBufferTableModel) currentTable.getModel()).reFilter();
+                            setEnabled(true);
+                        }
+                    });
+            }
+        }
+
+        class DisplayRelativeTimesToRowUnderCursor extends JMenuItem {
+            public DisplayRelativeTimesToRowUnderCursor() {
+                super("Show times relative to this event");
+                addActionListener(
+                    e -> {
+                        if (currentPoint != null) {
+                            int row = currentTable.rowAtPoint(currentPoint);
+                            ChainsawCyclicBufferTableModel cyclicBufferTableModel = (ChainsawCyclicBufferTableModel) currentTable.getModel();
+                            LoggingEventWrapper loggingEventWrapper = cyclicBufferTableModel.getRow(row);
+                            if (loggingEventWrapper != null) {
+                                ((TableColorizingRenderer) currentTable.getDefaultRenderer(Object.class)).setUseRelativeTimes(loggingEventWrapper.getLoggingEvent().getTimeStamp());
+                                cyclicBufferTableModel.reFilter();
+                            }
+                            setEnabled(true);
+                        }
+                    });
+            }
+        }
+
+        class DisplayRelativeTimesToPreviousRow extends JMenuItem {
+            public DisplayRelativeTimesToPreviousRow() {
+                super("Show times relative to previous rows");
+                addActionListener(
+                    e -> {
+                        if (currentPoint != null) {
+                            ((TableColorizingRenderer) currentTable.getDefaultRenderer(Object.class)).setUseRelativeTimesToPreviousRow();
+                            ((ChainsawCyclicBufferTableModel) currentTable.getModel()).reFilter();
+                            setEnabled(true);
+                        }
+                    });
+            }
+        }
+
+        mainPopup.add(new DisplayRelativeTimesToRowUnderCursor());
+        searchPopup.add(new DisplayRelativeTimesToRowUnderCursor());
+        mainPopup.add(new DisplayRelativeTimesToPreviousRow());
+        searchPopup.add(new DisplayRelativeTimesToPreviousRow());
+        mainPopup.add(new DisplayNormalTimes());
+        searchPopup.add(new DisplayNormalTimes());
+        mainPopup.add(new JSeparator());
+        searchPopup.add(new JSeparator());
+
+        mainPopup.add(new BuildColorRule());
+        searchPopup.add(new BuildColorRule());
+        mainPopup.add(new JSeparator());
+        searchPopup.add(new JSeparator());
+        mainPopup.add(new CopyField());
+        mainPopup.add(new CopySelection());
+        searchPopup.add(new CopyField());
+        searchPopup.add(new CopySelection());
+        mainPopup.add(new JSeparator());
+        searchPopup.add(new JSeparator());
+
+        mainPopup.add(menuItemToggleDetails);
+        mainPopup.add(menuItemLoggerTree);
+        mainToggleToolTips = new ToggleToolTips();
+        searchToggleToolTips = new ToggleToolTips();
+        mainPopup.add(mainToggleToolTips);
+        searchPopup.add(searchToggleToolTips);
+
+        mainPopup.add(new JSeparator());
+
+        mainPopup.add(menuItemToggleDock);
+
+        mainPopup.add(new BestFit());
+        searchPopup.add(new BestFit());
+
+        mainPopup.add(new JSeparator());
+
+        mainPopup.add(new ColorPanel());
+        searchPopup.add(new ColorPanel());
+        mainPopup.add(new LogPanelPreferences());
+        searchPopup.add(new LogPanelPreferences());
+
+        final PopupListener mainTablePopupListener = new PopupListener(mainPopup);
+        eventsPane.addMouseListener(mainTablePopupListener);
+        table.addMouseListener(mainTablePopupListener);
+
+        table.addMouseListener(new MouseListener() {
+            public void mouseClicked(MouseEvent mouseEvent) {
+                checkMultiSelect(mouseEvent);
+            }
+
+            public void mousePressed(MouseEvent mouseEvent) {
+                checkMultiSelect(mouseEvent);
+            }
+
+            public void mouseReleased(MouseEvent mouseEvent) {
+                checkMultiSelect(mouseEvent);
+            }
+
+            public void mouseEntered(MouseEvent mouseEvent) {
+                checkMultiSelect(mouseEvent);
+            }
+
+            public void mouseExited(MouseEvent mouseEvent) {
+                checkMultiSelect(mouseEvent);
+            }
+
+            private void checkMultiSelect(MouseEvent mouseEvent) {
+                if (mouseEvent.isAltDown()) {
+                    table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+                } else {
+                    table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                }
+            }
+        });
+
+
+        searchTable.addMouseListener(new MouseListener() {
+            public void mouseClicked(MouseEvent mouseEvent) {
+                checkMultiSelect(mouseEvent);
+            }
+
+            public void mousePressed(MouseEvent mouseEvent) {
+                checkMultiSelect(mouseEvent);
+            }
+
+            public void mouseReleased(MouseEvent mouseEvent) {
+                checkMultiSelect(mouseEvent);
+            }
+
+            public void mouseEntered(MouseEvent mouseEvent) {
+                checkMultiSelect(mouseEvent);
+            }
+
+            public void mouseExited(MouseEvent mouseEvent) {
+                checkMultiSelect(mouseEvent);
+            }
+
+            private void checkMultiSelect(MouseEvent mouseEvent) {
+                if (mouseEvent.isAltDown()) {
+                    searchTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+                } else {
+                    searchTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                }
+            }
+        });
+
+
+        final PopupListener searchTablePopupListener = new PopupListener(searchPopup);
+        searchPane.addMouseListener(searchTablePopupListener);
+        searchTable.addMouseListener(searchTablePopupListener);
+    }
+
+    private String getValueOf(int row, int column) {
+        if (currentTable == null) {
+            return "";
+        }
+
+        Object o = currentTable.getValueAt(row, column);
+
+        if (o instanceof Date) {
+            return TIMESTAMP_DATE_FORMAT.format((Date) o);
+        }
+
+        if (o instanceof String) {
+            return (String) o;
+        }
+
+        if (o instanceof Level) {
+            return o.toString();
+        }
+
+        if (o instanceof String[]) {
+            StringBuilder value = new StringBuilder();
+            //exception - build message + throwable
+            String[] ti = (String[]) o;
+            if (ti.length > 0 && (!(ti.length == 1 && ti[0].equals("")))) {
+                LoggingEventWrapper loggingEventWrapper = ((ChainsawCyclicBufferTableModel) (currentTable.getModel())).getRow(row);
+                value = new StringBuilder(loggingEventWrapper.getLoggingEvent().getMessage().toString());
+                for (int i = 0; i < ((String[]) o).length; i++) {
+                    value.append('\n').append(((String[]) o)[i]);
+                }
+            }
+            return value.toString();
+        }
+        return "";
+    }
 
     private Action getFindNextAction() {
-    final Action action =
-      new AbstractAction("Find next") {
-        public void actionPerformed(ActionEvent e) {
-          findNext();
-        }
-      };
+        final Action action =
+            new AbstractAction("Find next") {
+                public void actionPerformed(ActionEvent e) {
+                    findNext();
+                }
+            };
 
-    //    action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_F));
-    action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F3"));
-    action.putValue(
-      Action.SHORT_DESCRIPTION,
-      "Find the next occurrence of the rule from the current row");
-    action.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.DOWN));
+        //    action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_F));
+        action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F3"));
+        action.putValue(
+            Action.SHORT_DESCRIPTION,
+            "Find the next occurrence of the rule from the current row");
+        action.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.DOWN));
 
-    return action;
-  }
-
-  private Action getFindPreviousAction() {
-    final Action action =
-      new AbstractAction("Find previous") {
-        public void actionPerformed(ActionEvent e) {
-            findPrevious();
-        }
-      };
-
-    //    action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_F));
-    action.putValue(
-      Action.ACCELERATOR_KEY,
-      KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_MASK));
-    action.putValue(
-      Action.SHORT_DESCRIPTION,
-      "Find the previous occurrence of the rule from the current row");
-    action.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.UP));
-
-    return action;
-  }
-
-  private  void buildCombo(final AutoFilterComboBox combo, boolean isFiltering, final AutoFilterComboBox.AutoFilterComboBoxModel otherModel) {
-    //add (hopefully useful) default filters
-    combo.addItem("LEVEL == TRACE");
-    combo.addItem("LEVEL >= DEBUG");
-    combo.addItem("LEVEL >= INFO");
-    combo.addItem("LEVEL >= WARN");
-    combo.addItem("LEVEL >= ERROR");
-    combo.addItem("LEVEL == FATAL");
-
-    final JTextField filterText =(JTextField) combo.getEditor().getEditorComponent();
-    if (isFiltering) {
-      filterText.getDocument().addDocumentListener(new DelayedTextDocumentListener(filterText));
+        return action;
     }
-    filterText.setToolTipText("Enter an expression - right click or ctrl-space for menu - press enter to add to list");
-    filterText.addKeyListener(new ExpressionRuleContext(filterModel, filterText));
 
-    if (combo.getEditor().getEditorComponent() instanceof JTextField) {
-      combo.addActionListener(
-        new AbstractAction() {
-          public void actionPerformed(ActionEvent e) {
-            if (e.getActionCommand().equals("comboBoxEdited")) {
-              try {
-                //verify the expression is valid
-                  Object item = combo.getSelectedItem();
-                  if (item != null && !item.toString().trim().equals("")) {
-                    ExpressionRule.getRule(item.toString());
-                    //add entry as first row of the combo box
-                    combo.insertItemAt(item, 0);
-                    otherModel.insertElementAt(item, 0);
-                  }
-                //valid expression, reset background color in case we were previously an invalid expression
-                filterText.setBackground(UIManager.getColor("TextField.background"));
-              } catch (IllegalArgumentException iae) {
-                  //don't add expressions that aren't valid
-                  //invalid expression, change background of the field
-                  filterText.setToolTipText(iae.getMessage());
-                  filterText.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
-              }
-            }
-          }
+    private Action getFindPreviousAction() {
+        final Action action =
+            new AbstractAction("Find previous") {
+                public void actionPerformed(ActionEvent e) {
+                    findPrevious();
+                }
+            };
+
+        //    action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_F));
+        action.putValue(
+            Action.ACCELERATOR_KEY,
+            KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_MASK));
+        action.putValue(
+            Action.SHORT_DESCRIPTION,
+            "Find the previous occurrence of the rule from the current row");
+        action.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.UP));
+
+        return action;
+    }
+
+    private void buildCombo(final AutoFilterComboBox combo, boolean isFiltering, final AutoFilterComboBox.AutoFilterComboBoxModel otherModel) {
+        //add (hopefully useful) default filters
+        combo.addItem("LEVEL == TRACE");
+        combo.addItem("LEVEL >= DEBUG");
+        combo.addItem("LEVEL >= INFO");
+        combo.addItem("LEVEL >= WARN");
+        combo.addItem("LEVEL >= ERROR");
+        combo.addItem("LEVEL == FATAL");
+
+        final JTextField filterText = (JTextField) combo.getEditor().getEditorComponent();
+        if (isFiltering) {
+            filterText.getDocument().addDocumentListener(new DelayedTextDocumentListener(filterText));
+        }
+        filterText.setToolTipText("Enter an expression - right click or ctrl-space for menu - press enter to add to list");
+        filterText.addKeyListener(new ExpressionRuleContext(filterModel, filterText));
+
+        if (combo.getEditor().getEditorComponent() instanceof JTextField) {
+            combo.addActionListener(
+                new AbstractAction() {
+                    public void actionPerformed(ActionEvent e) {
+                        if (e.getActionCommand().equals("comboBoxEdited")) {
+                            try {
+                                //verify the expression is valid
+                                Object item = combo.getSelectedItem();
+                                if (item != null && !item.toString().trim().equals("")) {
+                                    ExpressionRule.getRule(item.toString());
+                                    //add entry as first row of the combo box
+                                    combo.insertItemAt(item, 0);
+                                    otherModel.insertElementAt(item, 0);
+                                }
+                                //valid expression, reset background color in case we were previously an invalid expression
+                                filterText.setBackground(UIManager.getColor("TextField.background"));
+                            } catch (IllegalArgumentException iae) {
+                                //don't add expressions that aren't valid
+                                //invalid expression, change background of the field
+                                filterText.setToolTipText(iae.getMessage());
+                                filterText.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
+                            }
+                        }
+                    }
+                });
+        }
+    }
+
+    /**
+     * Accessor
+     *
+     * @return scrollToBottom
+     */
+    public boolean isScrollToBottom() {
+        return preferenceModel.isScrollToBottom();
+    }
+
+    public void setRefineFocusText(String refineFocusText) {
+        final JTextField filterText = (JTextField) filterCombo.getEditor().getEditorComponent();
+        filterText.setText(refineFocusText);
+    }
+
+    public String getRefineFocusText() {
+        final JTextField filterText = (JTextField) filterCombo.getEditor().getEditorComponent();
+        return filterText.getText();
+    }
+
+    /**
+     * Mutator
+     */
+    public void toggleScrollToBottom() {
+        preferenceModel.setScrollToBottom(!preferenceModel.isScrollToBottom());
+    }
+
+    private void scrollToBottom() {
+        //run this in an invokeLater block to ensure this action is enqueued to the end of the EDT
+        EventQueue.invokeLater(() -> {
+            int scrollRow = tableModel.getRowCount() - 1;
+            table.scrollToRow(scrollRow);
         });
     }
-  }
 
-  /**
-   * Accessor
-   *
-   * @return scrollToBottom
-   *
-   */
-  public boolean isScrollToBottom() {
-  	return preferenceModel.isScrollToBottom();
-  }
-
-  public void setRefineFocusText(String refineFocusText) {
-      final JTextField filterText =(JTextField) filterCombo.getEditor().getEditorComponent();
-      filterText.setText(refineFocusText);
-  }
-
-  public String getRefineFocusText() {
-      final JTextField filterText =(JTextField) filterCombo.getEditor().getEditorComponent();
-      return filterText.getText();
-  }
-  /**
-   * Mutator
-   *
-   */
-  public void toggleScrollToBottom() {
-  	preferenceModel.setScrollToBottom(!preferenceModel.isScrollToBottom());
-  }
-  
-  private void scrollToBottom() {
-    //run this in an invokeLater block to ensure this action is enqueued to the end of the EDT
-    EventQueue.invokeLater(() -> {
-      int scrollRow = tableModel.getRowCount() - 1;
-        table.scrollToRow(scrollRow);
-    });
-  }
-
-  public void scrollToTop() {
-      EventQueue.invokeLater(() -> {
-          if (tableModel.getRowCount() > 1) {
-              table.scrollToRow(0);
-          }
-      });
-  }
-
-  /**
-   * Accessor
-   *
-   * @return namespace
-   *
-   * @see Profileable
-   */
-  public String getNamespace() {
-    return getIdentifier();
-  }
-
-  /**
-   * Accessor
-   *
-   * @return identifier
-   *
-   * @see EventBatchListener
-   */
-  public String getInterestedIdentifier() {
-    return getIdentifier();
-  }
-
-  /**
-   * Process events associated with the identifier.  Currently assumes it only
-   * receives events which share this LogPanel's identifier
-   *
-   * @param ident identifier shared by events
-   * @param events list of LoggingEvent objects
-   */
-  public void receiveEventBatch(String ident, final List<LoggingEvent> events) {
-
-    SwingHelper.invokeOnEDT(() -> {
-      /*
-      * if this panel is paused, we totally ignore events
-      */
-      if (isPaused()) {
-        return;
-      }
-      final int selectedRow = table.getSelectedRow();
-      final int startingRow = table.getRowCount();
-      final LoggingEventWrapper selectedEvent;
-      if (selectedRow >= 0) {
-        selectedEvent = tableModel.getRow(selectedRow);
-      } else {
-        selectedEvent = null;
-      }
-
-      final int startingSearchRow = searchTable.getRowCount();
-
-      boolean rowAdded = false;
-      boolean searchRowAdded = false;
-
-      int addedRowCount = 0;
-      int searchAddedRowCount = 0;
-
-      for (Object event1 : events) {
-        //these are actual LoggingEvent instances
-        LoggingEvent event = (LoggingEvent) event1;
-        //create two separate loggingEventWrappers (main table and search table), as they have different info on display state
-        LoggingEventWrapper loggingEventWrapper1 = new LoggingEventWrapper(event);
-        //if the clearTableExpressionRule is not null, evaluate & clear the table if it matches
-        if (clearTableExpressionRule != null && clearTableExpressionRule.evaluate(event, null)) {
-          logger.info("clear table expression matched - clearing table - matching event msg - " + event.getMessage());
-          clearEvents();
-        }
-
-        updateOtherModels(event);
-        boolean isCurrentRowAdded = tableModel.isAddRow(loggingEventWrapper1);
-        if (isCurrentRowAdded) {
-          addedRowCount++;
-        }
-        rowAdded = rowAdded || isCurrentRowAdded;
-
-        //create a new loggingEventWrapper via copy constructor to ensure same IDs
-        LoggingEventWrapper loggingEventWrapper2 = new LoggingEventWrapper(loggingEventWrapper1);
-        boolean isSearchCurrentRowAdded = searchModel.isAddRow(loggingEventWrapper2);
-        if (isSearchCurrentRowAdded) {
-          searchAddedRowCount++;
-        }
-        searchRowAdded = searchRowAdded || isSearchCurrentRowAdded;
-      }
-      //fire after adding all events
-      if (rowAdded) {
-        tableModel.fireTableEvent(startingRow, startingRow + addedRowCount, addedRowCount);
-      }
-      if (searchRowAdded) {
-        searchModel.fireTableEvent(startingSearchRow, startingSearchRow + searchAddedRowCount, searchAddedRowCount);
-      }
-
-      //tell the model to notify the count listeners
-      tableModel.notifyCountListeners();
-
-      if (rowAdded) {
-        if (tableModel.isSortEnabled()) {
-          tableModel.sort();
-        }
-
-        //always update detail pane (since we may be using a cyclic buffer which is full)
-        detailPaneUpdater.setSelectedRow(table.getSelectedRow());
-      }
-
-      if (searchRowAdded) {
-        if (searchModel.isSortEnabled()) {
-          searchModel.sort();
-        }
-      }
-
-      if (!isScrollToBottom() && selectedEvent != null) {
-        final int newIndex = tableModel.getRowIndex(selectedEvent);
-        if (newIndex >= 0) {
-          // Don't scroll, just maintain selection...
-          table.setRowSelectionInterval(newIndex, newIndex);
-        }
-      }
-    });
-  }
-
-  /**
-   * Load settings from the panel preference model
-   *
-   * @param event
-   *
-   * @see LogPanelPreferenceModel
-   */
-  public void loadSettings(LoadSettingsEvent event) {
-
-    File xmlFile = null;
-    try {
-      xmlFile = new File(SettingsManager.getInstance().getSettingsDirectory(), URLEncoder.encode(identifier, "UTF-8") + ".xml");
-    } catch (UnsupportedEncodingException e) {
-      e.printStackTrace();
+    public void scrollToTop() {
+        EventQueue.invokeLater(() -> {
+            if (tableModel.getRowCount() > 1) {
+                table.scrollToRow(0);
+            }
+        });
     }
 
-    if (xmlFile.exists()) {
-        XStream stream = buildXStreamForLogPanelPreference();
-        ObjectInputStream in = null;
-        try {
-            FileReader r = new FileReader(xmlFile);
-            in = stream.createObjectInputStream(r);
-            LogPanelPreferenceModel storedPrefs = (LogPanelPreferenceModel)in.readObject();
-            lowerPanelDividerLocation = in.readInt();
-            int treeDividerLocation = in.readInt();
-            String conversionPattern = in.readObject().toString();
-            Point p = (Point)in.readObject();
-            Dimension d = (Dimension)in.readObject();
-            //this version number is checked to identify whether there is a Vector comming next
-            int versionNumber = 0;
-            try {
-                versionNumber = in.readInt();
-            } catch (EOFException eof){
+    /**
+     * Accessor
+     *
+     * @return namespace
+     * @see Profileable
+     */
+    public String getNamespace() {
+        return getIdentifier();
+    }
+
+    /**
+     * Accessor
+     *
+     * @return identifier
+     * @see EventBatchListener
+     */
+    public String getInterestedIdentifier() {
+        return getIdentifier();
+    }
+
+    /**
+     * Process events associated with the identifier.  Currently assumes it only
+     * receives events which share this LogPanel's identifier
+     *
+     * @param ident  identifier shared by events
+     * @param events list of LoggingEvent objects
+     */
+    public void receiveEventBatch(String ident, final List<LoggingEvent> events) {
+
+        SwingHelper.invokeOnEDT(() -> {
+            /*
+             * if this panel is paused, we totally ignore events
+             */
+            if (isPaused()) {
+                return;
+            }
+            final int selectedRow = table.getSelectedRow();
+            final int startingRow = table.getRowCount();
+            final LoggingEventWrapper selectedEvent;
+            if (selectedRow >= 0) {
+                selectedEvent = tableModel.getRow(selectedRow);
+            } else {
+                selectedEvent = null;
             }
 
-            Vector savedVector;
-            //read the vector only if the version number is greater than 0. higher version numbers can be
-            //used in the future to save more data structures
-            if (versionNumber > 0) {
-                savedVector = (Vector) in.readObject();
-              for (Object item : savedVector) {
-                //insert each row at index zero (so last row in vector will be row zero)
-                filterCombo.insertItemAt(item, 0);
-                findCombo.insertItemAt(item, 0);
-              }
-                if (versionNumber > 1) {
-                    //update prefModel columns to include defaults
-                    int index = 0;
-                    String columnOrder = event.getSetting(TABLE_COLUMN_ORDER);
-                    StringTokenizer tok = new StringTokenizer(columnOrder, ",");
-                    while (tok.hasMoreElements()) {
-                      String element = tok.nextElement().toString().trim().toUpperCase();
-                      TableColumn column = new TableColumn(index++);
-                      column.setHeaderValue(element);
-                      preferenceModel.addColumn(column);
+            final int startingSearchRow = searchTable.getRowCount();
+
+            boolean rowAdded = false;
+            boolean searchRowAdded = false;
+
+            int addedRowCount = 0;
+            int searchAddedRowCount = 0;
+
+            for (Object event1 : events) {
+                //these are actual LoggingEvent instances
+                LoggingEvent event = (LoggingEvent) event1;
+                //create two separate loggingEventWrappers (main table and search table), as they have different info on display state
+                LoggingEventWrapper loggingEventWrapper1 = new LoggingEventWrapper(event);
+                //if the clearTableExpressionRule is not null, evaluate & clear the table if it matches
+                if (clearTableExpressionRule != null && clearTableExpressionRule.evaluate(event, null)) {
+                    logger.info("clear table expression matched - clearing table - matching event msg - " + event.getMessage());
+                    clearEvents();
+                }
+
+                updateOtherModels(event);
+                boolean isCurrentRowAdded = tableModel.isAddRow(loggingEventWrapper1);
+                if (isCurrentRowAdded) {
+                    addedRowCount++;
+                }
+                rowAdded = rowAdded || isCurrentRowAdded;
+
+                //create a new loggingEventWrapper via copy constructor to ensure same IDs
+                LoggingEventWrapper loggingEventWrapper2 = new LoggingEventWrapper(loggingEventWrapper1);
+                boolean isSearchCurrentRowAdded = searchModel.isAddRow(loggingEventWrapper2);
+                if (isSearchCurrentRowAdded) {
+                    searchAddedRowCount++;
+                }
+                searchRowAdded = searchRowAdded || isSearchCurrentRowAdded;
+            }
+            //fire after adding all events
+            if (rowAdded) {
+                tableModel.fireTableEvent(startingRow, startingRow + addedRowCount, addedRowCount);
+            }
+            if (searchRowAdded) {
+                searchModel.fireTableEvent(startingSearchRow, startingSearchRow + searchAddedRowCount, searchAddedRowCount);
+            }
+
+            //tell the model to notify the count listeners
+            tableModel.notifyCountListeners();
+
+            if (rowAdded) {
+                if (tableModel.isSortEnabled()) {
+                    tableModel.sort();
+                }
+
+                //always update detail pane (since we may be using a cyclic buffer which is full)
+                detailPaneUpdater.setSelectedRow(table.getSelectedRow());
+            }
+
+            if (searchRowAdded) {
+                if (searchModel.isSortEnabled()) {
+                    searchModel.sort();
+                }
+            }
+
+            if (!isScrollToBottom() && selectedEvent != null) {
+                final int newIndex = tableModel.getRowIndex(selectedEvent);
+                if (newIndex >= 0) {
+                    // Don't scroll, just maintain selection...
+                    table.setRowSelectionInterval(newIndex, newIndex);
+                }
+            }
+        });
+    }
+
+    /**
+     * Load settings from the panel preference model
+     *
+     * @param event
+     * @see LogPanelPreferenceModel
+     */
+    public void loadSettings(LoadSettingsEvent event) {
+
+        File xmlFile = null;
+        try {
+            xmlFile = new File(SettingsManager.getInstance().getSettingsDirectory(), URLEncoder.encode(identifier, "UTF-8") + ".xml");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        if (xmlFile.exists()) {
+            XStream stream = buildXStreamForLogPanelPreference();
+            ObjectInputStream in = null;
+            try {
+                FileReader r = new FileReader(xmlFile);
+                in = stream.createObjectInputStream(r);
+                LogPanelPreferenceModel storedPrefs = (LogPanelPreferenceModel) in.readObject();
+                lowerPanelDividerLocation = in.readInt();
+                int treeDividerLocation = in.readInt();
+                String conversionPattern = in.readObject().toString();
+                Point p = (Point) in.readObject();
+                Dimension d = (Dimension) in.readObject();
+                //this version number is checked to identify whether there is a Vector comming next
+                int versionNumber = 0;
+                try {
+                    versionNumber = in.readInt();
+                } catch (EOFException eof) {
+                }
+
+                Vector savedVector;
+                //read the vector only if the version number is greater than 0. higher version numbers can be
+                //used in the future to save more data structures
+                if (versionNumber > 0) {
+                    savedVector = (Vector) in.readObject();
+                    for (Object item : savedVector) {
+                        //insert each row at index zero (so last row in vector will be row zero)
+                        filterCombo.insertItemAt(item, 0);
+                        findCombo.insertItemAt(item, 0);
                     }
+                    if (versionNumber > 1) {
+                        //update prefModel columns to include defaults
+                        int index = 0;
+                        String columnOrder = event.getSetting(TABLE_COLUMN_ORDER);
+                        StringTokenizer tok = new StringTokenizer(columnOrder, ",");
+                        while (tok.hasMoreElements()) {
+                            String element = tok.nextElement().toString().trim().toUpperCase();
+                            TableColumn column = new TableColumn(index++);
+                            column.setHeaderValue(element);
+                            preferenceModel.addColumn(column);
+                        }
 
-                    TableColumnModel columnModel = table.getColumnModel();
-                    //remove previous columns
-                    while (columnModel.getColumnCount() > 0) {
-                        columnModel.removeColumn(columnModel.getColumn(0));
+                        TableColumnModel columnModel = table.getColumnModel();
+                        //remove previous columns
+                        while (columnModel.getColumnCount() > 0) {
+                            columnModel.removeColumn(columnModel.getColumn(0));
+                        }
+                        //add visible column order columns
+                        for (Object o1 : preferenceModel.getVisibleColumnOrder()) {
+                            TableColumn col = (TableColumn) o1;
+                            columnModel.addColumn(col);
+                        }
+
+                        TableColumnModel searchColumnModel = searchTable.getColumnModel();
+                        //remove previous columns
+                        while (searchColumnModel.getColumnCount() > 0) {
+                            searchColumnModel.removeColumn(searchColumnModel.getColumn(0));
+                        }
+                        //add visible column order columns
+                        for (Object o : preferenceModel.getVisibleColumnOrder()) {
+                            TableColumn col = (TableColumn) o;
+                            searchColumnModel.addColumn(col);
+                        }
+
+                        preferenceModel.apply(storedPrefs);
+                    } else {
+                        loadDefaultColumnSettings(event);
                     }
-                    //add visible column order columns
-                  for (Object o1 : preferenceModel.getVisibleColumnOrder()) {
-                    TableColumn col = (TableColumn) o1;
-                    columnModel.addColumn(col);
-                  }
-
-                  TableColumnModel searchColumnModel = searchTable.getColumnModel();
-                  //remove previous columns
-                  while (searchColumnModel.getColumnCount() > 0) {
-                      searchColumnModel.removeColumn(searchColumnModel.getColumn(0));
-                  }
-                  //add visible column order columns
-                  for (Object o : preferenceModel.getVisibleColumnOrder()) {
-                    TableColumn col = (TableColumn) o;
-                    searchColumnModel.addColumn(col);
-                  }
-
-                    preferenceModel.apply(storedPrefs);
+                    //ensure tablemodel cyclic flag is updated
+                    //may be panel configs that don't have these values
+                    tableModel.setCyclic(preferenceModel.isCyclic());
+                    searchModel.setCyclic(preferenceModel.isCyclic());
+                    lowerPanel.setDividerLocation(lowerPanelDividerLocation);
+                    nameTreeAndMainPanelSplit.setDividerLocation(treeDividerLocation);
+                    detailLayout.setConversionPattern(conversionPattern);
+                    if (p.x != 0 && p.y != 0) {
+                        undockedFrame.setLocation(p.x, p.y);
+                        undockedFrame.setSize(d);
+                    } else {
+                        undockedFrame.setLocation(0, 0);
+                        undockedFrame.setSize(new Dimension(1024, 768));
+                    }
                 } else {
                     loadDefaultColumnSettings(event);
                 }
-                //ensure tablemodel cyclic flag is updated
-                //may be panel configs that don't have these values
-                tableModel.setCyclic(preferenceModel.isCyclic());
-                searchModel.setCyclic(preferenceModel.isCyclic());
-                lowerPanel.setDividerLocation(lowerPanelDividerLocation);
-                nameTreeAndMainPanelSplit.setDividerLocation(treeDividerLocation);
-                detailLayout.setConversionPattern(conversionPattern);
-                if (p.x != 0 && p.y != 0) {
-                    undockedFrame.setLocation(p.x, p.y);
-                    undockedFrame.setSize(d);
-                } else {
-                    undockedFrame.setLocation(0, 0);
-                    undockedFrame.setSize(new Dimension(1024, 768));
-                }
-            } else {
+            } catch (Exception e) {
+                e.printStackTrace();
                 loadDefaultColumnSettings(event);
+                // TODO need to log this..
+            } finally {
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException ioe) {
+                    }
+                }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } else {
+            //not setting lower panel divider location here - will do that after the UI is visible
             loadDefaultColumnSettings(event);
+        }
+        //ensure tablemodel cyclic flag is updated
+        tableModel.setCyclic(preferenceModel.isCyclic());
+        searchModel.setCyclic(preferenceModel.isCyclic());
+        logTreePanel.ignore(preferenceModel.getHiddenLoggers());
+        logTreePanel.setHiddenExpression(preferenceModel.getHiddenExpression());
+        logTreePanel.setAlwaysDisplayExpression(preferenceModel.getAlwaysDisplayExpression());
+        if (preferenceModel.getClearTableExpression() != null) {
+            try {
+                clearTableExpressionRule = ExpressionRule.getRule(preferenceModel.getClearTableExpression());
+            } catch (Exception e) {
+                clearTableExpressionRule = null;
+            }
+        }
+
+        //attempt to load color settings - no need to URL encode the identifier
+        colorizer.loadColorSettings(identifier);
+    }
+
+    /**
+     * Save preferences to the panel preference model
+     *
+     * @param event
+     * @see LogPanelPreferenceModel
+     */
+    public void saveSettings(SaveSettingsEvent event) {
+        File xmlFile;
+        try {
+            xmlFile = new File(SettingsManager.getInstance().getSettingsDirectory(), URLEncoder.encode(identifier, "UTF-8") + ".xml");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            //unable to save..just return
+            return;
+        }
+
+        preferenceModel.setHiddenLoggers(new HashSet(logTreePanel.getHiddenSet()));
+        preferenceModel.setHiddenExpression(logTreePanel.getHiddenExpression());
+        preferenceModel.setAlwaysDisplayExpression(logTreePanel.getAlwaysDisplayExpression());
+        List visibleOrder = new ArrayList();
+        Enumeration<TableColumn> cols = table.getColumnModel().getColumns();
+        while (cols.hasMoreElements()) {
+            TableColumn c = cols.nextElement();
+            visibleOrder.add(c);
+        }
+        preferenceModel.setVisibleColumnOrder(visibleOrder);
+        //search table will use same columns as main table
+
+        XStream stream = buildXStreamForLogPanelPreference();
+        ObjectOutputStream s = null;
+        try {
+            FileWriter w = new FileWriter(xmlFile);
+            s = stream.createObjectOutputStream(w);
+            s.writeObject(preferenceModel);
+            if (isDetailPanelVisible) {
+                //use current size
+                s.writeInt(lowerPanel.getDividerLocation());
+            } else {
+                //use size when last hidden
+                s.writeInt(lowerPanelDividerLocation);
+            }
+            s.writeInt(nameTreeAndMainPanelSplit.getDividerLocation());
+            s.writeObject(detailLayout.getConversionPattern());
+            s.writeObject(undockedFrame.getLocation());
+            s.writeObject(undockedFrame.getSize());
+            //this is a version number written to the file to identify that there is a Vector serialized after this
+            s.writeInt(LOG_PANEL_SERIALIZATION_VERSION_NUMBER);
+            //don't write filterexpressionvector, write the combobox's model's backing vector
+            Vector combinedVector = new Vector();
+            combinedVector.addAll(filterCombo.getModelData());
+            combinedVector.addAll(findCombo.getModelData());
+            //duplicates will be removed when loaded..
+            s.writeObject(combinedVector);
+        } catch (Exception ex) {
+            ex.printStackTrace();
             // TODO need to log this..
         } finally {
-            if (in != null) {
+            if (s != null) {
                 try {
-                    in.close();
-                } catch (IOException ioe) {}
+                    s.close();
+                } catch (IOException ioe) {
+                }
             }
         }
-    } else {
-        //not setting lower panel divider location here - will do that after the UI is visible
-        loadDefaultColumnSettings(event);
-    }
-    //ensure tablemodel cyclic flag is updated
-    tableModel.setCyclic(preferenceModel.isCyclic());
-    searchModel.setCyclic(preferenceModel.isCyclic());
-    logTreePanel.ignore(preferenceModel.getHiddenLoggers());
-    logTreePanel.setHiddenExpression(preferenceModel.getHiddenExpression());
-    logTreePanel.setAlwaysDisplayExpression(preferenceModel.getAlwaysDisplayExpression());
-    if (preferenceModel.getClearTableExpression() != null) {
-        try {
-            clearTableExpressionRule = ExpressionRule.getRule(preferenceModel.getClearTableExpression());
-        } catch (Exception e) {
-            clearTableExpressionRule = null;
-        }
-    }
 
-    //attempt to load color settings - no need to URL encode the identifier
-    colorizer.loadColorSettings(identifier);
-  }
-
-  /**
-   * Save preferences to the panel preference model
-   *
-   * @param event
-   *
-   * @see LogPanelPreferenceModel
-   */
-  public void saveSettings(SaveSettingsEvent event) {
-    File xmlFile;
-    try {
-      xmlFile = new File(SettingsManager.getInstance().getSettingsDirectory(), URLEncoder.encode(identifier, "UTF-8") + ".xml");
-    } catch (UnsupportedEncodingException e) {
-      e.printStackTrace();
-      //unable to save..just return
-      return;
+        //no need to URL encode the identifier
+        colorizer.saveColorSettings(identifier);
     }
-
-    preferenceModel.setHiddenLoggers(new HashSet(logTreePanel.getHiddenSet()));
-    preferenceModel.setHiddenExpression(logTreePanel.getHiddenExpression());
-    preferenceModel.setAlwaysDisplayExpression(logTreePanel.getAlwaysDisplayExpression());
-    List visibleOrder = new ArrayList();
-    Enumeration<TableColumn> cols = table.getColumnModel().getColumns();
-    while (cols.hasMoreElements()) {
-    	TableColumn c = cols.nextElement();
-    	visibleOrder.add(c);
-    }
-    preferenceModel.setVisibleColumnOrder(visibleOrder);
-    //search table will use same columns as main table
-    
-    XStream stream = buildXStreamForLogPanelPreference();
-    ObjectOutputStream s = null;
-    try {
-    	FileWriter w = new FileWriter(xmlFile);
-    	s = stream.createObjectOutputStream(w);
-    	s.writeObject(preferenceModel);
-      if (isDetailPanelVisible) {
-        //use current size
-        s.writeInt(lowerPanel.getDividerLocation());
-      } else {
-        //use size when last hidden
-        s.writeInt(lowerPanelDividerLocation);
-      }
-    	s.writeInt(nameTreeAndMainPanelSplit.getDividerLocation());
-    	s.writeObject(detailLayout.getConversionPattern());
-    	s.writeObject(undockedFrame.getLocation());
-    	s.writeObject(undockedFrame.getSize());
-        //this is a version number written to the file to identify that there is a Vector serialized after this
-        s.writeInt(LOG_PANEL_SERIALIZATION_VERSION_NUMBER);
-        //don't write filterexpressionvector, write the combobox's model's backing vector
-        Vector combinedVector = new Vector();
-        combinedVector.addAll(filterCombo.getModelData());
-        combinedVector.addAll(findCombo.getModelData());
-        //duplicates will be removed when loaded..
-        s.writeObject(combinedVector);
-    } catch (Exception ex) {
-        ex.printStackTrace();
-        // TODO need to log this..
-    } finally {
-    	if (s != null) {
-    		try {
-    			s.close();
-    		} catch (IOException ioe) {}
-    	}
-    }
-
-    //no need to URL encode the identifier
-    colorizer.saveColorSettings(identifier);
-  }
 
     private XStream buildXStreamForLogPanelPreference() {
         XStream stream = new XStream(new DomDriver());
@@ -2329,831 +2238,828 @@ detailPaneUpdater.setAndUpdateSelectedRow(table.getSelectedRow());
         return stream;
     }
 
-  /**
+    /**
      * Display the panel preferences frame
      */
-  void showPreferences() {
-      //don't pack this frame
-      centerAndSetVisible(logPanelPreferencesFrame);
-  }
-
-  public static void centerAndSetVisible(Window window) {
-    Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
-    window.setLocation(new Point((screenDimension.width / 2) - (window.getSize().width / 2),
-      (screenDimension.height / 2) - (window.getSize().height / 2)));
-    window.setVisible(true);
-  }
-
-  /**
-   * Display the color rule frame
-   */
-  void showColorPreferences() {
-    colorPanel.loadLogPanelColorizers();
-    colorFrame.pack();
-    centerAndSetVisible(colorFrame);
-  }
-
-  /**
-   * Toggle panel preference for detail visibility on or off
-   */
-  void toggleDetailVisible() {
-    preferenceModel.setDetailPaneVisible(
-      !preferenceModel.isDetailPaneVisible());
-  }
-
-  /**
-   * Accessor
-   *
-   * @return detail visibility flag
-   */
-  boolean isDetailVisible() {
-    return preferenceModel.isDetailPaneVisible();
-  }
-
-  boolean isSearchResultsVisible() {
-    return preferenceModel.isSearchResultsVisible();
-  }
-
-  /**
-   * Toggle panel preference for logger tree visibility on or off
-   */
-  void toggleLogTreeVisible() {
-    preferenceModel.setLogTreePanelVisible(
-      !preferenceModel.isLogTreePanelVisible());
-  }
-
-  /**
-   * Accessor
-   *
-   * @return logger tree visibility flag
-   */
-  boolean isLogTreeVisible() {
-    return preferenceModel.isLogTreePanelVisible();
-  }
-
-  /**
-   * Return all events
-   *
-   * @return list of LoggingEvents
-   */
-  List getEvents() {
-    return tableModel.getAllEvents();
-  }
-
-  /**
-   * Return the events that are visible with the current filter applied
-   *
-   * @return list of LoggingEvents
-   */
-  List getFilteredEvents() {
-  	return tableModel.getFilteredEvents();
-  }
-  
-  List<LoggingEventWrapper> getMatchingEvents(Rule rule) {
-    return tableModel.getMatchingEvents(rule);
-  }
-
-  /**
-   * Remove all events
-   */
-  void clearEvents() {
-    clearModel();
-  }
-
-  /**
-   * Accessor
-   *
-   * @return identifier
-   */
-  String getIdentifier() {
-    return identifier;
-  }
-
-  /**
-   * Undocks this DockablePanel by removing the panel from the LogUI window
-   * and placing it inside it's own JFrame.
-   */
-  void undock() {
-  	final int row = table.getSelectedRow();
-    setDocked(false);
-    externalPanel.removeAll();
-
-    externalPanel.add(undockedToolbar, BorderLayout.NORTH);
-    externalPanel.add(nameTreeAndMainPanelSplit, BorderLayout.CENTER);
-    externalPanel.setDocked(false);
-    undockedFrame.pack();
-
-    undockedFrame.setVisible(true);
-    dockingAction.putValue(Action.NAME, "Dock");
-    dockingAction.putValue(Action.SMALL_ICON, ChainsawIcons.ICON_DOCK);
-    if (row > -1) {
-        EventQueue.invokeLater(() -> table.scrollToRow(row));
+    void showPreferences() {
+        //don't pack this frame
+        centerAndSetVisible(logPanelPreferencesFrame);
     }
-  }
 
-  /**
-   * Add an eventCountListener
-   *
-   * @param l
-   */
-  void addEventCountListener(EventCountListener l) {
-    tableModel.addEventCountListener(l);
-  }
+    public static void centerAndSetVisible(Window window) {
+        Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
+        window.setLocation(new Point((screenDimension.width / 2) - (window.getSize().width / 2),
+            (screenDimension.height / 2) - (window.getSize().height / 2)));
+        window.setVisible(true);
+    }
 
-  /**
-   * Accessor
-   *
-   * @return paused flag
-   */
-  boolean isPaused() {
-    return paused;
-  }
+    /**
+     * Display the color rule frame
+     */
+    void showColorPreferences() {
+        colorPanel.loadLogPanelColorizers();
+        colorFrame.pack();
+        centerAndSetVisible(colorFrame);
+    }
 
-  /**
-   * Modifies the Paused property and notifies the listeners
-   *
-   * @param paused
-   */
-  void setPaused(boolean paused) {
-    boolean oldValue = this.paused;
-    this.paused = paused;
-    firePropertyChange("paused", oldValue, paused);
-  }
+    /**
+     * Toggle panel preference for detail visibility on or off
+     */
+    void toggleDetailVisible() {
+        preferenceModel.setDetailPaneVisible(
+            !preferenceModel.isDetailPaneVisible());
+    }
 
-  /**
-   * Change the selected event on the log panel.  Will cause scrollToBottom to be turned off.
-   *
-   * @param eventNumber
-   * @return row number or -1 if row with log4jid property with that number was not found
-   */
-  int setSelectedEvent(int eventNumber) {
-      int row = tableModel.locate(ExpressionRule.getRule("prop.log4jid == " + eventNumber), 0, true);
-      if (row > -1) {
-        preferenceModel.setScrollToBottom(false);
+    /**
+     * Accessor
+     *
+     * @return detail visibility flag
+     */
+    boolean isDetailVisible() {
+        return preferenceModel.isDetailPaneVisible();
+    }
 
-        table.scrollToRow(row);
-      }
-      return row;
-  }
+    boolean isSearchResultsVisible() {
+        return preferenceModel.isSearchResultsVisible();
+    }
 
-  /**
-   * Add a preference propertyChangeListener
-   *
-   * @param listener
-   */
-  void addPreferencePropertyChangeListener(PropertyChangeListener listener) {
-    preferenceModel.addPropertyChangeListener(listener);
-  }
+    /**
+     * Toggle panel preference for logger tree visibility on or off
+     */
+    void toggleLogTreeVisible() {
+        preferenceModel.setLogTreePanelVisible(
+            !preferenceModel.isLogTreePanelVisible());
+    }
 
-  /**
-   * Toggle the LoggingEvent container from either managing a cyclic buffer of
-   * events or an ArrayList of events
-   */
-  void toggleCyclic() {
-    boolean toggledCyclic = !preferenceModel.isCyclic();
+    /**
+     * Accessor
+     *
+     * @return logger tree visibility flag
+     */
+    boolean isLogTreeVisible() {
+        return preferenceModel.isLogTreePanelVisible();
+    }
 
-    preferenceModel.setCyclic(toggledCyclic);
-    tableModel.setCyclic(toggledCyclic);
-    searchModel.setCyclic(toggledCyclic);
-  }
+    /**
+     * Return all events
+     *
+     * @return list of LoggingEvents
+     */
+    List getEvents() {
+        return tableModel.getAllEvents();
+    }
 
-  /**
-   * Accessor
-   *
-   * @return flag answering if LoggingEvent container is a cyclic buffer
-   */
-  boolean isCyclic() {
-    return preferenceModel.isCyclic();
-  }
+    /**
+     * Return the events that are visible with the current filter applied
+     *
+     * @return list of LoggingEvents
+     */
+    List getFilteredEvents() {
+        return tableModel.getFilteredEvents();
+    }
 
-  public void updateFindRule(String ruleText) {
-    if ((ruleText == null) || (ruleText.trim().equals(""))) {
-      findRule = null;
-      tableModel.updateEventsWithFindRule(null);
-      colorizer.setFindRule(null);
-      tableRuleMediator.setFindRule(null);
-      searchRuleMediator.setFindRule(null);
-      //reset background color in case we were previously an invalid expression
-      findCombo.setBackground(UIManager.getColor("TextField.background"));
-      findCombo.setToolTipText(
-        "Enter an expression - right click or ctrl-space for menu - press enter to add to list");
-      currentSearchMatchCount = 0;
-      currentFindRuleText = null;
-      statusBar.setSearchMatchCount(currentSearchMatchCount, getIdentifier());
-      //if the preference to show search results is enabled, the find rule is now null - hide search results
-      if (isSearchResultsVisible()) {
-        hideSearchResults();
-      }
-    } else {
-      //only turn off scrolltobottom when finding something (find not empty)
-      preferenceModel.setScrollToBottom(false);
-      if(ruleText.equals(currentFindRuleText)) {
-          //don't update events if rule hasn't changed (we're finding next/previous)
-          return;
-      }
-      currentFindRuleText = ruleText;
-      try {
-        final JTextField findText =(JTextField) findCombo.getEditor().getEditorComponent();
-        findText.setToolTipText(
-          "Enter an expression - right click or ctrl-space for menu - press enter to add to list");
-        findRule = ExpressionRule.getRule(ruleText);
-        currentSearchMatchCount = tableModel.updateEventsWithFindRule(findRule);
-        searchModel.updateEventsWithFindRule(findRule);
-        colorizer.setFindRule(findRule);
-        tableRuleMediator.setFindRule(findRule);
-        searchRuleMediator.setFindRule(findRule);
-        //valid expression, reset background color in case we were previously an invalid expression
-        findText.setBackground(UIManager.getColor("TextField.background"));
-        statusBar.setSearchMatchCount(currentSearchMatchCount, getIdentifier());
-        if (isSearchResultsVisible()) {
-          showSearchResults();
+    List<LoggingEventWrapper> getMatchingEvents(Rule rule) {
+        return tableModel.getMatchingEvents(rule);
+    }
+
+    /**
+     * Remove all events
+     */
+    void clearEvents() {
+        clearModel();
+    }
+
+    /**
+     * Accessor
+     *
+     * @return identifier
+     */
+    String getIdentifier() {
+        return identifier;
+    }
+
+    /**
+     * Undocks this DockablePanel by removing the panel from the LogUI window
+     * and placing it inside it's own JFrame.
+     */
+    void undock() {
+        final int row = table.getSelectedRow();
+        setDocked(false);
+        externalPanel.removeAll();
+
+        externalPanel.add(undockedToolbar, BorderLayout.NORTH);
+        externalPanel.add(nameTreeAndMainPanelSplit, BorderLayout.CENTER);
+        externalPanel.setDocked(false);
+        undockedFrame.pack();
+
+        undockedFrame.setVisible(true);
+        dockingAction.putValue(Action.NAME, "Dock");
+        dockingAction.putValue(Action.SMALL_ICON, ChainsawIcons.ICON_DOCK);
+        if (row > -1) {
+            EventQueue.invokeLater(() -> table.scrollToRow(row));
         }
-      } catch (IllegalArgumentException re) {
-        findRule = null;
-        final JTextField findText =(JTextField) findCombo.getEditor().getEditorComponent();
-        findText.setToolTipText(re.getMessage());
-        findText.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
-        colorizer.setFindRule(null);
-        tableRuleMediator.setFindRule(null);
-        searchRuleMediator.setFindRule(null);
-        tableModel.updateEventsWithFindRule(null);
-        searchModel.updateEventsWithFindRule(null);
-        currentSearchMatchCount = 0;
-        statusBar.setSearchMatchCount(currentSearchMatchCount, getIdentifier());
-        //if the preference to show search results is enabled, the find rule is now null - hide search results
-        if (isSearchResultsVisible()) {
-          hideSearchResults();
+    }
+
+    /**
+     * Add an eventCountListener
+     *
+     * @param l
+     */
+    void addEventCountListener(EventCountListener l) {
+        tableModel.addEventCountListener(l);
+    }
+
+    /**
+     * Accessor
+     *
+     * @return paused flag
+     */
+    boolean isPaused() {
+        return paused;
+    }
+
+    /**
+     * Modifies the Paused property and notifies the listeners
+     *
+     * @param paused
+     */
+    void setPaused(boolean paused) {
+        boolean oldValue = this.paused;
+        this.paused = paused;
+        firePropertyChange("paused", oldValue, paused);
+    }
+
+    /**
+     * Change the selected event on the log panel.  Will cause scrollToBottom to be turned off.
+     *
+     * @param eventNumber
+     * @return row number or -1 if row with log4jid property with that number was not found
+     */
+    int setSelectedEvent(int eventNumber) {
+        int row = tableModel.locate(ExpressionRule.getRule("prop.log4jid == " + eventNumber), 0, true);
+        if (row > -1) {
+            preferenceModel.setScrollToBottom(false);
+
+            table.scrollToRow(row);
         }
-      }
+        return row;
     }
-  }
 
-  private void hideSearchResults() {
-    if (searchResultsDisplayed) {
-      detailPanel.removeAll();
-      JPanel leftSpacePanel = new JPanel();
-      Integer scrollBarWidth = (Integer) UIManager.get("ScrollBar.width");
-      leftSpacePanel.setPreferredSize(new Dimension(scrollBarWidth -4, -1));
-
-      JPanel rightSpacePanel = new JPanel();
-      rightSpacePanel.setPreferredSize(new Dimension(scrollBarWidth -4, -1));
-
-      detailPanel.add(detailToolbar, BorderLayout.NORTH);
-      detailPanel.add(detailPane, BorderLayout.CENTER);
-
-      detailPanel.add(leftSpacePanel, BorderLayout.WEST);
-      detailPanel.add(rightSpacePanel, BorderLayout.EAST);
- 
-      detailPanel.revalidate();
-      detailPanel.repaint();
-      //if the detail visible pref is not enabled, hide the detail pane
-      searchResultsDisplayed = false;
-      //hide if pref is not enabled
-      if (!isDetailVisible()) {
-        hideDetailPane();
-      }
+    /**
+     * Add a preference propertyChangeListener
+     *
+     * @param listener
+     */
+    void addPreferencePropertyChangeListener(PropertyChangeListener listener) {
+        preferenceModel.addPropertyChangeListener(listener);
     }
-  }
 
-  private void showSearchResults() {
-    if (isSearchResultsVisible() && !searchResultsDisplayed && findRule != null) {
-      //if pref is set, always update detail panel to contain search results
-      detailPanel.removeAll();
-      detailPanel.add(searchPane, BorderLayout.CENTER);
-      Integer scrollBarWidth = (Integer) UIManager.get("ScrollBar.width");
-      JPanel leftSpacePanel = new JPanel();
-      leftSpacePanel.setPreferredSize(new Dimension(scrollBarWidth -4, -1));
-      JPanel rightSpacePanel = new JPanel();
-      rightSpacePanel.setPreferredSize(new Dimension(scrollBarWidth -4, -1));
-      detailPanel.add(leftSpacePanel, BorderLayout.WEST);
-      detailPanel.add(rightSpacePanel, BorderLayout.EAST);
-      detailPanel.revalidate();
-      detailPanel.repaint();
-      //if the detail visible pref is not enabled, show the detail pane
-      searchResultsDisplayed = true;
-      //show if pref is not enabled
-      if (!isDetailVisible()) {
-        showDetailPane();
-      }
+    /**
+     * Toggle the LoggingEvent container from either managing a cyclic buffer of
+     * events or an ArrayList of events
+     */
+    void toggleCyclic() {
+        boolean toggledCyclic = !preferenceModel.isCyclic();
+
+        preferenceModel.setCyclic(toggledCyclic);
+        tableModel.setCyclic(toggledCyclic);
+        searchModel.setCyclic(toggledCyclic);
     }
-  }
 
-  /**
-   * Display the detail pane, using the last known divider location
-   */
-  private void showDetailPane() {
-    if (!isDetailPanelVisible) {
-      lowerPanel.setDividerSize(dividerSize);
-      if (lowerPanelDividerLocation == 0) {
-        lowerPanel.setDividerLocation(DEFAULT_DETAIL_SPLIT_LOCATION);
-        lowerPanelDividerLocation = lowerPanel.getDividerLocation();
-      } else {
-        lowerPanel.setDividerLocation(lowerPanelDividerLocation);
-      }
-      detailPanel.setVisible(true);
-      detailPanel.repaint();
-      lowerPanel.repaint();
-      isDetailPanelVisible = true;
+    /**
+     * Accessor
+     *
+     * @return flag answering if LoggingEvent container is a cyclic buffer
+     */
+    boolean isCyclic() {
+        return preferenceModel.isCyclic();
     }
-  }
 
-  /**
-   * Hide the detail pane, holding the current divider location for later use
-   */
-  private void hideDetailPane() {
-    //may be called not currently visible on initial setup to ensure panel is not visible..only update divider location if hiding when currently visible
-    if (isDetailPanelVisible) {
-      lowerPanelDividerLocation = lowerPanel.getDividerLocation();
-    }
-    lowerPanel.setDividerSize(0);
-    detailPanel.setVisible(false);
-    lowerPanel.repaint();
-    isDetailPanelVisible = false;
-  }
-
-  /**
-   * Display the log tree pane, using the last known divider location
-   */
-  private void showLogTreePanel() {
-    nameTreeAndMainPanelSplit.setDividerSize(dividerSize);
-    nameTreeAndMainPanelSplit.setDividerLocation(
-      lastLogTreePanelSplitLocation);
-    logTreePanel.setVisible(true);
-    nameTreeAndMainPanelSplit.repaint();
-  }
-
-  /**
-   * Hide the log tree pane, holding the current divider location for later use
-   */
-  private void hideLogTreePanel() {
-    //subtract one to make sizes match
-    int currentSize = nameTreeAndMainPanelSplit.getWidth() - nameTreeAndMainPanelSplit.getDividerSize() - 1;
-
-    if (currentSize > 0) {
-      lastLogTreePanelSplitLocation =
-        (double) nameTreeAndMainPanelSplit.getDividerLocation() / currentSize;
-    }
-    nameTreeAndMainPanelSplit.setDividerSize(0);
-    logTreePanel.setVisible(false);
-    nameTreeAndMainPanelSplit.repaint();
-  }
-
-  /**
-   * Return a toolbar used by the undocked LogPanel's frame
-   *
-   * @return toolbar
-   */
-  private JToolBar createDockwindowToolbar() {
-    final JToolBar toolbar = new JToolBar();
-    toolbar.setFloatable(false);
-
-    final Action dockPauseAction =
-      new AbstractAction("Pause") {
-        public void actionPerformed(ActionEvent evt) {
-          setPaused(!isPaused());
+    public void updateFindRule(String ruleText) {
+        if ((ruleText == null) || (ruleText.trim().equals(""))) {
+            findRule = null;
+            tableModel.updateEventsWithFindRule(null);
+            colorizer.setFindRule(null);
+            tableRuleMediator.setFindRule(null);
+            searchRuleMediator.setFindRule(null);
+            //reset background color in case we were previously an invalid expression
+            findCombo.setBackground(UIManager.getColor("TextField.background"));
+            findCombo.setToolTipText(
+                "Enter an expression - right click or ctrl-space for menu - press enter to add to list");
+            currentSearchMatchCount = 0;
+            currentFindRuleText = null;
+            statusBar.setSearchMatchCount(currentSearchMatchCount, getIdentifier());
+            //if the preference to show search results is enabled, the find rule is now null - hide search results
+            if (isSearchResultsVisible()) {
+                hideSearchResults();
+            }
+        } else {
+            //only turn off scrolltobottom when finding something (find not empty)
+            preferenceModel.setScrollToBottom(false);
+            if (ruleText.equals(currentFindRuleText)) {
+                //don't update events if rule hasn't changed (we're finding next/previous)
+                return;
+            }
+            currentFindRuleText = ruleText;
+            try {
+                final JTextField findText = (JTextField) findCombo.getEditor().getEditorComponent();
+                findText.setToolTipText(
+                    "Enter an expression - right click or ctrl-space for menu - press enter to add to list");
+                findRule = ExpressionRule.getRule(ruleText);
+                currentSearchMatchCount = tableModel.updateEventsWithFindRule(findRule);
+                searchModel.updateEventsWithFindRule(findRule);
+                colorizer.setFindRule(findRule);
+                tableRuleMediator.setFindRule(findRule);
+                searchRuleMediator.setFindRule(findRule);
+                //valid expression, reset background color in case we were previously an invalid expression
+                findText.setBackground(UIManager.getColor("TextField.background"));
+                statusBar.setSearchMatchCount(currentSearchMatchCount, getIdentifier());
+                if (isSearchResultsVisible()) {
+                    showSearchResults();
+                }
+            } catch (IllegalArgumentException re) {
+                findRule = null;
+                final JTextField findText = (JTextField) findCombo.getEditor().getEditorComponent();
+                findText.setToolTipText(re.getMessage());
+                findText.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
+                colorizer.setFindRule(null);
+                tableRuleMediator.setFindRule(null);
+                searchRuleMediator.setFindRule(null);
+                tableModel.updateEventsWithFindRule(null);
+                searchModel.updateEventsWithFindRule(null);
+                currentSearchMatchCount = 0;
+                statusBar.setSearchMatchCount(currentSearchMatchCount, getIdentifier());
+                //if the preference to show search results is enabled, the find rule is now null - hide search results
+                if (isSearchResultsVisible()) {
+                    hideSearchResults();
+                }
+            }
         }
-      };
+    }
 
-    dockPauseAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_P);
-    dockPauseAction.putValue(
-      Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F12"));
-    dockPauseAction.putValue(
-      Action.SHORT_DESCRIPTION,
-      "Halts the display, while still allowing events to stream in the background");
-    dockPauseAction.putValue(
-      Action.SMALL_ICON, new ImageIcon(ChainsawIcons.PAUSE));
+    private void hideSearchResults() {
+        if (searchResultsDisplayed) {
+            detailPanel.removeAll();
+            JPanel leftSpacePanel = new JPanel();
+            Integer scrollBarWidth = (Integer) UIManager.get("ScrollBar.width");
+            leftSpacePanel.setPreferredSize(new Dimension(scrollBarWidth - 4, -1));
 
-    final SmallToggleButton dockPauseButton =
-      new SmallToggleButton(dockPauseAction);
-    dockPauseButton.setText("");
+            JPanel rightSpacePanel = new JPanel();
+            rightSpacePanel.setPreferredSize(new Dimension(scrollBarWidth - 4, -1));
 
-    dockPauseButton.getModel().setSelected(isPaused());
+            detailPanel.add(detailToolbar, BorderLayout.NORTH);
+            detailPanel.add(detailPane, BorderLayout.CENTER);
 
-    addPropertyChangeListener(
-      "paused",
+            detailPanel.add(leftSpacePanel, BorderLayout.WEST);
+            detailPanel.add(rightSpacePanel, BorderLayout.EAST);
+
+            detailPanel.revalidate();
+            detailPanel.repaint();
+            //if the detail visible pref is not enabled, hide the detail pane
+            searchResultsDisplayed = false;
+            //hide if pref is not enabled
+            if (!isDetailVisible()) {
+                hideDetailPane();
+            }
+        }
+    }
+
+    private void showSearchResults() {
+        if (isSearchResultsVisible() && !searchResultsDisplayed && findRule != null) {
+            //if pref is set, always update detail panel to contain search results
+            detailPanel.removeAll();
+            detailPanel.add(searchPane, BorderLayout.CENTER);
+            Integer scrollBarWidth = (Integer) UIManager.get("ScrollBar.width");
+            JPanel leftSpacePanel = new JPanel();
+            leftSpacePanel.setPreferredSize(new Dimension(scrollBarWidth - 4, -1));
+            JPanel rightSpacePanel = new JPanel();
+            rightSpacePanel.setPreferredSize(new Dimension(scrollBarWidth - 4, -1));
+            detailPanel.add(leftSpacePanel, BorderLayout.WEST);
+            detailPanel.add(rightSpacePanel, BorderLayout.EAST);
+            detailPanel.revalidate();
+            detailPanel.repaint();
+            //if the detail visible pref is not enabled, show the detail pane
+            searchResultsDisplayed = true;
+            //show if pref is not enabled
+            if (!isDetailVisible()) {
+                showDetailPane();
+            }
+        }
+    }
+
+    /**
+     * Display the detail pane, using the last known divider location
+     */
+    private void showDetailPane() {
+        if (!isDetailPanelVisible) {
+            lowerPanel.setDividerSize(dividerSize);
+            if (lowerPanelDividerLocation == 0) {
+                lowerPanel.setDividerLocation(DEFAULT_DETAIL_SPLIT_LOCATION);
+                lowerPanelDividerLocation = lowerPanel.getDividerLocation();
+            } else {
+                lowerPanel.setDividerLocation(lowerPanelDividerLocation);
+            }
+            detailPanel.setVisible(true);
+            detailPanel.repaint();
+            lowerPanel.repaint();
+            isDetailPanelVisible = true;
+        }
+    }
+
+    /**
+     * Hide the detail pane, holding the current divider location for later use
+     */
+    private void hideDetailPane() {
+        //may be called not currently visible on initial setup to ensure panel is not visible..only update divider location if hiding when currently visible
+        if (isDetailPanelVisible) {
+            lowerPanelDividerLocation = lowerPanel.getDividerLocation();
+        }
+        lowerPanel.setDividerSize(0);
+        detailPanel.setVisible(false);
+        lowerPanel.repaint();
+        isDetailPanelVisible = false;
+    }
+
+    /**
+     * Display the log tree pane, using the last known divider location
+     */
+    private void showLogTreePanel() {
+        nameTreeAndMainPanelSplit.setDividerSize(dividerSize);
+        nameTreeAndMainPanelSplit.setDividerLocation(
+            lastLogTreePanelSplitLocation);
+        logTreePanel.setVisible(true);
+        nameTreeAndMainPanelSplit.repaint();
+    }
+
+    /**
+     * Hide the log tree pane, holding the current divider location for later use
+     */
+    private void hideLogTreePanel() {
+        //subtract one to make sizes match
+        int currentSize = nameTreeAndMainPanelSplit.getWidth() - nameTreeAndMainPanelSplit.getDividerSize() - 1;
+
+        if (currentSize > 0) {
+            lastLogTreePanelSplitLocation =
+                (double) nameTreeAndMainPanelSplit.getDividerLocation() / currentSize;
+        }
+        nameTreeAndMainPanelSplit.setDividerSize(0);
+        logTreePanel.setVisible(false);
+        nameTreeAndMainPanelSplit.repaint();
+    }
+
+    /**
+     * Return a toolbar used by the undocked LogPanel's frame
+     *
+     * @return toolbar
+     */
+    private JToolBar createDockwindowToolbar() {
+        final JToolBar toolbar = new JToolBar();
+        toolbar.setFloatable(false);
+
+        final Action dockPauseAction =
+            new AbstractAction("Pause") {
+                public void actionPerformed(ActionEvent evt) {
+                    setPaused(!isPaused());
+                }
+            };
+
+        dockPauseAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_P);
+        dockPauseAction.putValue(
+            Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F12"));
+        dockPauseAction.putValue(
+            Action.SHORT_DESCRIPTION,
+            "Halts the display, while still allowing events to stream in the background");
+        dockPauseAction.putValue(
+            Action.SMALL_ICON, new ImageIcon(ChainsawIcons.PAUSE));
+
+        final SmallToggleButton dockPauseButton =
+            new SmallToggleButton(dockPauseAction);
+        dockPauseButton.setText("");
+
+        dockPauseButton.getModel().setSelected(isPaused());
+
+        addPropertyChangeListener(
+            "paused",
             evt -> dockPauseButton.getModel().setSelected(isPaused()));
-    toolbar.add(dockPauseButton);
+        toolbar.add(dockPauseButton);
 
-    Action dockShowPrefsAction =
-      new AbstractAction("") {
-        public void actionPerformed(ActionEvent arg0) {
-          showPreferences();
-        }
-      };
+        Action dockShowPrefsAction =
+            new AbstractAction("") {
+                public void actionPerformed(ActionEvent arg0) {
+                    showPreferences();
+                }
+            };
 
-    dockShowPrefsAction.putValue(
-      Action.SHORT_DESCRIPTION, "Define preferences...");
-    dockShowPrefsAction.putValue(
-      Action.SMALL_ICON, ChainsawIcons.ICON_PREFERENCES);
+        dockShowPrefsAction.putValue(
+            Action.SHORT_DESCRIPTION, "Define preferences...");
+        dockShowPrefsAction.putValue(
+            Action.SMALL_ICON, ChainsawIcons.ICON_PREFERENCES);
 
-    toolbar.add(new SmallButton(dockShowPrefsAction));
+        toolbar.add(new SmallButton(dockShowPrefsAction));
 
-    Action dockToggleLogTreeAction =
-      new AbstractAction() {
-        public void actionPerformed(ActionEvent e) {
-          toggleLogTreeVisible();
-        }
-      };
+        Action dockToggleLogTreeAction =
+            new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    toggleLogTreeVisible();
+                }
+            };
 
-      dockToggleLogTreeAction.putValue(Action.SHORT_DESCRIPTION, "Toggles the Logger Tree Pane");
-      dockToggleLogTreeAction.putValue("enabled", Boolean.TRUE);
-      dockToggleLogTreeAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_T);
-      dockToggleLogTreeAction.putValue(
-        Action.ACCELERATOR_KEY,
-        KeyStroke.getKeyStroke(KeyEvent.VK_T, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-      dockToggleLogTreeAction.putValue(
-        Action.SMALL_ICON, new ImageIcon(ChainsawIcons.WINDOW_ICON));
+        dockToggleLogTreeAction.putValue(Action.SHORT_DESCRIPTION, "Toggles the Logger Tree Pane");
+        dockToggleLogTreeAction.putValue("enabled", Boolean.TRUE);
+        dockToggleLogTreeAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_T);
+        dockToggleLogTreeAction.putValue(
+            Action.ACCELERATOR_KEY,
+            KeyStroke.getKeyStroke(KeyEvent.VK_T, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        dockToggleLogTreeAction.putValue(
+            Action.SMALL_ICON, new ImageIcon(ChainsawIcons.WINDOW_ICON));
 
-    final SmallToggleButton toggleLogTreeButton =
-      new SmallToggleButton(dockToggleLogTreeAction);
-    preferenceModel.addPropertyChangeListener("logTreePanelVisible", evt -> toggleLogTreeButton.setSelected(preferenceModel.isLogTreePanelVisible()));
-    		
-    toggleLogTreeButton.setSelected(isLogTreeVisible());
-    toolbar.add(toggleLogTreeButton);
-    toolbar.addSeparator();
+        final SmallToggleButton toggleLogTreeButton =
+            new SmallToggleButton(dockToggleLogTreeAction);
+        preferenceModel.addPropertyChangeListener("logTreePanelVisible", evt -> toggleLogTreeButton.setSelected(preferenceModel.isLogTreePanelVisible()));
 
-    final Action undockedClearAction =
-      new AbstractAction("Clear") {
-        public void actionPerformed(ActionEvent arg0) {
-          clearModel();
-        }
-      };
+        toggleLogTreeButton.setSelected(isLogTreeVisible());
+        toolbar.add(toggleLogTreeButton);
+        toolbar.addSeparator();
 
-    undockedClearAction.putValue(
-      Action.SMALL_ICON, new ImageIcon(ChainsawIcons.DELETE));
-    undockedClearAction.putValue(
-      Action.SHORT_DESCRIPTION, "Removes all the events from the current view");
+        final Action undockedClearAction =
+            new AbstractAction("Clear") {
+                public void actionPerformed(ActionEvent arg0) {
+                    clearModel();
+                }
+            };
 
-    final SmallButton dockClearButton = new SmallButton(undockedClearAction);
-    dockClearButton.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-      KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()),
-      undockedClearAction.getValue(Action.NAME));
-    dockClearButton.getActionMap().put(
-      undockedClearAction.getValue(Action.NAME), undockedClearAction);
+        undockedClearAction.putValue(
+            Action.SMALL_ICON, new ImageIcon(ChainsawIcons.DELETE));
+        undockedClearAction.putValue(
+            Action.SHORT_DESCRIPTION, "Removes all the events from the current view");
 
-    dockClearButton.setText("");
-    toolbar.add(dockClearButton);
-    toolbar.addSeparator();
+        final SmallButton dockClearButton = new SmallButton(undockedClearAction);
+        dockClearButton.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()),
+            undockedClearAction.getValue(Action.NAME));
+        dockClearButton.getActionMap().put(
+            undockedClearAction.getValue(Action.NAME), undockedClearAction);
 
-    Action dockToggleScrollToBottomAction =
-        new AbstractAction("Toggles Scroll to Bottom") {
-          public void actionPerformed(ActionEvent e) {
-            toggleScrollToBottom();
-          }
-        };
+        dockClearButton.setText("");
+        toolbar.add(dockClearButton);
+        toolbar.addSeparator();
+
+        Action dockToggleScrollToBottomAction =
+            new AbstractAction("Toggles Scroll to Bottom") {
+                public void actionPerformed(ActionEvent e) {
+                    toggleScrollToBottom();
+                }
+            };
 
         dockToggleScrollToBottomAction.putValue(Action.SHORT_DESCRIPTION, "Toggles Scroll to Bottom");
         dockToggleScrollToBottomAction.putValue("enabled", Boolean.TRUE);
         dockToggleScrollToBottomAction.putValue(
-          Action.SMALL_ICON, new ImageIcon(ChainsawIcons.SCROLL_TO_BOTTOM));
+            Action.SMALL_ICON, new ImageIcon(ChainsawIcons.SCROLL_TO_BOTTOM));
 
-      final SmallToggleButton toggleScrollToBottomButton =
-        new SmallToggleButton(dockToggleScrollToBottomAction);
-      preferenceModel.addPropertyChangeListener("scrollToBottom", evt -> toggleScrollToBottomButton.setSelected(isScrollToBottom()));
+        final SmallToggleButton toggleScrollToBottomButton =
+            new SmallToggleButton(dockToggleScrollToBottomAction);
+        preferenceModel.addPropertyChangeListener("scrollToBottom", evt -> toggleScrollToBottomButton.setSelected(isScrollToBottom()));
 
-      toggleScrollToBottomButton.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-  	      KeyStroke.getKeyStroke(KeyEvent.VK_B, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()),
-  	      dockToggleScrollToBottomAction.getValue(Action.NAME));
-  	    toggleScrollToBottomButton.getActionMap().put(
-  	      dockToggleScrollToBottomAction.getValue(Action.NAME), dockToggleScrollToBottomAction);
-      
-      toggleScrollToBottomButton.setSelected(isScrollToBottom());
-      toggleScrollToBottomButton.setText("");
-      toolbar.add(toggleScrollToBottomButton);
-      toolbar.addSeparator();
+        toggleScrollToBottomButton.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_B, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()),
+            dockToggleScrollToBottomAction.getValue(Action.NAME));
+        toggleScrollToBottomButton.getActionMap().put(
+            dockToggleScrollToBottomAction.getValue(Action.NAME), dockToggleScrollToBottomAction);
 
-    findCombo.addActionListener(e -> {
-      //comboboxchanged event received when text is modified in the field..when enter is pressed, it's comboboxedited
-      if (e.getActionCommand().equalsIgnoreCase("comboBoxEdited")) {
-          findNext();
-      }
-    });
-    Action redockAction =
-      new AbstractAction("", ChainsawIcons.ICON_DOCK) {
-        public void actionPerformed(ActionEvent arg0) {
-          dock();
-        }
-      };
+        toggleScrollToBottomButton.setSelected(isScrollToBottom());
+        toggleScrollToBottomButton.setText("");
+        toolbar.add(toggleScrollToBottomButton);
+        toolbar.addSeparator();
 
-    redockAction.putValue(
-      Action.SHORT_DESCRIPTION,
-      "Docks this window back with the main Chainsaw window");
+        findCombo.addActionListener(e -> {
+            //comboboxchanged event received when text is modified in the field..when enter is pressed, it's comboboxedited
+            if (e.getActionCommand().equalsIgnoreCase("comboBoxEdited")) {
+                findNext();
+            }
+        });
+        Action redockAction =
+            new AbstractAction("", ChainsawIcons.ICON_DOCK) {
+                public void actionPerformed(ActionEvent arg0) {
+                    dock();
+                }
+            };
 
-    SmallButton redockButton = new SmallButton(redockAction);
-    toolbar.add(redockButton);
+        redockAction.putValue(
+            Action.SHORT_DESCRIPTION,
+            "Docks this window back with the main Chainsaw window");
 
-    return toolbar;
-  }
+        SmallButton redockButton = new SmallButton(redockAction);
+        toolbar.add(redockButton);
 
-  /**
-   * Update the status bar with current selected row and row count
-   */
-  protected void updateStatusBar() {
-    SwingHelper.invokeOnEDT(
+        return toolbar;
+    }
+
+    /**
+     * Update the status bar with current selected row and row count
+     */
+    protected void updateStatusBar() {
+        SwingHelper.invokeOnEDT(
             () -> {
-              statusBar.setSelectedLine(
-                table.getSelectedRow() + 1, tableModel.getRowCount(),
-                tableModel.size(), getIdentifier());
-              statusBar.setSearchMatchCount(currentSearchMatchCount, getIdentifier());
+                statusBar.setSelectedLine(
+                    table.getSelectedRow() + 1, tableModel.getRowCount(),
+                    tableModel.size(), getIdentifier());
+                statusBar.setSearchMatchCount(currentSearchMatchCount, getIdentifier());
             });
-  }
-
-  /**
-   * Update the detail pane layout text
-   *
-   * @param conversionPattern layout text
-   */
-  private void setDetailPaneConversionPattern(String conversionPattern) {
-    String oldPattern = getDetailPaneConversionPattern();
-    (detailLayout).setConversionPattern(conversionPattern);
-    firePropertyChange(
-      "detailPaneConversionPattern", oldPattern,
-      getDetailPaneConversionPattern());
-  }
-
-  /**
-   * Accessor
-   *
-   * @return conversionPattern layout text
-   */
-  private String getDetailPaneConversionPattern() {
-    return (detailLayout).getConversionPattern();
-  }
-
-  /**
-   * Reset the LoggingEvent container, detail panel and status bar
-   */
-  private void clearModel() {
-    previousLastIndex = -1;
-    tableModel.clearModel();
-    searchModel.clearModel();
-
-    synchronized (detail) {
-      detailPaneUpdater.setSelectedRow(-1);
-      detail.notify();
     }
 
-    statusBar.setNothingSelected();
-  }
+    /**
+     * Update the detail pane layout text
+     *
+     * @param conversionPattern layout text
+     */
+    private void setDetailPaneConversionPattern(String conversionPattern) {
+        String oldPattern = getDetailPaneConversionPattern();
+        (detailLayout).setConversionPattern(conversionPattern);
+        firePropertyChange(
+            "detailPaneConversionPattern", oldPattern,
+            getDetailPaneConversionPattern());
+    }
 
-  public void findNextColorizedEvent() {
-    EventQueue.invokeLater(() -> {
-        final int nextRow = tableModel.findColoredRow(table.getSelectedRow() + 1, true);
-        if (nextRow > -1) {
-            table.scrollToRow(nextRow);
+    /**
+     * Accessor
+     *
+     * @return conversionPattern layout text
+     */
+    private String getDetailPaneConversionPattern() {
+        return (detailLayout).getConversionPattern();
+    }
+
+    /**
+     * Reset the LoggingEvent container, detail panel and status bar
+     */
+    private void clearModel() {
+        previousLastIndex = -1;
+        tableModel.clearModel();
+        searchModel.clearModel();
+
+        synchronized (detail) {
+            detailPaneUpdater.setSelectedRow(-1);
+            detail.notify();
         }
-    });
-  }
 
-  public void findPreviousColorizedEvent() {
-    EventQueue.invokeLater(() -> {
-        final int previousRow = tableModel.findColoredRow(table.getSelectedRow() - 1, false);
-        if (previousRow > -1) {
-            table.scrollToRow(previousRow);
-        }
-    });
-  }
+        statusBar.setNothingSelected();
+    }
 
-  /**
-   * Finds the next row matching the current find rule, and ensures it is made
-   * visible
-   *
-   */
-  public void findNext() {
-    Object item = findCombo.getSelectedItem();
-    updateFindRule(item == null ? null: item.toString());
-
-    if (findRule != null) {
+    public void findNextColorizedEvent() {
         EventQueue.invokeLater(() -> {
-          final JTextField findText =(JTextField) findCombo.getEditor().getEditorComponent();
-            try {
-              int filteredEventsSize = getFilteredEvents().size();
-              int startRow = table.getSelectedRow() + 1;
-                if (startRow > filteredEventsSize - 1) {
-                    startRow = 0;
-                }
-              //no selected row would return -1, so we'd start at row zero
-              final int nextRow = tableModel.locate(findRule, startRow, true);
-
-              if (nextRow > -1) {
+            final int nextRow = tableModel.findColoredRow(table.getSelectedRow() + 1, true);
+            if (nextRow > -1) {
                 table.scrollToRow(nextRow);
-                findText.setToolTipText("Enter an expression - right click or ctrl-space for menu - press enter to add to list");
-              }
-              findText.setBackground(UIManager.getColor("TextField.background"));
-            } catch (IllegalArgumentException iae) {
-              findText.setToolTipText(iae.getMessage());
-              findText.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
-              colorizer.setFindRule(null);
-              tableRuleMediator.setFindRule(null);
-              searchRuleMediator.setFindRule(null);
             }
         });
     }
-  }
 
-  /**
-   * Finds the previous row matching the current find rule, and ensures it is made
-   * visible
-   *
-   */
-  public void findPrevious() {
-    Object item = findCombo.getSelectedItem();
-    updateFindRule(item == null ? null: item.toString());
-
-    if (findRule != null) {
+    public void findPreviousColorizedEvent() {
         EventQueue.invokeLater(() -> {
-          final JTextField findText =(JTextField) findCombo.getEditor().getEditorComponent();
-            try {
-                int startRow = table.getSelectedRow() - 1;
-                int filteredEventsSize = getFilteredEvents().size();
-                if (startRow < 0) {
-                    startRow = filteredEventsSize - 1;
-                }
-                final int previousRow = tableModel.locate(findRule, startRow, false);
-
-                if (previousRow > -1) {
-                    table.scrollToRow(previousRow);
-                    findCombo.setToolTipText("Enter an expression - right click or ctrl-space for menu - press enter to add to list");
-                }
-              findText.setBackground(UIManager.getColor("TextField.background"));
-            } catch (IllegalArgumentException iae) {
-              findText.setToolTipText(iae.getMessage());
-              findText.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
+            final int previousRow = tableModel.findColoredRow(table.getSelectedRow() - 1, false);
+            if (previousRow > -1) {
+                table.scrollToRow(previousRow);
             }
         });
     }
-  }
 
-  /**
-   * Docks this DockablePanel by hiding the JFrame and placing the Panel back
-   * inside the LogUI window.
-   */
-  private void dock() {
-  	
-  	final int row = table.getSelectedRow();
-    setDocked(true);
-    undockedFrame.setVisible(false);
-    removeAll();
+    /**
+     * Finds the next row matching the current find rule, and ensures it is made
+     * visible
+     */
+    public void findNext() {
+        Object item = findCombo.getSelectedItem();
+        updateFindRule(item == null ? null : item.toString());
 
-    add(nameTreeAndMainPanelSplit, BorderLayout.CENTER);
-    externalPanel.setDocked(true);
-    dockingAction.putValue(Action.NAME, "Undock");
-    dockingAction.putValue(Action.SMALL_ICON, ChainsawIcons.ICON_UNDOCK);
-    if (row > -1) {
-        EventQueue.invokeLater(() -> table.scrollToRow(row));
-    }
-  }
+        if (findRule != null) {
+            EventQueue.invokeLater(() -> {
+                final JTextField findText = (JTextField) findCombo.getEditor().getEditorComponent();
+                try {
+                    int filteredEventsSize = getFilteredEvents().size();
+                    int startRow = table.getSelectedRow() + 1;
+                    if (startRow > filteredEventsSize - 1) {
+                        startRow = 0;
+                    }
+                    //no selected row would return -1, so we'd start at row zero
+                    final int nextRow = tableModel.locate(findRule, startRow, true);
 
-  /**
-   * Load default column settings if no settings exist for this identifier
-   *
-   * @param event
-   */
-  private void loadDefaultColumnSettings(LoadSettingsEvent event) {
-    String columnOrder = event.getSetting(TABLE_COLUMN_ORDER);
-
-    TableColumnModel columnModel = table.getColumnModel();
-    TableColumnModel searchColumnModel = searchTable.getColumnModel();
-
-    Map<String, TableColumn> columnNameMap = new HashMap<>();
-    Map<String, TableColumn> searchColumnNameMap = new HashMap<>();
-
-    for (int i = 0; i < columnModel.getColumnCount(); i++) {
-      columnNameMap.put(table.getColumnName(i).toUpperCase(), columnModel.getColumn(i));
+                    if (nextRow > -1) {
+                        table.scrollToRow(nextRow);
+                        findText.setToolTipText("Enter an expression - right click or ctrl-space for menu - press enter to add to list");
+                    }
+                    findText.setBackground(UIManager.getColor("TextField.background"));
+                } catch (IllegalArgumentException iae) {
+                    findText.setToolTipText(iae.getMessage());
+                    findText.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
+                    colorizer.setFindRule(null);
+                    tableRuleMediator.setFindRule(null);
+                    searchRuleMediator.setFindRule(null);
+                }
+            });
+        }
     }
 
-    for (int i = 0; i < searchColumnModel.getColumnCount(); i++) {
-      searchColumnNameMap.put(searchTable.getColumnName(i).toUpperCase(), searchColumnModel.getColumn(i));
+    /**
+     * Finds the previous row matching the current find rule, and ensures it is made
+     * visible
+     */
+    public void findPrevious() {
+        Object item = findCombo.getSelectedItem();
+        updateFindRule(item == null ? null : item.toString());
+
+        if (findRule != null) {
+            EventQueue.invokeLater(() -> {
+                final JTextField findText = (JTextField) findCombo.getEditor().getEditorComponent();
+                try {
+                    int startRow = table.getSelectedRow() - 1;
+                    int filteredEventsSize = getFilteredEvents().size();
+                    if (startRow < 0) {
+                        startRow = filteredEventsSize - 1;
+                    }
+                    final int previousRow = tableModel.locate(findRule, startRow, false);
+
+                    if (previousRow > -1) {
+                        table.scrollToRow(previousRow);
+                        findCombo.setToolTipText("Enter an expression - right click or ctrl-space for menu - press enter to add to list");
+                    }
+                    findText.setBackground(UIManager.getColor("TextField.background"));
+                } catch (IllegalArgumentException iae) {
+                    findText.setToolTipText(iae.getMessage());
+                    findText.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
+                }
+            });
+        }
     }
 
-    int index;
-    StringTokenizer tok = new StringTokenizer(columnOrder, ",");
-    List<TableColumn> sortedColumnList = new ArrayList<>();
+    /**
+     * Docks this DockablePanel by hiding the JFrame and placing the Panel back
+     * inside the LogUI window.
+     */
+    private void dock() {
+
+        final int row = table.getSelectedRow();
+        setDocked(true);
+        undockedFrame.setVisible(false);
+        removeAll();
+
+        add(nameTreeAndMainPanelSplit, BorderLayout.CENTER);
+        externalPanel.setDocked(true);
+        dockingAction.putValue(Action.NAME, "Undock");
+        dockingAction.putValue(Action.SMALL_ICON, ChainsawIcons.ICON_UNDOCK);
+        if (row > -1) {
+            EventQueue.invokeLater(() -> table.scrollToRow(row));
+        }
+    }
+
+    /**
+     * Load default column settings if no settings exist for this identifier
+     *
+     * @param event
+     */
+    private void loadDefaultColumnSettings(LoadSettingsEvent event) {
+        String columnOrder = event.getSetting(TABLE_COLUMN_ORDER);
+
+        TableColumnModel columnModel = table.getColumnModel();
+        TableColumnModel searchColumnModel = searchTable.getColumnModel();
+
+        Map<String, TableColumn> columnNameMap = new HashMap<>();
+        Map<String, TableColumn> searchColumnNameMap = new HashMap<>();
+
+        for (int i = 0; i < columnModel.getColumnCount(); i++) {
+            columnNameMap.put(table.getColumnName(i).toUpperCase(), columnModel.getColumn(i));
+        }
+
+        for (int i = 0; i < searchColumnModel.getColumnCount(); i++) {
+            searchColumnNameMap.put(searchTable.getColumnName(i).toUpperCase(), searchColumnModel.getColumn(i));
+        }
+
+        int index;
+        StringTokenizer tok = new StringTokenizer(columnOrder, ",");
+        List<TableColumn> sortedColumnList = new ArrayList<>();
 
     /*
        remove all columns from the table that exist in the model
        and add in the correct order to a new arraylist
        (may be a subset of possible columns)
      **/
-    while (tok.hasMoreElements()) {
-      String element = tok.nextElement().toString().trim().toUpperCase();
-      TableColumn column = columnNameMap.get(element);
+        while (tok.hasMoreElements()) {
+            String element = tok.nextElement().toString().trim().toUpperCase();
+            TableColumn column = columnNameMap.get(element);
 
-      if (column != null) {
-        sortedColumnList.add(column);
-        table.removeColumn(column);
-        searchTable.removeColumn(column);
-      }
-    }
-    preferenceModel.setDetailPaneVisible(event.asBoolean("detailPaneVisible"));
-    preferenceModel.setLogTreePanelVisible(event.asBoolean("logTreePanelVisible"));
-    preferenceModel.setHighlightSearchMatchText(event.asBoolean("highlightSearchMatchText"));
-    preferenceModel.setWrapMessage(event.asBoolean("wrapMessage"));
-    preferenceModel.setSearchResultsVisible(event.asBoolean("searchResultsVisible"));
-    //re-add columns to the table in the order provided from the list
-    for (Object aSortedColumnList : sortedColumnList) {
-      TableColumn element = (TableColumn) aSortedColumnList;
-      if (preferenceModel.addColumn(element)) {
-        if (!applicationPreferenceModel.isDefaultColumnsSet() || applicationPreferenceModel.isDefaultColumnsSet() &&
-                applicationPreferenceModel.getDefaultColumnNames().contains(element.getHeaderValue())) {
-          table.addColumn(element);
-          searchTable.addColumn(element);
-          preferenceModel.setColumnVisible(element.getHeaderValue().toString(), true);
+            if (column != null) {
+                sortedColumnList.add(column);
+                table.removeColumn(column);
+                searchTable.removeColumn(column);
+            }
         }
-      }
-    }
-
-    String columnWidths = event.getSetting(TABLE_COLUMN_WIDTHS);
-
-    tok = new StringTokenizer(columnWidths, ",");
-    index = 0;
-
-    while (tok.hasMoreElements()) {
-      String element = (String) tok.nextElement();
-
-      try {
-        int width = Integer.parseInt(element);
-
-        if (index > (columnModel.getColumnCount() - 1)) {
-          logger.warn(
-            "loadsettings - failed attempt to set width for index " + index
-            + ", width " + element);
-        } else {
-          columnModel.getColumn(index).setPreferredWidth(width);
-          searchColumnModel.getColumn(index).setPreferredWidth(width);
+        preferenceModel.setDetailPaneVisible(event.asBoolean("detailPaneVisible"));
+        preferenceModel.setLogTreePanelVisible(event.asBoolean("logTreePanelVisible"));
+        preferenceModel.setHighlightSearchMatchText(event.asBoolean("highlightSearchMatchText"));
+        preferenceModel.setWrapMessage(event.asBoolean("wrapMessage"));
+        preferenceModel.setSearchResultsVisible(event.asBoolean("searchResultsVisible"));
+        //re-add columns to the table in the order provided from the list
+        for (Object aSortedColumnList : sortedColumnList) {
+            TableColumn element = (TableColumn) aSortedColumnList;
+            if (preferenceModel.addColumn(element)) {
+                if (!applicationPreferenceModel.isDefaultColumnsSet() || applicationPreferenceModel.isDefaultColumnsSet() &&
+                    applicationPreferenceModel.getDefaultColumnNames().contains(element.getHeaderValue())) {
+                    table.addColumn(element);
+                    searchTable.addColumn(element);
+                    preferenceModel.setColumnVisible(element.getHeaderValue().toString(), true);
+                }
+            }
         }
 
-        index++;
-      } catch (NumberFormatException e) {
-        logger.error("Error decoding a Table width", e);
-      }
-    }
-    undockedFrame.setSize(getSize());
-    undockedFrame.setLocation(getBounds().x, getBounds().y);
+        String columnWidths = event.getSetting(TABLE_COLUMN_WIDTHS);
 
-      repaint();
-    }
+        tok = new StringTokenizer(columnWidths, ",");
+        index = 0;
 
-  /**
-   * Iterate over all values in the column and return the longest width
-   *
-   * @param index column index
-   *
-   * @return longest width - relies on FontMetrics.stringWidth for calculation
-   */
-  private int getMaxColumnWidth(int index) {
-    FontMetrics metrics = getGraphics().getFontMetrics();
-    int longestWidth =
-      metrics.stringWidth("  " + table.getColumnName(index) + "  ")
-      + (2 * table.getColumnModel().getColumnMargin());
+        while (tok.hasMoreElements()) {
+            String element = (String) tok.nextElement();
 
-    for (int i = 0, j = tableModel.getRowCount(); i < j; i++) {
-      Component c =
-        renderer.getTableCellRendererComponent(
-          table, table.getValueAt(i, index), false, false, i, index);
+            try {
+                int width = Integer.parseInt(element);
 
-      if (c instanceof JLabel) {
-        longestWidth =
-          Math.max(longestWidth, metrics.stringWidth(((JLabel) c).getText()));
-      }
+                if (index > (columnModel.getColumnCount() - 1)) {
+                    logger.warn(
+                        "loadsettings - failed attempt to set width for index " + index
+                            + ", width " + element);
+                } else {
+                    columnModel.getColumn(index).setPreferredWidth(width);
+                    searchColumnModel.getColumn(index).setPreferredWidth(width);
+                }
+
+                index++;
+            } catch (NumberFormatException e) {
+                logger.error("Error decoding a Table width", e);
+            }
+        }
+        undockedFrame.setSize(getSize());
+        undockedFrame.setLocation(getBounds().x, getBounds().y);
+
+        repaint();
     }
 
-    return longestWidth + 5;
-  }
-
-  private String getToolTipTextForEvent(LoggingEventWrapper loggingEventWrapper) {
-      return detailLayout.getHeader() + detailLayout.format(loggingEventWrapper.getLoggingEvent()) + detailLayout.getFooter();
-  }
-
-  /**
-   * ensures the Entry map of all the unque logger names etc, that is used for
-   * the Filter panel is updated with any new information from the event
-   *
-   * @param event
-   */
-  private void updateOtherModels(LoggingEvent event) {
-
-    /*
-     * EventContainer is a LoggerNameModel imp, use that for notifing
+    /**
+     * Iterate over all values in the column and return the longest width
+     *
+     * @param index column index
+     * @return longest width - relies on FontMetrics.stringWidth for calculation
      */
-    tableModel.addLoggerName(event.getLoggerName());
+    private int getMaxColumnWidth(int index) {
+        FontMetrics metrics = getGraphics().getFontMetrics();
+        int longestWidth =
+            metrics.stringWidth("  " + table.getColumnName(index) + "  ")
+                + (2 * table.getColumnModel().getColumnMargin());
 
-    filterModel.processNewLoggingEvent(event);
-  }
+        for (int i = 0, j = tableModel.getRowCount(); i < j; i++) {
+            Component c =
+                renderer.getTableCellRendererComponent(
+                    table, table.getValueAt(i, index), false, false, i, index);
+
+            if (c instanceof JLabel) {
+                longestWidth =
+                    Math.max(longestWidth, metrics.stringWidth(((JLabel) c).getText()));
+            }
+        }
+
+        return longestWidth + 5;
+    }
+
+    private String getToolTipTextForEvent(LoggingEventWrapper loggingEventWrapper) {
+        return detailLayout.getHeader() + detailLayout.format(loggingEventWrapper.getLoggingEvent()) + detailLayout.getFooter();
+    }
+
+    /**
+     * ensures the Entry map of all the unque logger names etc, that is used for
+     * the Filter panel is updated with any new information from the event
+     *
+     * @param event
+     */
+    private void updateOtherModels(LoggingEvent event) {
+
+        /*
+         * EventContainer is a LoggerNameModel imp, use that for notifing
+         */
+        tableModel.addLoggerName(event.getLoggerName());
+
+        filterModel.processNewLoggingEvent(event);
+    }
 
     public void findNextMarker() {
-      EventQueue.invokeLater(() -> {
-          int startRow = table.getSelectedRow() + 1;
-          int filteredEventsSize = getFilteredEvents().size();
-          if (startRow > filteredEventsSize - 1) {
-              startRow = 0;
-          }
-          final int nextRow = tableModel.locate(findMarkerRule, startRow, true);
+        EventQueue.invokeLater(() -> {
+            int startRow = table.getSelectedRow() + 1;
+            int filteredEventsSize = getFilteredEvents().size();
+            if (startRow > filteredEventsSize - 1) {
+                startRow = 0;
+            }
+            final int nextRow = tableModel.locate(findMarkerRule, startRow, true);
 
-          if (nextRow > -1) {
-              table.scrollToRow(nextRow);
-          }
-      });
+            if (nextRow > -1) {
+                table.scrollToRow(nextRow);
+            }
+        });
     }
 
     public void findPreviousMarker() {
@@ -3172,414 +3078,419 @@ detailPaneUpdater.setAndUpdateSelectedRow(table.getSelectedRow());
     }
 
     public void clearAllMarkers() {
-      //this will get the properties to be removed from both tables..but
-      tableModel.removePropertyFromEvents(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
+        //this will get the properties to be removed from both tables..but
+        tableModel.removePropertyFromEvents(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
     }
 
     public void toggleMarker() {
         int row = table.getSelectedRow();
         if (row != -1) {
-          LoggingEventWrapper loggingEventWrapper = tableModel.getRow(row);
-          if (loggingEventWrapper != null) {
-              Object marker = loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
-              if (marker == null) {
-                  loggingEventWrapper.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE, "set");
-              } else {
-                  loggingEventWrapper.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
-              }
-              //if marker -was- null, it no longer is (may need to add the column)
-              tableModel.fireRowUpdated(row, (marker == null));
-          }
-        }
-    }
-
-    public void layoutComponents()
-    {
-        if (preferenceModel.isDetailPaneVisible()) {
-          showDetailPane();
-         } else {
-          hideDetailPane();
-        }
-    }
-
-  public void setFindText(String findText) {
-    findCombo.setSelectedItem(findText);
-    findNext();
-  }
-
-  public String getFindText() {
-    Object selectedItem = findCombo.getSelectedItem();
-    if (selectedItem == null) {
-      return "";
-    }
-    return selectedItem.toString();
-  }
-
-  /**
-   * This class receives notification when the Refine focus or find field is
-   * updated, where a background thread periodically wakes up and checks if
-   * they have stopped typing yet. This ensures that the filtering of the
-   * model is not done for every single character typed.
-   *
-   * @author Paul Smith psmith
-   */
-  private final class DelayedTextDocumentListener
-    implements DocumentListener {
-    private static final long CHECK_PERIOD = 1000;
-    private final JTextField textField;
-    private long lastTimeStamp = System.currentTimeMillis();
-    private final Thread delayThread;
-    private final String defaultToolTip;
-    private String lastText = "";
-
-    private DelayedTextDocumentListener(final JTextField textFeld) {
-      super();
-      this.textField = textFeld;
-      this.defaultToolTip = textFeld.getToolTipText();
-
-      this.delayThread =
-        new Thread(
-                () -> {
-                  while (true) {
-                    try {
-                      Thread.sleep(CHECK_PERIOD);
-                    } catch (InterruptedException e) {
-                    }
-
-                    if (
-                      (System.currentTimeMillis() - lastTimeStamp) < CHECK_PERIOD) {
-                      // They typed something since the last check. we ignor
-                      // this for a sample period
-                      //                logger.debug("Typed something since the last check");
-                    } else if (
-                      (System.currentTimeMillis() - lastTimeStamp) < (2 * CHECK_PERIOD)) {
-                      // they stopped typing recently, but have stopped for at least
-                      // 1 sample period. lets apply the filter
-                      //                logger.debug("Typed something recently applying filter");
-                      if (!(textFeld.getText().trim().equals(lastText.trim()))) {
-                        lastText = textFeld.getText();
-                        EventQueue.invokeLater(DelayedTextDocumentListener.this::setFilter);
-                      }
-                    } else {
-                      // they stopped typing a while ago, let's forget about it
-                      //                logger.debug(
-                      //                  "They stoppped typing a while ago, assuming filter has been applied");
-                    }
-                  }
-                });
-
-      delayThread.setPriority(Thread.MIN_PRIORITY);
-      delayThread.start();
-    }
-
-    /**
-     * Update timestamp
-     *
-     * @param e
-     */
-    public void insertUpdate(DocumentEvent e) {
-      notifyChange();
-    }
-
-    /**
-     * Update timestamp
-     *
-     * @param e
-     */
-    public void removeUpdate(DocumentEvent e) {
-      notifyChange();
-    }
-
-    /**
-     * Update timestamp
-     *
-     * @param e
-     */
-    public void changedUpdate(DocumentEvent e) {
-      notifyChange();
-    }
-
-    /**
-     * Update timestamp
-     */
-    private void notifyChange() {
-      this.lastTimeStamp = System.currentTimeMillis();
-    }
-
-    /**
-     * Update refinement rule based on the entered expression.
-     */
-    private void setFilter() {
-      if (textField.getText().trim().equals("")) {
-        //reset background color in case we were previously an invalid expression
-        textField.setBackground(UIManager.getColor("TextField.background"));
-        tableRuleMediator.setFilterRule(null);
-        searchRuleMediator.setFilterRule(null);
-        textField.setToolTipText(defaultToolTip);
-        if (findRule != null) {
-          currentSearchMatchCount=tableModel.getSearchMatchCount();
-          statusBar.setSearchMatchCount(currentSearchMatchCount, getIdentifier());
-        }
-      } else {
-        try {
-          tableRuleMediator.setFilterRule(ExpressionRule.getRule(textField.getText()));
-          searchRuleMediator.setFilterRule(ExpressionRule.getRule(textField.getText()));
-          textField.setToolTipText(defaultToolTip);
-          if (findRule != null) {
-            currentSearchMatchCount=tableModel.getSearchMatchCount();
-            statusBar.setSearchMatchCount(currentSearchMatchCount, getIdentifier());
-          }
-          //valid expression, reset background color in case we were previously an invalid expression
-          textField.setBackground(UIManager.getColor("TextField.background"));
-        } catch (IllegalArgumentException iae) {
-          //invalid expression, change background of the field
-          textField.setToolTipText(iae.getMessage());
-          textField.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
-          if (findRule != null) {
-            currentSearchMatchCount=tableModel.getSearchMatchCount();
-            statusBar.setSearchMatchCount(currentSearchMatchCount, getIdentifier());
-          }
-        }
-      }
-    }
-  }
-
-  private final class TableMarkerListener extends MouseAdapter {
-    private JTable markerTable;
-    private EventContainer markerEventContainer;
-    private EventContainer otherMarkerEventContainer;
-
-    private TableMarkerListener(JTable markerTable, EventContainer markerEventContainer, EventContainer otherMarkerEventContainer) {
-      this.markerTable = markerTable;
-      this.markerEventContainer = markerEventContainer;
-      this.otherMarkerEventContainer = otherMarkerEventContainer;
-    }
-    
-      public void mouseClicked(MouseEvent evt) {
-          if (evt.getClickCount() == 2) {
-              int row = markerTable.rowAtPoint(evt.getPoint());
-              if (row != -1) {
-                LoggingEventWrapper loggingEventWrapper = markerEventContainer.getRow(row);
-                if (loggingEventWrapper != null) {
-                    Object marker = loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
-                    if (marker == null) {
-                        loggingEventWrapper.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE, "set");
-                    } else {
-                        loggingEventWrapper.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
-                    }
-                    //if marker -was- null, it no longer is (may need to add the column)
-                    markerEventContainer.fireRowUpdated(row, (marker == null));
-                    otherMarkerEventContainer.fireRowUpdated(otherMarkerEventContainer.getRowIndex(loggingEventWrapper), (marker == null));
+            LoggingEventWrapper loggingEventWrapper = tableModel.getRow(row);
+            if (loggingEventWrapper != null) {
+                Object marker = loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
+                if (marker == null) {
+                    loggingEventWrapper.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE, "set");
+                } else {
+                    loggingEventWrapper.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
                 }
-              }
-          }
-      }
-  }
+                //if marker -was- null, it no longer is (may need to add the column)
+                tableModel.fireRowUpdated(row, (marker == null));
+            }
+        }
+    }
 
-  /**
-   * Update active tooltip
-   */
-  private final class TableColumnDetailMouseListener extends MouseMotionAdapter {
-    private int currentRow = -1;
-    private JTable detailTable;
-    private EventContainer detailEventContainer;
+    public void layoutComponents() {
+        if (preferenceModel.isDetailPaneVisible()) {
+            showDetailPane();
+        } else {
+            hideDetailPane();
+        }
+    }
 
-    private TableColumnDetailMouseListener(JTable detailTable, EventContainer detailEventContainer) {
-      this.detailTable = detailTable;
-      this.detailEventContainer = detailEventContainer;
+    public void setFindText(String findText) {
+        findCombo.setSelectedItem(findText);
+        findNext();
+    }
+
+    public String getFindText() {
+        Object selectedItem = findCombo.getSelectedItem();
+        if (selectedItem == null) {
+            return "";
+        }
+        return selectedItem.toString();
     }
 
     /**
-     * Update tooltip based on mouse position
+     * This class receives notification when the Refine focus or find field is
+     * updated, where a background thread periodically wakes up and checks if
+     * they have stopped typing yet. This ensures that the filtering of the
+     * model is not done for every single character typed.
      *
-     * @param evt
+     * @author Paul Smith psmith
      */
-    public void mouseMoved(MouseEvent evt) {
-      currentPoint = evt.getPoint();
-      currentTable = detailTable;
+    private final class DelayedTextDocumentListener
+        implements DocumentListener {
+        private static final long CHECK_PERIOD = 1000;
+        private final JTextField textField;
+        private long lastTimeStamp = System.currentTimeMillis();
+        private final Thread delayThread;
+        private final String defaultToolTip;
+        private String lastText = "";
 
-      if (preferenceModel.isToolTips()) {
-        int row = detailTable.rowAtPoint(evt.getPoint());
+        private DelayedTextDocumentListener(final JTextField textFeld) {
+            super();
+            this.textField = textFeld;
+            this.defaultToolTip = textFeld.getToolTipText();
 
-        if ((row == currentRow) || (row == -1)) {
-          return;
+            this.delayThread =
+                new Thread(
+                    () -> {
+                        while (true) {
+                            try {
+                                Thread.sleep(CHECK_PERIOD);
+                            } catch (InterruptedException e) {
+                            }
+
+                            if (
+                                (System.currentTimeMillis() - lastTimeStamp) < CHECK_PERIOD) {
+                                // They typed something since the last check. we ignor
+                                // this for a sample period
+                                //                logger.debug("Typed something since the last check");
+                            } else if (
+                                (System.currentTimeMillis() - lastTimeStamp) < (2 * CHECK_PERIOD)) {
+                                // they stopped typing recently, but have stopped for at least
+                                // 1 sample period. lets apply the filter
+                                //                logger.debug("Typed something recently applying filter");
+                                if (!(textFeld.getText().trim().equals(lastText.trim()))) {
+                                    lastText = textFeld.getText();
+                                    EventQueue.invokeLater(DelayedTextDocumentListener.this::setFilter);
+                                }
+                            } else {
+                                // they stopped typing a while ago, let's forget about it
+                                //                logger.debug(
+                                //                  "They stoppped typing a while ago, assuming filter has been applied");
+                            }
+                        }
+                    });
+
+            delayThread.setPriority(Thread.MIN_PRIORITY);
+            delayThread.start();
         }
 
-        currentRow = row;
-
-        LoggingEventWrapper event = detailEventContainer.getRow(currentRow);
-
-        if (event != null) {
-          String toolTipText = getToolTipTextForEvent(event);
-          detailTable.setToolTipText(toolTipText);
+        /**
+         * Update timestamp
+         *
+         * @param e
+         */
+        public void insertUpdate(DocumentEvent e) {
+            notifyChange();
         }
-      } else {
-        detailTable.setToolTipText(null);
-      }
+
+        /**
+         * Update timestamp
+         *
+         * @param e
+         */
+        public void removeUpdate(DocumentEvent e) {
+            notifyChange();
+        }
+
+        /**
+         * Update timestamp
+         *
+         * @param e
+         */
+        public void changedUpdate(DocumentEvent e) {
+            notifyChange();
+        }
+
+        /**
+         * Update timestamp
+         */
+        private void notifyChange() {
+            this.lastTimeStamp = System.currentTimeMillis();
+        }
+
+        /**
+         * Update refinement rule based on the entered expression.
+         */
+        private void setFilter() {
+            if (textField.getText().trim().equals("")) {
+                //reset background color in case we were previously an invalid expression
+                textField.setBackground(UIManager.getColor("TextField.background"));
+                tableRuleMediator.setFilterRule(null);
+                searchRuleMediator.setFilterRule(null);
+                textField.setToolTipText(defaultToolTip);
+                if (findRule != null) {
+                    currentSearchMatchCount = tableModel.getSearchMatchCount();
+                    statusBar.setSearchMatchCount(currentSearchMatchCount, getIdentifier());
+                }
+            } else {
+                try {
+                    tableRuleMediator.setFilterRule(ExpressionRule.getRule(textField.getText()));
+                    searchRuleMediator.setFilterRule(ExpressionRule.getRule(textField.getText()));
+                    textField.setToolTipText(defaultToolTip);
+                    if (findRule != null) {
+                        currentSearchMatchCount = tableModel.getSearchMatchCount();
+                        statusBar.setSearchMatchCount(currentSearchMatchCount, getIdentifier());
+                    }
+                    //valid expression, reset background color in case we were previously an invalid expression
+                    textField.setBackground(UIManager.getColor("TextField.background"));
+                } catch (IllegalArgumentException iae) {
+                    //invalid expression, change background of the field
+                    textField.setToolTipText(iae.getMessage());
+                    textField.setBackground(ChainsawConstants.INVALID_EXPRESSION_BACKGROUND);
+                    if (findRule != null) {
+                        currentSearchMatchCount = tableModel.getSearchMatchCount();
+                        statusBar.setSearchMatchCount(currentSearchMatchCount, getIdentifier());
+                    }
+                }
+            }
+        }
     }
-  }
 
-  //if columnmoved or columnremoved callback received, re-apply table's sort index based
-  //sort column name
-  private class ChainsawTableColumnModelListener implements TableColumnModelListener {
-    private JSortTable modelListenerTable;
+    private final class TableMarkerListener extends MouseAdapter {
+        private JTable markerTable;
+        private EventContainer markerEventContainer;
+        private EventContainer otherMarkerEventContainer;
 
-    private ChainsawTableColumnModelListener(JSortTable modelListenerTable) {
-      this.modelListenerTable = modelListenerTable;
-    }
+        private TableMarkerListener(JTable markerTable, EventContainer markerEventContainer, EventContainer otherMarkerEventContainer) {
+            this.markerTable = markerTable;
+            this.markerEventContainer = markerEventContainer;
+            this.otherMarkerEventContainer = otherMarkerEventContainer;
+        }
 
-    public void columnAdded(TableColumnModelEvent e) {
-      //no-op
+        public void mouseClicked(MouseEvent evt) {
+            if (evt.getClickCount() == 2) {
+                int row = markerTable.rowAtPoint(evt.getPoint());
+                if (row != -1) {
+                    LoggingEventWrapper loggingEventWrapper = markerEventContainer.getRow(row);
+                    if (loggingEventWrapper != null) {
+                        Object marker = loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
+                        if (marker == null) {
+                            loggingEventWrapper.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE, "set");
+                        } else {
+                            loggingEventWrapper.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
+                        }
+                        //if marker -was- null, it no longer is (may need to add the column)
+                        markerEventContainer.fireRowUpdated(row, (marker == null));
+                        otherMarkerEventContainer.fireRowUpdated(otherMarkerEventContainer.getRowIndex(loggingEventWrapper), (marker == null));
+                    }
+                }
+            }
+        }
     }
 
     /**
-     * Update sorted column
-     *
-     * @param e
+     * Update active tooltip
      */
-    public void columnRemoved(TableColumnModelEvent e) {
-      modelListenerTable.updateSortedColumn();
+    private final class TableColumnDetailMouseListener extends MouseMotionAdapter {
+        private int currentRow = -1;
+        private JTable detailTable;
+        private EventContainer detailEventContainer;
+
+        private TableColumnDetailMouseListener(JTable detailTable, EventContainer detailEventContainer) {
+            this.detailTable = detailTable;
+            this.detailEventContainer = detailEventContainer;
+        }
+
+        /**
+         * Update tooltip based on mouse position
+         *
+         * @param evt
+         */
+        public void mouseMoved(MouseEvent evt) {
+            currentPoint = evt.getPoint();
+            currentTable = detailTable;
+
+            if (preferenceModel.isToolTips()) {
+                int row = detailTable.rowAtPoint(evt.getPoint());
+
+                if ((row == currentRow) || (row == -1)) {
+                    return;
+                }
+
+                currentRow = row;
+
+                LoggingEventWrapper event = detailEventContainer.getRow(currentRow);
+
+                if (event != null) {
+                    String toolTipText = getToolTipTextForEvent(event);
+                    detailTable.setToolTipText(toolTipText);
+                }
+            } else {
+                detailTable.setToolTipText(null);
+            }
+        }
+    }
+
+    //if columnmoved or columnremoved callback received, re-apply table's sort index based
+    //sort column name
+    private class ChainsawTableColumnModelListener implements TableColumnModelListener {
+        private JSortTable modelListenerTable;
+
+        private ChainsawTableColumnModelListener(JSortTable modelListenerTable) {
+            this.modelListenerTable = modelListenerTable;
+        }
+
+        public void columnAdded(TableColumnModelEvent e) {
+            //no-op
+        }
+
+        /**
+         * Update sorted column
+         *
+         * @param e
+         */
+        public void columnRemoved(TableColumnModelEvent e) {
+            modelListenerTable.updateSortedColumn();
+        }
+
+        /**
+         * Update sorted column
+         *
+         * @param e
+         */
+        public void columnMoved(TableColumnModelEvent e) {
+            modelListenerTable.updateSortedColumn();
+        }
+
+        /**
+         * Ignore margin changed
+         *
+         * @param e
+         */
+        public void columnMarginChanged(ChangeEvent e) {
+        }
+
+        /**
+         * Ignore selection changed
+         *
+         * @param e
+         */
+        public void columnSelectionChanged(ListSelectionEvent e) {
+        }
     }
 
     /**
-     * Update sorted column
-     *
-     * @param e
+     * Thread that periodically checks if the selected row has changed, and if
+     * it was, updates the Detail Panel with the detailed Logging information
      */
-    public void columnMoved(TableColumnModelEvent e) {
-      modelListenerTable.updateSortedColumn();
-    }
+    private class DetailPaneUpdater implements PropertyChangeListener {
+        private int selectedRow = -1;
+        int lastRow = -1;
 
-    /**
-     * Ignore margin changed
-     *
-     * @param e
-     */
-    public void columnMarginChanged(ChangeEvent e) {
-    }
+        private DetailPaneUpdater() {
+        }
 
-    /**
-     * Ignore selection changed
-     *
-     * @param e
-     */
-    public void columnSelectionChanged(ListSelectionEvent e) {
-    }
-  }
+        /**
+         * Update detail pane to display information about the LoggingEvent at index row
+         *
+         * @param row
+         */
+        private void setSelectedRow(int row) {
+            selectedRow = row;
+            updateDetailPane();
+        }
 
-  /**
-   * Thread that periodically checks if the selected row has changed, and if
-   * it was, updates the Detail Panel with the detailed Logging information
-   */
-  private class DetailPaneUpdater implements PropertyChangeListener {
-    private int selectedRow = -1;
-    int lastRow = -1;
-    private DetailPaneUpdater() {
-    }
+        private void setAndUpdateSelectedRow(int row) {
+            selectedRow = row;
+            updateDetailPane(true);
+        }
 
-    /**
-     * Update detail pane to display information about the LoggingEvent at index row
-     *
-     * @param row
-     */
-    private void setSelectedRow(int row) {
-      selectedRow = row;
-      updateDetailPane();
-    }
+        private void updateDetailPane() {
+            updateDetailPane(false);
+        }
 
-    private void setAndUpdateSelectedRow(int row) {
-        selectedRow = row;
-        updateDetailPane(true);
-    }
-
-    private void updateDetailPane() {
-        updateDetailPane(false);
-    }
-    /**
-     * Update detail pane
-     */
-    private void updateDetailPane(boolean force) {
+        /**
+         * Update detail pane
+         */
+        private void updateDetailPane(boolean force) {
             /*
              * Don't bother doing anything if it's not visible. Note: the isVisible() method on
              * Component is not really accurate here because when the button to toggle display of
              * the detail pane is triggered it still appears as 'visible' for some reason.
              */
-      if (!preferenceModel.isDetailPaneVisible()) {
-        return;
-      }
+            if (!preferenceModel.isDetailPaneVisible()) {
+                return;
+            }
 
-	      LoggingEventWrapper loggingEventWrapper = null;
-	      if (force || (selectedRow != -1 && (lastRow != selectedRow))) {
-	        loggingEventWrapper = tableModel.getRow(selectedRow);
-	
-	        if (loggingEventWrapper != null) {
-	          final StringBuilder buf = new StringBuilder();
-	          buf.append(detailLayout.getHeader())
-	             .append(detailLayout.format(loggingEventWrapper.getLoggingEvent())).append(
-	            detailLayout.getFooter());
-	          if (buf.length() > 0) {
-		          	try {
-		          		final Document doc = detail.getEditorKit().createDefaultDocument();
-		          		detail.getEditorKit().read(new StringReader(buf.toString()), doc, 0);
+            LoggingEventWrapper loggingEventWrapper = null;
+            if (force || (selectedRow != -1 && (lastRow != selectedRow))) {
+                loggingEventWrapper = tableModel.getRow(selectedRow);
 
-				      	SwingHelper.invokeOnEDT(() -> {
-                              detail.setDocument(doc);
-JTextComponentFormatter.applySystemFontAndSize(detail);
-                              detail.setCaretPosition(0);
-lastRow = selectedRow;
-                          });
-		          	} catch (Exception e) {}
-	      		}
-	        }
-	      }
-	
-	      if (loggingEventWrapper == null && (lastRow != selectedRow)) {
-          	try {
-          		final Document doc = detail.getEditorKit().createDefaultDocument();
-          		detail.getEditorKit().read(new StringReader("<html>Nothing selected</html>"), doc, 0);
-		      	SwingHelper.invokeOnEDT(() -> {
-                      detail.setDocument(doc);
-JTextComponentFormatter.applySystemFontAndSize(detail);
-                      detail.setCaretPosition(0);
-lastRow = selectedRow;
-                  });
-          	} catch (Exception e) {}
-  		}
+                if (loggingEventWrapper != null) {
+                    final StringBuilder buf = new StringBuilder();
+                    buf.append(detailLayout.getHeader())
+                        .append(detailLayout.format(loggingEventWrapper.getLoggingEvent())).append(
+                        detailLayout.getFooter());
+                    if (buf.length() > 0) {
+                        try {
+                            final Document doc = detail.getEditorKit().createDefaultDocument();
+                            detail.getEditorKit().read(new StringReader(buf.toString()), doc, 0);
+
+                            SwingHelper.invokeOnEDT(() -> {
+                                detail.setDocument(doc);
+                                JTextComponentFormatter.applySystemFontAndSize(detail);
+                                detail.setCaretPosition(0);
+                                lastRow = selectedRow;
+                            });
+                        } catch (Exception e) {
+                        }
+                    }
+                }
+            }
+
+            if (loggingEventWrapper == null && (lastRow != selectedRow)) {
+                try {
+                    final Document doc = detail.getEditorKit().createDefaultDocument();
+                    detail.getEditorKit().read(new StringReader("<html>Nothing selected</html>"), doc, 0);
+                    SwingHelper.invokeOnEDT(() -> {
+                        detail.setDocument(doc);
+                        JTextComponentFormatter.applySystemFontAndSize(detail);
+                        detail.setCaretPosition(0);
+                        lastRow = selectedRow;
+                    });
+                } catch (Exception e) {
+                }
+            }
+        }
+
+        /**
+         * Update detail pane layout if it's changed
+         *
+         * @param arg0
+         */
+        public void propertyChange(PropertyChangeEvent arg0) {
+            SwingUtilities.invokeLater(
+                () -> updateDetailPane(true));
+        }
     }
 
-    /**
-     * Update detail pane layout if it's changed
-     *
-     * @param arg0
-     */
-    public void propertyChange(PropertyChangeEvent arg0) {
-      SwingUtilities.invokeLater(
-              () -> updateDetailPane(true));
-    }
-  }
     private class ThrowableDisplayMouseAdapter extends MouseAdapter {
-      private JTable throwableTable;
-      private EventContainer throwableEventContainer;
-      final JDialog detailDialog;
-      final JEditorPane detailArea;
-      public ThrowableDisplayMouseAdapter(JTable throwableTable, EventContainer throwableEventContainer) {
-        this.throwableTable = throwableTable;
-        this.throwableEventContainer = throwableEventContainer;
+        private JTable throwableTable;
+        private EventContainer throwableEventContainer;
+        final JDialog detailDialog;
+        final JEditorPane detailArea;
 
-        detailDialog = new JDialog((JFrame) null, true);
-        Container container = detailDialog.getContentPane();
-        detailArea = new JEditorPane();
-        JTextComponentFormatter.applySystemFontAndSize(detailArea);
-        detailArea.setEditable(false);
-        Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
-        detailArea.setPreferredSize(new Dimension(screenDimension.width / 2, screenDimension.height / 2));
-        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
-        container.add(new JScrollPane(detailArea));
+        public ThrowableDisplayMouseAdapter(JTable throwableTable, EventContainer throwableEventContainer) {
+            this.throwableTable = throwableTable;
+            this.throwableEventContainer = throwableEventContainer;
 
-        detailDialog.pack();
-      }
-        public void mouseClicked(MouseEvent e)
-        {
+            detailDialog = new JDialog((JFrame) null, true);
+            Container container = detailDialog.getContentPane();
+            detailArea = new JEditorPane();
+            JTextComponentFormatter.applySystemFontAndSize(detailArea);
+            detailArea.setEditable(false);
+            Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
+            detailArea.setPreferredSize(new Dimension(screenDimension.width / 2, screenDimension.height / 2));
+            container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+            container.add(new JScrollPane(detailArea));
+
+            detailDialog.pack();
+        }
+
+        public void mouseClicked(MouseEvent e) {
             TableColumn column = throwableTable.getColumnModel().getColumn(throwableTable.columnAtPoint(e.getPoint()));
             if (!column.getHeaderValue().toString().toUpperCase().equals(ChainsawColumns.getColumnName(ChainsawColumns.INDEX_THROWABLE_COL_NAME))) {
                 return;
@@ -3590,45 +3501,41 @@ lastRow = selectedRow;
             //throwable string representation may be a length-one empty array
             String[] ti = loggingEventWrapper.getLoggingEvent().getThrowableStrRep();
             if (ti != null && ti.length > 0 && (!(ti.length == 1 && ti[0].equals("")))) {
-                 detailDialog.setTitle(throwableTable.getColumnName(throwableTable.getSelectedColumn()) + " detail...");
-                  StringBuilder buf = new StringBuilder();
-                  buf.append(loggingEventWrapper.getLoggingEvent().getMessage());
-                  buf.append("\n");
-              for (String aTi : ti) {
-                buf.append(aTi).append("\n    ");
-              }
-
-                  detailArea.setText(buf.toString());
-                  SwingHelper.invokeOnEDT(() -> centerAndSetVisible(detailDialog));
+                detailDialog.setTitle(throwableTable.getColumnName(throwableTable.getSelectedColumn()) + " detail...");
+                StringBuilder buf = new StringBuilder();
+                buf.append(loggingEventWrapper.getLoggingEvent().getMessage());
+                buf.append("\n");
+                for (String aTi : ti) {
+                    buf.append(aTi).append("\n    ");
                 }
+
+                detailArea.setText(buf.toString());
+                SwingHelper.invokeOnEDT(() -> centerAndSetVisible(detailDialog));
+            }
         }
     }
 
     private class MarkerCellEditor implements TableCellEditor {
-      JTable currentTable;
-      JTextField textField = new JTextField();
-      Set<CellEditorListener> cellEditorListeners = new HashSet<>();
-      private LoggingEventWrapper currentLoggingEventWrapper;
-      private final Object mutex = new Object();
+        JTable currentTable;
+        JTextField textField = new JTextField();
+        Set<CellEditorListener> cellEditorListeners = new HashSet<>();
+        private LoggingEventWrapper currentLoggingEventWrapper;
+        private final Object mutex = new Object();
 
-        public Object getCellEditorValue()
-        {
+        public Object getCellEditorValue() {
             return textField.getText();
         }
 
-        public boolean isCellEditable(EventObject anEvent)
-        {
+        public boolean isCellEditable(EventObject anEvent) {
             return true;
         }
 
-        public boolean shouldSelectCell(EventObject anEvent)
-        {
+        public boolean shouldSelectCell(EventObject anEvent) {
             textField.selectAll();
             return true;
         }
 
-        public boolean stopCellEditing()
-        {
+        public boolean stopCellEditing() {
             if (textField.getText().trim().equals("")) {
                 currentLoggingEventWrapper.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
             } else {
@@ -3638,63 +3545,58 @@ lastRow = selectedRow;
             tableModel.fireRowUpdated(tableModel.getRowIndex(currentLoggingEventWrapper), true);
             int index = searchModel.getRowIndex(currentLoggingEventWrapper);
             if (index > -1) {
-              searchModel.fireRowUpdated(index, true);
+                searchModel.fireRowUpdated(index, true);
             }
 
             ChangeEvent event = new ChangeEvent(currentTable);
             Set<CellEditorListener> cellEditorListenersCopy;
-            synchronized(mutex) {
+            synchronized (mutex) {
                 cellEditorListenersCopy = new HashSet<>(cellEditorListeners);
             }
 
-          for (Object aCellEditorListenersCopy : cellEditorListenersCopy) {
-            ((CellEditorListener) aCellEditorListenersCopy).editingStopped(event);
-          }
+            for (Object aCellEditorListenersCopy : cellEditorListenersCopy) {
+                ((CellEditorListener) aCellEditorListenersCopy).editingStopped(event);
+            }
             currentLoggingEventWrapper = null;
             currentTable = null;
 
             return true;
         }
 
-        public void cancelCellEditing()
-        {
+        public void cancelCellEditing() {
             Set<CellEditorListener> cellEditorListenersCopy;
-            synchronized(mutex) {
+            synchronized (mutex) {
                 cellEditorListenersCopy = new HashSet<>(cellEditorListeners);
             }
 
-           ChangeEvent event = new ChangeEvent(currentTable);
-          for (Object aCellEditorListenersCopy : cellEditorListenersCopy) {
-            ((CellEditorListener) aCellEditorListenersCopy).editingCanceled(event);
-          }
-          currentLoggingEventWrapper = null;
-          currentTable = null;
+            ChangeEvent event = new ChangeEvent(currentTable);
+            for (Object aCellEditorListenersCopy : cellEditorListenersCopy) {
+                ((CellEditorListener) aCellEditorListenersCopy).editingCanceled(event);
+            }
+            currentLoggingEventWrapper = null;
+            currentTable = null;
         }
 
-        public void addCellEditorListener(CellEditorListener l)
-        {
-            synchronized(mutex) {
+        public void addCellEditorListener(CellEditorListener l) {
+            synchronized (mutex) {
                 cellEditorListeners.add(l);
             }
         }
 
-        public void removeCellEditorListener(CellEditorListener l)
-        {
-            synchronized(mutex) {
+        public void removeCellEditorListener(CellEditorListener l) {
+            synchronized (mutex) {
                 cellEditorListeners.remove(l);
             }
         }
 
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column)
-        {
-          currentTable = table;
-          currentLoggingEventWrapper =((EventContainer) table.getModel()).getRow(row);
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            currentTable = table;
+            currentLoggingEventWrapper = ((EventContainer) table.getModel()).getRow(row);
             if (currentLoggingEventWrapper != null) {
                 textField.setText(currentLoggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE));
                 textField.selectAll();
-            }
-            else {
-              textField.setText("");
+            } else {
+                textField.setText("");
             }
             return textField;
         }
@@ -3725,16 +3627,16 @@ lastRow = selectedRow;
             secondaryList.clear();
             primaryList.clear();
 
-            int i=0;
-          for (Object o : tableModel.getFilteredEvents()) {
-            LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) o;
-            ThumbnailLoggingEventWrapper wrapper = new ThumbnailLoggingEventWrapper(i, loggingEventWrapper);
-            i++;
-            //only add if there is a color defined
-            if (primaryMatches(wrapper)) {
-              primaryList.add(wrapper);
+            int i = 0;
+            for (Object o : tableModel.getFilteredEvents()) {
+                LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) o;
+                ThumbnailLoggingEventWrapper wrapper = new ThumbnailLoggingEventWrapper(i, loggingEventWrapper);
+                i++;
+                //only add if there is a color defined
+                if (primaryMatches(wrapper)) {
+                    primaryList.add(wrapper);
+                }
             }
-          }
             revalidate();
             repaint();
         }
@@ -3755,31 +3657,31 @@ lastRow = selectedRow;
             int eventHeight = minHeight;
 
             //draw all events
-          for (Object aPrimaryList : primaryList) {
-            ThumbnailLoggingEventWrapper wrapper = (ThumbnailLoggingEventWrapper) aPrimaryList;
-            if (primaryMatches(wrapper)) {
-              float ratio = (wrapper.rowNum / (float) rowCount);
-              //                System.out.println("error - ratio: " + ratio + ", component height: " + componentHeight);
-              int verticalLocation = (int) (componentHeight * ratio);
+            for (Object aPrimaryList : primaryList) {
+                ThumbnailLoggingEventWrapper wrapper = (ThumbnailLoggingEventWrapper) aPrimaryList;
+                if (primaryMatches(wrapper)) {
+                    float ratio = (wrapper.rowNum / (float) rowCount);
+                    //                System.out.println("error - ratio: " + ratio + ", component height: " + componentHeight);
+                    int verticalLocation = (int) (componentHeight * ratio);
 
-              int startX = 1;
-              int width = getWidth() - (startX * 2);
-              //max out at 50, min 2...
-              String millisDelta = wrapper.loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
-              long millisDeltaLong = Long.parseLong(millisDelta);
-              long delta = Math.min(ChainsawConstants.MILLIS_DELTA_RENDERING_HEIGHT_MAX, Math.max(0, (long) (millisDeltaLong * ChainsawConstants.MILLIS_DELTA_RENDERING_FACTOR)));
-              float widthMaxMillisDeltaRenderRatio = ((float) width / ChainsawConstants.MILLIS_DELTA_RENDERING_HEIGHT_MAX);
-              int widthToUse = Math.max(2, (int) (delta * widthMaxMillisDeltaRenderRatio));
-              eventHeight = Math.min(maxEventHeight, eventHeight + 3);
+                    int startX = 1;
+                    int width = getWidth() - (startX * 2);
+                    //max out at 50, min 2...
+                    String millisDelta = wrapper.loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
+                    long millisDeltaLong = Long.parseLong(millisDelta);
+                    long delta = Math.min(ChainsawConstants.MILLIS_DELTA_RENDERING_HEIGHT_MAX, Math.max(0, (long) (millisDeltaLong * ChainsawConstants.MILLIS_DELTA_RENDERING_FACTOR)));
+                    float widthMaxMillisDeltaRenderRatio = ((float) width / ChainsawConstants.MILLIS_DELTA_RENDERING_HEIGHT_MAX);
+                    int widthToUse = Math.max(2, (int) (delta * widthMaxMillisDeltaRenderRatio));
+                    eventHeight = Math.min(maxEventHeight, eventHeight + 3);
 //                            eventHeight = maxEventHeight;
-              drawEvent(applicationPreferenceModel.getDeltaColor(), (verticalLocation - eventHeight + 1), eventHeight, g, startX, widthToUse);
-              //                System.out.println("painting error - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
+                    drawEvent(applicationPreferenceModel.getDeltaColor(), (verticalLocation - eventHeight + 1), eventHeight, g, startX, widthToUse);
+                    //                System.out.println("painting error - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
+                }
             }
-          }
         }
     }
 
-  //a listener receiving color updates needs to call configureColors on this class
+    //a listener receiving color updates needs to call configureColors on this class
     private class ColorizedEventAndSearchMatchThumbnail extends AbstractEventMatchThumbnail {
         public ColorizedEventAndSearchMatchThumbnail() {
             super();
@@ -3798,19 +3700,19 @@ lastRow = selectedRow;
             secondaryList.clear();
             primaryList.clear();
 
-            int i=0;
-          for (Object o : tableModel.getFilteredEvents()) {
-            LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) o;
-            ThumbnailLoggingEventWrapper wrapper = new ThumbnailLoggingEventWrapper(i, loggingEventWrapper);
-            if (secondaryMatches(wrapper)) {
-              secondaryList.add(wrapper);
+            int i = 0;
+            for (Object o : tableModel.getFilteredEvents()) {
+                LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) o;
+                ThumbnailLoggingEventWrapper wrapper = new ThumbnailLoggingEventWrapper(i, loggingEventWrapper);
+                if (secondaryMatches(wrapper)) {
+                    secondaryList.add(wrapper);
+                }
+                i++;
+                //only add if there is a color defined
+                if (primaryMatches(wrapper)) {
+                    primaryList.add(wrapper);
+                }
             }
-            i++;
-            //only add if there is a color defined
-            if (primaryMatches(wrapper)) {
-              primaryList.add(wrapper);
-            }
-          }
             revalidate();
             repaint();
         }
@@ -3831,60 +3733,60 @@ lastRow = selectedRow;
             int eventHeight = minHeight;
 
             //draw all non error/warning/marker events
-          for (Object aPrimaryList1 : primaryList) {
-            ThumbnailLoggingEventWrapper wrapper = (ThumbnailLoggingEventWrapper) aPrimaryList1;
-            if (!wrapper.loggingEventWrapper.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
-              if (wrapper.loggingEventWrapper.getLoggingEvent().getLevel().toInt() < Level.WARN.toInt() && wrapper.loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE) == null) {
-                float ratio = (wrapper.rowNum / (float) rowCount);
-                //                System.out.println("error - ratio: " + ratio + ", component height: " + componentHeight);
-                int verticalLocation = (int) (componentHeight * ratio);
+            for (Object aPrimaryList1 : primaryList) {
+                ThumbnailLoggingEventWrapper wrapper = (ThumbnailLoggingEventWrapper) aPrimaryList1;
+                if (!wrapper.loggingEventWrapper.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
+                    if (wrapper.loggingEventWrapper.getLoggingEvent().getLevel().toInt() < Level.WARN.toInt() && wrapper.loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE) == null) {
+                        float ratio = (wrapper.rowNum / (float) rowCount);
+                        //                System.out.println("error - ratio: " + ratio + ", component height: " + componentHeight);
+                        int verticalLocation = (int) (componentHeight * ratio);
 
-                int startX = 1;
-                int width = getWidth() - (startX * 2);
+                        int startX = 1;
+                        int width = getWidth() - (startX * 2);
 
-                drawEvent(wrapper.loggingEventWrapper.getColorRuleBackground(), verticalLocation, eventHeight, g, startX, width);
-                //                System.out.println("painting error - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
-              }
+                        drawEvent(wrapper.loggingEventWrapper.getColorRuleBackground(), verticalLocation, eventHeight, g, startX, width);
+                        //                System.out.println("painting error - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
+                    }
+                }
             }
-          }
 
             //draw warnings, error, fatal & markers last (full width)
-          for (Object aPrimaryList : primaryList) {
-            ThumbnailLoggingEventWrapper wrapper = (ThumbnailLoggingEventWrapper) aPrimaryList;
-            if (!wrapper.loggingEventWrapper.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
-              if (wrapper.loggingEventWrapper.getLoggingEvent().getLevel().toInt() >= Level.WARN.toInt() || wrapper.loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE) != null) {
+            for (Object aPrimaryList : primaryList) {
+                ThumbnailLoggingEventWrapper wrapper = (ThumbnailLoggingEventWrapper) aPrimaryList;
+                if (!wrapper.loggingEventWrapper.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
+                    if (wrapper.loggingEventWrapper.getLoggingEvent().getLevel().toInt() >= Level.WARN.toInt() || wrapper.loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE) != null) {
+                        float ratio = (wrapper.rowNum / (float) rowCount);
+                        //                System.out.println("error - ratio: " + ratio + ", component height: " + componentHeight);
+                        int verticalLocation = (int) (componentHeight * ratio);
+
+                        int startX = 1;
+                        int width = getWidth() - (startX * 2);
+                        //narrow the color a bit if level is less than warn
+                        //make warnings, errors a little taller
+
+                        eventHeight = Math.min(maxEventHeight, eventHeight + 3);
+//                            eventHeight = maxEventHeight;
+
+                        drawEvent(wrapper.loggingEventWrapper.getColorRuleBackground(), (verticalLocation - eventHeight + 1), eventHeight, g, startX, width);
+                        //                System.out.println("painting error - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
+                    }
+                }
+            }
+
+            for (Object aSecondaryList : secondaryList) {
+                ThumbnailLoggingEventWrapper wrapper = (ThumbnailLoggingEventWrapper) aSecondaryList;
                 float ratio = (wrapper.rowNum / (float) rowCount);
-                //                System.out.println("error - ratio: " + ratio + ", component height: " + componentHeight);
+//                System.out.println("warning - ratio: " + ratio + ", component height: " + componentHeight);
                 int verticalLocation = (int) (componentHeight * ratio);
 
                 int startX = 1;
                 int width = getWidth() - (startX * 2);
-                //narrow the color a bit if level is less than warn
-                //make warnings, errors a little taller
+                width = (width / 2);
 
-                eventHeight = Math.min(maxEventHeight, eventHeight + 3);
-//                            eventHeight = maxEventHeight;
-
-                drawEvent(wrapper.loggingEventWrapper.getColorRuleBackground(), (verticalLocation - eventHeight + 1), eventHeight, g, startX, width);
-                //                System.out.println("painting error - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
-              }
-            }
-          }
-
-          for (Object aSecondaryList : secondaryList) {
-            ThumbnailLoggingEventWrapper wrapper = (ThumbnailLoggingEventWrapper) aSecondaryList;
-            float ratio = (wrapper.rowNum / (float) rowCount);
-//                System.out.println("warning - ratio: " + ratio + ", component height: " + componentHeight);
-            int verticalLocation = (int) (componentHeight * ratio);
-
-            int startX = 1;
-            int width = getWidth() - (startX * 2);
-            width = (width / 2);
-
-            //use black for search indicator in the 'gutter'
-            drawEvent(Color.BLACK, verticalLocation, eventHeight, g, startX, width);
+                //use black for search indicator in the 'gutter'
+                drawEvent(Color.BLACK, verticalLocation, eventHeight, g, startX, width);
 //                System.out.println("painting warning - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
-          }
+            }
         }
     }
 
@@ -3896,22 +3798,21 @@ lastRow = selectedRow;
         AbstractEventMatchThumbnail() {
             super();
             addMouseMotionListener(new MouseMotionAdapter() {
-              public void mouseMoved(MouseEvent e) {
-                if (preferenceModel.isThumbnailBarToolTips()) {
-                    int yPosition = e.getPoint().y;
-                    ThumbnailLoggingEventWrapper event = getEventWrapperAtPosition(yPosition);
-                    if (event != null) {
-                        setToolTipText(getToolTipTextForEvent(event.loggingEventWrapper));
+                public void mouseMoved(MouseEvent e) {
+                    if (preferenceModel.isThumbnailBarToolTips()) {
+                        int yPosition = e.getPoint().y;
+                        ThumbnailLoggingEventWrapper event = getEventWrapperAtPosition(yPosition);
+                        if (event != null) {
+                            setToolTipText(getToolTipTextForEvent(event.loggingEventWrapper));
+                        }
+                    } else {
+                        setToolTipText(null);
                     }
-                } else {
-                    setToolTipText(null);
                 }
-              }
             });
 
-            addMouseListener(new MouseAdapter(){
-                public void mouseClicked(MouseEvent e)
-                {
+            addMouseListener(new MouseAdapter() {
+                public void mouseClicked(MouseEvent e) {
                     int yPosition = e.getPoint().y;
                     ThumbnailLoggingEventWrapper event = getEventWrapperAtPosition(yPosition);
 //                    System.out.println("rowToSelect: " + rowToSelect + ", closestRow: " + event.loggingEvent.getProperty("log4jid"));
@@ -3937,8 +3838,8 @@ lastRow = selectedRow;
                 List displayedEvents = tableModel.getFilteredEvents();
                 if (e.getType() == TableModelEvent.INSERT) {
 //                        System.out.println("insert - current warnings: " + warnings.size() + ", errors: " + errors.size() + ", first row: " + firstRow + ", last row: " + lastRow);
-                    for (int i=firstRow;i<lastRow;i++) {
-                        LoggingEventWrapper event = (LoggingEventWrapper)displayedEvents.get(i);
+                    for (int i = firstRow; i < lastRow; i++) {
+                        LoggingEventWrapper event = (LoggingEventWrapper) displayedEvents.get(i);
                         ThumbnailLoggingEventWrapper wrapper = new ThumbnailLoggingEventWrapper(i, event);
                         if (secondaryMatches(wrapper)) {
                             secondaryList.add(wrapper);
@@ -3956,14 +3857,14 @@ lastRow = selectedRow;
                 } else if (e.getType() == TableModelEvent.DELETE) {
                     //find each eventwrapper with an id in the deleted range and remove it...
 //                        System.out.println("delete- current warnings: " + warnings.size() + ", errors: " + errors.size() + ", first row: " + firstRow + ", last row: " + lastRow + ", displayed event count: " + displayedEvents.size() );
-                    for (Iterator<ThumbnailLoggingEventWrapper> iter = secondaryList.iterator(); iter.hasNext();) {
+                    for (Iterator<ThumbnailLoggingEventWrapper> iter = secondaryList.iterator(); iter.hasNext(); ) {
                         ThumbnailLoggingEventWrapper wrapper = iter.next();
                         if ((wrapper.rowNum >= firstRow) && (wrapper.rowNum <= lastRow)) {
 //                                System.out.println("deleting find: " + wrapper);
                             iter.remove();
                         }
                     }
-                    for (Iterator<ThumbnailLoggingEventWrapper> iter = primaryList.iterator(); iter.hasNext();) {
+                    for (Iterator<ThumbnailLoggingEventWrapper> iter = primaryList.iterator(); iter.hasNext(); ) {
                         ThumbnailLoggingEventWrapper wrapper = iter.next();
                         if ((wrapper.rowNum >= firstRow) && (wrapper.rowNum <= lastRow)) {
 //                                System.out.println("deleting error: " + wrapper);
@@ -3976,14 +3877,14 @@ lastRow = selectedRow;
                 } else if (e.getType() == TableModelEvent.UPDATE) {
 //                        System.out.println("update - about to delete old warnings in range: " + firstRow + " to " + lastRow + ", current warnings: " + warnings.size() + ", errors: " + errors.size());
                     //find each eventwrapper with an id in the deleted range and remove it...
-                    for (Iterator<ThumbnailLoggingEventWrapper> iter = secondaryList.iterator(); iter.hasNext();) {
+                    for (Iterator<ThumbnailLoggingEventWrapper> iter = secondaryList.iterator(); iter.hasNext(); ) {
                         ThumbnailLoggingEventWrapper wrapper = iter.next();
                         if ((wrapper.rowNum >= firstRow) && (wrapper.rowNum <= lastRow)) {
 //                                System.out.println("update - deleting warning: " + wrapper);
                             iter.remove();
                         }
                     }
-                    for (Iterator<ThumbnailLoggingEventWrapper> iter = primaryList.iterator(); iter.hasNext();) {
+                    for (Iterator<ThumbnailLoggingEventWrapper> iter = primaryList.iterator(); iter.hasNext(); ) {
                         ThumbnailLoggingEventWrapper wrapper = iter.next();
                         if ((wrapper.rowNum >= firstRow) && (wrapper.rowNum <= lastRow)) {
 //                                System.out.println("update - deleting error: " + wrapper);
@@ -3992,8 +3893,8 @@ lastRow = selectedRow;
                     }
 //                        System.out.println("update - after deleting old warnings in range: " + firstRow + " to " + lastRow + ", new warnings: " + warnings.size() + ", errors: " + errors.size());
                     //NOTE: for update, we need to do i<= lastRow
-                    for (int i=firstRow;i<=lastRow;i++) {
-                        LoggingEventWrapper event = (LoggingEventWrapper)displayedEvents.get(i);
+                    for (int i = firstRow; i <= lastRow; i++) {
+                        LoggingEventWrapper event = (LoggingEventWrapper) displayedEvents.get(i);
                         ThumbnailLoggingEventWrapper wrapper = new ThumbnailLoggingEventWrapper(i, event);
 //                                System.out.println("update - adding error: " + i + ", event: " + event.getMessage());
                         //only add event to thumbnail if there is a color
@@ -4018,9 +3919,9 @@ lastRow = selectedRow;
                 repaint();
                 //run this in an invokeLater block to ensure this action is enqueued to the end of the EDT
                 EventQueue.invokeLater(() -> {
-                  if (isScrollToBottom()) {
-                    scrollToBottom();
-                  }
+                    if (isScrollToBottom()) {
+                        scrollToBottom();
+                    }
                 });
             });
         }
@@ -4028,8 +3929,10 @@ lastRow = selectedRow;
         abstract boolean primaryMatches(ThumbnailLoggingEventWrapper wrapper);
 
         abstract boolean secondaryMatches(ThumbnailLoggingEventWrapper wrapper);
+
         /**
          * Get event wrapper - may be null
+         *
          * @param yPosition
          * @return event wrapper or null
          */
@@ -4046,10 +3949,10 @@ lastRow = selectedRow;
                 yPosition = height;
             }
 
-    //                    System.out.println("clicked y pos: " + e.getPoint().y + ", relative: " + clickLocation);
+            //                    System.out.println("clicked y pos: " + e.getPoint().y + ", relative: " + clickLocation);
             float ratio = (float) yPosition / height;
             int rowToSelect = Math.round(rowCount * ratio);
-    //                    System.out.println("rowCount: " + rowCount + ", height: " + height + ", clickLocation: " + clickLocation + ", ratio: " + ratio + ", rowToSelect: " + rowToSelect);
+            //                    System.out.println("rowCount: " + rowCount + ", height: " + height + ", clickLocation: " + clickLocation + ", ratio: " + ratio + ", rowToSelect: " + rowToSelect);
             ThumbnailLoggingEventWrapper event = getClosestRow(rowToSelect);
             return event;
         }
@@ -4057,22 +3960,22 @@ lastRow = selectedRow;
         private ThumbnailLoggingEventWrapper getClosestRow(int rowToSelect) {
             ThumbnailLoggingEventWrapper closestRow = null;
             int rowDelta = Integer.MAX_VALUE;
-          for (Object aSecondaryList : secondaryList) {
-            ThumbnailLoggingEventWrapper event = (ThumbnailLoggingEventWrapper) aSecondaryList;
-            int newRowDelta = Math.abs(rowToSelect - event.rowNum);
-            if (newRowDelta < rowDelta) {
-              closestRow = event;
-              rowDelta = newRowDelta;
+            for (Object aSecondaryList : secondaryList) {
+                ThumbnailLoggingEventWrapper event = (ThumbnailLoggingEventWrapper) aSecondaryList;
+                int newRowDelta = Math.abs(rowToSelect - event.rowNum);
+                if (newRowDelta < rowDelta) {
+                    closestRow = event;
+                    rowDelta = newRowDelta;
+                }
             }
-          }
-          for (Object aPrimaryList : primaryList) {
-            ThumbnailLoggingEventWrapper event = (ThumbnailLoggingEventWrapper) aPrimaryList;
-            int newRowDelta = Math.abs(rowToSelect - event.rowNum);
-            if (newRowDelta < rowDelta) {
-              closestRow = event;
-              rowDelta = newRowDelta;
+            for (Object aPrimaryList : primaryList) {
+                ThumbnailLoggingEventWrapper event = (ThumbnailLoggingEventWrapper) aPrimaryList;
+                int newRowDelta = Math.abs(rowToSelect - event.rowNum);
+                if (newRowDelta < rowDelta) {
+                    closestRow = event;
+                    rowDelta = newRowDelta;
+                }
             }
-          }
             return closestRow;
         }
 
@@ -4082,7 +3985,7 @@ lastRow = selectedRow;
         }
 
         protected void drawEvent(Color newColor, int verticalLocation, int eventHeight, Graphics g, int x, int width) {
-    //            System.out.println("painting: - color: " + newColor + ", verticalLocation: " + verticalLocation + ", eventHeight: " + eventHeight);
+            //            System.out.println("painting: - color: " + newColor + ", verticalLocation: " + verticalLocation + ", eventHeight: " + eventHeight);
             //center drawing at vertical location
             int y = verticalLocation + (eventHeight / 2);
             Color oldColor = g.getColor();
@@ -4099,6 +4002,7 @@ lastRow = selectedRow;
     class ThumbnailLoggingEventWrapper {
         int rowNum;
         LoggingEventWrapper loggingEventWrapper;
+
         public ThumbnailLoggingEventWrapper(int rowNum, LoggingEventWrapper loggingEventWrapper) {
             this.rowNum = rowNum;
             this.loggingEventWrapper = loggingEventWrapper;
@@ -4139,7 +4043,7 @@ lastRow = selectedRow;
             textField.setPreferredSize(getPreferredSize());
             setModel(model);
             setEditor(new AutoFilterEditor());
-            ((JTextField)getEditor().getEditorComponent()).getDocument().addDocumentListener(new AutoFilterDocumentListener());
+            ((JTextField) getEditor().getEditorComponent()).getDocument().addDocumentListener(new AutoFilterDocumentListener());
             setEditable(true);
             addPopupMenuListener(new PopupMenuListenerImpl());
         }
@@ -4147,9 +4051,9 @@ lastRow = selectedRow;
         public Vector getModelData() {
             //reverse the model order, because it will be un-reversed when we reload it from saved settings
             Vector vector = new Vector();
-          for (Object allEntry : allEntries) {
-            vector.insertElementAt(allEntry, 0);
-          }
+            for (Object allEntry : allEntries) {
+                vector.insertElementAt(allEntry, 0);
+            }
             return vector;
         }
 
@@ -4161,21 +4065,21 @@ lastRow = selectedRow;
             }
             lastTextToMatch = textToMatch;
             bypassFiltering = true;
-                model.removeAllElements();
-                List entriesCopy = new ArrayList(allEntries);
-          for (Object anEntriesCopy : entriesCopy) {
-            String thisEntry = anEntriesCopy.toString();
-            if (thisEntry.toLowerCase(Locale.ENGLISH).contains(textToMatch.toLowerCase())) {
-              model.addElement(thisEntry);
-            }
-          }
-                bypassFiltering = false;
-                //TODO: on no-match, don't filter at all (show the popup?)
-                if (displayedEntries.size() > 0 && !textToMatch.equals("")) {
-                    showPopup();
-                } else {
-                    hidePopup();
+            model.removeAllElements();
+            List entriesCopy = new ArrayList(allEntries);
+            for (Object anEntriesCopy : entriesCopy) {
+                String thisEntry = anEntriesCopy.toString();
+                if (thisEntry.toLowerCase(Locale.ENGLISH).contains(textToMatch.toLowerCase())) {
+                    model.addElement(thisEntry);
                 }
+            }
+            bypassFiltering = false;
+            //TODO: on no-match, don't filter at all (show the popup?)
+            if (displayedEntries.size() > 0 && !textToMatch.equals("")) {
+                showPopup();
+            } else {
+                hidePopup();
+            }
         }
 
         class AutoFilterEditor implements ComboBoxEditor {
@@ -4234,13 +4138,13 @@ lastRow = selectedRow;
                 //assuming add is to displayed list...add to full list (only if not a dup)
                 bypassFiltering = true;
 
-              boolean entryExists = !allEntries.contains(obj);
-              if (entryExists) {
-                  allEntries.add(obj);
+                boolean entryExists = !allEntries.contains(obj);
+                if (entryExists) {
+                    allEntries.add(obj);
                 }
                 displayedEntries.add(obj);
                 if (!entryExists) {
-                  fireIntervalAdded(this, displayedEntries.size() - 1, displayedEntries.size());
+                    fireIntervalAdded(this, displayedEntries.size() - 1, displayedEntries.size());
                 }
                 bypassFiltering = false;
             }
@@ -4302,20 +4206,20 @@ lastRow = selectedRow;
                 bypassFiltering = true;
                 int displayedEntrySize = displayedEntries.size();
                 if (displayedEntrySize > 0) {
-                  displayedEntries.clear();
-                  //if firecontentschaned is used, the combobox resizes..use fireintervalremoved instead, which doesn't do that..
-                  fireIntervalRemoved(this, 0, displayedEntrySize - 1);
+                    displayedEntries.clear();
+                    //if firecontentschaned is used, the combobox resizes..use fireintervalremoved instead, which doesn't do that..
+                    fireIntervalRemoved(this, 0, displayedEntrySize - 1);
                 }
                 bypassFiltering = false;
             }
 
             public void showAllElements() {
-              //first remove whatever is there and fire necessary events then add events
+                //first remove whatever is there and fire necessary events then add events
                 removeAllElements();
                 bypassFiltering = true;
                 displayedEntries.addAll(allEntries);
                 if (displayedEntries.size() > 0) {
-                  fireIntervalAdded(this, 0, displayedEntries.size() - 1);
+                    fireIntervalAdded(this, 0, displayedEntries.size() - 1);
                 }
                 bypassFiltering = false;
             }
@@ -4326,7 +4230,7 @@ lastRow = selectedRow;
 
             public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
                 bypassFiltering = true;
-                ((JComboBox)e.getSource()).setSelectedIndex(-1);
+                ((JComboBox) e.getSource()).setSelectedIndex(-1);
                 bypassFiltering = false;
                 if (!willBecomeVisible) {
                     //we already have a match but we're showing the popup - unfilter
@@ -4356,11 +4260,11 @@ lastRow = selectedRow;
         }
     }
 
-  class ToggleToolTips extends JCheckBoxMenuItem {
-    public ToggleToolTips() {
-      super("Show ToolTips", new ImageIcon(ChainsawIcons.TOOL_TIP));
-  addActionListener(
-          evt -> preferenceModel.setToolTips(isSelected()));
+    class ToggleToolTips extends JCheckBoxMenuItem {
+        public ToggleToolTips() {
+            super("Show ToolTips", new ImageIcon(ChainsawIcons.TOOL_TIP));
+            addActionListener(
+                evt -> preferenceModel.setToolTips(isSelected()));
+        }
     }
-  }
 }

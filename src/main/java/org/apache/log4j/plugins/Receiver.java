@@ -96,11 +96,11 @@ public abstract class Receiver extends PluginSkeleton implements Thresholdable {
      *
      * @param level The level to test against the receiver threshold.
      * @return boolean True if level is equal or greater than the
-     *         receiver threshold.
+     * receiver threshold.
      */
     public boolean isAsSevereAsThreshold(final Level level) {
         return ((thresholdLevel == null)
-                || level.isGreaterOrEqual(thresholdLevel));
+            || level.isGreaterOrEqual(thresholdLevel));
     }
 
     /**
@@ -118,14 +118,14 @@ public abstract class Receiver extends PluginSkeleton implements Thresholdable {
         // get the "local" logger for this event from the
         // configured repository.
         Logger localLogger =
-                getLoggerRepository().getLogger(event.getLoggerName());
+            getLoggerRepository().getLogger(event.getLoggerName());
 
         // if the logger level is greater or equal to the level
         // of the event, use the logger to append the event.
         if (event.getLevel()
-                .isGreaterOrEqual(localLogger.getEffectiveLevel())) {
+            .isGreaterOrEqual(localLogger.getEffectiveLevel())) {
             // call the loggers appenders to process the event
             localLogger.callAppenders(event);
         }
-  }
+    }
 }

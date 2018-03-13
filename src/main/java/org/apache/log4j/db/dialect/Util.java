@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,98 +25,96 @@ import java.sql.SQLException;
 
 
 /**
- * 
  * @author Ceki Gulcu
- *
  */
 public class Util extends ComponentBase {
-  private static final String POSTGRES_PART = "postgresql";
-  private static final String MYSQL_PART = "mysql";
-  private static final String ORACLE_PART = "oracle";
-  //private static final String MSSQL_PART = "mssqlserver4";
-  private static final String MSSQL_PART = "microsoft";
-  private static final String HSQL_PART = "hsql";
-  
-  public static int discoverSQLDialect(DatabaseMetaData meta) {
-    int dialectCode = 0;
+    private static final String POSTGRES_PART = "postgresql";
+    private static final String MYSQL_PART = "mysql";
+    private static final String ORACLE_PART = "oracle";
+    //private static final String MSSQL_PART = "mssqlserver4";
+    private static final String MSSQL_PART = "microsoft";
+    private static final String HSQL_PART = "hsql";
 
-    try {
+    public static int discoverSQLDialect(DatabaseMetaData meta) {
+        int dialectCode = 0;
 
-      String dbName = meta.getDatabaseProductName().toLowerCase();
+        try {
 
-      if (dbName.contains(POSTGRES_PART)) {
-        return ConnectionSource.POSTGRES_DIALECT;
-      } else if (dbName.contains(MYSQL_PART)) {
-        return ConnectionSource.MYSQL_DIALECT;
-      } else if (dbName.contains(ORACLE_PART)) {
-        return ConnectionSource.ORACLE_DIALECT;
-      } else if (dbName.contains(MSSQL_PART)) {
-        return ConnectionSource.MSSQL_DIALECT;
-      } else if (dbName.contains(HSQL_PART)) {
-        return ConnectionSource.HSQL_DIALECT;
-      } else {
-        return ConnectionSource.UNKNOWN_DIALECT;
-      }
-    } catch (SQLException sqle) {
-      // we can't do much here
+            String dbName = meta.getDatabaseProductName().toLowerCase();
+
+            if (dbName.contains(POSTGRES_PART)) {
+                return ConnectionSource.POSTGRES_DIALECT;
+            } else if (dbName.contains(MYSQL_PART)) {
+                return ConnectionSource.MYSQL_DIALECT;
+            } else if (dbName.contains(ORACLE_PART)) {
+                return ConnectionSource.ORACLE_DIALECT;
+            } else if (dbName.contains(MSSQL_PART)) {
+                return ConnectionSource.MSSQL_DIALECT;
+            } else if (dbName.contains(HSQL_PART)) {
+                return ConnectionSource.HSQL_DIALECT;
+            } else {
+                return ConnectionSource.UNKNOWN_DIALECT;
+            }
+        } catch (SQLException sqle) {
+            // we can't do much here
+        }
+
+        return dialectCode;
     }
 
-    return dialectCode;
-  }
+    public static SQLDialect getDialectFromCode(int dialectCode) {
+        SQLDialect sqlDialect = null;
 
-  public static SQLDialect getDialectFromCode(int dialectCode) {
-    SQLDialect sqlDialect = null;
+        switch (dialectCode) {
+            case ConnectionSource.POSTGRES_DIALECT:
+                sqlDialect = new PostgreSQLDialect();
 
-    switch (dialectCode) {
-    case ConnectionSource.POSTGRES_DIALECT:
-      sqlDialect = new PostgreSQLDialect();
+                break;
+            case ConnectionSource.MYSQL_DIALECT:
+                sqlDialect = new MySQLDialect();
 
-      break;
-    case ConnectionSource.MYSQL_DIALECT:
-      sqlDialect = new MySQLDialect();
+                break;
+            case ConnectionSource.ORACLE_DIALECT:
+                sqlDialect = new OracleDialect();
 
-      break;
-    case ConnectionSource.ORACLE_DIALECT:
-      sqlDialect = new OracleDialect();
+                break;
+            case ConnectionSource.MSSQL_DIALECT:
+                sqlDialect = new MsSQLDialect();
 
-      break;
-    case ConnectionSource.MSSQL_DIALECT:
-      sqlDialect = new MsSQLDialect();
+                break;
+            case ConnectionSource.HSQL_DIALECT:
+                sqlDialect = new HSQLDBDialect();
 
-      break;
-    case ConnectionSource.HSQL_DIALECT:
-      sqlDialect = new HSQLDBDialect();
-
-      break;
+                break;
+        }
+        return sqlDialect;
     }
-    return sqlDialect;
-  }
-  
-  /**
-   * This method handles cases where the 
-   * {@link DatabaseMetaData#supportsGetGeneratedKeys} method is missing in the
-   * JDBC driver implementation.
-   */
-  public boolean supportsGetGeneratedKeys(DatabaseMetaData meta) {
-    try {
-      return meta.supportsGetGeneratedKeys();
-    } catch(Throwable e) {
-      getLogger().info("Could not call supportsGetGeneratedKeys method. This may be recoverable");
-      return false;
+
+    /**
+     * This method handles cases where the
+     * {@link DatabaseMetaData#supportsGetGeneratedKeys} method is missing in the
+     * JDBC driver implementation.
+     */
+    public boolean supportsGetGeneratedKeys(DatabaseMetaData meta) {
+        try {
+            return meta.supportsGetGeneratedKeys();
+        } catch (Throwable e) {
+            getLogger().info("Could not call supportsGetGeneratedKeys method. This may be recoverable");
+            return false;
+        }
     }
-  }
-  
-/** 
-  * This method handles cases where the 
-  * {@link DatabaseMetaData#supportsBatchUpdates} method is missing in the
-  * JDBC driver implementation.
-  */
-  public boolean supportsBatchUpdates(DatabaseMetaData meta) {
-    try {
-      return meta.supportsBatchUpdates();
-    } catch(Throwable e) {
-      getLogger().info("Missing DatabaseMetaData.supportsBatchUpdates method.");
-      return false;
+
+    /**
+     * This method handles cases where the
+     * {@link DatabaseMetaData#supportsBatchUpdates} method is missing in the
+     * JDBC driver implementation.
+     */
+    public boolean supportsBatchUpdates(DatabaseMetaData meta) {
+        try {
+            return meta.supportsBatchUpdates();
+        } catch (Throwable e) {
+            getLogger().info("Missing DatabaseMetaData.supportsBatchUpdates method.");
+            return false;
+        }
     }
-  }
 }

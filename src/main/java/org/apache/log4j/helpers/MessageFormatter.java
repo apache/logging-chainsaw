@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,8 +20,8 @@ package org.apache.log4j.helpers;
 
 /**
  * Formats messages according to very simple rules.
- * See {@link #format(String,Object)} and
- * {@link #format(String,Object,Object)} for more details.
+ * See {@link #format(String, Object)} and
+ * {@link #format(String, Object, Object)} for more details.
  *
  * @author Ceki G&uuml;lc&uuml;
  */
@@ -45,17 +45,15 @@ public final class MessageFormatter {
     /**
      * Performs single argument substitution for the 'messagePattern' passed as
      * parameter.
-     *
+     * <p>
      * <p>For example, <code>MessageFormatter.format("Hi {}.", "there");</code>
      * will return the string "Hi there.".
      * </p>
      * The {} pair is called the formatting element. It serves to designate the
      * location where the argument needs to be inserted within the pattern.
      *
-     * @param messagePattern
-     *     The message pattern which will be parsed and formatted
-     * @param argument
-     *     The argument to be inserted instead of the formatting element
+     * @param messagePattern The message pattern which will be parsed and formatted
+     * @param argument       The argument to be inserted instead of the formatting element
      * @return The formatted message
      */
     public static String format(final String messagePattern,
@@ -79,8 +77,8 @@ public final class MessageFormatter {
                 return messagePattern;
             } else {
                 String sbuf = messagePattern.substring(0, j) +
-                        argument +
-                        messagePattern.substring(j + 2);
+                    argument +
+                    messagePattern.substring(j + 2);
                 return sbuf;
             }
         }
@@ -90,7 +88,7 @@ public final class MessageFormatter {
      * /**
      * Performs a two argument substitution for the 'messagePattern' passed as
      * parameter.
-     *
+     * <p>
      * <p>For example, <code>MessageFormatter.format("Hi {}. My name is {}.",
      * "there", "David");</code> will return the string
      * "Hi there. My name is David.".
@@ -99,12 +97,9 @@ public final class MessageFormatter {
      * location where the arguments need to be inserted within
      * the message pattern.
      *
-     * @param messagePattern
-     *     The message pattern which will be parsed and formatted
-     * @param arg1
-     *     The first argument to replace the first formatting element
-     * @param arg2
-     *     The second argument to replace the second formatting element
+     * @param messagePattern The message pattern which will be parsed and formatted
+     * @param arg1           The first argument to replace the first formatting element
+     * @param arg2           The second argument to replace the second formatting element
      * @return The formatted message
      */
     public static String format(final String messagePattern,
@@ -126,7 +121,7 @@ public final class MessageFormatter {
                     // add the tail string which contains no variables
                     // and return the result.
                     sbuf.append(messagePattern.substring(i,
-                                    messagePattern.length()));
+                        messagePattern.length()));
                     return sbuf.toString();
                 }
             } else {
@@ -134,7 +129,7 @@ public final class MessageFormatter {
                 if ((delimStop != DELIM_STOP)) {
                     // invalid DELIM_START/DELIM_STOP pair
                     sbuf.append(messagePattern.substring(i,
-                            messagePattern.length()));
+                        messagePattern.length()));
                     return sbuf.toString();
                 }
                 sbuf.append(messagePattern.substring(i, j));

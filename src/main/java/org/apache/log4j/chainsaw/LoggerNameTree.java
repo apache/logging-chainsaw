@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,7 +19,7 @@
  */
 package org.apache.log4j.chainsaw;
 
-import javax.swing.JTree;
+import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeModel;
 
@@ -30,24 +30,22 @@ import javax.swing.tree.TreeModel;
  * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 public class LoggerNameTree extends JTree {
-  LoggerNameTree(TreeModel model) {
-    super(model);
-    
-    
+    LoggerNameTree(TreeModel model) {
+        super(model);
 
-    //    ============================================
-    //    TODO remove this WIP node once we're statisfied
-    DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
 
-    DefaultMutableTreeNode node =
-      new DefaultMutableTreeNode("Work in Progress...");
-    node.setAllowsChildren(false);
+        //    ============================================
+        //    TODO remove this WIP node once we're statisfied
+        DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
 
-    root.add(node);
+        DefaultMutableTreeNode node =
+            new DefaultMutableTreeNode("Work in Progress...");
+        node.setAllowsChildren(false);
 
-    
+        root.add(node);
 
-  }
 
- 
+    }
+
+
 }

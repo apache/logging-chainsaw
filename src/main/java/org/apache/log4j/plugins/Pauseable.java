@@ -22,18 +22,19 @@ package org.apache.log4j.plugins;
  * Instances of this interface can be paused, and resumed.
  *
  * @author Paul Smith (psmith@apache.org)
- *
  */
 public interface Pauseable {
     /**
      * Set paused state.
+     *
      * @param paused new value
      */
-  void setPaused(boolean paused);
+    void setPaused(boolean paused);
 
     /**
      * Get paused state.
+     *
      * @return paused state.
      */
-  boolean isPaused();
+    boolean isPaused();
 }

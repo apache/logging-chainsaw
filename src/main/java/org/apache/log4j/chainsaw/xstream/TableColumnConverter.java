@@ -16,22 +16,21 @@
  */
 package org.apache.log4j.chainsaw.xstream;
 
-import javax.swing.table.TableColumn;
-
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 
+import javax.swing.table.TableColumn;
+
 /**
  * XStream Converter implementation that deals with TableColumns settings
- * 
+ *
+ * @author psmith
  * @see Converter
  * @see "XStream"
  * @see TableColumn
- * @author psmith
- * 
  */
 public class TableColumnConverter implements Converter {
 
@@ -40,7 +39,7 @@ public class TableColumnConverter implements Converter {
     }
 
     public void marshal(Object source, HierarchicalStreamWriter writer,
-            MarshallingContext context) {
+                        MarshallingContext context) {
         TableColumn column = (TableColumn) source;
         writer.addAttribute("width", column.getWidth() + "");
         writer.addAttribute("modelIndex", column.getModelIndex() + "");
@@ -48,12 +47,12 @@ public class TableColumnConverter implements Converter {
     }
 
     public Object unmarshal(HierarchicalStreamReader reader,
-            UnmarshallingContext context) {
+                            UnmarshallingContext context) {
         TableColumn column = new TableColumn();
         column.setWidth(Integer.parseInt(reader.getAttribute("width")));
         column.setPreferredWidth(column.getWidth());
         column.setModelIndex(Integer
-                .parseInt(reader.getAttribute("modelIndex")));
+            .parseInt(reader.getAttribute("modelIndex")));
         column.setHeaderValue(reader.getAttribute("headerValue"));
         return column;
     }

@@ -16,27 +16,17 @@
  */
 package org.apache.log4j.chainsaw;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Point;
-
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JEditorPane;
-import javax.swing.JFrame;
-import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.event.HyperlinkEvent;
-
 import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.help.HelpManager;
 
+import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
+import java.awt.*;
+
 /**
  * A simple About box telling people stuff about this project
- * 
+ *
  * @author Paul Smith &lt;psmith@apache.org&gt;
- * 
  */
 class ChainsawAbout extends JDialog {
     private static final Logger LOG = Logger.getLogger(ChainsawAbout.class);
@@ -44,11 +34,11 @@ class ChainsawAbout extends JDialog {
     private final JEditorPane editPane = new JEditorPane("text/html", "");
 
     private final JScrollPane scrollPane = new JScrollPane(editPane,
-            ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
-            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
+        ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
     private final String url = ChainsawAbout.class.getName().replace('.', '/')
-            + ".html";
+        + ".html";
 
     private boolean sleep = false;
 
@@ -75,12 +65,12 @@ class ChainsawAbout extends JDialog {
 
         editPane.setEditable(false);
         editPane.addHyperlinkListener(
-                e -> {
-                  if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                      HelpManager.getInstance().setHelpURL(e.getURL());
-                  }
-                });
-        
+            e -> {
+                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                    HelpManager.getInstance().setHelpURL(e.getURL());
+                }
+            });
+
         setSize(320, 240);
         new Thread(new Scroller()).start();
         scrollPane.getViewport().setViewPosition(new Point(0, 0));
@@ -97,13 +87,13 @@ class ChainsawAbout extends JDialog {
                         synchronized (guard) {
                             guard.wait();
                         }
-                            SwingUtilities.invokeLater(() -> scrollPane.getViewport().setViewPosition(
-                                    new Point(0, 0)));
+                        SwingUtilities.invokeLater(() -> scrollPane.getViewport().setViewPosition(
+                            new Point(0, 0)));
                         continue;
                     }
                     SwingUtilities.invokeLater(() -> scrollPane.getViewport().setViewPosition(
-                            new Point(0, scrollPane.getViewport()
-                                    .getViewPosition().y + 1)));
+                        new Point(0, scrollPane.getViewport()
+                            .getViewPosition().y + 1)));
                     Thread.sleep(100);
                 } catch (Exception e) {
                     LOG.error("Error during scrolling", e);

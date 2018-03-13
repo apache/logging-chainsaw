@@ -16,54 +16,48 @@
  */
 package org.apache.log4j.chainsaw;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-
 import org.apache.log4j.chainsaw.help.HelpManager;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
 
 
 /**
  * @author psmith
- *
  */
-class CommonActions
-{
+class CommonActions {
     private static CommonActions instance = null;
-    private static Action SHOW_RELEASE_NOTE; 
-    
-    
+    private static Action SHOW_RELEASE_NOTE;
+
+
     private void initActions() {
         SHOW_RELEASE_NOTE = new AbstractAction("Release Notes") {
 
-            public void actionPerformed(ActionEvent e)
-            {
+            public void actionPerformed(ActionEvent e) {
                 HelpManager.getInstance().setHelpURL(ChainsawConstants.RELEASE_NOTES_URL);
-                
-            }};
+
+            }
+        };
     }
-    
+
     static synchronized CommonActions getInstance() {
-        if(instance==null) {
+        if (instance == null) {
             instance = new CommonActions();
         }
         return instance;
     }
-    
+
     /**
-     * 
+     *
      */
-    private CommonActions()
-    {
+    private CommonActions() {
         initActions();
     }
 
     /**
      * @return
      */
-    public Action getShowReleaseNotes()
-    {
+    public Action getShowReleaseNotes() {
         return SHOW_RELEASE_NOTE;
     }
 

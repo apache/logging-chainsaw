@@ -24,13 +24,13 @@ import javax.swing.table.TableModel;
  * An extended TableModel interface that allows Column sorting
  *
  * @author Claude Duguay
-*/
+ */
 public interface SortTableModel extends TableModel {
-  void sortColumn(int col, boolean ascending);
+    void sortColumn(int col, boolean ascending);
 
-  void sort();
+    void sort();
 
-  boolean isSortable(int col);
+    boolean isSortable(int col);
 
-  boolean isSortEnabled();
+    boolean isSortEnabled();
 }

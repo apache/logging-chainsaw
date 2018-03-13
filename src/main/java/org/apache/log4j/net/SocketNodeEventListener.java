@@ -20,24 +20,26 @@ package org.apache.log4j.net;
 import java.util.EventListener;
 
 /**
-  Interface used to listen for {@link SocketNode} related
-  events. Clients register an instance of the interface and the
-  instance is called back when the various events occur.
-
-  @author Mark Womack
-  @author Paul Smith (psmith@apache.org)
-*/
+ * Interface used to listen for {@link SocketNode} related
+ * events. Clients register an instance of the interface and the
+ * instance is called back when the various events occur.
+ *
+ * @author Mark Womack
+ * @author Paul Smith (psmith@apache.org)
+ */
 public interface SocketNodeEventListener extends EventListener {
 
-  /**
-   * Called when the SocketNode is created and begins awaiting data.
-   *  @param remoteInfo remote info
-   */
-  void socketOpened(String remoteInfo);
+    /**
+     * Called when the SocketNode is created and begins awaiting data.
+     *
+     * @param remoteInfo remote info
+     */
+    void socketOpened(String remoteInfo);
 
-  /**
-    Called when the socket the node was given has been closed.
-    @param e exception
-   */
-  void socketClosedEvent(Exception e);
+    /**
+     * Called when the socket the node was given has been closed.
+     *
+     * @param e exception
+     */
+    void socketClosedEvent(Exception e);
 }

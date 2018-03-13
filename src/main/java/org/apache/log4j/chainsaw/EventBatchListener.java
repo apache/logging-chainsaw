@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,24 +25,26 @@ import java.util.List;
  * Implementations of this interface like to be notified
  * of arriving batches of LoggingEvents, but may only
  * be interested in those coming from a particular source
- * @author Paul Smith &lt;psmith@apache.org&gt;
  *
+ * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 public interface EventBatchListener extends EventListener {
-  /**
-   * Returns the string representing the identifier
-   * that this instance is only interested in, or
-   * null if this instance is interested in ALL events from
-   * any identifier
-   * @return String identifier of the interested source
-   */
-  String getInterestedIdentifier();
+    /**
+     * Returns the string representing the identifier
+     * that this instance is only interested in, or
+     * null if this instance is interested in ALL events from
+     * any identifier
+     *
+     * @return String identifier of the interested source
+     */
+    String getInterestedIdentifier();
 
-  /**
-   * Implementations receive a list of LoggingEvent instances only if they are interested,
-   * that is, if the source of the eventBatch matches this instances interested identifier
-   * @param events List of LoggingEvent instances
-   * @param identifier the identifier this list of LoggingEvents is associated with
-   */
-  void receiveEventBatch(String identifier, List<org.apache.log4j.spi.LoggingEvent> events);
+    /**
+     * Implementations receive a list of LoggingEvent instances only if they are interested,
+     * that is, if the source of the eventBatch matches this instances interested identifier
+     *
+     * @param events     List of LoggingEvent instances
+     * @param identifier the identifier this list of LoggingEvents is associated with
+     */
+    void receiveEventBatch(String identifier, List<org.apache.log4j.spi.LoggingEvent> events);
 }

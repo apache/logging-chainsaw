@@ -22,38 +22,41 @@ import org.apache.log4j.Logger;
 
 
 /**
-  Interface used to listen for Logger related events such as
-  add/remove appender or changing levels.  Clients register an instance of
-  the interface and the instance is called back when the various events occur.
-
-  LoggerRepository provides methods for adding and removing
-  LoggerEventListener instances.
-
-  When implementing the methods of this interface, it is useful to remember
-  that the Logger can access the repository using its getRepository()
-  method.
-
-  @author Ceki G&uuml;lc&uuml;
-  @author Mark Womack
-*/
+ * Interface used to listen for Logger related events such as
+ * add/remove appender or changing levels.  Clients register an instance of
+ * the interface and the instance is called back when the various events occur.
+ * <p>
+ * LoggerRepository provides methods for adding and removing
+ * LoggerEventListener instances.
+ * <p>
+ * When implementing the methods of this interface, it is useful to remember
+ * that the Logger can access the repository using its getRepository()
+ * method.
+ *
+ * @author Ceki G&uuml;lc&uuml;
+ * @author Mark Womack
+ */
 public interface LoggerEventListener {
-  /**
-    Called when an appender is added to the logger.
+    /**
+     * Called when an appender is added to the logger.
+     *
+     * @param logger   The logger to which the appender was added.
+     * @param appender The appender added to the logger.
+     */
+    void appenderAddedEvent(Logger logger, Appender appender);
 
-    @param logger The logger to which the appender was added.
-    @param appender The appender added to the logger. */
-  void appenderAddedEvent(Logger logger, Appender appender);
+    /**
+     * Called when an appender is removed from the logger.
+     *
+     * @param logger   The logger from which the appender was removed.
+     * @param appender The appender removed from the logger.
+     */
+    void appenderRemovedEvent(Logger logger, Appender appender);
 
-  /**
-    Called when an appender is removed from the logger.
-
-    @param logger The logger from which the appender was removed.
-    @param appender The appender removed from the logger. */
-  void appenderRemovedEvent(Logger logger, Appender appender);
-
-  /**
-    Called when level changed on the logger.
-
-    @param logger The logger that changed levels. */
-  void levelChangedEvent(Logger logger);
+    /**
+     * Called when level changed on the logger.
+     *
+     * @param logger The logger that changed levels.
+     */
+    void levelChangedEvent(Logger logger);
 }

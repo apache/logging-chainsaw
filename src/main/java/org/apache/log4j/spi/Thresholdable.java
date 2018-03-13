@@ -52,7 +52,7 @@ public interface Thresholdable {
      *
      * @param level The level to test against the component threshold.
      * @return boolean True if level is equal or greater than the
-     *         component threshold.
+     * component threshold.
      */
     boolean isAsSevereAsThreshold(Level level);
 }

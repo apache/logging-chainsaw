@@ -16,24 +16,23 @@
  */
 package org.apache.log4j.chainsaw.zeroconf;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 import javax.swing.table.AbstractTableModel;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public class ZeroConfDeviceModel extends AbstractTableModel implements ServiceListener {
 
     private List<ServiceInfo> deviceList = new ArrayList<>();
     private ZeroConfPreferenceModel zeroConfPreferenceModel;
     private transient ZeroConfPlugin plugin;
-    
+
     public ZeroConfDeviceModel() {
     }
-    
+
     public int getRowCount() {
         return deviceList.size();
     }
@@ -45,23 +44,24 @@ public class ZeroConfDeviceModel extends AbstractTableModel implements ServiceLi
     public ServiceInfo getServiceInfoAtRow(int row) {
         return deviceList.get(row);
     }
+
     public Object getValueAt(int rowIndex, int columnIndex) {
         ServiceInfo info = deviceList.get(rowIndex);
-        if(info == null) {
+        if (info == null) {
             return "";
         }
-        switch(columnIndex) {
-        case 0:
+        switch (columnIndex) {
+            case 0:
                 return getAutoConnectHandle(info);
-        case 1:
+            case 1:
                 return info.getAddress().getHostName() + ":" + info.getPort();
-        case 2:
-                return zeroConfPreferenceModel.getAutoConnectDevices().contains(getAutoConnectHandle(info))?Boolean.TRUE:Boolean.FALSE;
-        case 3:
-                return plugin.isConnectedTo(info)?"Connected":"Not Connected";
+            case 2:
+                return zeroConfPreferenceModel.getAutoConnectDevices().contains(getAutoConnectHandle(info)) ? Boolean.TRUE : Boolean.FALSE;
+            case 3:
+                return plugin.isConnectedTo(info) ? "Connected" : "Not Connected";
 //                return plugin.isConnectedTo(info)?new ImageIcon(ChainsawIcons.ANIM_NET_CONNECT):new ImageIcon();
             default:
-                    return "";
+                return "";
         }
     }
 
@@ -73,9 +73,9 @@ public class ZeroConfDeviceModel extends AbstractTableModel implements ServiceLi
     }
 
     public void serviceRemoved(ServiceEvent event) {
-        for (Iterator<ServiceInfo> iter = deviceList.iterator(); iter.hasNext();) {
+        for (Iterator<ServiceInfo> iter = deviceList.iterator(); iter.hasNext(); ) {
             ServiceInfo info = iter.next();
-            if(info.getName().equals(event.getName())) {
+            if (info.getName().equals(event.getName())) {
                 iter.remove();
             }
         }
@@ -88,22 +88,22 @@ public class ZeroConfDeviceModel extends AbstractTableModel implements ServiceLi
     }
 
     public void setZeroConfPreferenceModel(
-            ZeroConfPreferenceModel zeroConfPreferenceModel) {
+        ZeroConfPreferenceModel zeroConfPreferenceModel) {
         this.zeroConfPreferenceModel = zeroConfPreferenceModel;
     }
 
     public String getColumnName(int column) {
-        switch(column) {
-        case 0:
+        switch (column) {
+            case 0:
                 return "ZeroConf name";
-        case 1:
+            case 1:
                 return "Address:Port";
-        case 2:
+            case 2:
                 return "Auto-connect";
-        case 3:
+            case 3:
                 return "Connection Status";
             default:
-                    return "";
+                return "";
         }
     }
 
@@ -112,29 +112,29 @@ public class ZeroConfDeviceModel extends AbstractTableModel implements ServiceLi
     }
 
     public Class getColumnClass(int columnIndex) {
-        switch(columnIndex) {
-        case 2:
-               return Boolean.class;
-        default:
-            return super.getColumnClass(columnIndex);
+        switch (columnIndex) {
+            case 2:
+                return Boolean.class;
+            default:
+                return super.getColumnClass(columnIndex);
         }
     }
 
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-        if(columnIndex!=2 || !(aValue instanceof Boolean))  {
+        if (columnIndex != 2 || !(aValue instanceof Boolean)) {
             return;
         }
         boolean autoConnect = (Boolean) aValue;
         Object device = this.deviceList.get(rowIndex);
         String autoConnectHandle = getAutoConnectHandle((ServiceInfo) device);
-        if(autoConnect) {
+        if (autoConnect) {
             zeroConfPreferenceModel.getAutoConnectDevices().add(autoConnectHandle);
-        }else {
+        } else {
             zeroConfPreferenceModel.getAutoConnectDevices().remove(autoConnectHandle);
         }
         fireTableDataChanged();
     }
-    
+
     void setZeroConfPluginParent(ZeroConfPlugin parent) {
         this.plugin = parent;
     }

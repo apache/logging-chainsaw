@@ -17,16 +17,15 @@
  * under the License.
  */
 
-package org.apache.log4j.db.dialect; 
+package org.apache.log4j.db.dialect;
 
-/** 
- * The Sybase dialect. 
- * 
-*/ 
-public class SybaseDialect implements SQLDialect { 
- public static final String SELECT_CURRVAL = "select @@identity"; 
+/**
+ * The Sybase dialect.
+ */
+public class SybaseDialect implements SQLDialect {
+    public static final String SELECT_CURRVAL = "select @@identity";
 
- public String getSelectInsertId() { 
-   return SELECT_CURRVAL; 
- } 
+    public String getSelectInsertId() {
+        return SELECT_CURRVAL;
+    }
 }

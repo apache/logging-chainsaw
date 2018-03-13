@@ -51,6 +51,7 @@ public class Scheduler extends Thread {
 
     /**
      * Find the index of a given job.
+     *
      * @param job job
      * @return -1 if the job could not be found.
      */
@@ -75,6 +76,7 @@ public class Scheduler extends Thread {
 
     /**
      * Delete the given job.
+     *
      * @param job job.
      * @return true if the job could be deleted, and
      * false if the job could not be found or if the Scheduler is about to
@@ -107,7 +109,8 @@ public class Scheduler extends Thread {
     /**
      * Schedule a {@link Job} for execution at system time given by
      * the <code>desiredTime</code> parameter.
-     * @param job job to schedule.
+     *
+     * @param job         job to schedule.
      * @param desiredTime desired time of execution.
      */
     public synchronized void schedule(final Job job,
@@ -121,9 +124,10 @@ public class Scheduler extends Thread {
      * <p></p>
      * The job will be rescheduled. It will execute with a frequency determined
      * by the period parameter.
-     * @param job job to schedule.
+     *
+     * @param job         job to schedule.
      * @param desiredTime desired time of execution.
-     * @param period repeat period.
+     * @param period      repeat period.
      */
     public synchronized void schedule(final Job job,
                                       final long desiredTime,
@@ -137,7 +141,8 @@ public class Scheduler extends Thread {
      * <p></p>
      * The method returns true if the period could be changed, and false
      * otherwise.
-     * @param job job.
+     *
+     * @param job       job.
      * @param newPeriod new repeat period.
      * @return true if period could be changed.
      */
@@ -145,7 +150,7 @@ public class Scheduler extends Thread {
                                              final long newPeriod) {
         if (newPeriod <= 0) {
             throw new IllegalArgumentException(
-                    "Period must be an integer langer than zero");
+                "Period must be an integer langer than zero");
         }
 
         int i = findIndex(job);
@@ -160,6 +165,7 @@ public class Scheduler extends Thread {
 
     /**
      * Schedule a job.
+     *
      * @param newSJE new job entry.
      */
     private synchronized void schedule(final ScheduledJobEntry newSJE) {
@@ -224,6 +230,7 @@ public class Scheduler extends Thread {
 
     /**
      * We do not want a single failure to affect the whole scheduler.
+     *
      * @param job job to execute.
      */
     void executeInABox(final Job job) {
@@ -250,6 +257,7 @@ public class Scheduler extends Thread {
 
     /**
      * Wait for notification or time to elapse.
+     *
      * @param timeToLinger time to linger.
      */
     void linger(final long timeToLinger) {
@@ -279,7 +287,8 @@ public class Scheduler extends Thread {
 
         /**
          * Create new instance.
-         * @param job job
+         *
+         * @param job         job
          * @param desiredTime desired time.
          */
         ScheduledJobEntry(final Job job, final long desiredTime) {
@@ -288,9 +297,10 @@ public class Scheduler extends Thread {
 
         /**
          * Create new instance.
-         * @param job job
+         *
+         * @param job         job
          * @param desiredTime desired time
-         * @param period repeat period
+         * @param period      repeat period
          */
         ScheduledJobEntry(final Job job,
                           final long desiredTime,

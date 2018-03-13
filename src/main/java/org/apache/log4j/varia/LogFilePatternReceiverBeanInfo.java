@@ -23,32 +23,31 @@ import java.beans.SimpleBeanInfo;
 
 /**
  * BeanInfo class for the meta-data of the LogFilePatternReceiver.
- *
  */
 public class LogFilePatternReceiverBeanInfo extends SimpleBeanInfo {
-  /* (non-Javadoc)
-   * @see java.beans.BeanInfo#getPropertyDescriptors()
-   */
-  public PropertyDescriptor[] getPropertyDescriptors() {
-    try {
-      return new PropertyDescriptor[] {
-        new PropertyDescriptor("fileURL", LogFilePatternReceiver.class),
-        new PropertyDescriptor(
-          "timestampFormat", LogFilePatternReceiver.class),
-        new PropertyDescriptor("logFormat", LogFilePatternReceiver.class),
-        new PropertyDescriptor("name", LogFilePatternReceiver.class),
-        new PropertyDescriptor("tailing", LogFilePatternReceiver.class),
-        new PropertyDescriptor(
-          "filterExpression", LogFilePatternReceiver.class),
-        new PropertyDescriptor("waitMillis", LogFilePatternReceiver.class),
-        new PropertyDescriptor("appendNonMatches", LogFilePatternReceiver.class),
-        new PropertyDescriptor("customLevelDefinitions", LogFilePatternReceiver.class),
-        new PropertyDescriptor("useCurrentThread", LogFilePatternReceiver.class),
-        new PropertyDescriptor("group", LogFilePatternReceiver.class),
-      };
-    } catch (Exception e) {
-    }
+    /* (non-Javadoc)
+     * @see java.beans.BeanInfo#getPropertyDescriptors()
+     */
+    public PropertyDescriptor[] getPropertyDescriptors() {
+        try {
+            return new PropertyDescriptor[]{
+                new PropertyDescriptor("fileURL", LogFilePatternReceiver.class),
+                new PropertyDescriptor(
+                    "timestampFormat", LogFilePatternReceiver.class),
+                new PropertyDescriptor("logFormat", LogFilePatternReceiver.class),
+                new PropertyDescriptor("name", LogFilePatternReceiver.class),
+                new PropertyDescriptor("tailing", LogFilePatternReceiver.class),
+                new PropertyDescriptor(
+                    "filterExpression", LogFilePatternReceiver.class),
+                new PropertyDescriptor("waitMillis", LogFilePatternReceiver.class),
+                new PropertyDescriptor("appendNonMatches", LogFilePatternReceiver.class),
+                new PropertyDescriptor("customLevelDefinitions", LogFilePatternReceiver.class),
+                new PropertyDescriptor("useCurrentThread", LogFilePatternReceiver.class),
+                new PropertyDescriptor("group", LogFilePatternReceiver.class),
+            };
+        } catch (Exception e) {
+        }
 
-    return null;
-  }
+        return null;
+    }
 }

@@ -36,8 +36,7 @@ public class SavableTabSetting {
         this.chainsawLog = chainsawLog;
     }
 
-    public void setZeroconf(boolean zeroConf)
-    {
+    public void setZeroconf(boolean zeroConf) {
         this.zeroConf = zeroConf;
     }
 

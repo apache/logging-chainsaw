@@ -25,12 +25,12 @@ import java.beans.PropertyChangeListener;
 
 /**
  * Defines the required interface for all Plugin objects.
- *
+ * <p>
  * <p>A plugin implements some specific functionality to extend
  * the log4j framework.  Each plugin is associated with a specific
  * LoggerRepository, which it then uses/acts upon.  The functionality
  * of the plugin is up to the developer.</p>
- *
+ * <p>
  * <p>Examples of plugins are Receiver and Watchdog. Receiver plugins
  * allow for remote logging events to be received and processed by
  * a repository as if the event was sent locally. Watchdog plugins
@@ -75,13 +75,12 @@ public interface Plugin extends OptionHandler {
      * Adds a PropertyChangeListener to this instance which is
      * notified only by changes of the property with name propertyName.
      *
-     * @param propertyName
-     *    the name of the property in standard JavaBean syntax
-     *    (e.g. for setName(), property="name")
-     * @param l listener
+     * @param propertyName the name of the property in standard JavaBean syntax
+     *                     (e.g. for setName(), property="name")
+     * @param l            listener
      */
     void addPropertyChangeListener(
-            String propertyName, PropertyChangeListener l);
+        String propertyName, PropertyChangeListener l);
 
     /**
      * Adds a PropertyChangeListener that will be notified of all property
@@ -106,10 +105,10 @@ public interface Plugin extends OptionHandler {
      * of only a specific property change.
      *
      * @param propertyName property name, may not be null.
-     * @param l listener to be removed.
+     * @param l            listener to be removed.
      */
     void removePropertyChangeListener(
-            String propertyName, PropertyChangeListener l);
+        String propertyName, PropertyChangeListener l);
 
     /**
      * True if the plugin is active and running.
@@ -121,14 +120,14 @@ public interface Plugin extends OptionHandler {
     /**
      * Returns true if the testPlugin is considered to be "equivalent" to the
      * this plugin.
-     *
+     * <p>
      * <p>The equivalency test is at the discretion of the plugin
      * implementation.  The PluginRegistry will use this method when starting
      * new plugins to see if a given plugin is considered equivalent to an
      * already running plugin with the same name.  If they are considered to
      * be equivalent, the currently running plugin will be left in place, and
      * the new plugin will not be started.</p>
-     *
+     * <p>
      * <p>It is possible to override the equals() method, however this has
      * more meaning than is required for this simple test and would also
      * require the overriding of the hashCode() method as well.  All of this

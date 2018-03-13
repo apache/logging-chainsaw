@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,20 +17,6 @@
 
 package org.apache.log4j.chainsaw.receivers;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.net.URL;
-
-import javax.swing.JDialog;
-import javax.swing.JEditorPane;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.UIManager;
-
 import org.apache.log4j.LogManager;
 import org.apache.log4j.chainsaw.help.HelpManager;
 import org.apache.log4j.chainsaw.helper.OkCancelPanel;
@@ -39,13 +25,18 @@ import org.apache.log4j.net.SocketHubReceiver;
 import org.apache.log4j.plugins.Plugin;
 import org.apache.log4j.plugins.Receiver;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.net.URL;
+
 
 /**
  * A panel that allows a user to configure a new Plugin, and
  * view that plugins javadoc at the same time
  *
  * @author Paul Smith &lt;psmith@apache.org&gt;
- *
  */
 public class NewReceiverDialogPanel extends JPanel {
 
@@ -71,20 +62,20 @@ public class NewReceiverDialogPanel extends JPanel {
          * url to be the Help resource for that class
          */
         pluginEditorPanel.addPropertyChangeListener("plugin",
-                evt -> {
+            evt -> {
 
-                    Plugin plugin = (Plugin) evt.getNewValue();
-                    URL url = HelpManager.getInstance().getHelpForClass(
-                            plugin.getClass());
+                Plugin plugin = (Plugin) evt.getNewValue();
+                URL url = HelpManager.getInstance().getHelpForClass(
+                    plugin.getClass());
 
-                    try {
-                        javaDocPane.setPage(url);
-                    } catch (IOException e) {
-                        MessageCenter.getInstance().getLogger().error(
-                            "Failed to load the Help resource for " +
+                try {
+                    javaDocPane.setPage(url);
+                } catch (IOException e) {
+                    MessageCenter.getInstance().getLogger().error(
+                        "Failed to load the Help resource for " +
                             plugin.getClass(), e);
-                    }
-                });
+                }
+            });
     }
 
     /**
@@ -125,6 +116,7 @@ public class NewReceiverDialogPanel extends JPanel {
      * Creates a new panel, with the contents configured to allow the editing
      * of a NEW instance of the specified class (which must implement the Receiver
      * interface)
+     *
      * @param receiverClass
      * @return NewReceiverDialogPanel
      * @throws IllegalArgumentException if the specified class is not a Receiver
@@ -142,7 +134,7 @@ public class NewReceiverDialogPanel extends JPanel {
             receiverInstance = (Receiver) receiverClass.newInstance();
 
         } catch (Exception e) {
-        	LogManager.getLogger(NewReceiverDialogPanel.class).error(
+            LogManager.getLogger(NewReceiverDialogPanel.class).error(
                 "Failed to create a new Receiver instance, this exception is unexpected",
                 e);
         }
@@ -159,7 +151,7 @@ public class NewReceiverDialogPanel extends JPanel {
         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
         NewReceiverDialogPanel panel = NewReceiverDialogPanel.create(
-                SocketHubReceiver.class);
+            SocketHubReceiver.class);
 
         JDialog dialog = new JDialog((JFrame) null, true);
         dialog.getContentPane().add(panel);

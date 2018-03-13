@@ -16,14 +16,14 @@
  */
 package org.apache.log4j.rewrite;
 
+import org.apache.log4j.Logger;
+import org.apache.log4j.helpers.LogLog;
+import org.apache.log4j.spi.LoggingEvent;
+
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.log4j.Logger;
-import org.apache.log4j.helpers.LogLog;
-import org.apache.log4j.spi.LoggingEvent;
 
 /**
  * This policy rewrites events by evaluating any
@@ -34,9 +34,9 @@ import org.apache.log4j.spi.LoggingEvent;
  * not be added to the event properties.  Values from the
  * JavaBean properties will replace any existing property
  * with the same name.
- *
+ * <p>
  * The combination of the RewriteAppender and this policy
- * performs the same actions as the ReflectionFilter from log4j 1.3. 
+ * performs the same actions as the ReflectionFilter from log4j 1.3.
  */
 public class ReflectionRewritePolicy implements RewritePolicy {
     /**
@@ -50,13 +50,13 @@ public class ReflectionRewritePolicy implements RewritePolicy {
 
             try {
                 PropertyDescriptor[] props = Introspector.getBeanInfo(
-                        msg.getClass(), Object.class).getPropertyDescriptors();
+                    msg.getClass(), Object.class).getPropertyDescriptors();
                 if (props.length > 0) {
                     for (PropertyDescriptor prop : props) {
                         try {
                             Object propertyValue =
-                                    prop.getReadMethod().invoke(msg,
-                                            (Object[]) null);
+                                prop.getReadMethod().invoke(msg,
+                                    (Object[]) null);
                             if ("message".equalsIgnoreCase(prop.getName())) {
                                 newMsg = propertyValue;
                             } else {
@@ -64,20 +64,20 @@ public class ReflectionRewritePolicy implements RewritePolicy {
                             }
                         } catch (Exception e) {
                             LogLog.warn("Unable to evaluate property " +
-                                    prop.getName(), e);
+                                prop.getName(), e);
                         }
                     }
                     return new LoggingEvent(
-                            source.getFQNOfLoggerClass(),
-                            source.getLogger() != null ? source.getLogger(): Logger.getLogger(source.getLoggerName()),
-                            source.getTimeStamp(),
-                            source.getLevel(),
-                            newMsg,
-                            source.getThreadName(),
-                            source.getThrowableInformation(),
-                            source.getNDC(),
-                            source.getLocationInformation(),
-                            rewriteProps);
+                        source.getFQNOfLoggerClass(),
+                        source.getLogger() != null ? source.getLogger() : Logger.getLogger(source.getLoggerName()),
+                        source.getTimeStamp(),
+                        source.getLevel(),
+                        newMsg,
+                        source.getThreadName(),
+                        source.getThrowableInformation(),
+                        source.getNDC(),
+                        source.getLocationInformation(),
+                        rewriteProps);
                 }
             } catch (Exception e) {
                 LogLog.warn("Unable to get property descriptors", e);

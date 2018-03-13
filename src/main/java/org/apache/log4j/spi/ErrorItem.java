@@ -31,142 +31,154 @@ public class ErrorItem {
     /**
      * Message.
      */
-  String message;
+    String message;
     /**
      * Column.
      */
-  int colNumber = -1;
+    int colNumber = -1;
     /**
      * Line number.
      */
-  int lineNumber = -1;
+    int lineNumber = -1;
     /**
      * Exception.
      */
-  Throwable exception;
+    Throwable exception;
 
     /**
      * Create new instance.
+     *
      * @param message message
-     * @param e exception
+     * @param e       exception
      */
-  public ErrorItem(final String message, final Exception e) {
-    super();
-    this.message = message;
-    exception = e;
-  }
+    public ErrorItem(final String message, final Exception e) {
+        super();
+        this.message = message;
+        exception = e;
+    }
 
     /**
      * Creaet new instance.
+     *
      * @param message message.
      */
-  public ErrorItem(final String message) {
-    this(message, null);
-  }
+    public ErrorItem(final String message) {
+        this(message, null);
+    }
 
     /**
      * Get column number.
+     *
      * @return column number.
      */
-  public int getColNumber() {
-    return colNumber;
-  }
+    public int getColNumber() {
+        return colNumber;
+    }
 
     /**
      * Set column number.
+     *
      * @param colNumber new column number.
      */
-  public void setColNumber(int colNumber) {
-    this.colNumber = colNumber;
-  }
+    public void setColNumber(int colNumber) {
+        this.colNumber = colNumber;
+    }
 
     /**
      * Get exception.
+     *
      * @return exception.
      */
-  public Throwable getException() {
-    return exception;
-  }
+    public Throwable getException() {
+        return exception;
+    }
 
     /**
      * Set exception.
+     *
      * @param exception exception
      */
-  public void setException(final Throwable exception) {
-    this.exception = exception;
-  }
+    public void setException(final Throwable exception) {
+        this.exception = exception;
+    }
 
     /**
      * Get line number.
+     *
      * @return line number.
      */
-  public int getLineNumber() {
-    return lineNumber;
-  }
+    public int getLineNumber() {
+        return lineNumber;
+    }
 
     /**
      * Set line number.
+     *
      * @param lineNumber line number.
      */
-  public void setLineNumber(final int lineNumber) {
-    this.lineNumber = lineNumber;
-  }
+    public void setLineNumber(final int lineNumber) {
+        this.lineNumber = lineNumber;
+    }
 
     /**
      * Get message.
+     *
      * @return message.
      */
-  public String getMessage() {
-    return message;
-  }
+    public String getMessage() {
+        return message;
+    }
 
     /**
      * Set message.
+     *
      * @param message message.
      */
-  public void setMessage(final String message) {
-    this.message = message;
-  }
+    public void setMessage(final String message) {
+        this.message = message;
+    }
 
     /**
      * String representation of ErrorItem.
+     *
      * @return string.
      */
-  public String toString() {
-    String str =
-      "Reported error: \"" + message + "\"";
+    public String toString() {
+        String str =
+            "Reported error: \"" + message + "\"";
 
-    if (lineNumber != -1) {
-      str += " at line " + lineNumber + " column " + colNumber;
+        if (lineNumber != -1) {
+            str += " at line " + lineNumber + " column " + colNumber;
+        }
+        if (exception != null) {
+            str += (" with exception " + exception);
+        }
+        return str;
     }
-    if (exception != null) {
-      str += (" with exception " + exception);
-    }
-    return str;
-  }
 
-  /**
-   * Dump the details of this ErrorItem to System.out.
-   */
-  public void dump() {
-    dump(System.out);
-  }
-  
-  /**
-   * Dump the details of this ErrorItem on the specified {@link PrintStream}.
-   * @param ps print stream.
-   */
-  public void dump(final PrintStream ps) {
-    String str =
-      "Reported error: \"" + message + "\"";
-
-    if (lineNumber != -1) {
-      str += " at line " + lineNumber + " column " + colNumber;
+    /**
+     * Dump the details of this ErrorItem to System.out.
+     */
+    public void dump() {
+        dump(System.out);
     }
-    ps.println(str);
 
-    if (exception != null) {
-      exception.printStackTrace(ps);
+    /**
+     * Dump the details of this ErrorItem on the specified {@link PrintStream}.
+     *
+     * @param ps print stream.
+     */
+    public void dump(final PrintStream ps) {
+        String str =
+            "Reported error: \"" + message + "\"";
+
+        if (lineNumber != -1) {
+            str += " at line " + lineNumber + " column " + colNumber;
+        }
+        ps.println(str);
+
+        if (exception != null) {
+            exception.printStackTrace(ps);
+        }
     }
-  }
 }

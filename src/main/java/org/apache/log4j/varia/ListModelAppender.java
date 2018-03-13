@@ -20,60 +20,64 @@ package org.apache.log4j.varia;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.spi.LoggingEvent;
 
-import javax.swing.DefaultListModel;
-import javax.swing.ListModel;
+import javax.swing.*;
 
 
 /**
  * A very basic appender that takes the events and stores them in to a
  * ListModel for late retrieval.
  *
- *
  * @author Paul Smith (psmith@apache.org)
- *
  */
 public final class ListModelAppender extends AppenderSkeleton {
     /**
      * Default list model.
      */
-  private final DefaultListModel<LoggingEvent> model = new DefaultListModel<>();
+    private final DefaultListModel<LoggingEvent> model = new DefaultListModel<>();
 
-  /**
-   * Constructs a ListModelAppender.
-   */
-  public ListModelAppender() {
-      super(true);
-  }
-  /**
-   * Returns a reference to the ListModel that contains all the LoggingEvents
-   * that have been appended to this class.
-   *
-   * @return the list model
-   */
-  public ListModel<LoggingEvent> getModel() {
-    return model;
-  }
+    /**
+     * Constructs a ListModelAppender.
+     */
+    public ListModelAppender() {
+        super(true);
+    }
 
-    /** {@inheritDoc} */
-  protected void append(final LoggingEvent event) {
-    model.addElement(event);
-  }
+    /**
+     * Returns a reference to the ListModel that contains all the LoggingEvents
+     * that have been appended to this class.
+     *
+     * @return the list model
+     */
+    public ListModel<LoggingEvent> getModel() {
+        return model;
+    }
 
-    /** {@inheritDoc} */
-  public void close() {
-    clearModel();
-  }
+    /**
+     * {@inheritDoc}
+     */
+    protected void append(final LoggingEvent event) {
+        model.addElement(event);
+    }
 
-  /**
-   * Removes all the Events from the model.
-   */
-  public void clearModel() {
-    model.clear();
-  }
+    /**
+     * {@inheritDoc}
+     */
+    public void close() {
+        clearModel();
+    }
 
-    /** {@inheritDoc} */
-  public boolean requiresLayout() {
-      return false;
-  }
+    /**
+     * Removes all the Events from the model.
+     */
+    public void clearModel() {
+        model.clear();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean requiresLayout() {
+        return false;
+    }
 
 }

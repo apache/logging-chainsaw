@@ -28,105 +28,104 @@ import org.w3c.dom.Element;
 import java.util.Properties;
 
 /**
- *
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  * @author Ceki G&uuml;lc&uuml;
- *
  */
 public class DBReceiver extends Receiver implements Pauseable, UnrecognizedElementHandler {
-  /**
-   * By default we refresh data every 1000 milliseconds.
-   * @see #setRefreshMillis
-   */
-  static int DEFAULT_REFRESH_MILLIS = 1000;
-  ConnectionSource connectionSource;
-  int refreshMillis = DEFAULT_REFRESH_MILLIS;
-  DBReceiverJob receiverJob;
-  boolean paused = false;
+    /**
+     * By default we refresh data every 1000 milliseconds.
+     *
+     * @see #setRefreshMillis
+     */
+    static int DEFAULT_REFRESH_MILLIS = 1000;
+    ConnectionSource connectionSource;
+    int refreshMillis = DEFAULT_REFRESH_MILLIS;
+    DBReceiverJob receiverJob;
+    boolean paused = false;
 
-  public void activateOptions() {
-    
-    if(connectionSource == null)  {
-      throw new IllegalStateException(
-        "DBAppender cannot function without a connection source");
+    public void activateOptions() {
+
+        if (connectionSource == null) {
+            throw new IllegalStateException(
+                "DBAppender cannot function without a connection source");
+        }
+
+        receiverJob = new DBReceiverJob(this);
+        receiverJob.setLoggerRepository(repository);
+
+        if (this.repository == null) {
+            throw new IllegalStateException(
+                "DBAppender cannot function without a reference to its owning repository");
+        }
+
+        if (repository instanceof LoggerRepositoryEx) {
+            Scheduler scheduler = ((LoggerRepositoryEx) repository).getScheduler();
+
+            scheduler.schedule(
+                receiverJob, System.currentTimeMillis() + 500, refreshMillis);
+        }
+
     }
-  
-    receiverJob = new DBReceiverJob(this);
-    receiverJob.setLoggerRepository(repository);
-      
-    if(this.repository == null) {
-      throw new IllegalStateException(
-      "DBAppender cannot function without a reference to its owning repository");
+
+    public void setRefreshMillis(int refreshMillis) {
+        this.refreshMillis = refreshMillis;
     }
 
-    if (repository instanceof LoggerRepositoryEx) {
-        Scheduler scheduler = ((LoggerRepositoryEx) repository).getScheduler();
-    
-        scheduler.schedule(
-            receiverJob, System.currentTimeMillis() + 500, refreshMillis);
+    public int getRefreshMillis() {
+        return refreshMillis;
     }
-   
-  }
-
-  public void setRefreshMillis(int refreshMillis) {
-    this.refreshMillis = refreshMillis;
-  }
-
-  public int getRefreshMillis() {
-    return refreshMillis;
-  }
 
 
-  /**
-   * @return Returns the connectionSource.
-   */
-  public ConnectionSource getConnectionSource() {
-    return connectionSource;
-  }
-
-
-  /**
-   * @param connectionSource The connectionSource to set.
-   */
-  public void setConnectionSource(ConnectionSource connectionSource) {
-    this.connectionSource = connectionSource;
-  }
-
-
-  /* (non-Javadoc)
-   * @see org.apache.log4j.plugins.Plugin#shutdown()
-   */
-  public void shutdown() {
-    getLogger().info("removing receiverJob from the Scheduler.");
-
-    if(this.repository instanceof LoggerRepositoryEx) {
-      Scheduler scheduler = ((LoggerRepositoryEx) repository).getScheduler();
-      scheduler.delete(receiverJob);
+    /**
+     * @return Returns the connectionSource.
+     */
+    public ConnectionSource getConnectionSource() {
+        return connectionSource;
     }
-  }
 
 
-  /* (non-Javadoc)
-   * @see org.apache.log4j.plugins.Pauseable#setPaused(boolean)
-   */
-  public void setPaused(boolean paused) {
-    this.paused = paused;
-  }
+    /**
+     * @param connectionSource The connectionSource to set.
+     */
+    public void setConnectionSource(ConnectionSource connectionSource) {
+        this.connectionSource = connectionSource;
+    }
 
-  /* (non-Javadoc)
-   * @see org.apache.log4j.plugins.Pauseable#isPaused()
-   */
-  public boolean isPaused() {
-    return paused;
-  }
+
+    /* (non-Javadoc)
+     * @see org.apache.log4j.plugins.Plugin#shutdown()
+     */
+    public void shutdown() {
+        getLogger().info("removing receiverJob from the Scheduler.");
+
+        if (this.repository instanceof LoggerRepositoryEx) {
+            Scheduler scheduler = ((LoggerRepositoryEx) repository).getScheduler();
+            scheduler.delete(receiverJob);
+        }
+    }
+
+
+    /* (non-Javadoc)
+     * @see org.apache.log4j.plugins.Pauseable#setPaused(boolean)
+     */
+    public void setPaused(boolean paused) {
+        this.paused = paused;
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.log4j.plugins.Pauseable#isPaused()
+     */
+    public boolean isPaused() {
+        return paused;
+    }
 
     /**
      * {@inheritDoc}
      */
-  public boolean parseUnrecognizedElement(Element element, Properties props) throws Exception {
+    public boolean parseUnrecognizedElement(Element element, Properties props) throws Exception {
         if ("connectionSource".equals(element.getNodeName())) {
             Object instance =
-                    DOMConfigurator.parseElement(element, props, ConnectionSource.class);
+                DOMConfigurator.parseElement(element, props, ConnectionSource.class);
             if (instance instanceof ConnectionSource) {
                 ConnectionSource source = (ConnectionSource) instance;
                 source.activateOptions();
@@ -135,6 +134,6 @@ public class DBReceiver extends Receiver implements Pauseable, UnrecognizedEleme
             return true;
         }
         return false;
-  }
+    }
 
 }

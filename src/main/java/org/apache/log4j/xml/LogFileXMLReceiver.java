@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,21 +17,17 @@
 
 package org.apache.log4j.xml;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Collection;
-
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.plugins.Receiver;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.Decoder;
 import org.apache.log4j.spi.LoggingEvent;
+
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Collection;
 
 /**
  * LogFileXMLReceiver will read an xml-formated log file and make the events in the log file
@@ -54,7 +50,7 @@ import org.apache.log4j.spi.LoggingEvent;
  * <p>
  * Once the event has been "posted", it will be handled by the appenders currently configured in the
  * LoggerRespository.
- * 
+ *
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  * @since 1.3
  */
@@ -75,7 +71,7 @@ public class LogFileXMLReceiver extends Receiver {
 
     /**
      * Accessor
-     * 
+     *
      * @return file URL
      */
     public String getFileURL() {
@@ -84,7 +80,7 @@ public class LogFileXMLReceiver extends Receiver {
 
     /**
      * Specify the URL of the XML-formatted file to process.
-     * 
+     *
      * @param fileURL
      */
     public void setFileURL(String fileURL) {
@@ -93,7 +89,7 @@ public class LogFileXMLReceiver extends Receiver {
 
     /**
      * Accessor
-     * 
+     *
      * @return
      */
     public String getDecoder() {
@@ -102,7 +98,7 @@ public class LogFileXMLReceiver extends Receiver {
 
     /**
      * Specify the class name implementing org.apache.log4j.spi.Decoder that can process the file.
-     * 
+     *
      * @param _decoder
      */
     public void setDecoder(String _decoder) {
@@ -111,7 +107,7 @@ public class LogFileXMLReceiver extends Receiver {
 
     /**
      * Accessor
-     * 
+     *
      * @return filter expression
      */
     public String getFilterExpression() {
@@ -120,7 +116,7 @@ public class LogFileXMLReceiver extends Receiver {
 
     /**
      * Accessor
-     * 
+     *
      * @return tailing flag
      */
     public boolean isTailing() {
@@ -130,7 +126,7 @@ public class LogFileXMLReceiver extends Receiver {
     /**
      * Set the 'tailing' flag - may only work on file:// URLs and may stop tailing if the writing
      * process closes the file and reopens.
-     * 
+     *
      * @param tailing
      */
     public void setTailing(boolean tailing) {
@@ -140,7 +136,7 @@ public class LogFileXMLReceiver extends Receiver {
     /**
      * Set the filter expression that will cause only events which pass the filter to be forwarded
      * to the log4j framework.
-     * 
+     *
      * @param filterExpression
      */
     public void setFilterExpression(String filterExpression) {
@@ -281,7 +277,7 @@ public class LogFileXMLReceiver extends Receiver {
     /**
      * When true, this property uses the current Thread to perform the import, otherwise when false
      * (the default), a new Thread is created and started to manage the import.
-     * 
+     *
      * @return
      */
     public final boolean isUseCurrentThread() {
@@ -291,7 +287,7 @@ public class LogFileXMLReceiver extends Receiver {
     /**
      * Sets whether the current Thread or a new Thread is created to perform the import, the default
      * being false (new Thread created).
-     * 
+     *
      * @param useCurrentThread
      */
     public final void setUseCurrentThread(boolean useCurrentThread) {

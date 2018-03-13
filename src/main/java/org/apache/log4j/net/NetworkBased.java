@@ -21,19 +21,20 @@ package org.apache.log4j.net;
  * The parent of all the Network based interfaces.
  *
  * @author Paul Smith (psmith@apache.org)
- *
  */
 public interface NetworkBased {
 
     /**
      * Get name.
+     *
      * @return name.
      */
-  String getName();
+    String getName();
 
     /**
      * Get if item is active.
+     *
      * @return if true, item is active.
      */
-  boolean isActive();
+    boolean isActive();
 }

@@ -16,24 +16,22 @@
  */
 package org.apache.log4j.chainsaw;
 
-import java.awt.Font;
-
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.html.HTMLDocument;
+import java.awt.*;
 
 /**
  * Apply system font and size (normal size + 1) rule if the JEditorPane document contains html.
  */
-public class JTextComponentFormatter
-{
+public class JTextComponentFormatter {
     public static void applySystemFontAndSize(JTextComponent textComponent) {
         Document document = textComponent.getDocument();
         if (document instanceof HTMLDocument) {
-          Font font = UIManager.getFont("Label.font");
-          String bodyRule = "body { font-family: " + font.getFamily() + "; font-size: " + (font.getSize() + 1) + "pt; }";
-          ((HTMLDocument)document).getStyleSheet().addRule(bodyRule);
+            Font font = UIManager.getFont("Label.font");
+            String bodyRule = "body { font-family: " + font.getFamily() + "; font-size: " + (font.getSize() + 1) + "pt; }";
+            ((HTMLDocument) document).getStyleSheet().addRule(bodyRule);
         }
     }
 }

@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,24 +17,23 @@
 
 package org.apache.log4j.chainsaw.receivers;
 
-import java.beans.PropertyChangeListener;
-import java.util.Collection;
-import java.util.Vector;
-import java.util.Enumeration;
-
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
-
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.net.SocketReceiver;
-import org.apache.log4j.spi.LoggerRepository;
-import org.apache.log4j.spi.LoggerRepositoryEx;
 import org.apache.log4j.plugins.Plugin;
 import org.apache.log4j.plugins.PluginEvent;
 import org.apache.log4j.plugins.PluginListener;
 import org.apache.log4j.plugins.Receiver;
+import org.apache.log4j.spi.LoggerRepository;
+import org.apache.log4j.spi.LoggerRepositoryEx;
+
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
+import java.beans.PropertyChangeListener;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Vector;
 
 
 /**
@@ -44,146 +43,145 @@ import org.apache.log4j.plugins.Receiver;
  * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 public class ReceiversTreeModel extends DefaultTreeModel
-  implements PluginListener {
-  private static final String ROOTNODE_LABEL = "Receivers";
-  final DefaultMutableTreeNode NoReceiversNode =
-    new DefaultMutableTreeNode("No Receivers defined");
-  final DefaultMutableTreeNode RootNode;
-  private final Logger logger = LogManager.getLogger(ReceiversTreeModel.class);
+    implements PluginListener {
+    private static final String ROOTNODE_LABEL = "Receivers";
+    final DefaultMutableTreeNode NoReceiversNode =
+        new DefaultMutableTreeNode("No Receivers defined");
+    final DefaultMutableTreeNode RootNode;
+    private final Logger logger = LogManager.getLogger(ReceiversTreeModel.class);
 
-  ReceiversTreeModel() {
-    super(new DefaultMutableTreeNode(ROOTNODE_LABEL));
-    RootNode = (DefaultMutableTreeNode) getRoot();
-    refresh();
-  }
-
-  /**
-   * Creates a new ReceiversTreeModel by querying the Log4j Plugin Repository
-   * and building up the required information.
-   *
-   * @return ReceiversTreeModel
-   */
-  public final synchronized ReceiversTreeModel refresh() {
-    RootNode.removeAllChildren();
-
-    LoggerRepository repo = LogManager.getLoggerRepository();
-    Collection receivers;
-    if (repo instanceof LoggerRepositoryEx) {
-        receivers = ((LoggerRepositoryEx) repo).getPluginRegistry().getPlugins(Receiver.class);
-    } else {
-        receivers = new Vector();
+    ReceiversTreeModel() {
+        super(new DefaultMutableTreeNode(ROOTNODE_LABEL));
+        RootNode = (DefaultMutableTreeNode) getRoot();
+        refresh();
     }
 
-    updateRootDisplay();
+    /**
+     * Creates a new ReceiversTreeModel by querying the Log4j Plugin Repository
+     * and building up the required information.
+     *
+     * @return ReceiversTreeModel
+     */
+    public final synchronized ReceiversTreeModel refresh() {
+        RootNode.removeAllChildren();
 
-    if (receivers.size() == 0) {
-      getRootNode().add(NoReceiversNode);
-    } else {
-        for (Object receiver : receivers) {
-            final Receiver item = (Receiver) receiver;
-            final DefaultMutableTreeNode receiverNode = new DefaultMutableTreeNode(item);
+        LoggerRepository repo = LogManager.getLoggerRepository();
+        Collection receivers;
+        if (repo instanceof LoggerRepositoryEx) {
+            receivers = ((LoggerRepositoryEx) repo).getPluginRegistry().getPlugins(Receiver.class);
+        } else {
+            receivers = new Vector();
+        }
 
-            item.addPropertyChangeListener(creatPluginPropertyChangeListener(item, receiverNode));
-            if (item instanceof SocketReceiver) {
-                for (Object details : ((SocketReceiver) item).getConnectedSocketDetails()) {
-                    receiverNode.add(new DefaultMutableTreeNode(details));
+        updateRootDisplay();
+
+        if (receivers.size() == 0) {
+            getRootNode().add(NoReceiversNode);
+        } else {
+            for (Object receiver : receivers) {
+                final Receiver item = (Receiver) receiver;
+                final DefaultMutableTreeNode receiverNode = new DefaultMutableTreeNode(item);
+
+                item.addPropertyChangeListener(creatPluginPropertyChangeListener(item, receiverNode));
+                if (item instanceof SocketReceiver) {
+                    for (Object details : ((SocketReceiver) item).getConnectedSocketDetails()) {
+                        receiverNode.add(new DefaultMutableTreeNode(details));
+                    }
                 }
+
+                getRootNode().add(receiverNode);
+            }
+        }
+
+        reload();
+
+        return this;
+    }
+
+    private PropertyChangeListener creatPluginPropertyChangeListener(final Receiver item, final DefaultMutableTreeNode receiverNode) {
+        return evt -> {
+            logger.debug(evt.toString());
+            ReceiversTreeModel.this.fireTreeNodesChanged(item, receiverNode.getPath(), null, null);
+
+        };
+    }
+
+    /**
+     * Ensure the Root node of this tree is updated with the latest information
+     * and that listeners are notified.
+     */
+    void updateRootDisplay() {
+        getRootNode().setUserObject(ROOTNODE_LABEL);
+        nodeChanged(getRootNode());
+    }
+
+    DefaultMutableTreeNode getRootNode() {
+        return (DefaultMutableTreeNode) getRoot();
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.log4j.plugins.PluginListener#pluginStarted(org.apache.log4j.plugins.PluginEvent)
+     */
+    public void pluginStarted(PluginEvent e) {
+        if (e.getPlugin() instanceof Receiver) {
+            if (NoReceiversNode.getParent() == getRootNode()) {
+                int index = getRootNode().getIndex(NoReceiversNode);
+                getRootNode().remove(NoReceiversNode);
+                nodesWereRemoved(
+                    getRootNode(), new int[]{index}, new Object[]{NoReceiversNode});
             }
 
-            getRootNode().add(receiverNode);
+            Receiver receiver = (Receiver) e.getPlugin();
+            DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(receiver);
+            getRootNode().add(newNode);
+            receiver.addPropertyChangeListener(creatPluginPropertyChangeListener(receiver, newNode));
+            nodesWereInserted(
+                getRootNode(), new int[]{getRootNode().getIndex(newNode)});
         }
     }
 
-    reload();
-
-    return this;
-  }
-
-  private PropertyChangeListener creatPluginPropertyChangeListener(final Receiver item, final DefaultMutableTreeNode receiverNode)
-  {
-    return evt -> {
-      logger.debug(evt.toString());
-      ReceiversTreeModel.this.fireTreeNodesChanged(item, receiverNode.getPath(), null, null);
-
-    };
-  }
-
-  /**
-   * Ensure the Root node of this tree is updated with the latest information
-   * and that listeners are notified.
-   */
-  void updateRootDisplay() {
-    getRootNode().setUserObject(ROOTNODE_LABEL);
-    nodeChanged(getRootNode());
-  }
-
-  DefaultMutableTreeNode getRootNode() {
-    return (DefaultMutableTreeNode) getRoot();
-  }
-
-  /* (non-Javadoc)
-   * @see org.apache.log4j.plugins.PluginListener#pluginStarted(org.apache.log4j.plugins.PluginEvent)
-   */
-  public void pluginStarted(PluginEvent e) {
-    if (e.getPlugin() instanceof Receiver) {
-      if (NoReceiversNode.getParent() == getRootNode()) {
-        int index = getRootNode().getIndex(NoReceiversNode);
-        getRootNode().remove(NoReceiversNode);
-        nodesWereRemoved(
-          getRootNode(), new int[] { index }, new Object[] { NoReceiversNode });
-      }
-
-      Receiver receiver = (Receiver) e.getPlugin();
-      DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(receiver);
-      getRootNode().add(newNode);
-      receiver.addPropertyChangeListener(creatPluginPropertyChangeListener(receiver, newNode));
-      nodesWereInserted(
-        getRootNode(), new int[] { getRootNode().getIndex(newNode) });
-    }
-  }
-
-	TreeNode resolvePluginNode(Plugin p){
-		/**
-		 * Lets walk the tree, top-down until we find the node with the plugin
-		 * attached.
-		 * 
-		 * Since the tree hierachy is quite flat, this is should not 
-		 * be a performance issue at all, but if it is,
-		 * then "I have no recollection of that Senator".
-		 */
-		TreeNode treeNode = null;
-		Enumeration e = getRootNode().breadthFirstEnumeration();
-		while(e.hasMoreElements()){
-			DefaultMutableTreeNode node = (DefaultMutableTreeNode) e.nextElement();
-			if(node.getUserObject().equals(p)){
-				treeNode = node;
-				break;
-			}
-		}
-		return treeNode;
-	}
-	
-  /* (non-Javadoc)
-   * @see org.apache.log4j.plugins.PluginListener#pluginStopped(org.apache.log4j.plugins.PluginEvent)
-   */
-  public void pluginStopped(PluginEvent e) {
-    if (e.getPlugin() instanceof Receiver) {
-      Receiver receiver = (Receiver) e.getPlugin();
-      DefaultMutableTreeNode node =
-        (DefaultMutableTreeNode) resolvePluginNode(receiver);
-        if (node != null) {
-            int index = getRootNode().getIndex(node);
-            getRootNode().remove(node);
-            nodesWereRemoved(
-                getRootNode(), new int[] { index }, new Object[] { node });
+    TreeNode resolvePluginNode(Plugin p) {
+        /**
+         * Lets walk the tree, top-down until we find the node with the plugin
+         * attached.
+         *
+         * Since the tree hierachy is quite flat, this is should not
+         * be a performance issue at all, but if it is,
+         * then "I have no recollection of that Senator".
+         */
+        TreeNode treeNode = null;
+        Enumeration e = getRootNode().breadthFirstEnumeration();
+        while (e.hasMoreElements()) {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) e.nextElement();
+            if (node.getUserObject().equals(p)) {
+                treeNode = node;
+                break;
+            }
         }
-
-      if (getRootNode().getChildCount() == 0) {
-        getRootNode().add(NoReceiversNode);
-
-        int index = getRootNode().getIndex(NoReceiversNode);
-        nodesWereInserted(getRootNode(), new int[] { index });
-      }
+        return treeNode;
     }
-  }
+
+    /* (non-Javadoc)
+     * @see org.apache.log4j.plugins.PluginListener#pluginStopped(org.apache.log4j.plugins.PluginEvent)
+     */
+    public void pluginStopped(PluginEvent e) {
+        if (e.getPlugin() instanceof Receiver) {
+            Receiver receiver = (Receiver) e.getPlugin();
+            DefaultMutableTreeNode node =
+                (DefaultMutableTreeNode) resolvePluginNode(receiver);
+            if (node != null) {
+                int index = getRootNode().getIndex(node);
+                getRootNode().remove(node);
+                nodesWereRemoved(
+                    getRootNode(), new int[]{index}, new Object[]{node});
+            }
+
+            if (getRootNode().getChildCount() == 0) {
+                getRootNode().add(NoReceiversNode);
+
+                int index = getRootNode().getIndex(NoReceiversNode);
+                nodesWereInserted(getRootNode(), new int[]{index});
+            }
+        }
+    }
 }

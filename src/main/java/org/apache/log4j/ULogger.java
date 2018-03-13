@@ -20,183 +20,207 @@ package org.apache.log4j;
 
 /**
  * A proxy for org.slf4j.ULogger.  In slf4j implementing builds, this
- *     interface will extend org.slf4j.ULogger and add no additional methods.
+ * interface will extend org.slf4j.ULogger and add no additional methods.
  *
  * @author Ceki G&uuml;lc&uuml;
  * @author Curt Arnold
  */
- public interface ULogger {
+public interface ULogger {
 
 
-  /**
-   * Is the logger instance enabled for the DEBUG level?
-   * @return true if debug is enabled.
-   */
-  boolean isDebugEnabled();
+    /**
+     * Is the logger instance enabled for the DEBUG level?
+     *
+     * @return true if debug is enabled.
+     */
+    boolean isDebugEnabled();
 
-  /**
-   * Log a message object with the DEBUG level.
-   * @param msg - the message object to be logged
-   */
-  void debug(Object msg);
+    /**
+     * Log a message object with the DEBUG level.
+     *
+     * @param msg - the message object to be logged
+     */
+    void debug(Object msg);
 
 
-  /**
-   * Log a parameterized message object at the DEBUG level.
-   *
-   * <p>This form is useful in avoiding the superflous object creation
-   * problem when invoking this method while it is disabled.
-   * </p>
-   * @param parameterizedMsg - the parameterized message object
-   * @param param1 - the parameter
-   */
-  void debug(Object parameterizedMsg, Object param1);
+    /**
+     * Log a parameterized message object at the DEBUG level.
+     * <p>
+     * <p>This form is useful in avoiding the superflous object creation
+     * problem when invoking this method while it is disabled.
+     * </p>
+     *
+     * @param parameterizedMsg - the parameterized message object
+     * @param param1           - the parameter
+     */
+    void debug(Object parameterizedMsg, Object param1);
 
-  /**
-   * Log a parameterized message object at the DEBUG level.
-   *
-   * <p>This form is useful in avoiding the superflous object creation
-   * problem when invoking this method while it is disabled.
-   * </p>
-   * @param parameterizedMsg - the parameterized message object
-   * @param param1 - the first parameter
-   * @param param2 - the second parameter
-   */
-  void debug(String parameterizedMsg, Object param1, Object param2);
+    /**
+     * Log a parameterized message object at the DEBUG level.
+     * <p>
+     * <p>This form is useful in avoiding the superflous object creation
+     * problem when invoking this method while it is disabled.
+     * </p>
+     *
+     * @param parameterizedMsg - the parameterized message object
+     * @param param1           - the first parameter
+     * @param param2           - the second parameter
+     */
+    void debug(String parameterizedMsg, Object param1, Object param2);
+
     /**
      * Log a message object with the <code>DEBUG</code> level including the
      * stack trace of the {@link Throwable}<code>t</code> passed as parameter.
      *
-     *
      * @param msg the message object to log.
-     * @param t the exception to log, including its stack trace.
+     * @param t   the exception to log, including its stack trace.
      */
-  void debug(Object msg, Throwable t);
+    void debug(Object msg, Throwable t);
 
 
     /**
      * Is the logger instance enabled for the INFO level?
+     *
      * @return true if debug is enabled.
      */
-  boolean isInfoEnabled();
+    boolean isInfoEnabled();
+
     /**
      * Log a message object with the INFO level.
+     *
      * @param msg - the message object to be logged
      */
-  void info(Object msg);
+    void info(Object msg);
+
     /**
      * Log a parameterized message object at the INFO level.
-     *
+     * <p>
      * <p>This form is useful in avoiding the superflous object creation
      * problem when invoking this method while it is disabled.
      * </p>
+     *
      * @param parameterizedMsg - the parameterized message object
-     * @param param1 - the parameter
+     * @param param1           - the parameter
      */
-  void info(Object parameterizedMsg, Object param1);
+    void info(Object parameterizedMsg, Object param1);
+
     /**
      * Log a parameterized message object at the INFO level.
-     *
+     * <p>
      * <p>This form is useful in avoiding the superflous object creation
      * problem when invoking this method while it is disabled.
      * </p>
+     *
      * @param parameterizedMsg - the parameterized message object
-     * @param param1 - the first parameter
-     * @param param2 - the second parameter
+     * @param param1           - the first parameter
+     * @param param2           - the second parameter
      */
-  void info(String parameterizedMsg, Object param1, Object param2);
+    void info(String parameterizedMsg, Object param1, Object param2);
+
     /**
      * Log a message object with the <code>INFO</code> level including the
      * stack trace of the {@link Throwable}<code>t</code> passed as parameter.
      *
-     *
      * @param msg the message object to log.
-     * @param t the exception to log, including its stack trace.
+     * @param t   the exception to log, including its stack trace.
      */
-  void info(Object msg, Throwable t);
+    void info(Object msg, Throwable t);
 
 
     /**
      * Is the logger instance enabled for the WARN level?
+     *
      * @return true if debug is enabled.
      */
-  boolean isWarnEnabled();
+    boolean isWarnEnabled();
+
     /**
      * Log a message object with the WARN level.
+     *
      * @param msg - the message object to be logged
      */
-  void warn(Object msg);
+    void warn(Object msg);
+
     /**
      * Log a parameterized message object at the WARN level.
-     *
+     * <p>
      * <p>This form is useful in avoiding the superflous object creation
      * problem when invoking this method while it is disabled.
      * </p>
+     *
      * @param parameterizedMsg - the parameterized message object
-     * @param param1 - the parameter
+     * @param param1           - the parameter
      */
-  void warn(Object parameterizedMsg, Object param1);
+    void warn(Object parameterizedMsg, Object param1);
+
     /**
      * Log a parameterized message object at the WARN level.
-     *
+     * <p>
      * <p>This form is useful in avoiding the superflous object creation
      * problem when invoking this method while it is disabled.
      * </p>
+     *
      * @param parameterizedMsg - the parameterized message object
-     * @param param1 - the first parameter
-     * @param param2 - the second parameter
+     * @param param1           - the first parameter
+     * @param param2           - the second parameter
      */
-  void warn(String parameterizedMsg, Object param1, Object param2);
+    void warn(String parameterizedMsg, Object param1, Object param2);
+
     /**
      * Log a message object with the <code>WARN</code> level including the
      * stack trace of the {@link Throwable}<code>t</code> passed as parameter.
      *
-     *
      * @param msg the message object to log.
-     * @param t the exception to log, including its stack trace.
+     * @param t   the exception to log, including its stack trace.
      */
-  void warn(Object msg, Throwable t);
+    void warn(Object msg, Throwable t);
 
 
     /**
      * Is the logger instance enabled for the ERROR level?
+     *
      * @return true if debug is enabled.
      */
-  boolean isErrorEnabled();
+    boolean isErrorEnabled();
+
     /**
      * Log a message object with the ERROR level.
+     *
      * @param msg - the message object to be logged
      */
-  void error(Object msg);
+    void error(Object msg);
+
     /**
      * Log a parameterized message object at the ERROR level.
-     *
+     * <p>
      * <p>This form is useful in avoiding the superflous object creation
      * problem when invoking this method while it is disabled.
      * </p>
+     *
      * @param parameterizedMsg - the parameterized message object
-     * @param param1 - the parameter
+     * @param param1           - the parameter
      */
-  void error(Object parameterizedMsg, Object param1);
+    void error(Object parameterizedMsg, Object param1);
+
     /**
      * Log a parameterized message object at the ERROR level.
-     *
+     * <p>
      * <p>This form is useful in avoiding the superflous object creation
      * problem when invoking this method while it is disabled.
      * </p>
+     *
      * @param parameterizedMsg - the parameterized message object
-     * @param param1 - the first parameter
-     * @param param2 - the second parameter
+     * @param param1           - the first parameter
+     * @param param2           - the second parameter
      */
-  void error(String parameterizedMsg, Object param1, Object param2);
+    void error(String parameterizedMsg, Object param1, Object param2);
 
     /**
      * Log a message object with the <code>ERROR</code> level including the
      * stack trace of the {@link Throwable}<code>t</code> passed as parameter.
      *
-     *
      * @param msg the message object to log.
-     * @param t the exception to log, including its stack trace.
+     * @param t   the exception to log, including its stack trace.
      */
     void error(Object msg, Throwable t);
 

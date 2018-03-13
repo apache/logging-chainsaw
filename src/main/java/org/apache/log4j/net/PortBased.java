@@ -23,12 +23,12 @@ package org.apache.log4j.net;
  * interface so that they can be treated generically.
  *
  * @author Paul Smith (psmith@apache.org)
- *
  */
 public interface PortBased extends NetworkBased {
-  /**
-   * Returns the Port # that this net based thing is using.
-   * @return int port number
-   */
-  int getPort();
+    /**
+     * Returns the Port # that this net based thing is using.
+     *
+     * @return int port number
+     */
+    int getPort();
 }

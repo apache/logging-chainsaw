@@ -23,34 +23,33 @@ import java.beans.SimpleBeanInfo;
 
 /**
  * BeanInfo class for the meta-data of the VFSLogFilePatternReceiver.
- *
  */
 public class VFSLogFilePatternReceiverBeanInfo extends SimpleBeanInfo {
-  /* (non-Javadoc)
-   * @see java.beans.BeanInfo#getPropertyDescriptors()
-   */
-  public PropertyDescriptor[] getPropertyDescriptors() {
-    try {
-      return new PropertyDescriptor[] {
-        new PropertyDescriptor("fileURL", VFSLogFilePatternReceiver.class),
-        new PropertyDescriptor(
-          "timestampFormat", VFSLogFilePatternReceiver.class),
-        new PropertyDescriptor("logFormat", VFSLogFilePatternReceiver.class),
-        new PropertyDescriptor("name", VFSLogFilePatternReceiver.class),
-        new PropertyDescriptor("tailing", VFSLogFilePatternReceiver.class),
-        new PropertyDescriptor("autoReconnect", VFSLogFilePatternReceiver.class),
-        new PropertyDescriptor("waitMillis", VFSLogFilePatternReceiver.class),
-        new PropertyDescriptor("appendNonMatches", VFSLogFilePatternReceiver.class),
-        new PropertyDescriptor("customLevelDefinitions", VFSLogFilePatternReceiver.class),
-        new PropertyDescriptor(
-          "filterExpression", VFSLogFilePatternReceiver.class),
-          new PropertyDescriptor(
-                  "promptForUserInfo", VFSLogFilePatternReceiver.class),
-        new PropertyDescriptor("group", VFSLogFilePatternReceiver.class),
-      };
-    } catch (Exception e) {
-    }
+    /* (non-Javadoc)
+     * @see java.beans.BeanInfo#getPropertyDescriptors()
+     */
+    public PropertyDescriptor[] getPropertyDescriptors() {
+        try {
+            return new PropertyDescriptor[]{
+                new PropertyDescriptor("fileURL", VFSLogFilePatternReceiver.class),
+                new PropertyDescriptor(
+                    "timestampFormat", VFSLogFilePatternReceiver.class),
+                new PropertyDescriptor("logFormat", VFSLogFilePatternReceiver.class),
+                new PropertyDescriptor("name", VFSLogFilePatternReceiver.class),
+                new PropertyDescriptor("tailing", VFSLogFilePatternReceiver.class),
+                new PropertyDescriptor("autoReconnect", VFSLogFilePatternReceiver.class),
+                new PropertyDescriptor("waitMillis", VFSLogFilePatternReceiver.class),
+                new PropertyDescriptor("appendNonMatches", VFSLogFilePatternReceiver.class),
+                new PropertyDescriptor("customLevelDefinitions", VFSLogFilePatternReceiver.class),
+                new PropertyDescriptor(
+                    "filterExpression", VFSLogFilePatternReceiver.class),
+                new PropertyDescriptor(
+                    "promptForUserInfo", VFSLogFilePatternReceiver.class),
+                new PropertyDescriptor("group", VFSLogFilePatternReceiver.class),
+            };
+        } catch (Exception e) {
+        }
 
-    return null;
-  }
+        return null;
+    }
 }

@@ -16,15 +16,11 @@
  */
 package org.apache.log4j.plugins;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.log4j.spi.LoggerRepository;
-import org.apache.log4j.spi.LoggerRepositoryEx;
 import org.apache.log4j.spi.LoggerRepositoryEventListener;
+import org.apache.log4j.spi.LoggerRepositoryEx;
+
+import java.util.*;
 
 
 /**
@@ -54,10 +50,11 @@ public final class PluginRegistry {
      * List of listeners.
      */
     private final List listenerList =
-            Collections.synchronizedList(new ArrayList());
+        Collections.synchronizedList(new ArrayList());
 
     /**
      * Creates a new instance.
+     *
      * @param repository logger repository.
      */
     public PluginRegistry(final LoggerRepositoryEx repository) {
@@ -69,6 +66,7 @@ public final class PluginRegistry {
 
     /**
      * Get logger repository.
+     *
      * @return logger repository.
      */
     public LoggerRepositoryEx getLoggerRepository() {
@@ -197,7 +195,7 @@ public final class PluginRegistry {
      *
      * @param pluginName the name of the plugin to stop.
      * @return Plugin the plugin, if stopped, or null if the
-     *         the plugin was not found in the registry.
+     * the plugin was not found in the registry.
      */
     public Plugin stopPlugin(final String pluginName) {
         synchronized (pluginMap) {
@@ -277,7 +275,7 @@ public final class PluginRegistry {
          * @param repository the repository that was changed.
          */
         public void configurationChangedEvent(
-                final LoggerRepository repository) {
+            final LoggerRepository repository) {
             // do nothing with this event
         }
 

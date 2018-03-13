@@ -57,7 +57,7 @@ public abstract class PluginSkeleton extends ComponentBase implements Plugin {
      * support.
      */
     private PropertyChangeSupport propertySupport =
-            new PropertyChangeSupport(this);
+        new PropertyChangeSupport(this);
 
     /**
      * Construct new instance.
@@ -127,96 +127,104 @@ public abstract class PluginSkeleton extends ComponentBase implements Plugin {
      */
     public boolean isEquivalent(final Plugin testPlugin) {
         return (repository == testPlugin.getLoggerRepository())
-                && ((this.name == null && testPlugin.getName() == null)
-                || (this.name != null
-                           && name.equals(testPlugin.getName())))
-                && this.getClass().equals(testPlugin.getClass());
+            && ((this.name == null && testPlugin.getName() == null)
+            || (this.name != null
+            && name.equals(testPlugin.getName())))
+            && this.getClass().equals(testPlugin.getClass());
     }
 
     /**
      * Add property change listener.
+     *
      * @param listener listener.
      */
     public final void addPropertyChangeListener(
-            final PropertyChangeListener listener) {
+        final PropertyChangeListener listener) {
         propertySupport.addPropertyChangeListener(listener);
     }
 
     /**
      * Add property change listener for one property only.
+     *
      * @param propertyName property name.
-     * @param listener listener.
+     * @param listener     listener.
      */
     public final void addPropertyChangeListener(
-            final String propertyName,
-            final PropertyChangeListener listener) {
+        final String propertyName,
+        final PropertyChangeListener listener) {
         propertySupport.addPropertyChangeListener(propertyName, listener);
     }
 
     /**
      * Remove property change listener.
+     *
      * @param listener listener.
      */
     public final void removePropertyChangeListener(
-            final PropertyChangeListener listener) {
+        final PropertyChangeListener listener) {
         propertySupport.removePropertyChangeListener(listener);
     }
 
     /**
      * Remove property change listener on a specific property.
+     *
      * @param propertyName property name.
-     * @param listener listener.
+     * @param listener     listener.
      */
     public final void removePropertyChangeListener(
-            final String propertyName,
-            final PropertyChangeListener listener) {
+        final String propertyName,
+        final PropertyChangeListener listener) {
         propertySupport.removePropertyChangeListener(propertyName, listener);
     }
 
     /**
      * Fire a property change event to appropriate listeners.
+     *
      * @param evt change event.
      */
     protected final void firePropertyChange(
-            final PropertyChangeEvent evt) {
+        final PropertyChangeEvent evt) {
         propertySupport.firePropertyChange(evt);
     }
 
     /**
      * Fire property change event to appropriate listeners.
+     *
      * @param propertyName property name.
-     * @param oldValue old value.
-     * @param newValue new value.
+     * @param oldValue     old value.
+     * @param newValue     new value.
      */
     protected final void firePropertyChange(
-            final String propertyName,
-            final boolean oldValue,
-            final boolean newValue) {
+        final String propertyName,
+        final boolean oldValue,
+        final boolean newValue) {
         propertySupport.firePropertyChange(propertyName, oldValue, newValue);
     }
 
     /**
      * Fire property change event to appropriate listeners.
+     *
      * @param propertyName property name.
-     * @param oldValue old value.
-     * @param newValue new value.
+     * @param oldValue     old value.
+     * @param newValue     new value.
      */
     protected final void firePropertyChange(
-            final String propertyName,
-            final int oldValue, final int newValue) {
+        final String propertyName,
+        final int oldValue, final int newValue) {
         propertySupport.firePropertyChange(propertyName, oldValue, newValue);
     }
 
     /**
      * Fire property change event to appropriate listeners.
+     *
      * @param propertyName property name.
-     * @param oldValue old value.
-     * @param newValue new value.
+     * @param oldValue     old value.
+     * @param newValue     new value.
      */
     protected final void firePropertyChange(
-            final String propertyName,
-            final Object oldValue,
-            final Object newValue) {
+        final String propertyName,
+        final Object oldValue,
+        final Object newValue) {
         propertySupport.firePropertyChange(propertyName, oldValue, newValue);
     }
 }

@@ -24,13 +24,13 @@ package org.apache.log4j.net;
  * interface so that they can be treated generically.
  *
  * @author Paul Smith (psmith@apache.org)
- *
  */
 public interface AddressBased extends NetworkBased {
-  /**
-   * Returns a String representation of the Address this instance
-   * encompasses.
-   * @return String representation of the Address
-   */
-  String getAddress();
+    /**
+     * Returns a String representation of the Address this instance
+     * encompasses.
+     *
+     * @return String representation of the Address
+     */
+    String getAddress();
 }

@@ -25,14 +25,14 @@ public class ZeroConfPreferenceModel {
 
     private List<String> monitoredZones = new ArrayList<>();
     private Set<String> autoConnectDevices = new HashSet<>();
-    
+
 //   TODO expose addPropertyChangeListener
-    
+
     public void addAutoConnectDevice(String deviceName) {
 //        TODO  fire property changes
         autoConnectDevices.add(deviceName);
     }
-    
+
     public void addMonitoredZone(String zone) {
 //        TODO fire property change events
         monitoredZones.add(zone);
@@ -57,6 +57,6 @@ public class ZeroConfPreferenceModel {
     public void removeAutoConnectDevice(String device) {
         autoConnectDevices.remove(device);
     }
-    
-    
+
+
 }

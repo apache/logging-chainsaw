@@ -16,11 +16,11 @@
  */
 package org.apache.log4j.rewrite;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This policy rewrites events where the message of the
@@ -33,9 +33,9 @@ import org.apache.log4j.spi.LoggingEvent;
  * If both the original property set and the message map
  * contain the same entry, the value from the message map
  * will overwrite the original property set.
- *
+ * <p>
  * The combination of the RewriteAppender and this policy
- * performs the same actions as the MapFilter from log4j 1.3. 
+ * performs the same actions as the MapFilter from log4j 1.3.
  */
 public class MapRewritePolicy implements RewritePolicy {
     /**
@@ -64,16 +64,16 @@ public class MapRewritePolicy implements RewritePolicy {
             }
 
             return new LoggingEvent(
-                    source.getFQNOfLoggerClass(),
-                    source.getLogger() != null ? source.getLogger(): Logger.getLogger(source.getLoggerName()), 
-                    source.getTimeStamp(),
-                    source.getLevel(),
-                    newMsg,
-                    source.getThreadName(),
-                    source.getThrowableInformation(),
-                    source.getNDC(),
-                    source.getLocationInformation(),
-                    props);
+                source.getFQNOfLoggerClass(),
+                source.getLogger() != null ? source.getLogger() : Logger.getLogger(source.getLoggerName()),
+                source.getTimeStamp(),
+                source.getLevel(),
+                newMsg,
+                source.getThreadName(),
+                source.getThrowableInformation(),
+                source.getNDC(),
+                source.getLocationInformation(),
+                props);
         } else {
             return source;
         }

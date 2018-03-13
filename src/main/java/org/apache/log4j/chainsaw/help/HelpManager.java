@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,15 +17,15 @@
 
 package org.apache.log4j.chainsaw.help;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+import org.apache.log4j.chainsaw.ChainsawConstants;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.URL;
-
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.apache.log4j.chainsaw.ChainsawConstants;
 
 
 /**
@@ -36,7 +36,6 @@ import org.apache.log4j.chainsaw.ChainsawConstants;
  * from the help implementation (if any!)
  *
  * @author Paul Smith &lt;psmith@apache.org&gt;
- *
  */
 public final class HelpManager {
 
@@ -57,13 +56,13 @@ public final class HelpManager {
                 logger.info("Adding HelpLocator for localDocs property=" +
                     System.getProperty("log4j.chainsaw.localDocs"));
                 helpLocator.installLocator(new URL(
-                        System.getProperty("log4j.chainsaw.localDocs")));
-            }else if(new File("docs/api").exists()) {
-            	File dir = new File("docs/api");
-            	logger.info("Detected Local JavaDocs at " + dir.toString());
-            	helpLocator.installLocator(dir.toURI().toURL());
+                    System.getProperty("log4j.chainsaw.localDocs")));
+            } else if (new File("docs/api").exists()) {
+                File dir = new File("docs/api");
+                logger.info("Detected Local JavaDocs at " + dir.toString());
+                helpLocator.installLocator(dir.toURI().toURL());
             } else {
-            	logger.warn("Could not find any local JavaDocs, you might want to consider running 'ant javadoc'. The release version will be able to access Javadocs from the Apache website.");
+                logger.warn("Could not find any local JavaDocs, you might want to consider running 'ant javadoc'. The release version will be able to access Javadocs from the Apache website.");
             }
         } catch (Exception e) {
             // TODO: handle exception
@@ -76,10 +75,11 @@ public final class HelpManager {
     /**
      * The current Help URL that should be displayed, and is
      * a PropertyChangeListener supported property.
-     *
+     * <p>
      * This method ALWAYS fires property change events
      * even if the value is the same (the oldvalue
      * of the event will be null)
+     *
      * @param helpURL
      */
     public void setHelpURL(URL helpURL) {
@@ -99,7 +99,7 @@ public final class HelpManager {
      * @param listener
      */
     public synchronized void addPropertyChangeListener(String propertyName,
-        PropertyChangeListener listener) {
+                                                       PropertyChangeListener listener) {
         propertySupport.addPropertyChangeListener(propertyName, listener);
     }
 
@@ -116,7 +116,7 @@ public final class HelpManager {
      * @param newValue
      */
     public void firePropertyChange(String propertyName, boolean oldValue,
-        boolean newValue) {
+                                   boolean newValue) {
         propertySupport.firePropertyChange(propertyName, oldValue, newValue);
     }
 
@@ -126,7 +126,7 @@ public final class HelpManager {
      * @param newValue
      */
     public void firePropertyChange(String propertyName, int oldValue,
-        int newValue) {
+                                   int newValue) {
         propertySupport.firePropertyChange(propertyName, oldValue, newValue);
     }
 
@@ -136,7 +136,7 @@ public final class HelpManager {
      * @param newValue
      */
     public void firePropertyChange(String propertyName, Object oldValue,
-        Object newValue) {
+                                   Object newValue) {
         propertySupport.firePropertyChange(propertyName, oldValue, newValue);
     }
 
@@ -153,7 +153,7 @@ public final class HelpManager {
      * @param listener
      */
     public synchronized void removePropertyChangeListener(String propertyName,
-        PropertyChangeListener listener) {
+                                                          PropertyChangeListener listener) {
         propertySupport.removePropertyChangeListener(propertyName, listener);
     }
 

@@ -41,6 +41,7 @@ public final class NOPULogger implements ULogger {
 
     /**
      * Get instance.
+     *
      * @param name logger name.
      * @return logger.
      */
