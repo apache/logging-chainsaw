@@ -146,7 +146,7 @@ public class DBAppender extends AppenderSkeleton implements UnrecognizedElementH
     //
     Method getGeneratedKeysMethod;
     try {
-        getGeneratedKeysMethod = PreparedStatement.class.getMethod("getGeneratedKeys", null);
+        getGeneratedKeysMethod = PreparedStatement.class.getMethod("getGeneratedKeys");
     } catch(Exception ex) {
         getGeneratedKeysMethod = null;
     }
@@ -247,7 +247,7 @@ public class DBAppender extends AppenderSkeleton implements UnrecognizedElementH
           boolean gotGeneratedKeys = false;
           if (cnxSupportsGetGeneratedKeys) {
               try {
-                  rs = (ResultSet) GET_GENERATED_KEYS_METHOD.invoke(insertStatement, null);
+                  rs = (ResultSet) GET_GENERATED_KEYS_METHOD.invoke(insertStatement);
                   gotGeneratedKeys = true;
               } catch(InvocationTargetException ex) {
                   Throwable target = ex.getTargetException();
