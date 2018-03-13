@@ -1864,17 +1864,17 @@ detailPaneUpdater.setAndUpdateSelectedRow(table.getSelectedRow());
          }
 
          if (o instanceof String[]) {
-           String value = "";
+           StringBuilder value = new StringBuilder();
           //exception - build message + throwable
           String[] ti = (String[])o;
             if (ti.length > 0 && (!(ti.length == 1 && ti[0].equals("")))) {
               LoggingEventWrapper loggingEventWrapper = ((ChainsawCyclicBufferTableModel)(currentTable.getModel())).getRow(row);
-              value = loggingEventWrapper.getLoggingEvent().getMessage().toString();
+              value = new StringBuilder(loggingEventWrapper.getLoggingEvent().getMessage().toString());
               for (int i=0;i<((String[])o).length;i++) {
-                  value = value + "\n" + ((String[]) o)[i];
+                  value.append('\n').append(((String[]) o)[i]);
               }
             }
-           return value;
+           return value.toString();
          }
          return "";
       }

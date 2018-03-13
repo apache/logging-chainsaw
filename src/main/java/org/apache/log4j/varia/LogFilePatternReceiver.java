@@ -512,22 +512,24 @@ public class LogFilePatternReceiver extends Receiver {
   protected void process(BufferedReader bufferedReader) throws IOException {
         Matcher eventMatcher;
         Matcher exceptionMatcher;
-        String line;
+        String readLine;
         //if newlines are provided in the logFormat - (NL) - combine the lines prior to matching
-        while ((line = bufferedReader.readLine()) != null) {
+        while ((readLine = bufferedReader.readLine()) != null) {
+            StringBuilder line = new StringBuilder(readLine);
             //there is already one line (read above, start i at 1
             for (int i=1;i<lineCount;i++)
             {
                 String thisLine = bufferedReader.readLine();
                 if (thisLine != null)
                 {
-                  line = line + newLine + thisLine;
+                  line.append(newLine).append(thisLine);
                 }
             }
-            eventMatcher = regexpPattern.matcher(line);
+            String input = line.toString();
+            eventMatcher = regexpPattern.matcher(input);
             //skip empty line entries
-            if (line.trim().equals("")) {continue;}
-            exceptionMatcher = exceptionPattern.matcher(line);
+            if (input.trim().equals("")) {continue;}
+            exceptionMatcher = exceptionPattern.matcher(input);
             if (eventMatcher.matches()) {
                 //build an event from the previous match (held in current map)
                 LoggingEvent event = buildEvent();
@@ -539,7 +541,7 @@ public class LogFilePatternReceiver extends Receiver {
                 currentMap.putAll(processEvent(eventMatcher.toMatchResult()));
             } else if (exceptionMatcher.matches()) {
                 //an exception line
-                additionalLines.add(line);
+                additionalLines.add(input);
             } else {
                 //neither...either post an event with the line or append as additional lines
                 //if this was a logging event with multiple lines, each line will show up as its own event instead of being
@@ -560,9 +562,9 @@ public class LogFilePatternReceiver extends Receiver {
                     if (lastTime != null) {
                         currentMap.put(TIMESTAMP, lastTime);
                     }
-                    currentMap.put(MESSAGE, line);
+                    currentMap.put(MESSAGE, input);
                 } else {
-                    additionalLines.add(line);
+                    additionalLines.add(input);
                 }
             }
         }
@@ -739,24 +741,26 @@ public class LogFilePatternReceiver extends Receiver {
           }
       }
 
-    String buildingInt = "";
+    StringBuilder buildingInt = new StringBuilder();
 
     for (int i=0;i<newPattern.length();i++) {
         String thisValue = String.valueOf(newPattern.substring(i, i+1));
         if (isInteger(thisValue)) {
-            buildingInt = buildingInt + thisValue;
+            buildingInt.append(thisValue);
         } else {
-            if (isInteger(buildingInt)) {
-                matchingKeywords.add(buildingKeywords.get(Integer.parseInt(buildingInt)));
+            String stringInt = buildingInt.toString();
+            if (isInteger(stringInt)) {
+                matchingKeywords.add(buildingKeywords.get(Integer.parseInt(stringInt)));
             }
             //reset
-            buildingInt = "";
+            buildingInt.setLength(0);
         }
     }
 
     //if the very last value is an int, make sure to add it
-    if (isInteger(buildingInt)) {
-        matchingKeywords.add(buildingKeywords.get(Integer.parseInt(buildingInt)));
+      String stringInt = buildingInt.toString();
+      if (isInteger(stringInt)) {
+        matchingKeywords.add(buildingKeywords.get(Integer.parseInt(stringInt)));
     }
 
     newPattern = replaceMetaChars(newPattern);

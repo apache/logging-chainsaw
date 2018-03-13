@@ -1094,7 +1094,7 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
             //add all top level loggers as hidden loggers
               TreePath[] paths = logTree.getSelectionPaths();
 
-              String parentPathString = "";
+              StringBuilder parentPathString = new StringBuilder();
               DefaultMutableTreeNode root;
               if ((paths == null) || (paths.length == 0))
               {
@@ -1105,12 +1105,12 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
                   //don't add 'root logger' to path string
                   for (int i=1;i<path.length;i++) {
                       if (i > 1) {
-                          parentPathString = parentPathString + ".";
+                          parentPathString.append(".");
                       }
-                      parentPathString = parentPathString + path[i].toString();
+                      parentPathString.append(path[i].toString());
                   }
-                  if (!(parentPathString.equals(""))) {
-                      parentPathString = parentPathString + ".";
+                  if (!(parentPathString.toString().equals(""))) {
+                      parentPathString.append(".");
                   }
               }
               Enumeration topLevelLoggersEnumeration = root.children();
