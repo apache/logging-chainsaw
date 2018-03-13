@@ -122,7 +122,6 @@ public class DBAppender extends AppenderSkeleton implements UnrecognizedElementH
   static final String insertExceptionSQL =
     "INSERT INTO  logging_event_exception (event_id, i, trace_line) VALUES (?, ?, ?)";
   static final String insertSQL;
-  private static final Method GET_GENERATED_KEYS_METHOD;
 
 
   static {
@@ -141,16 +140,6 @@ public class DBAppender extends AppenderSkeleton implements UnrecognizedElementH
               "caller_line) " +
               " VALUES (?, ?, ? ,?, ?, ?, ?, ?, ?, ?, ?, ?)";
       insertSQL = sql;
-    //
-    //   PreparedStatement.getGeneratedKeys added in JDK 1.4
-    //
-    Method getGeneratedKeysMethod;
-    try {
-        getGeneratedKeysMethod = PreparedStatement.class.getMethod("getGeneratedKeys");
-    } catch(Exception ex) {
-        getGeneratedKeysMethod = null;
-    }
-    GET_GENERATED_KEYS_METHOD = getGeneratedKeysMethod;
   }
 
   ConnectionSource connectionSource;
@@ -173,7 +162,7 @@ public class DBAppender extends AppenderSkeleton implements UnrecognizedElementH
       }
 
       sqlDialect = Util.getDialectFromCode(connectionSource.getSQLDialectCode());
-      cnxSupportsGetGeneratedKeys = GET_GENERATED_KEYS_METHOD != null && connectionSource.supportsGetGeneratedKeys();
+      cnxSupportsGetGeneratedKeys = connectionSource.supportsGetGeneratedKeys();
       cnxSupportsBatchUpdates = connectionSource.supportsBatchUpdates();
       if (!cnxSupportsGetGeneratedKeys && (sqlDialect == null)) {
           throw new IllegalStateException(
@@ -246,18 +235,8 @@ public class DBAppender extends AppenderSkeleton implements UnrecognizedElementH
           Statement idStatement = null;
           boolean gotGeneratedKeys = false;
           if (cnxSupportsGetGeneratedKeys) {
-              try {
-                  rs = (ResultSet) GET_GENERATED_KEYS_METHOD.invoke(insertStatement);
-                  gotGeneratedKeys = true;
-              } catch(InvocationTargetException ex) {
-                  Throwable target = ex.getTargetException();
-                  if (target instanceof SQLException) {
-                      throw (SQLException) target;
-                  }
-                  throw ex; 
-              } catch(IllegalAccessException ex) {
-                  LogLog.warn("IllegalAccessException invoking PreparedStatement.getGeneratedKeys", ex);
-              }
+              rs = insertStatement.getGeneratedKeys();
+              gotGeneratedKeys = true;
           }
           
           if (!gotGeneratedKeys) {

@@ -99,10 +99,7 @@ public class Util extends ComponentBase {
    */
   public boolean supportsGetGeneratedKeys(DatabaseMetaData meta) {
     try {
-      //
-      //   invoking JDK 1.4 method by reflection
-      //
-      return (Boolean) DatabaseMetaData.class.getMethod("supportsGetGeneratedKeys").invoke(meta);
+      return meta.supportsGetGeneratedKeys();
     } catch(Throwable e) {
       getLogger().info("Could not call supportsGetGeneratedKeys method. This may be recoverable");
       return false;
