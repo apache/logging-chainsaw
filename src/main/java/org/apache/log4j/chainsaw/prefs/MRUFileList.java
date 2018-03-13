@@ -35,7 +35,7 @@ public class MRUFileList{
     private static MRUFileList log4jList = new MRUFileList();
     private static final int DEFAULT_MRU_SIZE = 5;
     
-    private List fileList = new ArrayList();
+    private List<URL> fileList = new ArrayList<>();
     private int size = DEFAULT_MRU_SIZE;
     
     private static transient EventListenerList listeners = new EventListenerList();

@@ -166,7 +166,7 @@ public final class LayoutEditorPane extends JPanel {
       *
       */
   private void createEvent() {
-    Hashtable hashTable = new Hashtable();
+    Hashtable<String, String> hashTable = new Hashtable<>();
     hashTable.put("key1", "val1");
     hashTable.put("key2", "val2");
     hashTable.put("key3", "val3");

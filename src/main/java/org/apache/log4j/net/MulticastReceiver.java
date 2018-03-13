@@ -174,7 +174,7 @@ public class MulticastReceiver extends Receiver implements PortBased,
     }
 
     class MulticastHandlerThread extends Thread {
-    private final List list = new ArrayList();
+    private final List<String> list = new ArrayList<>();
 
     public MulticastHandlerThread() {
       setDaemon(true);
@@ -188,7 +188,7 @@ public class MulticastReceiver extends Receiver implements PortBased,
     }
 
     public void run() {
-      ArrayList list2 = new ArrayList();
+      ArrayList<String> list2 = new ArrayList<>();
 
       while (isAlive()) {
         synchronized (list) {
@@ -209,7 +209,7 @@ public class MulticastReceiver extends Receiver implements PortBased,
 
             for (Object aList2 : list2) {
                 String data = (String) aList2;
-                List v = decoderImpl.decodeEvents(data.trim());
+                List<LoggingEvent> v = decoderImpl.decodeEvents(data.trim());
 
                 if (v != null) {
 

@@ -69,7 +69,7 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
   private JTextField identifierExpression;
   private JTextField toolTipDisplayMillis;
   private JTextField cyclicBufferSize;    
-  private JComboBox configurationURL;
+  private JComboBox<String> configurationURL;
   private final Logger logger;
   private GeneralAllPrefPanel generalAllPrefPanel;
 
@@ -355,7 +355,7 @@ public static void main(String[] args) {
     private final JSlider responsiveSlider =
       new JSlider(SwingConstants.HORIZONTAL, 1, 4, 2);
     private final JCheckBox confirmExit = new JCheckBox(" Confirm Exit ");
-    Dictionary sliderLabelMap = new Hashtable();
+    Dictionary<Integer, JLabel> sliderLabelMap = new Hashtable<>();
     
     private final JCheckBox okToRemoveSecurityManager = new JCheckBox(" Ok to remove SecurityManager ");
 
@@ -368,7 +368,7 @@ public static void main(String[] args) {
     private void initComponents() {
       setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-      configurationURL = new JComboBox(new DefaultComboBoxModel(committedPreferenceModel.getConfigurationURLs()));
+      configurationURL = new JComboBox<>(new DefaultComboBoxModel<>(committedPreferenceModel.getConfigurationURLs()));
       configurationURL.setEditable(true);
       configurationURL.setPrototypeDisplayValue("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
       configurationURL.setPreferredSize(new Dimension(375, 13));

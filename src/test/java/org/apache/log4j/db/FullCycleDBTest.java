@@ -58,7 +58,7 @@ import java.io.IOException;
 public class FullCycleDBTest
        extends TestCase {
   
-  Vector witnessEvents;
+  Vector<LoggingEvent> witnessEvents;
   Hierarchy lrWrite;
   LoggerRepository lrRead;
   String appendConfigFile = null;
@@ -74,7 +74,7 @@ public class FullCycleDBTest
     appendConfigFile = "append-with-drivermanager1.xml";
     readConfigFile = "read-with-drivermanager1.xml";
 
-    witnessEvents = new Vector();
+    witnessEvents = new Vector<LoggingEvent>();
     lrWrite = new Hierarchy(new RootLogger(Level.DEBUG));
     lrRead = new LoggerRepositoryExImpl(new Hierarchy(new RootLogger(Level.DEBUG)));
 
@@ -224,19 +224,19 @@ public class FullCycleDBTest
     // wait a little to allow events to be read
     try { Thread.sleep(3100); } catch(Exception e) {}
     VectorAppender va = (VectorAppender) lrRead.getRootLogger().getAppender("VECTOR");
-    Vector returnedEvents = getRelevantEventsFromVA(va, startTime);
+    Vector<LoggingEvent> returnedEvents = getRelevantEventsFromVA(va, startTime);
     
     compareEvents(witnessEvents, returnedEvents);
     
   }
   
-  void compareEvents(Vector l, Vector r) {
+  void compareEvents(Vector<LoggingEvent> l, Vector<LoggingEvent> r) {
     assertNotNull("left vector of events should not be null");
     assertEquals(l.size(), r.size());
     
     for(int i = 0; i < r.size(); i++) {
-      LoggingEvent le = (LoggingEvent) l.get(i);
-      LoggingEvent re = (LoggingEvent) r.get(i);
+      LoggingEvent le = l.get(i);
+      LoggingEvent re = r.get(i);
       assertEquals(le.getMessage(),        re.getMessage());
       assertEquals(le.getLoggerName(),     re.getLoggerName());
       assertEquals(le.getLevel(),          re.getLevel());
@@ -286,10 +286,10 @@ public class FullCycleDBTest
     }
   }
   
-  Vector getRelevantEventsFromVA(VectorAppender va, long startTime) {
+  Vector<LoggingEvent> getRelevantEventsFromVA(VectorAppender va, long startTime) {
     assertNotNull(va);
-    Vector v = va.getVector();
-    Vector r = new Vector();
+    Vector<LoggingEvent> v = va.getVector();
+    Vector<LoggingEvent> r = new Vector<LoggingEvent>();
     // remove all elements older than startTime
       for (Object aV : v) {
           LoggingEvent event = (LoggingEvent) aV;

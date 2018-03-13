@@ -801,11 +801,11 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
 
     private JRadioButtonMenuItem createLevelRadioButton(
       final Receiver r, final Level l) {
-      Map levelIconMap = LevelIconFactory.getInstance().getLevelToIconMap();
+      Map<String, Icon> levelIconMap = LevelIconFactory.getInstance().getLevelToIconMap();
 
       Action action =
         new AbstractAction(
-          l.toString(), (Icon) levelIconMap.get(l.toString())) {
+          l.toString(), levelIconMap.get(l.toString())) {
           public void actionPerformed(ActionEvent e) {
             if (r != null) {
               r.setThreshold(l);

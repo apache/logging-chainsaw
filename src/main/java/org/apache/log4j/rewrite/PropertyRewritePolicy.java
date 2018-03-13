@@ -46,7 +46,7 @@ public class PropertyRewritePolicy implements RewritePolicy {
      * @param props
      */
     public void setProperties(String props) {
-        Map hashTable = new HashMap();
+        Map<String, String> hashTable = new HashMap<>();
         StringTokenizer pairs = new StringTokenizer(props, ",");
         while (pairs.hasMoreTokens()) {
             StringTokenizer entry = new StringTokenizer(pairs.nextToken(), "=");

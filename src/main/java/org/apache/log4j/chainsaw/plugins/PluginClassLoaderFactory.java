@@ -72,7 +72,7 @@ public class PluginClassLoaderFactory {
         String[] strings = pluginDirectory.list((dir, name) -> name.toUpperCase().endsWith(".JAR"));
         
       
-        List list = new ArrayList();
+        List<URL> list = new ArrayList<>();
         // add the plugin directory as a resource loading path
         try {
 			list.add(pluginDirectory.toURI().toURL());

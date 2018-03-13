@@ -95,8 +95,8 @@ public class ReceiverTreeCellRenderer extends DefaultTreeCellRenderer {
 
       if (t.getThreshold() != null) {
         levelLabel.setIcon(
-          (Icon) LevelIconFactory.getInstance().getLevelToIconMap().get(
-            t.getThreshold().toString()));
+                LevelIconFactory.getInstance().getLevelToIconMap().get(
+                  t.getThreshold().toString()));
 
         if (levelLabel.getIcon() == null) {
           levelLabel.setText(t.getThreshold().toString());

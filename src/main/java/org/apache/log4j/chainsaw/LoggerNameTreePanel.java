@@ -1245,7 +1245,7 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
         break;
       }
 
-      List depths = new ArrayList();
+      List<Integer> depths = new ArrayList<>();
 
       while (depthEnum.hasMoreElements()) {
         depths.add(
@@ -1255,7 +1255,7 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener
       Collections.sort(depths);
       Collections.reverse(depths);
 
-      int maxDepth = (Integer) depths.get(0);
+      int maxDepth = depths.get(0);
 
       if (maxDepth > WARN_DEPTH) {
         logger.warn("Should warn user, depth=" + maxDepth);

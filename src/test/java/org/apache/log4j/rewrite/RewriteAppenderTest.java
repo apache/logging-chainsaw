@@ -61,7 +61,7 @@ public class RewriteAppenderTest extends TestCase {
         logger.info("Message 0");
         MDC.put("p1", "Hola");
 
-        Map msg = new TreeMap();
+        Map<String, String> msg = new TreeMap<>();
         msg.put("p1", "Hello");
         msg.put("p2", "World");
         msg.put("x1", "Mundo");

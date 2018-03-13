@@ -177,7 +177,7 @@ public class XMLDecoder implements Decoder {
    * @return Vector of LoggingEvents
    * @throws IOException if IO error during processing.
    */
-  public Vector decode(final URL url) throws IOException {
+  public Vector<LoggingEvent> decode(final URL url) throws IOException {
     LineNumberReader reader;
     boolean isZipFile = url.getPath().toLowerCase().endsWith(".zip");
     InputStream inputStream;
@@ -197,10 +197,10 @@ public class XMLDecoder implements Decoder {
         reader = new LineNumberReader(new InputStreamReader(inputStream, ENCODING));
     }
 
-    Vector v = new Vector();
+    Vector<LoggingEvent> v = new Vector<>();
 
     String line;
-    Vector events;
+    Vector<LoggingEvent> events;
     try {
         while ((line = reader.readLine()) != null) {
             StringBuilder buffer = new StringBuilder(line);
@@ -231,7 +231,7 @@ public class XMLDecoder implements Decoder {
      * @param document to decode events from
      * @return Vector of LoggingEvents
      */
-  public Vector decodeEvents(final String document) {
+  public Vector<LoggingEvent> decodeEvents(final String document) {
     if (document != null) {
       if (document.trim().equals("")) {
         return null;
@@ -286,10 +286,10 @@ public class XMLDecoder implements Decoder {
       return null;
     }
 
-    Vector events = decodeEvents(document);
+    Vector<LoggingEvent> events = decodeEvents(document);
 
     if (events.size() > 0) {
-      return (LoggingEvent) events.firstElement();
+      return events.firstElement();
     }
 
     return null;
@@ -300,8 +300,8 @@ public class XMLDecoder implements Decoder {
    * @param document XML document
    * @return Vector of LoggingEvents
    */
-  private Vector decodeEvents(final Document document) {
-    Vector events = new Vector();
+  private Vector<LoggingEvent> decodeEvents(final Document document) {
+    Vector<LoggingEvent> events = new Vector<>();
 
     Logger logger;
     long timeStamp;

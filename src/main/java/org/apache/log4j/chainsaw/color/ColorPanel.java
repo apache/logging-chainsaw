@@ -92,27 +92,27 @@ public class ColorPanel extends JPanel
   private JTable table;
   private ActionListener closeListener;
   private JLabel statusBar;
-  private Vector columns;
+  private Vector<String> columns;
   private final String noTab = "None";
   private DefaultComboBoxModel logPanelColorizersModel;
-  private Map allLogPanelColorizers;
+  private Map<String, RuleColorizer> allLogPanelColorizers;
   private RuleColorizer currentLogPanelColorizer;
   private JTable searchTable;
   private DefaultTableModel searchTableModel;
-  private Vector searchColumns;
-  private Vector searchDataVector;
-  private Vector searchDataVectorEntry;
+  private Vector<String> searchColumns;
+  private Vector<Vector<Color>> searchDataVector;
+  private Vector<Color> searchDataVectorEntry;
 
   private JTable alternatingColorTable;
   private DefaultTableModel alternatingColorTableModel;
-  private Vector alternatingColorColumns;
-  private Vector alternatingColorDataVector;
-  private Vector alternatingColorDataVectorEntry;
+  private Vector<String> alternatingColorColumns;
+  private Vector<Vector<Color>> alternatingColorDataVector;
+  private Vector<Color> alternatingColorDataVectorEntry;
   private ApplicationPreferenceModel applicationPreferenceModel;
   private JCheckBox bypassSearchColorsCheckBox;
 
   public ColorPanel(final RuleColorizer currentLogPanelColorizer, final FilterModel filterModel,
-                      final Map allLogPanelColorizers, final ApplicationPreferenceModel applicationPreferenceModel) {
+                    final Map<String, RuleColorizer> allLogPanelColorizers, final ApplicationPreferenceModel applicationPreferenceModel) {
     super(new BorderLayout());
 
     this.currentLogPanelColorizer = currentLogPanelColorizer;
@@ -139,29 +139,29 @@ public class ColorPanel extends JPanel
     alternatingColorTable.setRowHeight(ChainsawConstants.DEFAULT_ROW_HEIGHT);
     alternatingColorTable.setPreferredScrollableViewportSize(new Dimension(30, 30));
 
-    columns = new Vector();
+    columns = new Vector<>();
     columns.add("Expression");
     columns.add("Background");
     columns.add("Foreground");
 
-    searchColumns = new Vector();
+    searchColumns = new Vector<>();
     searchColumns.add("Background");
     searchColumns.add("Foreground");
 
-    alternatingColorColumns = new Vector();
+    alternatingColorColumns = new Vector<>();
     alternatingColorColumns.add("Background");
     alternatingColorColumns.add("Foreground");
 
     //searchtable contains only a single-entry vector containing a two-item vector (foreground, background)
-    searchDataVector = new Vector();
-    searchDataVectorEntry = new Vector();
+    searchDataVector = new Vector<>();
+    searchDataVectorEntry = new Vector<>();
     searchDataVectorEntry.add(applicationPreferenceModel.getSearchBackgroundColor());
     searchDataVectorEntry.add(applicationPreferenceModel.getSearchForegroundColor());
     searchDataVector.add(searchDataVectorEntry);
     searchTableModel.setDataVector(searchDataVector, searchColumns);
 
-    alternatingColorDataVector = new Vector();
-    alternatingColorDataVectorEntry = new Vector();
+    alternatingColorDataVector = new Vector<>();
+    alternatingColorDataVectorEntry = new Vector<>();
     alternatingColorDataVectorEntry.add(applicationPreferenceModel.getAlternatingColorBackgroundColor());
     alternatingColorDataVectorEntry.add(applicationPreferenceModel.getAlternatingColorForegroundColor());
     alternatingColorDataVector.add(alternatingColorDataVectorEntry);
@@ -170,7 +170,7 @@ public class ColorPanel extends JPanel
     table.setPreferredScrollableViewportSize(new Dimension(525, 200));
     tableScrollPane = new JScrollPane(table);
 
-    Vector data = getColorizerVector();
+    Vector<Vector<java.io.Serializable>> data = getColorizerVector();
     tableModel.setDataVector(data, columns);
 
     table.sizeColumnsToFit(0);
@@ -256,7 +256,7 @@ public class ColorPanel extends JPanel
               tableModel.getDataVector().clear();
               Object selectedItem = loadPanelColorizersComboBox.getSelectedItem();
               if (selectedItem != null) {
-                RuleColorizer sourceColorizer = (RuleColorizer) allLogPanelColorizers.get(selectedItem.toString());
+                RuleColorizer sourceColorizer = allLogPanelColorizers.get(selectedItem.toString());
                 colorizer.setRules(sourceColorizer.getRules());
                 updateColors();
               }
@@ -344,8 +344,8 @@ public class ColorPanel extends JPanel
     tableModel.fireTableDataChanged();
   }
   
-  private Vector getColorizerVector() {
-      Vector data = new Vector();
+  private Vector<Vector<java.io.Serializable>> getColorizerVector() {
+      Vector<Vector<java.io.Serializable>> data = new Vector<>();
       Map map = colorizer.getRules();
       for (Object o1 : map.entrySet()) {
           Map.Entry entry = (Map.Entry) o1;
@@ -354,7 +354,7 @@ public class ColorPanel extends JPanel
 
               for (Object o : ((List) entry.getValue())) {
                   ColorRule rule = (ColorRule) o;
-                  Vector v = new Vector();
+                  Vector<java.io.Serializable> v = new Vector<>();
                   v.add(rule.getExpression());
                   v.add(rule.getBackgroundColor());
                   v.add(rule.getForegroundColor());
@@ -510,7 +510,7 @@ public class ColorPanel extends JPanel
     saveAsDefaultButton.addActionListener(
       new AbstractAction() {
         public void actionPerformed(ActionEvent evt) {
-          RuleColorizer defaultColorizer = (RuleColorizer) allLogPanelColorizers.get(ChainsawConstants.DEFAULT_COLOR_RULE_NAME);
+          RuleColorizer defaultColorizer = allLogPanelColorizers.get(ChainsawConstants.DEFAULT_COLOR_RULE_NAME);
           applyRules(currentRuleSet, defaultColorizer);
         }
     });
@@ -669,7 +669,7 @@ public class ColorPanel extends JPanel
       new AbstractAction() {
         public void actionPerformed(ActionEvent evt) {
           int currentRow = table.getSelectedRow();
-          Vector v = new Vector();
+          Vector<java.io.Serializable> v = new Vector<>();
           v.add("");
           v.add(Color.white);
           v.add(Color.black);

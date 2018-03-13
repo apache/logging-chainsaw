@@ -121,7 +121,7 @@ public class MulticastAppender extends AppenderSkeleton implements PortBased {
     }
       
     if (advertiseViaMulticastDNS) {
-        Map properties = new HashMap();
+        Map<String, String> properties = new HashMap<>();
         properties.put("multicastAddress", remoteHost);
         zeroConf = new ZeroConfSupport(ZONE, port, getName(), properties);
         zeroConf.advertise();

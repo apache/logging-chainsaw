@@ -34,7 +34,7 @@ import org.apache.log4j.spi.LoggingEvent;
  *
  */
 class ChainsawEventBatch {
-  private Map identEventMap = new HashMap();
+  private Map<String, List<LoggingEvent>> identEventMap = new HashMap<>();
 
   ChainsawEventBatch() {
   }
@@ -44,10 +44,10 @@ class ChainsawEventBatch {
    * @param e
    */
   void addEvent(String ident, LoggingEvent e) {
-    List events = (List)identEventMap.get(ident);
+    List<LoggingEvent> events = identEventMap.get(ident);
 
     if (events == null) {
-      events = new ArrayList();
+      events = new ArrayList<>();
       identEventMap.put(ident, events);
     }
 
@@ -61,7 +61,7 @@ class ChainsawEventBatch {
    *
    * @return Iterator
    */
-  Iterator identifierIterator() {
+  Iterator<String> identifierIterator() {
     return identEventMap.keySet().iterator();
   }
 
@@ -71,7 +71,7 @@ class ChainsawEventBatch {
    * @param identifier
    * @return Collection of LoggingEvent instances
    */
-  List entrySet(String identifier) {
-    return (List) identEventMap.get(identifier);
+  List<LoggingEvent> entrySet(String identifier) {
+    return identEventMap.get(identifier);
   }
 }

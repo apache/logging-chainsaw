@@ -34,7 +34,7 @@ import javax.swing.event.EventListenerList;
  */
 public class LoggerNameModelSupport implements LoggerNameModel {
   
-  private Set loggerNameSet = new HashSet();
+  private Set<String> loggerNameSet = new HashSet<>();
   private EventListenerList listenerList = new EventListenerList();
   
 

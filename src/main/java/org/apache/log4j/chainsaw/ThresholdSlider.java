@@ -65,7 +65,7 @@ final class ThresholdSlider extends JSlider {
       new DefaultBoundedRangeModel(
         priorityList.indexOf(Level.TRACE), 0, 0, priorityList.size() - 1));
 
-    Hashtable labelMap = new Hashtable();
+    Hashtable<Integer, JLabel> labelMap = new Hashtable<>();
 
       for (Object aPriorityList : priorityList) {
           Level item = (Level) aPriorityList;

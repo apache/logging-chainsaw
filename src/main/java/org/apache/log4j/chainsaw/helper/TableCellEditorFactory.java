@@ -36,7 +36,7 @@ public class TableCellEditorFactory
    */ 
   public static final TableCellEditor createBooleanTableCellEditor() {
   
-    JComboBox comboBox = new JComboBox(new Boolean[] {Boolean.TRUE, Boolean.FALSE});
+    JComboBox<Boolean> comboBox = new JComboBox<>(new Boolean[] {Boolean.TRUE, Boolean.FALSE});
     return new DefaultCellEditor(comboBox);
     
   }
@@ -53,7 +53,7 @@ public class TableCellEditorFactory
    */
   public static Object createLevelTableCellEditor()
   {
-    JComboBox comboBox = new JComboBox(new Level[] {Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL, Level.OFF, Level.ALL});
+    JComboBox<Level> comboBox = new JComboBox<>(new Level[] {Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL, Level.OFF, Level.ALL});
     return new DefaultCellEditor(comboBox); 
   }
 

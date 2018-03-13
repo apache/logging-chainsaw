@@ -72,7 +72,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   private boolean currentSortAscending;
   private int currentSortColumn;
   private final EventListenerList eventListenerList = new EventListenerList();
-  private final List columnNames = new ArrayList(ChainsawColumns.getColumnsNames());
+  private final List<String> columnNames = new ArrayList<>(ChainsawColumns.getColumnsNames());
   private boolean sortEnabled = false;
   private boolean reachedCapacity = false;
   private final Logger logger = LogManager.getLogger(ChainsawCyclicBufferTableModel.class);
@@ -116,8 +116,8 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     }
   }
 
-  public List getMatchingEvents(Rule rule) {
-    List list = new ArrayList();
+  public List<LoggingEventWrapper> getMatchingEvents(Rule rule) {
+    List<LoggingEventWrapper> list = new ArrayList<>();
     List unfilteredCopy;
     synchronized (mutex) {
         unfilteredCopy = new ArrayList(unfilteredList);
@@ -489,7 +489,7 @@ SwingHelper.invokeOnEDT(() -> propertySupport.firePropertyChange("refilter", Boo
   }
 
   public String getColumnName(int column) {
-      return (String) columnNames.get(column);
+      return columnNames.get(column);
   }
 
   public LoggingEventWrapper getRow(int row) {
@@ -584,7 +584,7 @@ SwingHelper.invokeOnEDT(() -> propertySupport.firePropertyChange("refilter", Boo
         String result = event.getProperty(columnNames.get(columnIndex).toString());
         if (result == null) {
             String lowerColName = columnNames.get(columnIndex).toString().toLowerCase(Locale.ENGLISH);
-            Set entrySet = event.getProperties().entrySet();
+            Set<Map.Entry> entrySet = event.getProperties().entrySet();
             for (Object anEntrySet : entrySet) {
                 Map.Entry thisEntry = (Map.Entry) anEntrySet;
                 if (thisEntry.getKey().toString().equalsIgnoreCase(lowerColName)) {

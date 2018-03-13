@@ -66,7 +66,7 @@ public class LoadSettingsEvent extends SettingsEvent {
     Collection c = new ArrayList();
 
       for (Map.Entry<Object, Object> objectObjectEntry : properties.entrySet()) {
-          Map.Entry entry = objectObjectEntry;
+          Map.Entry<Object, Object> entry = objectObjectEntry;
           if (entry.getKey().toString().startsWith(string)) {
               c.add(entry.getValue());
           }

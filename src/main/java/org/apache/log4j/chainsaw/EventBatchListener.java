@@ -44,5 +44,5 @@ public interface EventBatchListener extends EventListener {
    * @param events List of LoggingEvent instances
    * @param identifier the identifier this list of LoggingEvents is associated with
    */
-  void receiveEventBatch(String identifier, List events);
+  void receiveEventBatch(String identifier, List<org.apache.log4j.spi.LoggingEvent> events);
 }

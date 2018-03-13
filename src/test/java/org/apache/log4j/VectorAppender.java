@@ -25,13 +25,13 @@ import org.apache.log4j.spi.LoggingEvent;
    @author Ceki  G&uuml;lc&uuml;
 */
 public class VectorAppender extends AppenderSkeleton {
-  public Vector vector;
+  public Vector<LoggingEvent> vector;
 
   long delay = 0;
   
   public VectorAppender() {
     super(true);
-    vector = new Vector();
+    vector = new Vector<>();
   }
 
 
@@ -50,7 +50,7 @@ public class VectorAppender extends AppenderSkeleton {
    * Returns a vector of {@link LoggingEvent}.
    * @return a vector of {@link LoggingEvent}.
    */
-  public Vector getVector() {
+  public Vector<LoggingEvent> getVector() {
     return vector;
   }
 

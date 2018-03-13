@@ -131,7 +131,7 @@ public class XMLSocketNode extends ComponentBase implements Runnable {
               "no bytes read from stream - closing connection.");
             break;
           }
-          List v = decoder.decodeEvents(new String(b, 0, length));
+          List<LoggingEvent> v = decoder.decodeEvents(new String(b, 0, length));
 
           if (v != null) {
 

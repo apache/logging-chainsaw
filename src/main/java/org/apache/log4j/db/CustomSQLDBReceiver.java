@@ -294,13 +294,13 @@ public class CustomSQLDBReceiver extends Receiver implements Pauseable, Unrecogn
                 String threadName;
                 Object message;
                 String ndc;
-                Hashtable mdc;
+                Hashtable<String, String> mdc;
                 String[] throwable;
                 String className;
                 String methodName;
                 String fileName;
                 String lineNumber;
-                Hashtable properties;
+                Hashtable<String, String> properties;
 
                 String currentSQLStatement;
                 if (whereExists) {
@@ -335,7 +335,7 @@ public class CustomSQLDBReceiver extends Receiver implements Pauseable, Unrecogn
                     ndc = rs.getString("NDC");
 
                     String mdcString = rs.getString("MDC");
-                    mdc = new Hashtable();
+                    mdc = new Hashtable<>();
 
                     if (mdcString != null) {
                         // support MDC being wrapped in {{name, value}}
@@ -369,7 +369,7 @@ public class CustomSQLDBReceiver extends Receiver implements Pauseable, Unrecogn
                     // property
                     // are set)
                     String propertiesString = rs.getString("PROPERTIES");
-                    properties = new Hashtable();
+                    properties = new Hashtable<>();
 
                     if (propertiesString != null) {
                         // support properties being wrapped in {{name,

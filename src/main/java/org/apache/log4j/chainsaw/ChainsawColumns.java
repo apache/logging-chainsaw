@@ -33,7 +33,7 @@ import org.apache.log4j.chainsaw.icons.ChainsawIcons;
  *
  */
 public class ChainsawColumns {
-  private static final List columnNames = new ArrayList();
+  private static final List<String> columnNames = new ArrayList<>();
 
   static {
     columnNames.add(ChainsawConstants.LOGGER_COL_NAME);
@@ -77,7 +77,7 @@ public class ChainsawColumns {
   private ChainsawColumns() {
   }
 
-  public static List getColumnsNames() {
+  public static List<String> getColumnsNames() {
     return columnNames;
   }
 

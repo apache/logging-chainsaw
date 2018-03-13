@@ -33,7 +33,7 @@ public class Compare {
   static final int B2_NULL = -2;
 
   private static final InputStream open(
-          final Class testClass,
+          final Class<org.apache.log4j.rewrite.RewriteAppenderTest> testClass,
           final String fileName) throws IOException {
       String resourceName = fileName;
       if (fileName.startsWith("witness/")) {
@@ -52,7 +52,7 @@ public class Compare {
       return is;
   }
 
-  public static boolean compare(Class testClass,
+  public static boolean compare(Class<org.apache.log4j.rewrite.RewriteAppenderTest> testClass,
                                 final String file1,
                                 final String file2)
     throws IOException {
@@ -64,7 +64,7 @@ public class Compare {
   }
     
  public static boolean compare(
-         Class testClass, String file1, String file2, BufferedReader in1, BufferedReader in2) throws IOException {
+         Class<org.apache.log4j.rewrite.RewriteAppenderTest> testClass, String file1, String file2, BufferedReader in1, BufferedReader in2) throws IOException {
 
     String s1;
     int lineCounter = 0;
@@ -105,7 +105,7 @@ public class Compare {
    * Prints file on the console.
    *
    */
-  private static void outputFile(Class testClass, String file)
+  private static void outputFile(Class<org.apache.log4j.rewrite.RewriteAppenderTest> testClass, String file)
     throws IOException {
     InputStream is = open(testClass, file);
     BufferedReader in1 = new BufferedReader(new InputStreamReader(is));
@@ -135,7 +135,7 @@ public class Compare {
   }
 
 
-    public static boolean gzCompare(final Class testClass,
+    public static boolean gzCompare(final Class<org.apache.log4j.rewrite.RewriteAppenderTest> testClass,
                                     final String actual,
                                     final String expected)
       throws IOException {
@@ -155,7 +155,7 @@ public class Compare {
         }
     }
 
-    public static boolean gzCompare(Class testClass, String file1, String file2, BufferedReader in1, BufferedReader in2) throws IOException {
+    public static boolean gzCompare(Class<org.apache.log4j.rewrite.RewriteAppenderTest> testClass, String file1, String file2, BufferedReader in1, BufferedReader in2) throws IOException {
 
       String s1;
       int lineCounter = 0;

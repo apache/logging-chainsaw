@@ -36,7 +36,7 @@ public final class ListModelAppender extends AppenderSkeleton {
     /**
      * Default list model.
      */
-  private final DefaultListModel model = new DefaultListModel();
+  private final DefaultListModel<LoggingEvent> model = new DefaultListModel<>();
 
   /**
    * Constructs a ListModelAppender.
@@ -50,7 +50,7 @@ public final class ListModelAppender extends AppenderSkeleton {
    *
    * @return the list model
    */
-  public ListModel getModel() {
+  public ListModel<LoggingEvent> getModel() {
     return model;
   }
 

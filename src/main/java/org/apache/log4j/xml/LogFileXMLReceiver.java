@@ -259,7 +259,7 @@ public class LogFileXMLReceiver extends Receiver {
         shutdown();
     }
 
-    private void processEvents(Collection c) {
+    private void processEvents(Collection<LoggingEvent> c) {
         if (c == null) {
             return;
         }

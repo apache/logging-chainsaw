@@ -156,8 +156,8 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
   private ApplicationPreferenceModelPanel applicationPreferenceModelPanel;
   private final Map tableModelMap = new HashMap();
   private final Map tableMap = new HashMap();
-  private final List filterableColumns = new ArrayList();
-  private final Map panelMap = new HashMap();
+  private final List<String> filterableColumns = new ArrayList<>();
+  private final Map<String, Component> panelMap = new HashMap<>();
   ChainsawAppenderHandler handler;
   private ChainsawToolBarAndMenus tbms;
   private ChainsawAbout aboutBox;
@@ -165,7 +165,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
   private final JFrame tutorialFrame = new JFrame("Chainsaw Tutorial");
   private JSplitPane mainReceiverSplitPane;
   private double lastMainReceiverSplitLocation = DEFAULT_MAIN_RECEIVER_SPLIT_LOCATION;
-  private final List identifierPanels = new ArrayList();
+  private final List<LogPanel> identifierPanels = new ArrayList<>();
   private int dividerSize;
   private int cyclicBufferSize;
   private static Logger logger;
@@ -199,7 +199,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
   
   private PluginRegistry pluginRegistry;
   //map of tab names to rulecolorizers
-  private Map allColorizers = new HashMap();
+  private Map<String, RuleColorizer> allColorizers = new HashMap<>();
   private ReceiverConfigurationPanel receiverConfigurationPanel = new ReceiverConfigurationPanel();
 
   /**
@@ -585,8 +585,8 @@ e.printStackTrace();
 //    cc.activateOptions();
     
     try {
-        Class pluginClass = Class.forName("org.apache.log4j.chainsaw.zeroconf.ZeroConfPlugin");
-        Plugin plugin = (Plugin) pluginClass.newInstance();
+        Class<? extends Plugin> pluginClass = Class.forName("org.apache.log4j.chainsaw.zeroconf.ZeroConfPlugin").asSubclass(Plugin.class);
+        Plugin plugin = pluginClass.newInstance();
         pluginRegistry.addPlugin(plugin);
         plugin.activateOptions();
         MessageCenter.getInstance().getLogger().info("Looks like ZeroConf is available... WooHoo!");
@@ -705,7 +705,7 @@ e.printStackTrace();
 
     event.saveSetting(LogUI.MAIN_WINDOW_WIDTH, getWidth());
     event.saveSetting(LogUI.MAIN_WINDOW_HEIGHT, getHeight());
-    RuleColorizer colorizer = (RuleColorizer) allColorizers.get(ChainsawConstants.DEFAULT_COLOR_RULE_NAME);
+    RuleColorizer colorizer = allColorizers.get(ChainsawConstants.DEFAULT_COLOR_RULE_NAME);
     colorizer.saveColorSettings(ChainsawConstants.DEFAULT_COLOR_RULE_NAME);
     if (receiverConfigurationPanel.getModel().getLogFormat() != null ) {
       event.saveSetting("SavedConfig.logFormat", receiverConfigurationPanel.getModel().getLogFormat());
@@ -1360,7 +1360,7 @@ e.printStackTrace();
                           }
                           applicationPreferenceModel.setShowNoReceiverWarning(!receiverConfigurationPanel.isDontWarnMeAgain());
                           //remove existing plugins
-                          List plugins = pluginRegistry.getPlugins();
+                          List<Plugin> plugins = pluginRegistry.getPlugins();
                           for (Object plugin1 : plugins) {
                               Plugin plugin = (Plugin) plugin1;
                               //don't stop ZeroConfPlugin if it is registered
@@ -1374,8 +1374,8 @@ e.printStackTrace();
                               int port = receiverConfigurationPanel.getModel().getNetworkReceiverPort();
 
                               try {
-                                  Class receiverClass = receiverConfigurationPanel.getModel().getNetworkReceiverClass();
-                                  Receiver networkReceiver = (Receiver) receiverClass.newInstance();
+                                  Class<? extends Receiver> receiverClass = receiverConfigurationPanel.getModel().getNetworkReceiverClass();
+                                  Receiver networkReceiver = receiverClass.newInstance();
                                   networkReceiver.setName(receiverClass.getSimpleName() + "-" + port);
 
                                   Method portMethod =
@@ -1399,7 +1399,7 @@ e.printStackTrace();
                               File log4jConfigFile = receiverConfigurationPanel.getModel().getLog4jConfigFile();
                               if (log4jConfigFile != null) {
                                   try {
-                                      Map entries = LogFilePatternLayoutBuilder.getAppenderConfiguration(log4jConfigFile);
+                                      Map<String, Map<String, String>> entries = LogFilePatternLayoutBuilder.getAppenderConfiguration(log4jConfigFile);
                                       for (Object o : entries.entrySet()) {
                                           try {
                                               Map.Entry entry = (Map.Entry) o;
@@ -1568,7 +1568,7 @@ e.printStackTrace();
 
   Map getPanels() {
     Map m = new HashMap();
-    Set panelSet = getPanelMap().entrySet();
+    Set<Map.Entry<String, Component>> panelSet = getPanelMap().entrySet();
 
       for (Object aPanelSet : panelSet) {
           Map.Entry entry = (Map.Entry) aPanelSet;
@@ -1582,7 +1582,7 @@ e.printStackTrace();
   }
 
   void displayPanel(String panelName, boolean display) {
-    Component p = (Component)getPanelMap().get(panelName);
+    Component p = getPanelMap().get(panelName);
 
     int index = getTabbedPane().indexOfTab(panelName);
 
@@ -1779,7 +1779,7 @@ e.printStackTrace();
    *
    * @return DOCUMENT ME!
    */
-  public Map getPanelMap() {
+  public Map<String, Component> getPanelMap() {
     return panelMap;
   }
 
@@ -1801,7 +1801,7 @@ e.printStackTrace();
    *
    * @return DOCUMENT ME!
    */
-  public List getFilterableColumns() {
+  public List<String> getFilterableColumns() {
     return filterableColumns;
   }
 
@@ -1893,7 +1893,7 @@ e.printStackTrace();
   }
 
   private void buildLogPanel(
-      boolean customExpression, final String ident, final List events)
+      boolean customExpression, final String ident, final List<LoggingEvent> events)
       throws IllegalArgumentException {
       final LogPanel thisPanel = new LogPanel(getStatusBar(), ident, cyclicBufferSize, allColorizers, applicationPreferenceModel);
 
@@ -1971,7 +1971,7 @@ e.printStackTrace();
   public void createCustomExpressionLogPanel(String ident) {
     //collect events matching the rule from all of the tabs
     try {
-      List list = new ArrayList();
+      List<LoggingEvent> list = new ArrayList<>();
       Rule rule = ExpressionRule.getRule(ident);
 
         for (Object identifierPanel : identifierPanels) {
@@ -2062,7 +2062,7 @@ e.printStackTrace();
          * @param events
          */
     public void receiveEventBatch(
-      final String ident, final List events) {
+      final String ident, final List<LoggingEvent> events) {
       if (events.size() == 0) {
         return;
       }

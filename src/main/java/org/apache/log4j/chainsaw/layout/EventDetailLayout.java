@@ -185,7 +185,7 @@ public class EventDetailLayout extends Layout {
     if (event.locationInformationExists()) {
         li = formatLocationInfo(event);
     }
-    Hashtable properties = formatProperties(event);
+    Hashtable<String, String> properties = formatProperties(event);
     LoggingEvent copy = new LoggingEvent(null,
 	   logger, event.getTimeStamp(),
 	   event.getLevel(),
@@ -234,9 +234,9 @@ public class EventDetailLayout extends Layout {
    * @param event
    * @return
    */
-  private static Hashtable formatProperties(LoggingEvent event) {
+  private static Hashtable<String, String> formatProperties(LoggingEvent event) {
     Set keySet = event.getPropertyKeySet();
-    Hashtable hashTable = new Hashtable();
+    Hashtable<String, String> hashTable = new Hashtable<>();
 
       for (Object key : keySet) {
           Object value = event.getProperty(key.toString());

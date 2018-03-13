@@ -58,7 +58,7 @@ public class FileDnDTarget implements DropTargetListener{
     private List fileList;
 
     private JComponent guiTarget;
-    private Map dropTargets = new HashMap();
+    private Map<JComponent, DropTarget> dropTargets = new HashMap<>();
     
     
     private PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);

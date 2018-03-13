@@ -57,7 +57,7 @@ public class Generator extends Receiver implements Runnable {
   private LoggingEvent createEvent(
     Level level, Logger logger, String msg, Throwable t) {
       ThrowableInformation ti = new ThrowableInformation(t);
-      Map properties = new HashMap();
+      Map<String, String> properties = new HashMap<>();
       properties.put(Constants.APPLICATION_KEY, getName());
       properties.put(Constants.HOSTNAME_KEY, "localhost");
       LocationInfo li = new LocationInfo("file", logger.getClass().getName(), "method", "123");

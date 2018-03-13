@@ -35,7 +35,7 @@ public class Scheduler extends Thread {
     /**
      * Job list.
      */
-    List jobList;
+    List<ScheduledJobEntry> jobList;
     /**
      * If set true, scheduler has or should shut down.
      */
@@ -46,7 +46,7 @@ public class Scheduler extends Thread {
      */
     public Scheduler() {
         super();
-        jobList = new Vector();
+        jobList = new Vector<>();
     }
 
     /**
@@ -60,7 +60,7 @@ public class Scheduler extends Thread {
 
         int i = 0;
         for (; i < size; i++) {
-            ScheduledJobEntry se = (ScheduledJobEntry) jobList.get(i);
+            ScheduledJobEntry se = jobList.get(i);
             if (se.job == job) {
                 found = true;
                 break;
@@ -88,7 +88,7 @@ public class Scheduler extends Thread {
         }
         int i = findIndex(job);
         if (i != -1) {
-            ScheduledJobEntry se = (ScheduledJobEntry) jobList.remove(i);
+            ScheduledJobEntry se = jobList.remove(i);
             if (se.job != job) { // this should never happen
                 new IllegalStateException("Internal programming error");
             }
@@ -152,7 +152,7 @@ public class Scheduler extends Thread {
         if (i == -1) {
             return false;
         } else {
-            ScheduledJobEntry se = (ScheduledJobEntry) jobList.get(i);
+            ScheduledJobEntry se = jobList.get(i);
             se.period = newPeriod;
             return true;
         }
@@ -174,7 +174,7 @@ public class Scheduler extends Thread {
         int i = 0;
         for (; i < max; i++) {
 
-            ScheduledJobEntry sje = (ScheduledJobEntry) jobList.get(i);
+            ScheduledJobEntry sje = jobList.get(i);
 
             if (desiredExecutionTime < sje.desiredExecutionTime) {
                 break;
@@ -202,7 +202,7 @@ public class Scheduler extends Thread {
             if (jobList.isEmpty()) {
                 linger();
             } else {
-                ScheduledJobEntry sje = (ScheduledJobEntry) jobList.get(0);
+                ScheduledJobEntry sje = jobList.get(0);
                 long now = System.currentTimeMillis();
                 if (now >= sje.desiredExecutionTime) {
                     executeInABox(sje.job);

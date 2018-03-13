@@ -168,8 +168,8 @@ public class UtilLoggingLevel extends Level {
      * Gets list of supported levels.
      * @return  list of supported levels.
      */
-    public static List getAllPossibleLevels() {
-        ArrayList list = new ArrayList();
+    public static List<UtilLoggingLevel> getAllPossibleLevels() {
+        ArrayList<UtilLoggingLevel> list = new ArrayList<>();
         list.add(FINE);
         list.add(FINER);
         list.add(FINEST);

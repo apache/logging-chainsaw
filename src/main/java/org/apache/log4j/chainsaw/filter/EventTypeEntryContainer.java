@@ -35,15 +35,15 @@ import javax.swing.ListModel;
  *
  */
 public class EventTypeEntryContainer {
-  private Set ColumnNames = new HashSet();
-  private Set Methods = new HashSet();
-  private Set Classes = new HashSet();
-  private Set NDCs = new HashSet();
+  private Set<String> ColumnNames = new HashSet<>();
+  private Set<String> Methods = new HashSet<>();
+  private Set<String> Classes = new HashSet<>();
+  private Set<String> NDCs = new HashSet<>();
   private Set Levels = new HashSet();
-  private Set Loggers = new HashSet();
-  private Set Threads = new HashSet();
-  private Set FileNames = new HashSet();
-  private DefaultListModel columnNameListModel = new DefaultListModel();
+  private Set<String> Loggers = new HashSet<>();
+  private Set<String> Threads = new HashSet<>();
+  private Set<String> FileNames = new HashSet<>();
+  private DefaultListModel<String> columnNameListModel = new DefaultListModel<>();
   private DefaultListModel methodListModel = new DefaultListModel();
   private DefaultListModel classesListModel = new DefaultListModel();
   private DefaultListModel propListModel = new DefaultListModel();

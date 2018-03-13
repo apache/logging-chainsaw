@@ -203,7 +203,7 @@ class DBReceiverJob extends ComponentBase implements Job {
       statement.setLong(1, id);
       ResultSet rs = statement.executeQuery();
 
-      Vector v = new Vector();
+      Vector<String> v = new Vector<>();
 
       while (rs.next()) {
         //int i = rs.getShort(1);
@@ -213,7 +213,7 @@ class DBReceiverJob extends ComponentBase implements Job {
       int len = v.size();
       String[] strRep = new String[len];
       for (int i = 0; i < len; i++) {
-        strRep[i] = (String) v.get(i);
+        strRep[i] = v.get(i);
       }
       // we've filled strRep, we now attach it to the event
       return new ThrowableInformation(strRep);

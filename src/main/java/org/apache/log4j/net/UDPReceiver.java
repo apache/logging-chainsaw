@@ -171,7 +171,7 @@ public class UDPReceiver extends Receiver implements PortBased, Pauseable {
   }
 
   class UDPHandlerThread extends Thread {
-    private final List list = new ArrayList();
+    private final List<String> list = new ArrayList<>();
 
     public UDPHandlerThread() {
       setDaemon(true);
@@ -194,7 +194,7 @@ public class UDPReceiver extends Receiver implements PortBased, Pauseable {
     }
 
     public void run() {
-      ArrayList list2 = new ArrayList();
+      ArrayList<String> list2 = new ArrayList<>();
 
       while (!UDPReceiver.this.closed) {
         synchronized (list) {
@@ -215,7 +215,7 @@ public class UDPReceiver extends Receiver implements PortBased, Pauseable {
 
             for (Object aList2 : list2) {
                 String data = (String) aList2;
-                List v = decoderImpl.decodeEvents(data);
+                List<LoggingEvent> v = decoderImpl.decodeEvents(data);
 
                 if (v != null) {
 

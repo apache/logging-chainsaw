@@ -88,7 +88,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
 
     private ZeroConfPreferenceModel preferenceModel;
     
-    private final Map serviceInfoToReceiveMap = new HashMap();
+    private final Map<ServiceInfo, Plugin> serviceInfoToReceiveMap = new HashMap<>();
 
     private JMenu connectToMenu = new JMenu("Connect to");
     private JMenuItem helpItem = new JMenuItem(new AbstractAction("Learn more about ZeroConf...",
@@ -169,8 +169,8 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
             public void pluginStopped(PluginEvent e) {
                 Plugin plugin = e.getPlugin();
                 synchronized(serviceInfoToReceiveMap) {
-                    for (Iterator iter = serviceInfoToReceiveMap.entrySet().iterator(); iter.hasNext();) {
-                        Map.Entry entry = (Map.Entry) iter.next();
+                    for (Iterator<Map.Entry<ServiceInfo, Plugin>> iter = serviceInfoToReceiveMap.entrySet().iterator(); iter.hasNext();) {
+                        Map.Entry<ServiceInfo, Plugin> entry = iter.next();
                         if(entry.getValue() == plugin) {
                                 iter.remove();
                         }
@@ -198,7 +198,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
 
     private void registerServiceListenersForAppenders()
     {
-        Set serviceNames = new HashSet();
+        Set<String> serviceNames = new HashSet<>();
         serviceNames.add(MULTICAST_APPENDER_SERVICE_NAME);
         serviceNames.add(SOCKET_APPENDER_SERVICE_NAME);
         serviceNames.add(SOCKETHUB_APPENDER_SERVICE_NAME);
@@ -422,7 +422,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         }
         Plugin plugin;
         synchronized (serviceInfoToReceiveMap) {
-            plugin = (Plugin) serviceInfoToReceiveMap.get(info);
+            plugin = serviceInfoToReceiveMap.get(info);
         }
         ((LoggerRepositoryEx)LogManager.getLoggerRepository()).getPluginRegistry().stopPlugin(plugin.getName());
         

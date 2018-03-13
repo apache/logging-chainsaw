@@ -23,8 +23,8 @@ import java.util.Set;
 
 public class ZeroConfPreferenceModel {
 
-    private List monitoredZones = new ArrayList();
-    private Set autoConnectDevices = new HashSet();
+    private List<String> monitoredZones = new ArrayList<>();
+    private Set<String> autoConnectDevices = new HashSet<>();
     
 //   TODO expose addPropertyChangeListener
     
@@ -38,19 +38,19 @@ public class ZeroConfPreferenceModel {
         monitoredZones.add(zone);
     }
 
-    public Set getAutoConnectDevices() {
+    public Set<String> getAutoConnectDevices() {
         return autoConnectDevices;
     }
 
-    public void setAutoConnectDevices(Set autoConnectDevices) {
+    public void setAutoConnectDevices(Set<String> autoConnectDevices) {
         this.autoConnectDevices = autoConnectDevices;
     }
 
-    public List getMonitoredZones() {
+    public List<String> getMonitoredZones() {
         return monitoredZones;
     }
 
-    public void setMonitoredZones(List monitoredZones) {
+    public void setMonitoredZones(List<String> monitoredZones) {
         this.monitoredZones = monitoredZones;
     }
 

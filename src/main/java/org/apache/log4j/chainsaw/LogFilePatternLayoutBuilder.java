@@ -148,7 +148,7 @@ public class LogFilePatternLayoutBuilder
         return buffer.toString();
     }
 
-  public static Map getAppenderConfiguration(File file) {
+  public static Map<String, Map<String, String>> getAppenderConfiguration(File file) {
     try {
       return getXMLFileAppenderConfiguration(file);
     } catch (IOException | SAXException | ParserConfigurationException e) {
@@ -160,11 +160,11 @@ public class LogFilePatternLayoutBuilder
       //ignore
     }
     //don't return null
-    return new HashMap();
+    return new HashMap<>();
   }
 
-  public static Map getPropertiesFileAppenderConfiguration(File propertyFile) throws IOException {
-    Map result = new HashMap();
+  public static Map<String, Map<String, String>> getPropertiesFileAppenderConfiguration(File propertyFile) throws IOException {
+    Map<String, Map<String, String>> result = new HashMap<>();
     String appenderPrefix = "log4j.appender";
     Properties props = new Properties();
     FileInputStream inputStream = null;
@@ -172,7 +172,7 @@ public class LogFilePatternLayoutBuilder
       inputStream = new FileInputStream(propertyFile);
       props.load(inputStream);
       Enumeration propertyNames = props.propertyNames();
-      Map appenders = new HashMap();
+      Map<String, String> appenders = new HashMap<>();
       while (propertyNames.hasMoreElements()) {
         String propertyName = propertyNames.nextElement().toString();
         if (propertyName.startsWith(appenderPrefix)) {
@@ -193,7 +193,7 @@ public class LogFilePatternLayoutBuilder
                     String conversion = props.getProperty(appenderPrefix + "." + appenderName + ".layout.ConversionPattern");
                     String file = props.getProperty(appenderPrefix + "." + appenderName + ".File");
                     if (conversion != null && file != null) {
-                        Map entry = new HashMap();
+                        Map<String, String> entry = new HashMap<>();
                         entry.put("file", file.trim());
                         entry.put("conversion", conversion.trim());
                         result.put(appenderName, entry);
@@ -222,8 +222,8 @@ public class LogFilePatternLayoutBuilder
     return result;
   }
 
-  private static Map getXMLFileAppenderConfiguration(File file) throws IOException, ParserConfigurationException, SAXException {
-      Map result = new HashMap();
+  private static Map<String, Map<String, String>> getXMLFileAppenderConfiguration(File file) throws IOException, ParserConfigurationException, SAXException {
+      Map<String, Map<String, String>> result = new HashMap<>();
       try (InputStream stream = file.toURI().toURL().openStream()) {
           InputSource src = new InputSource(stream);
           src.setSystemId(file.toURI().toURL().toString());
@@ -245,7 +245,7 @@ public class LogFilePatternLayoutBuilder
                   if (appenderClass.getNodeValue().toLowerCase(Locale.ENGLISH).endsWith("fileappender")) {
                       String appenderName = appenderAttributes.getNamedItem("name").getNodeValue();
                       //subclass of FileAppender - add it
-                      Map entry = new HashMap();
+                      Map<String, String> entry = new HashMap<>();
                       NodeList appenderChildren = appender.getChildNodes();
                       for (int j = 0; j < appenderChildren.getLength(); j++) {
                           Node appenderChild = appenderChildren.item(j);

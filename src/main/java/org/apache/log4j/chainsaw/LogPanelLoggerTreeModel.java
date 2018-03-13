@@ -42,7 +42,7 @@ import org.apache.log4j.Logger;
  */
 class LogPanelLoggerTreeModel extends DefaultTreeModel
   implements LoggerNameListener {
-  private Map fullPackageMap = new HashMap();
+  private Map<String, LogPanelTreeNode> fullPackageMap = new HashMap<>();
   private final Logger logger = LogManager.getLogger(LogPanelLoggerTreeModel.class);
 
   LogPanelLoggerTreeModel() {
@@ -144,7 +144,7 @@ outerFor:
 
   LogPanelTreeNode lookupLogger(String newLogger) {
     if (fullPackageMap.containsKey(newLogger)) {
-      return (LogPanelTreeNode) fullPackageMap.get(newLogger);
+      return fullPackageMap.get(newLogger);
     }else{
         logger.debug("No logger found matching '" + newLogger + "'");
         logger.debug("Map Dump: " + fullPackageMap);

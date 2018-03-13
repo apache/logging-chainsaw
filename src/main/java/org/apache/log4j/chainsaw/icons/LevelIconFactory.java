@@ -30,7 +30,7 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
  */
 public class LevelIconFactory {
   private static final LevelIconFactory instance = new LevelIconFactory();
-  private final Map iconMap = new HashMap();
+  private final Map<String, javax.swing.Icon> iconMap = new HashMap<>();
 
   private LevelIconFactory() {
     //reuse ERROR icon for FATAL level
@@ -69,7 +69,7 @@ public class LevelIconFactory {
     return instance;
   }
 
-  public Map getLevelToIconMap() {
+  public Map<String, javax.swing.Icon> getLevelToIconMap() {
     return iconMap;
   }
 }

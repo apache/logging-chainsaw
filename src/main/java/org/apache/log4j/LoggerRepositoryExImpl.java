@@ -74,11 +74,11 @@ public final class LoggerRepositoryExImpl
     /**
      * List of repository event listeners.
      */
-  private final ArrayList repositoryEventListeners = new ArrayList();
+  private final ArrayList<LoggerRepositoryEventListener> repositoryEventListeners = new ArrayList<>();
     /**
      * Map of HierarchyEventListener keyed by LoggingEventListener.
      */
-  private final Map loggerEventListeners = new HashMap();
+  private final Map<LoggerEventListener, HierarchyEventListenerProxy> loggerEventListeners = new HashMap<>();
     /**
      * Name of hierarchy.
      */
@@ -90,7 +90,7 @@ public final class LoggerRepositoryExImpl
     /**
      * Properties.
      */
-  private final Map properties = new Hashtable();
+  private final Map<String, String> properties = new Hashtable<>();
     /**
      * Scheduler.
      */
@@ -99,13 +99,13 @@ public final class LoggerRepositoryExImpl
   /** The repository can also be used as an object store
    * for various objects used by log4j components.
    */
-  private Map objectMap = new HashMap();
+  private Map<String, Object> objectMap = new HashMap<>();
 
 
     /**
      * Error list.
      */
-  private List errorList = new Vector();
+  private List<ErrorItem> errorList = new Vector<>();
 
     /**
      * True if hierarchy has not been modified.
@@ -206,7 +206,7 @@ public final class LoggerRepositoryExImpl
   public void removeLoggerEventListener(final LoggerEventListener listener) {
     synchronized (loggerEventListeners) {
       HierarchyEventListenerProxy proxy =
-              (HierarchyEventListenerProxy) loggerEventListeners.get(listener);
+              loggerEventListeners.get(listener);
       if (proxy == null) {
         LogLog.warn(
           "Ignoring attempt to remove a non-registered LoggerEventListener.");
@@ -262,7 +262,7 @@ public final class LoggerRepositoryExImpl
   /**
    * {@inheritDoc}
    */
-  public Map getProperties() {
+  public Map<String, String> getProperties() {
     return properties;
   }
 
@@ -270,7 +270,7 @@ public final class LoggerRepositoryExImpl
    * {@inheritDoc}
    */
   public String getProperty(final String key) {
-     return (String) properties.get(key);
+     return properties.get(key);
   }
 
   /**
@@ -418,7 +418,7 @@ public final class LoggerRepositoryExImpl
    * Return the the list of previously encoutered {@link ErrorItem error items}.
    * @return list of errors
    */
-  public List getErrorList() {
+  public List<ErrorItem> getErrorList() {
     return errorList;
   }
 

@@ -38,7 +38,7 @@ public interface Decoder {
      * @param document document to decode.
      * @return list of LoggingEvent instances.
      */
-  Vector decodeEvents(String document);
+  Vector<LoggingEvent> decodeEvents(String document);
 
     /**
      * Decode event from string.
@@ -53,7 +53,7 @@ public interface Decoder {
      * @return list of LoggingEvent instances.
      * @throws IOException if IO error resolving document.
      */
-  Vector decode(URL url) throws IOException;
+  Vector<LoggingEvent> decode(URL url) throws IOException;
 
     /**
      * Sets additional properties.

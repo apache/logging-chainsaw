@@ -78,7 +78,7 @@ import org.apache.log4j.spi.LoggingEventFieldResolver;
  */
 public class TableColorizingRenderer extends DefaultTableCellRenderer {
   private static final DateFormat DATE_FORMATTER = new SimpleDateFormat(Constants.SIMPLE_TIME_PATTERN);
-  private static final Map iconMap = LevelIconFactory.getInstance().getLevelToIconMap();
+  private static final Map<String, Icon> iconMap = LevelIconFactory.getInstance().getLevelToIconMap();
   private RuleColorizer colorizer;
   private boolean levelUseIcons = false;
   private boolean wrap = false;
@@ -371,7 +371,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     case ChainsawColumns.INDEX_LEVEL_COL_NAME:
       if (levelUseIcons) {
         levelTextPane.setText("");
-        levelTextPane.insertIcon((Icon) iconMap.get(value.toString()));
+        levelTextPane.insertIcon(iconMap.get(value.toString()));
         if (!toolTipsVisible) {
           levelTextPane.setToolTipText(value.toString());
         }

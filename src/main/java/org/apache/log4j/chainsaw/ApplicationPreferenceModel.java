@@ -59,7 +59,7 @@ public class ApplicationPreferenceModel {
     /**
      * If not 'empty', this property will be used as the URL to load log4j configuration at startup
      */
-    private Vector configurationURLs=new Vector();
+    private Vector<String> configurationURLs=new Vector<>();
 
     private String configurationURL = "";
 
@@ -209,7 +209,7 @@ public class ApplicationPreferenceModel {
       setShowSplash(model.isShowSplash());
       setToolTipDisplayMillis(model.getToolTipDisplayMillis());
       setCyclicBufferSize(model.getCyclicBufferSize());
-      Vector configurationURLs = model.getConfigurationURLs();
+      Vector<String> configurationURLs = model.getConfigurationURLs();
       if (configurationURLs != null) {
         setConfigurationURLs(configurationURLs);
       }
@@ -297,11 +297,11 @@ public class ApplicationPreferenceModel {
       return statusBar;
     }
 
-    public Vector getConfigurationURLs() {
+    public Vector<String> getConfigurationURLs() {
         return configurationURLs;
     }
 
-    public void setConfigurationURLs(Vector urls) {
+    public void setConfigurationURLs(Vector<String> urls) {
         if (urls != null) {
             configurationURLs = urls;
         }

@@ -73,7 +73,7 @@ public class MessageCenter {
   private static final MessageCenter instance = new MessageCenter();
   private final Logger logger = Logger.getLogger(MessageCenter.class);
   private Layout layout = new TTCCLayout();
-  private final JList messageList = new JList();
+  private final JList<org.apache.log4j.spi.LoggingEvent> messageList = new JList<>();
   private final ListModelAppender appender = new ListModelAppender();
   private ListCellRenderer listCellRenderer =
     new LayoutListCellRenderer(layout);
@@ -176,7 +176,7 @@ public class MessageCenter {
     return componentPanel;
   }
 
-  public ListModel getModel() {
+  public ListModel<org.apache.log4j.spi.LoggingEvent> getModel() {
     return messageList.getModel();
   }
 

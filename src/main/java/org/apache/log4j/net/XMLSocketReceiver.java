@@ -55,7 +55,7 @@ public class XMLSocketReceiver extends Receiver implements Runnable, PortBased, 
   //default to log4j xml decoder
   protected String decoder = "org.apache.log4j.xml.XMLDecoder";
   private ServerSocket serverSocket;
-  private List socketList = new Vector();
+  private List<Socket> socketList = new Vector<>();
   private Thread rThread;
   public static final int DEFAULT_PORT = 4448;
   protected int port = DEFAULT_PORT;

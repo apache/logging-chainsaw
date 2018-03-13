@@ -96,8 +96,8 @@ public final class SwingHelper {
     return System.getProperty("os.name").toLowerCase(Locale.ENGLISH).startsWith("mac os x");
   }
 
-  public static List orderOKCancelButtons(JButton okButton, JButton cancelButton) {
-    List result = new ArrayList();
+  public static List<JButton> orderOKCancelButtons(JButton okButton, JButton cancelButton) {
+    List<JButton> result = new ArrayList<>();
     if (isMacOSX()) {
       result.add(cancelButton);
       result.add(okButton);

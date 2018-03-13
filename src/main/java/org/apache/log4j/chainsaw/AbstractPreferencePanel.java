@@ -107,11 +107,11 @@ public abstract class AbstractPreferencePanel extends JPanel
     add(mainPanel, BorderLayout.CENTER);
   
     Box buttonBox = Box.createHorizontalBox();
-    List buttons = SwingHelper.orderOKCancelButtons(okButton, cancelButton);
+    List<JButton> buttons = SwingHelper.orderOKCancelButtons(okButton, cancelButton);
     buttonBox.add(Box.createHorizontalGlue());
-    buttonBox.add((JButton)buttons.get(0));
+    buttonBox.add(buttons.get(0));
     buttonBox.add(Box.createHorizontalStrut(10));
-    buttonBox.add((JButton)buttons.get(1));
+    buttonBox.add(buttons.get(1));
   
     add(buttonBox, BorderLayout.SOUTH);
   

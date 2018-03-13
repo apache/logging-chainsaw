@@ -278,7 +278,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
    * @param identifier used to load and save settings
    */
   public LogPanel(final ChainsawStatusBar statusBar, final String identifier, int cyclicBufferSize,
-                  Map allColorizers, final ApplicationPreferenceModel applicationPreferenceModel) {
+                  Map<String, RuleColorizer> allColorizers, final ApplicationPreferenceModel applicationPreferenceModel) {
     this.identifier = identifier;
     this.statusBar = statusBar;
     this.applicationPreferenceModel = applicationPreferenceModel;
@@ -298,7 +298,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     findCombo.setPrototypeDisplayValue(prototypeValue);
     buildCombo(findCombo, false, filterCombo.model);
 
-    final Map columnNameKeywordMap = new HashMap();
+    final Map<Object, String> columnNameKeywordMap = new HashMap<>();
     columnNameKeywordMap.put(ChainsawConstants.CLASS_COL_NAME, LoggingEventFieldResolver.CLASS_FIELD);
     columnNameKeywordMap.put(ChainsawConstants.FILE_COL_NAME, LoggingEventFieldResolver.FILE_FIELD);
     columnNameKeywordMap.put(ChainsawConstants.LEVEL_COL_NAME, LoggingEventFieldResolver.LEVEL_FIELD);
@@ -2033,7 +2033,7 @@ detailPaneUpdater.setAndUpdateSelectedRow(table.getSelectedRow());
    * @param ident identifier shared by events
    * @param events list of LoggingEvent objects
    */
-  public void receiveEventBatch(String ident, final List events) {
+  public void receiveEventBatch(String ident, final List<LoggingEvent> events) {
 
     SwingHelper.invokeOnEDT(() -> {
       /*
@@ -2275,9 +2275,9 @@ detailPaneUpdater.setAndUpdateSelectedRow(table.getSelectedRow());
     preferenceModel.setHiddenExpression(logTreePanel.getHiddenExpression());
     preferenceModel.setAlwaysDisplayExpression(logTreePanel.getAlwaysDisplayExpression());
     List visibleOrder = new ArrayList();
-    Enumeration cols = table.getColumnModel().getColumns();
+    Enumeration<TableColumn> cols = table.getColumnModel().getColumns();
     while (cols.hasMoreElements()) {
-    	TableColumn c = (TableColumn)cols.nextElement();
+    	TableColumn c = cols.nextElement();
     	visibleOrder.add(c);
     }
     preferenceModel.setVisibleColumnOrder(visibleOrder);
@@ -2409,7 +2409,7 @@ detailPaneUpdater.setAndUpdateSelectedRow(table.getSelectedRow());
   	return tableModel.getFilteredEvents();
   }
   
-  List getMatchingEvents(Rule rule) {
+  List<LoggingEventWrapper> getMatchingEvents(Rule rule) {
     return tableModel.getMatchingEvents(rule);
   }
 
@@ -3015,8 +3015,8 @@ detailPaneUpdater.setAndUpdateSelectedRow(table.getSelectedRow());
     TableColumnModel columnModel = table.getColumnModel();
     TableColumnModel searchColumnModel = searchTable.getColumnModel();
 
-    Map columnNameMap = new HashMap();
-    Map searchColumnNameMap = new HashMap();
+    Map<String, TableColumn> columnNameMap = new HashMap<>();
+    Map<String, TableColumn> searchColumnNameMap = new HashMap<>();
 
     for (int i = 0; i < columnModel.getColumnCount(); i++) {
       columnNameMap.put(table.getColumnName(i).toUpperCase(), columnModel.getColumn(i));
@@ -3028,7 +3028,7 @@ detailPaneUpdater.setAndUpdateSelectedRow(table.getSelectedRow());
 
     int index;
     StringTokenizer tok = new StringTokenizer(columnOrder, ",");
-    List sortedColumnList = new ArrayList();
+    List<TableColumn> sortedColumnList = new ArrayList<>();
 
     /*
        remove all columns from the table that exist in the model
@@ -3037,7 +3037,7 @@ detailPaneUpdater.setAndUpdateSelectedRow(table.getSelectedRow());
      **/
     while (tok.hasMoreElements()) {
       String element = tok.nextElement().toString().trim().toUpperCase();
-      TableColumn column = (TableColumn) columnNameMap.get(element);
+      TableColumn column = columnNameMap.get(element);
 
       if (column != null) {
         sortedColumnList.add(column);
@@ -3607,7 +3607,7 @@ lastRow = selectedRow;
     private class MarkerCellEditor implements TableCellEditor {
       JTable currentTable;
       JTextField textField = new JTextField();
-      Set cellEditorListeners = new HashSet();
+      Set<CellEditorListener> cellEditorListeners = new HashSet<>();
       private LoggingEventWrapper currentLoggingEventWrapper;
       private final Object mutex = new Object();
 
@@ -3642,9 +3642,9 @@ lastRow = selectedRow;
             }
 
             ChangeEvent event = new ChangeEvent(currentTable);
-            Set cellEditorListenersCopy;
+            Set<CellEditorListener> cellEditorListenersCopy;
             synchronized(mutex) {
-                cellEditorListenersCopy = new HashSet(cellEditorListeners);
+                cellEditorListenersCopy = new HashSet<>(cellEditorListeners);
             }
 
           for (Object aCellEditorListenersCopy : cellEditorListenersCopy) {
@@ -3658,9 +3658,9 @@ lastRow = selectedRow;
 
         public void cancelCellEditing()
         {
-            Set cellEditorListenersCopy;
+            Set<CellEditorListener> cellEditorListenersCopy;
             synchronized(mutex) {
-                cellEditorListenersCopy = new HashSet(cellEditorListeners);
+                cellEditorListenersCopy = new HashSet<>(cellEditorListeners);
             }
 
            ChangeEvent event = new ChangeEvent(currentTable);
@@ -3889,8 +3889,8 @@ lastRow = selectedRow;
     }
 
     abstract class AbstractEventMatchThumbnail extends JPanel {
-        protected List primaryList = new ArrayList();
-        protected List secondaryList = new ArrayList();
+        protected List<ThumbnailLoggingEventWrapper> primaryList = new ArrayList<>();
+        protected List<ThumbnailLoggingEventWrapper> secondaryList = new ArrayList<>();
         protected final int maxEventHeight = 6;
 
         AbstractEventMatchThumbnail() {
@@ -3956,15 +3956,15 @@ lastRow = selectedRow;
                 } else if (e.getType() == TableModelEvent.DELETE) {
                     //find each eventwrapper with an id in the deleted range and remove it...
 //                        System.out.println("delete- current warnings: " + warnings.size() + ", errors: " + errors.size() + ", first row: " + firstRow + ", last row: " + lastRow + ", displayed event count: " + displayedEvents.size() );
-                    for (Iterator iter = secondaryList.iterator();iter.hasNext();) {
-                        ThumbnailLoggingEventWrapper wrapper = (ThumbnailLoggingEventWrapper)iter.next();
+                    for (Iterator<ThumbnailLoggingEventWrapper> iter = secondaryList.iterator(); iter.hasNext();) {
+                        ThumbnailLoggingEventWrapper wrapper = iter.next();
                         if ((wrapper.rowNum >= firstRow) && (wrapper.rowNum <= lastRow)) {
 //                                System.out.println("deleting find: " + wrapper);
                             iter.remove();
                         }
                     }
-                    for (Iterator iter = primaryList.iterator();iter.hasNext();) {
-                        ThumbnailLoggingEventWrapper wrapper = (ThumbnailLoggingEventWrapper)iter.next();
+                    for (Iterator<ThumbnailLoggingEventWrapper> iter = primaryList.iterator(); iter.hasNext();) {
+                        ThumbnailLoggingEventWrapper wrapper = iter.next();
                         if ((wrapper.rowNum >= firstRow) && (wrapper.rowNum <= lastRow)) {
 //                                System.out.println("deleting error: " + wrapper);
                             iter.remove();
@@ -3976,15 +3976,15 @@ lastRow = selectedRow;
                 } else if (e.getType() == TableModelEvent.UPDATE) {
 //                        System.out.println("update - about to delete old warnings in range: " + firstRow + " to " + lastRow + ", current warnings: " + warnings.size() + ", errors: " + errors.size());
                     //find each eventwrapper with an id in the deleted range and remove it...
-                    for (Iterator iter = secondaryList.iterator();iter.hasNext();) {
-                        ThumbnailLoggingEventWrapper wrapper = (ThumbnailLoggingEventWrapper)iter.next();
+                    for (Iterator<ThumbnailLoggingEventWrapper> iter = secondaryList.iterator(); iter.hasNext();) {
+                        ThumbnailLoggingEventWrapper wrapper = iter.next();
                         if ((wrapper.rowNum >= firstRow) && (wrapper.rowNum <= lastRow)) {
 //                                System.out.println("update - deleting warning: " + wrapper);
                             iter.remove();
                         }
                     }
-                    for (Iterator iter = primaryList.iterator();iter.hasNext();) {
-                        ThumbnailLoggingEventWrapper wrapper = (ThumbnailLoggingEventWrapper)iter.next();
+                    for (Iterator<ThumbnailLoggingEventWrapper> iter = primaryList.iterator(); iter.hasNext();) {
+                        ThumbnailLoggingEventWrapper wrapper = iter.next();
                         if ((wrapper.rowNum >= firstRow) && (wrapper.rowNum <= lastRow)) {
 //                                System.out.println("update - deleting error: " + wrapper);
                             iter.remove();

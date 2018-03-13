@@ -54,7 +54,7 @@ public class ChainsawAppenderHandler extends AppenderSkeleton {
       .getInstance();
   private PropertyChangeSupport propertySupport = new PropertyChangeSupport(
       this);
-  private Map customExpressionRules = new HashMap();
+  private Map<String, Rule> customExpressionRules = new HashMap<>();
 
   /**
    * NOTE: This variable needs to be physically located LAST, because
@@ -141,7 +141,7 @@ public class ChainsawAppenderHandler extends AppenderSkeleton {
         return null;
       }
 
-      public void receiveEventBatch(String identifier, List events) {
+      public void receiveEventBatch(String identifier, List<LoggingEvent> events) {
         System.out.println("received " + events.size());
       }
     });
@@ -216,7 +216,7 @@ public class ChainsawAppenderHandler extends AppenderSkeleton {
    * events accumulated during that time..
    */
   class WorkQueue {
-    final ArrayList queue = new ArrayList();
+    final ArrayList<LoggingEvent> queue = new ArrayList<>();
     Thread workerThread;
 
     protected WorkQueue() {
@@ -249,7 +249,7 @@ public class ChainsawAppenderHandler extends AppenderSkeleton {
       }
 
       public void run() {
-        List innerList = new ArrayList();
+        List<LoggingEvent> innerList = new ArrayList<>();
         while (true) {
           long timeStart = System.currentTimeMillis();
           synchronized (mutex) {
@@ -267,10 +267,10 @@ public class ChainsawAppenderHandler extends AppenderSkeleton {
           }
           int size = innerList.size();
           if (size > 0) {
-            Iterator iter = innerList.iterator();
+            Iterator<LoggingEvent> iter = innerList.iterator();
             ChainsawEventBatch eventBatch = new ChainsawEventBatch();
             while (iter.hasNext()) {
-              LoggingEvent e = (LoggingEvent) iter.next();
+              LoggingEvent e = iter.next();
               // attempt to set the host name (without port), from
               // remoteSourceInfo
               // if 'hostname' property not provided
@@ -329,9 +329,9 @@ public class ChainsawAppenderHandler extends AppenderSkeleton {
       private void dispatchEventBatch(ChainsawEventBatch eventBatch) {
         EventBatchListener[] listeners = listenerList
             .getListeners(EventBatchListener.class);
-        for (Iterator iter = eventBatch.identifierIterator(); iter.hasNext();) {
-          String identifier = (String) iter.next();
-          List eventList = null;
+        for (Iterator<String> iter = eventBatch.identifierIterator(); iter.hasNext();) {
+          String identifier = iter.next();
+          List<LoggingEvent> eventList = null;
           for (EventBatchListener listener : listeners) {
             if ((listener.getInterestedIdentifier() == null)
                     || listener.getInterestedIdentifier().equals(identifier)) {

@@ -46,6 +46,7 @@ import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.net.SocketReceiver;
 import org.apache.log4j.net.UDPReceiver;
+import org.apache.log4j.plugins.Receiver;
 
 
 /**
@@ -59,10 +60,10 @@ class ReceiverConfigurationPanel extends JPanel {
     private final PanelModel panelModel = new PanelModel();
 
     //network receiver widgets
-    private JComboBox networkReceiverPortComboBox;
-    private JComboBox networkReceiverClassNameComboBox;
-    private DefaultComboBoxModel networkReceiverClassNameComboBoxModel;
-    private DefaultComboBoxModel networkReceiverPortComboBoxModel;
+    private JComboBox<String> networkReceiverPortComboBox;
+    private JComboBox<String> networkReceiverClassNameComboBox;
+    private DefaultComboBoxModel<String> networkReceiverClassNameComboBoxModel;
+    private DefaultComboBoxModel<String> networkReceiverPortComboBoxModel;
 
     //log4j config receiver widgets
     private JButton browseLog4jConfigButton;
@@ -70,18 +71,18 @@ class ReceiverConfigurationPanel extends JPanel {
 
     //logfile receiver widgets
     private JButton browseLogFileButton;
-    private JComboBox logFileFormatTypeComboBox;
+    private JComboBox<String> logFileFormatTypeComboBox;
 
-    private JComboBox logFileFormatComboBox;
-    private JComboBox logFileFormatTimestampFormatComboBox;
+    private JComboBox<String> logFileFormatComboBox;
+    private JComboBox<String> logFileFormatTimestampFormatComboBox;
     private JTextField logFileURLTextField;
-    private DefaultComboBoxModel logFileFormatComboBoxModel;
-    private DefaultComboBoxModel logFileFormatTimestampFormatComboBoxModel;
+    private DefaultComboBoxModel<String> logFileFormatComboBoxModel;
+    private DefaultComboBoxModel<String> logFileFormatTimestampFormatComboBoxModel;
 
     //use existing configuration widgets
     private JButton browseForAnExistingConfigurationButton;
-    private DefaultComboBoxModel existingConfigurationComboBoxModel;
-    private JComboBox existingConfigurationComboBox;
+    private DefaultComboBoxModel<String> existingConfigurationComboBoxModel;
+    private JComboBox<String> existingConfigurationComboBox;
 
     //don't warn again widgets
     private JCheckBox dontwarnIfNoReceiver;
@@ -215,20 +216,20 @@ class ReceiverConfigurationPanel extends JPanel {
         okButton = new JButton(" OK ");
         cancelButton = new JButton(" Cancel ");
 
-        List okCancelButtons = SwingHelper.orderOKCancelButtons(okButton, cancelButton);
+        List<JButton> okCancelButtons = SwingHelper.orderOKCancelButtons(okButton, cancelButton);
 
         c = new GridBagConstraints();
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 2;
         c.gridy = 0;
         c.insets = new Insets(0, 0, 0, 10);
-        panel.add((JButton)okCancelButtons.get(0), c);
+        panel.add(okCancelButtons.get(0), c);
 
         c = new GridBagConstraints();
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 3;
         c.gridy = 0;
-        panel.add((JButton)okCancelButtons.get(1), c);
+        panel.add(okCancelButtons.get(1), c);
 
         cancelButton.addActionListener(new ActionListener()
         {
@@ -292,19 +293,19 @@ class ReceiverConfigurationPanel extends JPanel {
     }
 
     private JPanel buildNetworkReceiverPanel() {
-        networkReceiverPortComboBoxModel = new DefaultComboBoxModel();
+        networkReceiverPortComboBoxModel = new DefaultComboBoxModel<>();
         networkReceiverPortComboBoxModel.addElement("4445");
         networkReceiverPortComboBoxModel.addElement("4560");
 
-        networkReceiverPortComboBox = new JComboBox(networkReceiverPortComboBoxModel);
+        networkReceiverPortComboBox = new JComboBox<>(networkReceiverPortComboBoxModel);
         networkReceiverPortComboBox.setEditable(true);
         networkReceiverPortComboBox.setOpaque(false);
 
-        networkReceiverClassNameComboBoxModel = new DefaultComboBoxModel();
+        networkReceiverClassNameComboBoxModel = new DefaultComboBoxModel<>();
         networkReceiverClassNameComboBoxModel.addElement(SocketReceiver.class.getName());
         networkReceiverClassNameComboBoxModel.addElement(UDPReceiver.class.getName());
 
-        networkReceiverClassNameComboBox = new JComboBox(networkReceiverClassNameComboBoxModel);
+        networkReceiverClassNameComboBox = new JComboBox<>(networkReceiverClassNameComboBoxModel);
 
         networkReceiverClassNameComboBox.setEditable(false);
         networkReceiverClassNameComboBox.setOpaque(false);
@@ -426,11 +427,11 @@ class ReceiverConfigurationPanel extends JPanel {
         c.insets = new Insets(0, 0, 5, 5);
         panel.add(new JLabel(" Log file format type "), c);
 
-        DefaultComboBoxModel comboBoxModel = new DefaultComboBoxModel();
+        DefaultComboBoxModel<String> comboBoxModel = new DefaultComboBoxModel<>();
         comboBoxModel.addElement("LogFilePatternReceiver LogFormat");
         comboBoxModel.addElement("PatternLayout format");
 
-        logFileFormatTypeComboBox = new JComboBox(comboBoxModel);
+        logFileFormatTypeComboBox = new JComboBox<>(comboBoxModel);
         logFileFormatTypeComboBox.setOpaque(false);
 
         c = new GridBagConstraints();
@@ -447,9 +448,9 @@ class ReceiverConfigurationPanel extends JPanel {
         c.insets = new Insets(0, 5, 5, 5);
         panel.add(new JLabel(" Log file format "), c);
 
-        logFileFormatComboBoxModel = new DefaultComboBoxModel();
+        logFileFormatComboBoxModel = new DefaultComboBoxModel<>();
         seedLogFileFormatComboBoxModel();
-        logFileFormatComboBox = new JComboBox(logFileFormatComboBoxModel);
+        logFileFormatComboBox = new JComboBox<>(logFileFormatComboBoxModel);
         logFileFormatComboBox.setEditable(true);
         logFileFormatComboBox.setOpaque(false);
         logFileFormatComboBox.setSelectedIndex(0);
@@ -469,9 +470,9 @@ class ReceiverConfigurationPanel extends JPanel {
         c.insets = new Insets(0, 5, 5, 5);
         panel.add(new JLabel(" Log file timestamp format "), c);
 
-        logFileFormatTimestampFormatComboBoxModel = new DefaultComboBoxModel();
+        logFileFormatTimestampFormatComboBoxModel = new DefaultComboBoxModel<>();
         seedLogFileFormatTimestampComboBoxModel();
-        logFileFormatTimestampFormatComboBox = new JComboBox(logFileFormatTimestampFormatComboBoxModel);
+        logFileFormatTimestampFormatComboBox = new JComboBox<>(logFileFormatTimestampFormatComboBoxModel);
         logFileFormatTimestampFormatComboBox.setEditable(true);
         logFileFormatTimestampFormatComboBox.setOpaque(false);
 
@@ -513,9 +514,9 @@ class ReceiverConfigurationPanel extends JPanel {
     }
 
     private JPanel buildUseExistingConfigurationPanel() {
-        existingConfigurationComboBoxModel = new DefaultComboBoxModel();
+        existingConfigurationComboBoxModel = new DefaultComboBoxModel<>();
 
-        existingConfigurationComboBox = new JComboBox(existingConfigurationComboBoxModel);
+        existingConfigurationComboBox = new JComboBox<>(existingConfigurationComboBoxModel);
         existingConfigurationComboBox.setOpaque(false);
         existingConfigurationComboBox.setToolTipText("Previously loaded configurations can be chosen here");
         existingConfigurationComboBox.setEditable(true);
@@ -708,8 +709,8 @@ class ReceiverConfigurationPanel extends JPanel {
             return Integer.parseInt(networkReceiverPortComboBoxModel.getSelectedItem().toString());
         }
 
-        Class getNetworkReceiverClass() throws ClassNotFoundException {
-            return Class.forName(networkReceiverClassNameComboBoxModel.getSelectedItem().toString());
+        Class<? extends Receiver> getNetworkReceiverClass() throws ClassNotFoundException {
+            return Class.forName(networkReceiverClassNameComboBoxModel.getSelectedItem().toString()).asSubclass(Receiver.class);
         }
 
         boolean isLoadConfig() {

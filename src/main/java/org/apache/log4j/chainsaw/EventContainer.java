@@ -64,7 +64,7 @@ public interface EventContainer extends SortTableModel, LoggerNameModel {
    */
   void clearModel();
 
-  List getMatchingEvents(Rule rule);
+  List<LoggingEventWrapper> getMatchingEvents(Rule rule);
 
   /**
    * Configures this model to use Cyclic or non-cyclic models.

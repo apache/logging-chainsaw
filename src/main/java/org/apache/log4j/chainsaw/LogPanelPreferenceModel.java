@@ -51,7 +51,7 @@ public class LogPanelPreferenceModel implements Serializable{
     Properties properties = SettingsManager.getInstance().getDefaultSettings();
 
       for (Map.Entry<Object, Object> objectObjectEntry : properties.entrySet()) {
-          Map.Entry entry = objectObjectEntry;
+          Map.Entry<Object, Object> entry = objectObjectEntry;
 
           if (entry.getKey().toString().startsWith("DateFormat")) {
               list.add(entry.getValue());

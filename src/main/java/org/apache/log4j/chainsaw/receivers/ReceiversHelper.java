@@ -65,7 +65,7 @@ public class ReceiversHelper {
     private static final ReceiversHelper instance = new ReceiversHelper();
 
     private final Logger logger = LogManager.getLogger(ReceiversHelper.class);
-    private List receiverClassList = new ArrayList();
+    private List<Class> receiverClassList = new ArrayList<>();
     /**
      *
      */
@@ -134,8 +134,8 @@ public class ReceiversHelper {
   public void saveReceiverConfiguration(File file) {
     LoggerRepository repo = LogManager.getLoggerRepository();
     PluginRegistry pluginRegistry = ((LoggerRepositoryEx) repo).getPluginRegistry();
-    List fullPluginList = pluginRegistry.getPlugins();
-    List pluginList = new ArrayList();
+    List<Plugin> fullPluginList = pluginRegistry.getPlugins();
+    List<Plugin> pluginList = new ArrayList<>();
       for (Object aFullPluginList : fullPluginList) {
           Plugin thisPlugin = (Plugin) aFullPluginList;
           if (thisPlugin instanceof Receiver) {
@@ -169,7 +169,7 @@ public class ReceiversHelper {
                 pluginElement.setAttribute("class", receiver.getClass().getName());
 
                 BeanInfo beanInfo = Introspector.getBeanInfo(receiver.getClass());
-                List list = new ArrayList(Arrays.asList(beanInfo.getPropertyDescriptors()));
+                List<PropertyDescriptor> list = new ArrayList<>(Arrays.asList(beanInfo.getPropertyDescriptors()));
 
                 for (Object aList : list) {
                     PropertyDescriptor d = (PropertyDescriptor) aList;

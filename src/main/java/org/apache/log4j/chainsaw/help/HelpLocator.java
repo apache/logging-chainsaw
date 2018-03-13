@@ -36,7 +36,7 @@ import org.apache.log4j.chainsaw.messages.MessageCenter;
  *         &lt;psmith@apache.org&gt;
  */
 class HelpLocator {
-  private List classLoaders = new ArrayList();
+  private List<ClassLoader> classLoaders = new ArrayList<>();
   private static Logger logger = LogManager.getLogger(HelpLocator.class);
   HelpLocator() {
   }

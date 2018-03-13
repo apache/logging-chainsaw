@@ -48,7 +48,7 @@ import org.apache.log4j.chainsaw.icons.ChainsawIcons;
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 public class WelcomePanel extends JPanel {
-  private Stack urlStack = new Stack();
+  private Stack<URL> urlStack = new Stack<>();
   private final JEditorPane textInfo = new JEditorPane();
   private final URLToolbar urlToolbar = new URLToolbar();
 
@@ -113,7 +113,7 @@ public class WelcomePanel extends JPanel {
             return;
           }
 
-          setURL((URL) urlStack.pop());
+          setURL(urlStack.pop());
         }
       };
 

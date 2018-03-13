@@ -53,7 +53,7 @@ public class SocketReceiver extends Receiver implements Runnable, PortBased,
     /**
      * socket map.
      */
-  private Map socketMap = new HashMap();
+  private Map<Socket, SocketNode13> socketMap = new HashMap<>();
     /**
      * Paused.
      */
@@ -73,7 +73,7 @@ public class SocketReceiver extends Receiver implements Runnable, PortBased,
     /**
      * Socket list.
      */
-  private Vector socketList = new Vector();
+  private Vector<Socket> socketList = new Vector<>();
 
   /**
    * The MulticastDNS zone advertised by a SocketReceiver
@@ -332,15 +332,15 @@ public class SocketReceiver extends Receiver implements Runnable, PortBased,
    * been responsible for creating.
    * @return Vector of SocketDetails
    */
-  public Vector getConnectedSocketDetails() {
-    Vector details = new Vector(socketList.size());
+  public Vector<SocketDetail> getConnectedSocketDetails() {
+    Vector<SocketDetail> details = new Vector<>(socketList.size());
 
-    for (Enumeration enumeration = socketList.elements();
+    for (Enumeration<Socket> enumeration = socketList.elements();
          enumeration.hasMoreElements();
             ) {
-      Socket socket = (Socket) enumeration.nextElement();
+      Socket socket = enumeration.nextElement();
       details.add(
-        new SocketDetail(socket, (SocketNode13) socketMap.get(socket)));
+        new SocketDetail(socket, socketMap.get(socket)));
     }
 
     return details;

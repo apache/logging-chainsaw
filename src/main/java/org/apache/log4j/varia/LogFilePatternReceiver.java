@@ -137,7 +137,7 @@ import org.apache.log4j.spi.ThrowableInformation;
  *@author Scott Deboy
  */
 public class LogFilePatternReceiver extends Receiver {
-  private final List keywords = new ArrayList();
+  private final List<String> keywords = new ArrayList<>();
 
   private static final String PROP_START = "PROP(";
   private static final String PROP_END = ")";
@@ -189,8 +189,8 @@ public class LogFilePatternReceiver extends Receiver {
   private Rule expressionRule;
 
   private Map currentMap;
-  private List additionalLines;
-  private List matchingKeywords;
+  private List<String> additionalLines;
+  private List<String> matchingKeywords;
 
   private String regexp;
   private Reader reader;
@@ -201,7 +201,7 @@ public class LogFilePatternReceiver extends Receiver {
   private boolean useCurrentThread;
   public static final int MISSING_FILE_RETRY_MILLIS = 10000;
   private boolean appendNonMatches;
-  private final Map customLevelDefinitionMap = new HashMap();
+  private final Map<String, Level> customLevelDefinitionMap = new HashMap<>();
 
   //default to one line - this number is incremented for each (NL) found in the logFormat
   private int lineCount = 1;
@@ -410,7 +410,7 @@ public class LogFilePatternReceiver extends Receiver {
    */
   private int getExceptionLine() {
     for (int i = 0; i < additionalLines.size(); i++) {
-      Matcher exceptionMatcher = exceptionPattern.matcher((String)additionalLines.get(i));
+      Matcher exceptionMatcher = exceptionPattern.matcher(additionalLines.get(i));
       if (exceptionMatcher.matches()) {
         return i;
       }
@@ -463,7 +463,7 @@ public class LogFilePatternReceiver extends Receiver {
     }
     String[] exception = new String[additionalLines.size() - exceptionLine - 1];
     for (int i = 0; i < exception.length; i++) {
-      exception[i] = (String) additionalLines.get(i + exceptionLine);
+      exception[i] = additionalLines.get(i + exceptionLine);
     }
     return exception;
   }
@@ -672,8 +672,8 @@ public class LogFilePatternReceiver extends Receiver {
 	}
 
     currentMap = new HashMap();
-    additionalLines = new ArrayList();
-    matchingKeywords = new ArrayList();
+    additionalLines = new ArrayList<>();
+    matchingKeywords = new ArrayList<>();
 
     if (timestampFormat != null) {
       dateFormat = new SimpleDateFormat(quoteTimeStampChars(timestampFormat));
@@ -689,7 +689,7 @@ public class LogFilePatternReceiver extends Receiver {
       getLogger().warn("Invalid filter expression: " + filterExpression, e);
     }
 
-    List buildingKeywords = new ArrayList();
+    List<String> buildingKeywords = new ArrayList<>();
 
     String newPattern = logFormat;
 
@@ -707,7 +707,7 @@ public class LogFilePatternReceiver extends Receiver {
     String current = newPattern;
     //build a list of property names and temporarily replace the property with an empty string,
     //we'll rebuild the pattern later
-    List propertyNames = new ArrayList();
+    List<String> propertyNames = new ArrayList<>();
     index = 0;
     while (index > -1) {
         if (current.contains(PROP_START) && current.contains(PROP_END)) {
@@ -771,7 +771,7 @@ public class LogFilePatternReceiver extends Receiver {
     newPattern = newPattern.replaceAll(Pattern.quote(PATTERN_WILDCARD), REGEXP_DEFAULT_WILDCARD);
     //use buildingKeywords here to ensure correct order
     for (int i = 0;i<buildingKeywords.size();i++) {
-      String keyword = (String) buildingKeywords.get(i);
+      String keyword = buildingKeywords.get(i);
       //make the final keyword greedy (we're assuming it's the message)
       if (i == (buildingKeywords.size() - 1)) {
         newPattern = singleReplace(newPattern, String.valueOf(i), GREEDY_GROUP);
@@ -950,7 +950,7 @@ public class LogFilePatternReceiver extends Receiver {
         levelImpl = Level.DEBUG;
     } else {
         //first try to resolve against custom level definition map, then fall back to regular levels
-        levelImpl = (Level) customLevelDefinitionMap.get(level);
+        levelImpl = customLevelDefinitionMap.get(level);
         if (levelImpl == null) {
             levelImpl = Level.toLevel(level.trim());
             if (!level.equals(levelImpl.toString())) {

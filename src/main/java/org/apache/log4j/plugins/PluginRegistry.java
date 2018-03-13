@@ -40,7 +40,7 @@ public final class PluginRegistry {
      * The pluginMap is keyed by plugin name and contains plugins as values.
      * key=plugin.getName, value=plugin
      */
-    private final Map pluginMap;
+    private final Map<String, Plugin> pluginMap;
     /**
      * Logger repository.
      */
@@ -62,7 +62,7 @@ public final class PluginRegistry {
      */
     public PluginRegistry(final LoggerRepositoryEx repository) {
         super();
-        pluginMap = new HashMap();
+        pluginMap = new HashMap<>();
         this.loggerRepository = repository;
         this.loggerRepository.addLoggerRepositoryEventListener(listener);
     }
@@ -106,7 +106,7 @@ public final class PluginRegistry {
             // make sure the plugin has reference to repository
             plugin.setLoggerRepository(getLoggerRepository());
 
-            Plugin existingPlugin = (Plugin) pluginMap.get(name);
+            Plugin existingPlugin = pluginMap.get(name);
             if (existingPlugin != null) {
                 existingPlugin.shutdown();
             }
@@ -161,9 +161,9 @@ public final class PluginRegistry {
      *
      * @return List list of plugins from the repository.
      */
-    public List getPlugins() {
+    public List<Plugin> getPlugins() {
         synchronized (pluginMap) {
-            List pluginList = new ArrayList(pluginMap.size());
+            List<Plugin> pluginList = new ArrayList<>(pluginMap.size());
 
             pluginList.addAll(pluginMap.values());
             return pluginList;
@@ -201,7 +201,7 @@ public final class PluginRegistry {
      */
     public Plugin stopPlugin(final String pluginName) {
         synchronized (pluginMap) {
-            Plugin plugin = (Plugin) pluginMap.get(pluginName);
+            Plugin plugin = pluginMap.get(pluginName);
 
             if (plugin == null) {
                 return null;

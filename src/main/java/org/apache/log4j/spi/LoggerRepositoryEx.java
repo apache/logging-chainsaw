@@ -134,7 +134,7 @@ public interface LoggerRepositoryEx extends LoggerRepository {
    * Get the properties specific for this repository.
    * @return property map.
    */
-  Map getProperties();
+  Map<String, String> getProperties();
 
   /**
    * Get the property of this repository.
@@ -155,7 +155,7 @@ public interface LoggerRepositoryEx extends LoggerRepository {
    *
    * @return List
    */
-  List getErrorList();
+  List<ErrorItem> getErrorList();
 
   /**
    * Errors which cannot be logged, go to the error list.

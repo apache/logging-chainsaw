@@ -57,7 +57,7 @@ class ChainsawSplash extends JWindow {
     String[] preferredFontNames =
       new String[] { "Arial", "Helvetica", "SansSerif" };
 
-    Set availableFontNames = new HashSet();
+    Set<String> availableFontNames = new HashSet<>();
     Font[] allFonts =
       GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
 

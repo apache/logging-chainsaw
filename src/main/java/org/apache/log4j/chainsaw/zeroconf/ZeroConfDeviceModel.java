@@ -27,7 +27,7 @@ import javax.swing.table.AbstractTableModel;
 
 public class ZeroConfDeviceModel extends AbstractTableModel implements ServiceListener {
 
-    private List deviceList = new ArrayList();
+    private List<ServiceInfo> deviceList = new ArrayList<>();
     private ZeroConfPreferenceModel zeroConfPreferenceModel;
     private transient ZeroConfPlugin plugin;
     
@@ -43,10 +43,10 @@ public class ZeroConfDeviceModel extends AbstractTableModel implements ServiceLi
     }
 
     public ServiceInfo getServiceInfoAtRow(int row) {
-        return (ServiceInfo) deviceList.get(row);
+        return deviceList.get(row);
     }
     public Object getValueAt(int rowIndex, int columnIndex) {
-        ServiceInfo info = (ServiceInfo) deviceList.get(rowIndex);
+        ServiceInfo info = deviceList.get(rowIndex);
         if(info == null) {
             return "";
         }
@@ -73,8 +73,8 @@ public class ZeroConfDeviceModel extends AbstractTableModel implements ServiceLi
     }
 
     public void serviceRemoved(ServiceEvent event) {
-        for (Iterator iter = deviceList.iterator(); iter.hasNext();) {
-            ServiceInfo info = (ServiceInfo) iter.next();
+        for (Iterator<ServiceInfo> iter = deviceList.iterator(); iter.hasNext();) {
+            ServiceInfo info = iter.next();
             if(info.getName().equals(event.getName())) {
                 iter.remove();
             }
