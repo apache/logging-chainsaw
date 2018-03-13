@@ -817,15 +817,15 @@ e.printStackTrace();
     Action gotoLine =
       new AbstractAction() {
         public void actionPerformed(ActionEvent e) {
-          String inputLine = JOptionPane.showInputDialog(LogUI.this, "Enter the line number to go:", "Goto Line", -1);
+          String inputLine = JOptionPane.showInputDialog(LogUI.this, "Enter the line number to go:", "Goto Line", JOptionPane.PLAIN_MESSAGE);
           try {
         	  int lineNumber = Integer.parseInt(inputLine);
               int row = getCurrentLogPanel().setSelectedEvent(lineNumber);
               if (row == -1) {
-                  JOptionPane.showMessageDialog(LogUI.this, "You have entered an invalid line number", "Error", 0);
+                  JOptionPane.showMessageDialog(LogUI.this, "You have entered an invalid line number", "Error", JOptionPane.ERROR_MESSAGE);
               }
           } catch (NumberFormatException nfe) {
-              JOptionPane.showMessageDialog(LogUI.this, "You have entered an invalid line number", "Error", 0);
+              JOptionPane.showMessageDialog(LogUI.this, "You have entered an invalid line number", "Error", JOptionPane.ERROR_MESSAGE);
           }
         }
       };

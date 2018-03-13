@@ -43,7 +43,7 @@ public class ProgressPanel extends JPanel {
   ProgressPanel(int min, int max, String msg) {
     this.progressBar = new JProgressBar(min, max);
     setBorder(BorderFactory.createLineBorder(Color.black, 1));
-    messageLabel.setHorizontalAlignment(SwingConstants.HORIZONTAL);
+    messageLabel.setHorizontalAlignment(SwingConstants.CENTER);
     messageLabel.setText(msg);
     setLayout(new BorderLayout());
 
