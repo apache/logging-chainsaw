@@ -171,7 +171,7 @@ public class UDPReceiver extends Receiver implements PortBased, Pauseable {
   }
 
   class UDPHandlerThread extends Thread {
-    private List list = new ArrayList();
+    private final List list = new ArrayList();
 
     public UDPHandlerThread() {
       setDaemon(true);

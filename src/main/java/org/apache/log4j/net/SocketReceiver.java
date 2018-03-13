@@ -87,7 +87,7 @@ public class SocketReceiver extends Receiver implements Runnable, PortBased,
     /**
      * Listeners.
      */
-  private List listenerList = Collections.synchronizedList(new ArrayList());
+  private final List listenerList = Collections.synchronizedList(new ArrayList());
   private boolean advertiseViaMulticastDNS;
   private ZeroConfSupport zeroConf;
 

@@ -174,7 +174,7 @@ public class MulticastReceiver extends Receiver implements PortBased,
     }
 
     class MulticastHandlerThread extends Thread {
-    private List list = new ArrayList();
+    private final List list = new ArrayList();
 
     public MulticastHandlerThread() {
       setDaemon(true);

@@ -74,7 +74,7 @@ public class SocketNode13 extends ComponentBase implements Runnable, Pauseable {
     /**
      * List of listeners.
      */
-  private List listenerList = Collections.synchronizedList(new ArrayList());
+  private final List listenerList = Collections.synchronizedList(new ArrayList());
 
 
 

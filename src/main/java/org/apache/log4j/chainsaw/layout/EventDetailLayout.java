@@ -38,7 +38,7 @@ import org.apache.log4j.spi.LoggingEvent;
  * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 public class EventDetailLayout extends Layout {
-  private EnhancedPatternLayout patternLayout = new EnhancedPatternLayout();
+  private final EnhancedPatternLayout patternLayout = new EnhancedPatternLayout();
 
   public EventDetailLayout() {
   }

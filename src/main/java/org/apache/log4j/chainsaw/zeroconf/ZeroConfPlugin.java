@@ -88,7 +88,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
 
     private ZeroConfPreferenceModel preferenceModel;
     
-    private Map serviceInfoToReceiveMap = new HashMap();
+    private final Map serviceInfoToReceiveMap = new HashMap();
 
     private JMenu connectToMenu = new JMenu("Connect to");
     private JMenuItem helpItem = new JMenuItem(new AbstractAction("Learn more about ZeroConf...",

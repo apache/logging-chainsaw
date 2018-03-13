@@ -178,7 +178,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
    * until notified.
    */
   private boolean isGUIFullyInitialized = false;
-  private Object initializationLock = new Object();
+  private final Object initializationLock = new Object();
 
   /**
    * The shutdownAction is called when the user requests to exit Chainsaw, and

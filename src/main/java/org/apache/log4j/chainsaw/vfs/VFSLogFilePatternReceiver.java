@@ -167,7 +167,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
 
   private boolean promptForUserInfo = false;
   private Container container;
-  private Object waitForContainerLock = new Object();
+  private final Object waitForContainerLock = new Object();
   private boolean autoReconnect;
   private VFSReader vfsReader;
 

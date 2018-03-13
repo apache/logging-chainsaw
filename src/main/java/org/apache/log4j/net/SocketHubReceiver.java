@@ -85,7 +85,7 @@ extends Receiver implements SocketNodeEventListener, PortBased {
     /**
      * Listener list.
      */
-  private List listenerList = Collections.synchronizedList(new ArrayList());
+  private final List listenerList = Collections.synchronizedList(new ArrayList());
 
   private boolean advertiseViaMulticastDNS;
   private ZeroConfSupport zeroConf;
