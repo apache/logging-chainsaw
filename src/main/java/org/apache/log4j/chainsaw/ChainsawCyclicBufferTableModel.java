@@ -64,7 +64,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
   private static final int DEFAULT_CAPACITY = 5000;
   //cyclic field used internally in this class, but not exposed via the eventcontainer
   private boolean cyclic = true;
-  private int cyclicBufferSize = DEFAULT_CAPACITY;
+  private int cyclicBufferSize;
   //original list of LoggingEventWrapper instances
   List unfilteredList;
   //filtered list of LoggingEventWrapper instances
@@ -834,8 +834,8 @@ fireTableRowsInserted(begin, end);
                       logger.debug(
                         "Changing Model, isCyclic is now " + cyclic);
 
-                      List newUnfilteredList = null;
-                      List newFilteredList = null;
+                      List newUnfilteredList;
+                      List newFilteredList;
 
                       if (cyclic) {
                         newUnfilteredList = new CyclicBufferList(cyclicBufferSize);

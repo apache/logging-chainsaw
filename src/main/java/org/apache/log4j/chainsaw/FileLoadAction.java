@@ -51,11 +51,11 @@ class FileLoadAction extends AbstractAction {
      * the events it loads
      *  
      */
-    Decoder decoder = null;
+    Decoder decoder;
 
     private LogUI parent;
 
-    private boolean remoteURL = false;
+    private boolean remoteURL;
 
     public FileLoadAction(LogUI parent, Decoder decoder, String title,
             boolean isRemoteURL) {

@@ -84,7 +84,7 @@ public class JNDIConnectionSource
    */
   public Connection getConnection()
          throws SQLException {
-    Connection conn = null;
+    Connection conn;
     try {
 
       if(dataSource == null) {

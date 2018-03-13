@@ -98,10 +98,9 @@ public class XMLSocketNode extends ComponentBase implements Runnable {
   public void run() {
     Logger remoteLogger;
     Exception listenerException = null;
-    InputStream is = null;
+    InputStream is;
 
     if ((this.receiver == null) || (this.decoder == null)) {
-      is = null;
       listenerException =
         new Exception(
           "No receiver or decoder provided.  Cannot process xml socket events");

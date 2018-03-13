@@ -341,7 +341,6 @@ public class ChainsawAppenderHandler extends AppenderSkeleton {
               listener.receiveEventBatch(identifier, eventList);
             }
           }
-          eventList = null;
         }
       }
     }

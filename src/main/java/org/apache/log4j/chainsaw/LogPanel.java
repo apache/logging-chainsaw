@@ -700,7 +700,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
           if (preferenceModel.isCyclic()) {
             double percent =
               ((double) totalCount) / tableModel.getMaxSize();
-            String msg = null;
+            String msg;
             boolean wasWarning = warning75 || warning100;
             if ((percent > 0.75) && (percent < 1.0) && !warning75) {
               msg =
@@ -2262,7 +2262,7 @@ detailPaneUpdater.setAndUpdateSelectedRow(table.getSelectedRow());
    * @see LogPanelPreferenceModel
    */
   public void saveSettings(SaveSettingsEvent event) {
-    File xmlFile = null;
+    File xmlFile;
     try {
       xmlFile = new File(SettingsManager.getInstance().getSettingsDirectory(), URLEncoder.encode(identifier, "UTF-8") + ".xml");
     } catch (UnsupportedEncodingException e) {
@@ -3026,7 +3026,7 @@ detailPaneUpdater.setAndUpdateSelectedRow(table.getSelectedRow());
       searchColumnNameMap.put(searchTable.getColumnName(i).toUpperCase(), searchColumnModel.getColumn(i));
     }
 
-    int index = 0;
+    int index;
     StringTokenizer tok = new StringTokenizer(columnOrder, ",");
     List sortedColumnList = new ArrayList();
 

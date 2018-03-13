@@ -28,7 +28,7 @@ import java.util.EventObject;
  *
  */
 public class NewKeyEvent extends EventObject {
-  private int newModelIndex = -1;
+  private int newModelIndex;
   private Object key;
   private Object value;
 

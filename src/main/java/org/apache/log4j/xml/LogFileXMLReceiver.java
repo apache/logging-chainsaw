@@ -239,7 +239,7 @@ public class LogFileXMLReceiver extends Receiver {
         BufferedReader bufferedReader = new BufferedReader(unbufferedReader);
         char[] content = new char[10000];
         getLogger().debug("processing starting: " + fileURL);
-        int length = 0;
+        int length;
         do {
             System.out.println("in do loop-about to process");
             while ((length = bufferedReader.read(content)) > -1) {

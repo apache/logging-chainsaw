@@ -144,7 +144,7 @@ public class SocketNode13 extends ComponentBase implements Runnable, Pauseable {
     LoggingEvent event;
     Logger remoteLogger;
     Exception listenerException = null;
-    ObjectInputStream ois = null;
+    ObjectInputStream ois;
 
     try {
       ois =

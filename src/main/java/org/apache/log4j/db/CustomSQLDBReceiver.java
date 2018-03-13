@@ -288,21 +288,21 @@ public class CustomSQLDBReceiver extends Receiver implements Pauseable, Unrecogn
                 connection = connectionSource.getConnection();
                 Statement statement = connection.createStatement();
 
-                Logger eventLogger = null;
-                long timeStamp = 0L;
-                String level = null;
-                String threadName = null;
-                Object message = null;
-                String ndc = null;
-                Hashtable mdc = null;
-                String[] throwable = null;
-                String className = null;
-                String methodName = null;
-                String fileName = null;
-                String lineNumber = null;
-                Hashtable properties = null;
+                Logger eventLogger;
+                long timeStamp;
+                String level;
+                String threadName;
+                Object message;
+                String ndc;
+                Hashtable mdc;
+                String[] throwable;
+                String className;
+                String methodName;
+                String fileName;
+                String lineNumber;
+                Hashtable properties;
 
-                String currentSQLStatement = sqlStatement;
+                String currentSQLStatement;
                 if (whereExists) {
                     currentSQLStatement = sqlStatement + AND_CLAUSE + idField
                             + " > " + lastID;
@@ -424,11 +424,9 @@ public class CustomSQLDBReceiver extends Receiver implements Pauseable, Unrecogn
                 //log when rows are retrieved
                 if (lastID != oldLastID) {
                     getLogger().debug("lastID: " + lastID);
-                    oldLastID = lastID;
                 }
 
                 statement.close();
-                statement = null;
             } catch (SQLException sqle) {
                 getLogger()
                         .error("*************Problem receiving events", sqle);

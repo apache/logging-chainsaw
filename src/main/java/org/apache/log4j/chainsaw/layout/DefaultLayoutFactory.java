@@ -60,7 +60,7 @@ public class DefaultLayoutFactory {
               new BufferedReader(
                 new InputStreamReader(defaultLayoutURL.openStream()));
 
-            String line = "";
+            String line;
 
             while ((line = reader.readLine()) != null) {
               content.append(line).append("\n");

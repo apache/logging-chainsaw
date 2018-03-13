@@ -912,16 +912,16 @@ public class LogFilePatternReceiver extends Receiver {
       exception = emptyException;
     }
 
-    Logger logger = null;
+    Logger logger;
     long timeStamp = 0L;
-    String level = null;
-    String threadName = null;
-    Object message = null;
-    String ndc = null;
-    String className = null;
-    String methodName = null;
-    String eventFileName = null;
-    String lineNumber = null;
+    String level;
+    String threadName;
+    Object message;
+    String ndc;
+    String className;
+    String methodName;
+    String eventFileName;
+    String lineNumber;
     Hashtable properties = new Hashtable();
 
     logger = Logger.getLogger((String) fieldMap.remove(LOGGER));
@@ -987,7 +987,7 @@ public class LogFilePatternReceiver extends Receiver {
     //all remaining entries in fieldmap are properties
     properties.putAll(fieldMap);
 
-    LocationInfo info = null;
+    LocationInfo info;
 
     if ((eventFileName != null) || (className != null) || (methodName != null)
         || (lineNumber != null)) {

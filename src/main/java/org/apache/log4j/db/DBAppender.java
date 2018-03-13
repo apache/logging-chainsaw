@@ -279,12 +279,10 @@ public class DBAppender extends AppenderSkeleton implements UnrecognizedElementH
           // we no longer need the insertStatement
           if(insertStatement != null) {
               insertStatement.close();
-              insertStatement = null;
           }
 
           if(idStatement != null) {
               idStatement.close();
-              idStatement = null;
           }
 
           Set propertiesKeys = event.getPropertyKeySet();
@@ -314,7 +312,6 @@ public class DBAppender extends AppenderSkeleton implements UnrecognizedElementH
               }
               
               insertPropertiesStatement.close();
-              insertPropertiesStatement = null;
           }
           
           String[] strRep = event.getThrowableStrRep();
@@ -339,7 +336,6 @@ public class DBAppender extends AppenderSkeleton implements UnrecognizedElementH
                   insertExceptionStatement.executeBatch();
               }
               insertExceptionStatement.close();
-              insertExceptionStatement = null;
           }
           
           connection.commit();

@@ -73,16 +73,16 @@ class DBReceiverJob extends ComponentBase implements Job {
       //rs.beforeFirst();
 
       while (rs.next()) {
-	    Logger logger = null;
-	    long timeStamp = 0L;
-	    String level = null;
-	    String threadName = null;
-	    Object message = null;
-	    String ndc = null;
-	    String className = null;
-	    String methodName = null;
-	    String fileName = null;
-	    String lineNumber = null;
+	    Logger logger;
+	    long timeStamp;
+	    String level;
+	    String threadName;
+	    Object message;
+	    String ndc;
+	    String className;
+	    String methodName;
+	    String fileName;
+	    String lineNumber;
 	    Hashtable properties = new Hashtable();
 	
 
@@ -103,7 +103,7 @@ class DBReceiverJob extends ComponentBase implements Job {
         methodName = rs.getString(11);
         lineNumber = rs.getString(12).trim();
 
-		LocationInfo locationInfo = null;
+		LocationInfo locationInfo;
         if (fileName.equals(LocationInfo.NA)) {
           locationInfo = LocationInfo.NA_LOCATION_INFO;
         } else {
@@ -144,7 +144,6 @@ class DBReceiverJob extends ComponentBase implements Job {
         }
       } // while
       statement.close();
-      statement = null;
     } catch (SQLException sqle) {
       getLogger().error("Problem receiving events", sqle);
     } finally {

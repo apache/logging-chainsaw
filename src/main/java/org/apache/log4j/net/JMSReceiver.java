@@ -198,7 +198,7 @@ public class JMSReceiver extends Receiver implements MessageListener {
       try {
         remoteInfo = topicFactoryName + ":" + topicName;
 
-        Context ctx = null;
+        Context ctx;
         if (jndiPath == null || jndiPath.equals("")) {
                 ctx = new InitialContext();
         } else {

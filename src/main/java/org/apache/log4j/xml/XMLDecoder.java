@@ -236,7 +236,7 @@ public class XMLDecoder implements Decoder {
       if (document.trim().equals("")) {
         return null;
       }
-        String newDoc = null;
+        String newDoc;
         String newPartialEvent = null;
         //separate the string into the last portion ending with
         // </log4j:event> (which will be processed) and the

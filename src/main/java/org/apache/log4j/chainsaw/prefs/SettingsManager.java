@@ -229,7 +229,7 @@ public final class SettingsManager {
      */
     private void saveProfileableSetting(File settingsDir) {
         EventListener[] listeners = listenerList.getListeners(SettingsListener.class);
-        SaveSettingsEvent event = null;
+        SaveSettingsEvent event;
 
         for (EventListener listener : listeners) {
             SettingsListener settingsListener = (SettingsListener) listener;
