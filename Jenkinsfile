@@ -27,8 +27,8 @@ pipeline {
             steps {
                 withMaven(jdk: 'JDK 1.8 (latest)', maven: 'Maven 3 (latest)') {
                     ansiColor('xterm') {
-                        sh 'mvn site:site'
-                        sh 'mvn package'
+                        sh 'mvn -Pdevelopment site:site'
+                        sh 'mvn -Pdevelopment package'
                     }
                 }
                 junit '**/target/surefire-reports/*.xml'

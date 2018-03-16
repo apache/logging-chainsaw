@@ -515,6 +515,7 @@
         <javadoc.opts>-Xdoclint:none</javadoc.opts>
       </properties>
     </profile>
+
     <profile>
       <id>mac</id>
       <activation>
@@ -549,6 +550,20 @@
           </plugin>
         </plugins>
       </build>
+    </profile>
+
+    <profile>
+      <id>development</id>
+      <repositories>
+        <repository>
+          <id>apache.snapshots</id>
+          <name>Apache Snapshot Repository</name>
+          <url>https://repository.apache.org/snapshots</url>
+          <releases>
+            <enabled>false</enabled>
+          </releases>
+        </repository>
+      </repositories>
     </profile>
   </profiles>
 </project>
