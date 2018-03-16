@@ -327,30 +327,6 @@
           </execution>
         </executions>
       </plugin>
-      <!-- FIXME: make this plugin optional -->
-      <!--<plugin>-->
-      <!--<groupId>sh.tak.appbundler</groupId>-->
-      <!--<artifactId>appbundle-maven-plugin</artifactId>-->
-      <!--<version>1.2.0</version>-->
-      <!--<configuration>-->
-      <!--<mainClass>${chainsaw.mainclass}</mainClass>-->
-      <!--<bundleName>Chainsaw</bundleName>-->
-      <!--<iconFile>logo.icns</iconFile>-->
-      <!--<generateDiskImageFile>true</generateDiskImageFile>-->
-      <!--<jvmOptions>-->
-      <!--<jvmOption>-Xms128m</jvmOption>-->
-      <!--<jvmOption>-Xmx512m</jvmOption>-->
-      <!--</jvmOptions>-->
-      <!--</configuration>-->
-      <!--<executions>-->
-      <!--<execution>-->
-      <!--<phase>package</phase>-->
-      <!--<goals>-->
-      <!--<goal>bundle</goal>-->
-      <!--</goals>-->
-      <!--</execution>-->
-      <!--</executions>-->
-      <!--</plugin> -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>webstart-maven-plugin</artifactId>
@@ -538,6 +514,41 @@
       <properties>
         <javadoc.opts>-Xdoclint:none</javadoc.opts>
       </properties>
+    </profile>
+    <profile>
+      <id>mac</id>
+      <activation>
+        <os>
+          <family>mac</family>
+        </os>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>sh.tak.appbundler</groupId>
+            <artifactId>appbundle-maven-plugin</artifactId>
+            <version>1.2.0</version>
+            <configuration>
+              <mainClass>${chainsaw.mainclass}</mainClass>
+              <bundleName>Chainsaw</bundleName>
+              <iconFile>logo.icns</iconFile>
+              <generateDiskImageFile>true</generateDiskImageFile>
+              <jvmOptions>
+                <jvmOption>-Xms128m</jvmOption>
+                <jvmOption>-Xmx512m</jvmOption>
+              </jvmOptions>
+            </configuration>
+            <executions>
+              <execution>
+                <phase>package</phase>
+                <goals>
+                  <goal>bundle</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>
