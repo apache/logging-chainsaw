@@ -30,10 +30,12 @@
   <description>Graphical Viewer for Logging events from a local or remote log4j event system.</description>
   <url>https://logging.apache.org/chainsaw</url>
   <inceptionYear>2002</inceptionYear>
+
   <issueManagement>
     <system>JIRA</system>
     <url>https://issues.apache.org/jira/browse/CHAINSAW</url>
   </issueManagement>
+
   <mailingLists>
     <mailingList>
       <name>log4j-user</name>
@@ -65,6 +67,7 @@
       <archive>http://mail-archives.apache.org/mod_mbox/logging-commits/</archive>
     </mailingList>
   </mailingLists>
+
   <developers>
     <developer>
       <id>mwomack</id>
@@ -97,6 +100,7 @@
       <name>Isuru Suriarachchi</name>
     </contributor>
   </contributors>
+
   <licenses>
     <license>
       <name>Apache License, Version 2.0</name>
@@ -104,15 +108,19 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
+
   <scm>
     <connection>scm:git:https://git-wip-us.apache.org/repos/asf/logging-chainsaw.git</connection>
     <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/logging-chainsaw.git</developerConnection>
     <url>https://git-wip-us.apache.org/repos/asf?p=logging-chainsaw.git</url>
   </scm>
-  <organization>
-    <name>Apache Software Foundation</name>
-    <url>https://www.apache.org</url>
-  </organization>
+
+  <properties>
+    <chainsaw.mainclass>org.apache.log4j.chainsaw.LogUI</chainsaw.mainclass>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
+
   <build>
     <plugins>
       <plugin>
@@ -133,10 +141,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -361,6 +365,7 @@
       </plugin>
     </plugins>
   </build>
+
   <dependencies>
     <dependency>
       <groupId>log4j</groupId>
@@ -430,6 +435,7 @@
       <scope>provided</scope>
     </dependency>
   </dependencies>
+
   <reporting>
     <excludeDefaults>true</excludeDefaults>
     <plugins>
@@ -490,6 +496,7 @@
       </plugin>
     </plugins>
   </reporting>
+
   <distributionManagement>
     <downloadUrl>https://logging.apache.org/log4j/chainsaw/download.html</downloadUrl>
     <site>
@@ -497,9 +504,7 @@
       <url>scp://www.example.com/www/docs/project/</url>
     </site>
   </distributionManagement>
-  <properties>
-    <chainsaw.mainclass>org.apache.log4j.chainsaw.LogUI</chainsaw.mainclass>
-  </properties>
+
   <profiles>
     <profile>
       <id>java8-doclint-disabled</id>
