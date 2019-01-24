@@ -27,6 +27,9 @@
       <action issue="CHAINSAW-3" type="add" dev="mattsicker">
         Add automated Jenkins pipeline configuration for branches and pull requests.
       </action>
+      <action issue="CHAINSAW-66" type="update" dev="mattsicker" due-to="tzachi-dar">
+        Update JSch to 0.1.55. Fixes weak SSH key issue with newer SSH servers.
+      </action>
     </release>
     <release version="2.0.0" date="2018-01-20" description="Apache Chainsaw 2.0.0">
       <action dev="sdeboy" type="fix">
