@@ -54,3 +54,12 @@ Tutorial and User Manual
 
 	Chainsaw already includes help with with a Quick Reference and a Tutorial to get you started, all 
 	viewable from within the GUI!
+
+      
+Alternatives
+
+	* {{{https://github.com/otros-systems/otroslogviewer}OtrosLogViewer}} is supporting different log formats (log4j, log4j2, logback, JUL) with pluginable architecture and Intellij/Eclispe integration.
+
+	* {{{http://lilith.huxhorn.de}Lilith}} is a Logging and AccessEvent viewer for Log4j, Logback, and java.util.logging
+
+	* {{{https://github.com/anb0s/logviewer}eclipse logviewer}} is Eclipse Plug-in for tailing log files and eclipse consoles.
