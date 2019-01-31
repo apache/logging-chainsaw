@@ -27,9 +27,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.util.zip.GZIPInputStream;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -337,6 +339,10 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
       private Reader reader;
       private FileObject fileObject;
 
+      private boolean IsGZip(String fileName) {
+    	  return fileName.endsWith( ".gz" );
+      }
+      
       public void run() {
         	//thread should end when we're no longer active
             while (reader == null && !terminated) {
@@ -389,6 +395,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
             }
             initialize();
             getLogger().debug(getPath() + " exists");
+            boolean readingFinished = false;
 
             do {
                 long lastFilePointer = 0;
@@ -406,11 +413,11 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                         }
 
                         //fileobject was created above, release it and construct a new one
-						synchronized(fileSystemManager) {
-	                        if (fileObject != null) {
-	                              fileObject.getFileSystem().getFileSystemManager().closeFileSystem(fileObject.getFileSystem());
-	                              fileObject.close();
-	                              fileObject = null;
+                        synchronized(fileSystemManager) {
+                            if (fileObject != null) {
+                                fileObject.getFileSystem().getFileSystemManager().closeFileSystem(fileObject.getFileSystem());
+                                fileObject.close();
+                                fileObject = null;
                             }
                         
                         	fileObject = fileSystemManager.resolveFile(getFileURL(), opts);
@@ -425,8 +432,16 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                             } catch (Error err) {
                                 getLogger().info(getPath() + " - unable to refresh fileobject", err);
                             }
+
+                            if(IsGZip(getFileURL())) {
+                                InputStream gzipStream = new GZIPInputStream(fileObject.getContent().getInputStream());
+                                Reader decoder = new InputStreamReader(gzipStream,  "UTF-8");
+                                BufferedReader bufferedReader = new BufferedReader(decoder);
+                                process(bufferedReader);
+                                readingFinished = true;
+                            }
                             //could have been truncated or appended to (don't do anything if same size)
-                            if (fileObject.getContent().getSize() < lastFileSize) {
+                             if (fileObject.getContent().getSize() < lastFileSize) {
                                 reader = new InputStreamReader(fileObject.getContent().getInputStream(), "UTF-8");
                                 getLogger().debug(getPath() + " was truncated");
                                 lastFileSize = 0; //seek to beginning of file
@@ -462,7 +477,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                         if (isTailing() && fileLarger && !terminated) {
                             getLogger().debug(getPath() + " - tailing file - file size: " + lastFileSize);
                         }
-                    } while (isTailing() && !terminated);
+                    } while (isTailing() && !terminated && !readingFinished);
                 } catch (IOException ioe) {
                     getLogger().info(getPath() + " - exception processing file", ioe);
                     try {
@@ -478,7 +493,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                         }
                     } catch (InterruptedException ie) {}
                 }
-            } while (isAutoReconnect() && !terminated);
+            } while (isAutoReconnect() && !terminated && !readingFinished);
             getLogger().debug(getPath() + " - processing complete");
         }
 
