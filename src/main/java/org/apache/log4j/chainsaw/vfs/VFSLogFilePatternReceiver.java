@@ -16,6 +16,7 @@
 
 package org.apache.log4j.chainsaw.vfs;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.vfs.*;
 import org.apache.commons.vfs.provider.URLFileName;
 import org.apache.commons.vfs.provider.sftp.SftpFileSystemConfigBuilder;
@@ -26,6 +27,9 @@ import org.apache.log4j.varia.LogFilePatternReceiver;
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Vector;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -319,11 +323,78 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
             return fileName.endsWith( ".gz" );
         }
 
-        public void run() {
-            ProcessSingleFile(getFileURL());
+        // Try to sort the files based on the time that they have been created.
+        // We would like to read them from the latest and then continue to the newest, which we will also tail.
+        private void Sort(Vector<FileObject> filesToRead) {
+            if (filesToRead.size() == 0) {
+                return;
+            }
+            Collections.sort(filesToRead, new Comparator<FileObject>() {
+                @Override
+                public int compare(FileObject o1, FileObject o2) {
+                    try {
+                        return Long.compare(o1.getContent().getLastModifiedTime(),
+                                o2.getContent().getLastModifiedTime());
+                    } catch (FileSystemException fse) {
+                        getLogger().error("Error, could not get file time", fse);
+                        return 0;
+                    }
+                }
+            });
+            getLogger().info("Going to read the following files");
+            try {
+                for (FileObject f : filesToRead) {
+                    getLogger().info(
+                            "file = " + f.getName().getBaseName() + " " + f.getContent().getLastModifiedTime());
+                }
+            } catch (FileSystemException fse) {
+                getLogger().error("Error, could not get file time", fse);
+            }
         }
 
-        private void ProcessSingleFile(String fileUrl) {
+        public void run() {
+            Vector<FileObject> filesToRead = new Vector<FileObject>();
+            getLogger().info("starting to read " + getFileURL());
+            if (!getFileURL().contains("*")) {
+                ProcessSingleFile(getFileURL(), null, null, false);
+                return;
+            }
+            String dir = FilenameUtils.getFullPathNoEndSeparator(getFileURL());
+            String baseName = FilenameUtils.getName(getFileURL());
+            getLogger().debug("dir = " + dir + " name " + baseName);
+
+            try {
+                FileSystemManager fileSystemManager = VFS.getManager();
+                FileSystemOptions opts = new FileSystemOptions();
+                
+                try {
+                    SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
+                } catch (NoClassDefFoundError ncdfe) {
+                    getLogger().warn("JSch not on classpath!", ncdfe);
+                }
+
+                FileObject localFileObject = fileSystemManager.resolveFile(dir, opts);
+                FileObject[] children = localFileObject.getChildren();
+                for (int i = 0; i < children.length; i++) {
+                    if (FilenameUtils.wildcardMatchOnSystem(children[i].getName().getBaseName(), baseName)) {
+                        filesToRead.add(children[i]);
+                    }
+                }
+                Sort(filesToRead);
+                for (int i = 0; i < filesToRead.size(); i++) {
+                    if (filesToRead.get(i).getName() instanceof URLFileName) {
+                        URLFileName urlFileName = (URLFileName) filesToRead.get(i).getName();
+                        ProcessSingleFile(filesToRead.get(i).getName().toString(), urlFileName.getHostName(),
+                                dir + baseName, i != filesToRead.size() - 1);
+                    }
+                }
+
+            } catch (FileSystemException fse) {
+                getLogger().info("Error processing directory " + getFileURL() + " exiting", fse);
+            }
+        }
+
+        private void ProcessSingleFile(String fileUrl, String hostName, String cannonicalPath, boolean forceNoTail) {
             Reader reader = null;
             FileObject fileObject = null;
             //thread should end when we're no longer active
@@ -351,8 +422,8 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                             //check to see if the name is a URLFileName..if so, set file name to not include username/pass
                             if (fileObject.getName() instanceof URLFileName) {
                                 URLFileName urlFileName = (URLFileName) fileObject.getName();
-                                setHost(urlFileName.getHostName());
-                                setPath(urlFileName.getPath());
+                                setHost(hostName != null ? hostName : urlFileName.getHostName() );
+                                setPath(cannonicalPath != null ? cannonicalPath : urlFileName.getPath());
                             }
                         } else {
                             getLogger().info(loggableFileURL + " not available - will re-attempt to load after waiting " + MISSING_FILE_RETRY_MILLIS + " millis");
@@ -461,7 +532,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                         if (isTailing() && fileLarger && !terminated) {
                             getLogger().debug(getPath() + " - tailing file - file size: " + lastFileSize);
                         }
-                    } while (isTailing() && !terminated && !readingFinished);
+                    } while (isTailing() && !terminated && !readingFinished && !forceNoTail);
                 } catch (IOException ioe) {
                     getLogger().info(getPath() + " - exception processing file", ioe);
                     try {
@@ -478,7 +549,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                     } catch (InterruptedException ie) {
                     }
                 }
-            } while (isAutoReconnect() && !terminated && !readingFinished);
+            } while (isAutoReconnect() && !terminated && !readingFinished && !forceNoTail);
             getLogger().debug(getPath() + " - processing complete");
         }
 
