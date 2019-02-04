@@ -315,7 +315,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
         private Reader reader;
         private FileObject fileObject;
 
-        private boolean IsGZip(String fileName) {
+        private boolean isGZip(String fileName) {
             return fileName.endsWith( ".gz" );
         }
 
