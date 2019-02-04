@@ -410,7 +410,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                                 getLogger().info(getPath() + " - unable to refresh fileobject", err);
                             }
 
-                            if(IsGZip(getFileURL())) {
+                            if (isGZip(getFileURL())) {
                                 InputStream gzipStream = new GZIPInputStream(fileObject.getContent().getInputStream());
                                 Reader decoder = new InputStreamReader(gzipStream,  "UTF-8");
                                 BufferedReader bufferedReader = new BufferedReader(decoder);
