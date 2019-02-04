@@ -17,10 +17,10 @@
 package org.apache.log4j.chainsaw.vfs;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.vfs.*;
-import org.apache.commons.vfs.provider.URLFileName;
-import org.apache.commons.vfs.provider.sftp.SftpFileSystemConfigBuilder;
-import org.apache.commons.vfs.util.RandomAccessMode;
+import org.apache.commons.vfs2.*;
+import org.apache.commons.vfs2.provider.URLFileName;
+import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
+import org.apache.commons.vfs2.util.RandomAccessMode;
 import org.apache.log4j.chainsaw.receivers.VisualReceiver;
 import org.apache.log4j.varia.LogFilePatternReceiver;
 
@@ -369,6 +369,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                 
                 try {
                     SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
+                    SftpFileSystemConfigBuilder.getInstance( ).setUserDirIsRoot(opts, false);
                 } catch (NoClassDefFoundError ncdfe) {
                     getLogger().warn("JSch not on classpath!", ncdfe);
                 }
@@ -410,6 +411,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                     //if jsch not in classpath, can get NoClassDefFoundError here
                     try {
                         SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
+                        SftpFileSystemConfigBuilder.getInstance( ).setUserDirIsRoot(opts, false);
                     } catch (NoClassDefFoundError ncdfe) {
                         getLogger().warn("JSch not on classpath!", ncdfe);
                     }
@@ -462,6 +464,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                         //if jsch not in classpath, can get NoClassDefFoundError here
                         try {
                             SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
+                            SftpFileSystemConfigBuilder.getInstance( ).setUserDirIsRoot(opts, false);
                         } catch (NoClassDefFoundError ncdfe) {
                             getLogger().warn("JSch not on classpath!", ncdfe);
                         }
@@ -470,7 +473,6 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                         synchronized (fileSystemManager) {
                             if (fileObject != null) {
                                 fileObject.getFileSystem().getFileSystemManager().closeFileSystem(fileObject.getFileSystem());
-                                fileObject.close();
                                 fileObject = null;
                             }
 
