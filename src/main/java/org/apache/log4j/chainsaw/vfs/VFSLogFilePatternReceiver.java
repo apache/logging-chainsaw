@@ -418,7 +418,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                                 readingFinished = true;
                             }
                             //could have been truncated or appended to (don't do anything if same size)
-                             if (fileObject.getContent().getSize() < lastFileSize) {
+                            if (fileObject.getContent().getSize() < lastFileSize) {
                                 reader = new InputStreamReader(fileObject.getContent().getInputStream(), "UTF-8");
                                 getLogger().debug(getPath() + " was truncated");
                                 lastFileSize = 0; //seek to beginning of file
