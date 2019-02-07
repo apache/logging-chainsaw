@@ -27,6 +27,9 @@
       <action issue="CHAINSAW-3" type="add" dev="mattsicker">
         Add automated Jenkins pipeline configuration for branches and pull requests.
       </action>
+      <action issue="CHAINSAW-67" type="add" dev="mattsicker" due-to="Tzachi Dar">
+        Add support for reading .gz files.
+      </action>
     </release>
     <release version="2.0.0" date="2018-01-20" description="Apache Chainsaw 2.0.0">
       <action dev="sdeboy" type="fix">
