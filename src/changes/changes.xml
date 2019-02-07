@@ -29,6 +29,7 @@
       </action>
       <action issue="CHAINSAW-66" type="update" dev="mattsicker" due-to="tzachi-dar">
         Update JSch to 0.1.55. Fixes weak SSH key issue with newer SSH servers.
+      </action>
       <action issue="CHAINSAW-67" type="add" dev="mattsicker" due-to="Tzachi Dar">
         Add support for reading .gz files.
       </action>
