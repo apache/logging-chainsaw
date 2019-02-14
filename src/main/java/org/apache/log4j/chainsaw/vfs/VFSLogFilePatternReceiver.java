@@ -322,6 +322,13 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
         private boolean isGZip(String fileName) {
             return fileName.endsWith( ".gz" );
         }
+        
+        private String getHostName(FileName fileName) {
+            if (fileName instanceof URLFileName) {
+                return ((URLFileName)fileName).getHostName();
+            }
+            return "unknown";
+        }
 
         // Try to sort the files based on the time that they have been created.
         // We would like to read them from the latest and then continue to the newest, which we will also tail.
@@ -359,6 +366,12 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                 ProcessSingleFile(getFileURL(), null, null, false);
                 return;
             }
+            
+            int atIndex = getFileURL().indexOf("@");
+            int protocolIndex = getFileURL().indexOf("://");
+            String loggableFileURL = atIndex > -1 ? getFileURL().substring(0, protocolIndex + "://".length()) + "username:password" + getFileURL().substring(atIndex) :getFileURL();
+            getLogger().info("starting to read loggableFileURL" + loggableFileURL);
+            
             String dir = FilenameUtils.getFullPathNoEndSeparator(getFileURL());
             String baseName = FilenameUtils.getName(getFileURL());
             getLogger().debug("dir = " + dir + " name " + baseName);
@@ -375,6 +388,8 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                 }
 
                 FileObject localFileObject = fileSystemManager.resolveFile(dir, opts);
+                String dirName = localFileObject.getName().getPath();
+
                 FileObject[] children = localFileObject.getChildren();
                 for (int i = 0; i < children.length; i++) {
                     if (FilenameUtils.wildcardMatchOnSystem(children[i].getName().getBaseName(), baseName)) {
@@ -383,15 +398,12 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                 }
                 Sort(filesToRead);
                 for (int i = 0; i < filesToRead.size(); i++) {
-                    if (filesToRead.get(i).getName() instanceof URLFileName) {
-                        URLFileName urlFileName = (URLFileName) filesToRead.get(i).getName();
-                        ProcessSingleFile(filesToRead.get(i).getName().toString(), urlFileName.getHostName(),
-                                dir + baseName, i != filesToRead.size() - 1);
-                    }
+                    ProcessSingleFile(filesToRead.get(i).getName().toString(), getHostName(filesToRead.get(i).getName()),//urlFileName.getHostName(),
+                        dirName + FileName.SEPARATOR + baseName, i != filesToRead.size() - 1);
                 }
 
             } catch (FileSystemException fse) {
-                getLogger().info("Error processing directory " + getFileURL() + " exiting", fse);
+                getLogger().info("Error processing directory " + loggableFileURL + " exiting", fse);
             }
         }
 
@@ -422,11 +434,8 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                             reader = new InputStreamReader(fileObject.getContent().getInputStream(), "UTF-8");
                             //now that we have a reader, remove additional portions of the file url (sftp passwords, etc.)
                             //check to see if the name is a URLFileName..if so, set file name to not include username/pass
-                            if (fileObject.getName() instanceof URLFileName) {
-                                URLFileName urlFileName = (URLFileName) fileObject.getName();
-                                setHost(hostName != null ? hostName : urlFileName.getHostName() );
-                                setPath(cannonicalPath != null ? cannonicalPath : urlFileName.getPath());
-                            }
+                            setHost(hostName != null ? hostName : getHostName(fileObject.getName()) );
+                            setPath(cannonicalPath != null ? cannonicalPath : fileObject.getName().getPath());
                         } else {
                             getLogger().info(loggableFileURL + " not available - will re-attempt to load after waiting " + MISSING_FILE_RETRY_MILLIS + " millis");
                         }
