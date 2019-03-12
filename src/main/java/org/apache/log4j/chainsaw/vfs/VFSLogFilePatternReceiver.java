@@ -27,8 +27,11 @@ import org.apache.log4j.varia.LogFilePatternReceiver;
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.ListIterator;
 import java.util.Vector;
 import java.util.zip.GZIPInputStream;
 
@@ -149,6 +152,7 @@ import java.util.zip.GZIPInputStream;
 public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements VisualReceiver {
 
     private boolean promptForUserInfo = false;
+    private String maxLogingDays = null;
     private Container container;
     private final Object waitForContainerLock = new Object();
     private boolean autoReconnect;
@@ -180,6 +184,37 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
 
     public boolean isPromptForUserInfo() {
         return promptForUserInfo;
+    }
+
+    
+    /**
+     * Use maxLogingDays to limit the loging to recent messages. 
+     * For example to see only data from 10 days, set this parameter do 10.
+     *
+     * @param maxLogingDays Don't open log files that are older than maxLogingDays
+     */
+    public void setMaxLogingDays(String maxLogingDays) {
+        this.maxLogingDays = maxLogingDays;
+    }
+
+    public String getMaxLogingDays() {
+        return maxLogingDays;
+    }
+    
+    private Long getStartLogingTime() {
+        if (getMaxLogingDays() == null) {
+            return 0L;
+        }
+        try {
+           long days = Integer.parseInt(getMaxLogingDays());
+           getLogger().info("MaxloggingDays that will be used is " + days);
+           return System.currentTimeMillis() - days * 3600 * 24 * 1000;
+        }
+        catch (NumberFormatException e) {
+            getLogger().error("exception parding MaxloggingDays " + getMaxLogingDays(),e);
+            return 0L;
+        }
+        // Can not reach here.
     }
 
     /**
@@ -348,11 +383,23 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                     }
                 }
             });
+
             getLogger().info("Going to read the following files");
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            
             try {
-                for (FileObject f : filesToRead) {
+                Long StartTime = getStartLogingTime();
+                for (ListIterator<FileObject> iter = filesToRead.listIterator(); iter.hasNext(); ) {
+                    FileObject f =iter.next();
+                    boolean ignoring  = false;
+                    String dates = sdf.format(new Date(f.getContent().getLastModifiedTime()));
+                    if(f.getContent().getLastModifiedTime() < StartTime) {
+                        iter.remove();
+                        ignoring = true;
+                    }
                     getLogger().info(
-                            "file = " + f.getName().getBaseName() + " " + f.getContent().getLastModifiedTime());
+                            "file = " + f.getName().getBaseName() + " last modified time " + dates + (ignoring ? " will not be read because of MaxLogingDays" : ""));
+                    
                 }
             } catch (FileSystemException fse) {
                 getLogger().error("Error, could not get file time", fse);
