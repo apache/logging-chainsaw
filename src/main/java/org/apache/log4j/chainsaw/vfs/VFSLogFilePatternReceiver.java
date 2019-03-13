@@ -551,6 +551,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                                 BufferedReader bufferedReader = new BufferedReader(decoder);
                                 process(bufferedReader);
                                 readingFinished = true;
+                                continue;
                             }
                             //could have been truncated or appended to (don't do anything if same size)
                             if (fileObject.getContent().getSize() < lastFileSize) {
