@@ -22,17 +22,45 @@ pipeline {
     agent {
         label 'ubuntu'
     }
+    tools {
+        maven 'Maven 3 (latest)'
+        jdk 'JDK 1.8 (latest)'
+    }
+    options {
+        ansiColor 'xterm'
+        buildDiscarder logRotator(numToKeepStr: '25')
+        timeout time: 1, unit: 'HOURS'
+    }
     stages {
         stage('Build') {
             steps {
-                withMaven(jdk: 'JDK 1.8 (latest)', maven: 'Maven 3 (latest)') {
-                    ansiColor('xterm') {
-                        sh 'mvn -Pdevelopment site:site'
-                        sh 'mvn -Pdevelopment package'
-                    }
-                }
+                sh '''
+                mvn -Pdevelopment site:site
+                mvn -Pdevelopment install
+                '''
                 junit '**/target/surefire-reports/*.xml'
-                archiveArtifacts '**/target/apache-chainsaw-*.*'
+            }
+        }
+        stage('Deploy') {
+            when {
+                branch 'master'
+            }
+            steps {
+                sh 'mvn -Pdevelopment deploy'
+            }
+            post {
+                fixed {
+                    emailext to: 'notifications@logging.apache.org',
+                        from: 'Mr. Jenkins <jenkins@ci-builds.apache.org>',
+                        subject: "[CI][SUCCESS] ${env.JOB_NAME}#${env.BUILD_NUMBER} back to normal",
+                        body: '${SCRIPT, template="groovy-text.template"}'
+                }
+                failure {
+                    emailext to: 'notifications@logging.apache.org',
+                        from: 'Mr. Jenkins <jenkins@ci-builds.apache.org>',
+                        subject: "[CI][FAILURE] ${env.JOB_NAME}#${env.BUILD_NUMBER} has potential issues",
+                        body: '${SCRIPT, template="groovy-text.template"}'
+                }
             }
         }
     }
