@@ -32,6 +32,7 @@ import java.awt.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
@@ -47,7 +48,7 @@ import java.util.TimeZone;
  */
 public class TableColorizingRenderer extends DefaultTableCellRenderer {
     private static final DateFormat DATE_FORMATTER = new SimpleDateFormat(Constants.SIMPLE_TIME_PATTERN);
-    private static final Map<String, Icon> iconMap = LevelIconFactory.getInstance().getLevelToIconMap();
+    private final Map<String, Icon> iconMap;
     private RuleColorizer colorizer;
     private boolean levelUseIcons = false;
     private boolean wrap = false;
@@ -94,6 +95,13 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         generalPanel.setLayout(new BoxLayout(generalPanel, BoxLayout.Y_AXIS));
         levelPanel.setLayout(new BoxLayout(levelPanel, BoxLayout.Y_AXIS));
         maxHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
+
+        iconMap = new HashMap<>();
+        try {
+            iconMap.putAll(LevelIconFactory.getInstance().getLevelToIconMap());
+        } catch (IllegalStateException ise) {
+            //ignore
+        }
 
         if (UIManager.get("Table.selectionBackground") != null) {
             borderColor = (Color) UIManager.get("Table.selectionBackground");

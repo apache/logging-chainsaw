@@ -44,19 +44,20 @@ public class LevelIconFactory {
                     "icons/" + iconFileNames[i]);
             }
             if (resourceURL == null) {
-                throw new IllegalStateException("Was unable to locate an L&F icon using either the current L&F or the cross platform L&F.");
-            }
+                iconMap.put(iconLabels[i], ChainsawIcons.ICON_DEBUG);
+            } else {
 
-            final ImageIcon icon =
-                new ImageIcon(resourceURL);
-            double scalex = .5;
-            double scaley = .5;
-            final int newWidth = (int) (scalex * icon.getIconWidth());
-            final int newHeight = (int) (scaley * icon.getIconHeight());
-            Image iconImage =
-                icon.getImage().getScaledInstance(
-                    newWidth, newHeight, Image.SCALE_SMOOTH);
-            iconMap.put(iconLabels[i], new ImageIcon(iconImage));
+                final ImageIcon icon =
+                    new ImageIcon(resourceURL);
+                double scalex = .5;
+                double scaley = .5;
+                final int newWidth = (int) (scalex * icon.getIconWidth());
+                final int newHeight = (int) (scaley * icon.getIconHeight());
+                Image iconImage =
+                    icon.getImage().getScaledInstance(
+                        newWidth, newHeight, Image.SCALE_SMOOTH);
+                iconMap.put(iconLabels[i], new ImageIcon(iconImage));
+            }
         }
         //reuse DEBUG icon for TRACE level
         iconMap.put("TRACE", ChainsawIcons.ICON_DEBUG);

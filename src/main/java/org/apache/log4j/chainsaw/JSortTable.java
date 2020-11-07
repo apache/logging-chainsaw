@@ -19,9 +19,10 @@ package org.apache.log4j.chainsaw;
 
 import org.apache.log4j.chainsaw.helper.SwingHelper;
 
-import javax.swing.*;
+import javax.swing.JTable;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
+import java.awt.Color;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -60,6 +61,7 @@ public class JSortTable extends JTable implements MouseListener {
 
     protected void initSortHeader() {
         JTableHeader header = getTableHeader();
+        header.setBackground(Color.WHITE);
         header.setDefaultRenderer(new SortHeaderRenderer());
         header.addMouseListener(this);
     }

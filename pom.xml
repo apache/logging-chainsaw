@@ -17,12 +17,6 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <parent>
-    <groupId>org.apache.logging</groupId>
-    <artifactId>logging-parent</artifactId>
-    <version>2</version>
-    <relativePath/>
-  </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>log4j</groupId>
   <artifactId>apache-chainsaw</artifactId>
@@ -120,6 +114,7 @@
     <chainsaw.mainclass>org.apache.log4j.chainsaw.LogUI</chainsaw.mainclass>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+    <dependency.locations.enabled>false</dependency.locations.enabled>
   </properties>
 
   <build>
@@ -142,6 +137,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.0</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -168,6 +164,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.8</version>
         <executions>
           <execution>
             <phase>site</phase>
@@ -287,20 +284,6 @@
         </executions>
       </plugin>
       <plugin>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <configuration>
-          <additionalparam>-Xdoclint:none</additionalparam>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>jar</goal>
-              <goal>javadoc</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
         <executions>
@@ -362,10 +345,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
-        <configuration>
-          <locales>en</locales>
-          <templateFile>${basedir}/src/site/site.vm</templateFile>
-        </configuration>
+        <version>3.7.1</version>
       </plugin>
     </plugins>
   </build>
@@ -387,9 +367,9 @@
       <version>3.4.1</version>
     </dependency>
     <dependency>
-      <groupId>xstream</groupId>
+      <groupId>com.thoughtworks.xstream</groupId>
       <artifactId>xstream</artifactId>
-      <version>1.1.2</version>
+      <version>1.4.11.1</version>
     </dependency>
     <dependency>
       <groupId>commons-vfs</groupId>
@@ -435,7 +415,7 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>1.16.20</version>
+      <version>1.18.0</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
@@ -474,17 +454,19 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.1.1</version>
         <configuration>
           <bottom><![CDATA[<p align="center">Copyright &#169; {inceptionYear}-{currentYear} {organizationName}. All Rights Reserved.<br />
           Apache Logging, Apache Log4j, Log4j, Apache Chainsaw, Chainsaw, Apache, the Apache feather logo, the Apache Logging project logo,
           and the Apache Log4j logo are trademarks of The Apache Software Foundation.</p>]]></bottom>
-          <additionalparam>-Xdoclint:none</additionalparam>
           <encoding>UTF-8</encoding>
+          <doclint>none</doclint>
         </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>2.9</version>
         <reportSets>
           <reportSet>
             <reports>
@@ -520,18 +502,32 @@
       <build>
         <plugins>
           <plugin>
-            <groupId>sh.tak.appbundler</groupId>
-            <artifactId>appbundle-maven-plugin</artifactId>
-            <version>1.2.0</version>
+            <groupId>de.perdian.maven.plugins</groupId>
+            <artifactId>macosappbundler-maven-plugin</artifactId>
+            <version>1.9.0</version>
             <configuration>
-              <mainClass>${chainsaw.mainclass}</mainClass>
-              <bundleName>Chainsaw</bundleName>
-              <iconFile>logo.icns</iconFile>
-              <generateDiskImageFile>true</generateDiskImageFile>
-              <jvmOptions>
-                <jvmOption>-Xms128m</jvmOption>
-                <jvmOption>-Xmx512m</jvmOption>
-              </jvmOptions>
+              <plist>
+                <CFBundleIconFile>src/main/resources/logo.icns</CFBundleIconFile>
+                <CFBundleDisplayName>Chainsaw</CFBundleDisplayName>
+                <CFBundleDevelopmentRegion>English</CFBundleDevelopmentRegion>
+                <CFBundleURLTypes>
+                  <string>msa</string>
+                </CFBundleURLTypes>
+                <JVMMainClassName>${chainsaw.mainclass}</JVMMainClassName>
+                <JVMVersion>11+</JVMVersion>
+                <JVMOptions>
+                  <jvmOption>-Xms128m</jvmOption>
+                  <jvmOption>-Xmx512m</jvmOption>
+                </JVMOptions>
+              </plist>
+              <dmg>
+                <generate>true</generate>
+                <additionalResources>
+                  <additionalResource>
+                    <directory>src/bundle/macos/distribution</directory>
+                  </additionalResource>
+                </additionalResources>
+              </dmg>
             </configuration>
             <executions>
               <execution>
