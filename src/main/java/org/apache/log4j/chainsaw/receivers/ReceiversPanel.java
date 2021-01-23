@@ -33,7 +33,6 @@ import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SettingsListener;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.net.SocketNodeEventListener;
-import org.apache.log4j.net.SocketReceiver;
 import org.apache.log4j.plugins.*;
 import org.apache.log4j.spi.LoggerRepository;
 import org.apache.log4j.spi.LoggerRepositoryEx;
@@ -376,19 +375,6 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
                     updateReceiverTreeInDispatchThread();
                 }
             };
-
-        /**
-         * add this listener to all SocketReceivers
-         */
-        if (pluginRegistry != null) {
-            List socketReceivers =
-                pluginRegistry.getPlugins(SocketReceiver.class);
-
-            for (Object socketReceiver : socketReceivers) {
-                SocketReceiver element = (SocketReceiver) socketReceiver;
-                element.addSocketNodeEventListener(listener);
-            }
-        }
     }
 
     private void saveReceivers() {

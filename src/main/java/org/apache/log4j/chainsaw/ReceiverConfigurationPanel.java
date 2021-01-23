@@ -20,7 +20,6 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
-import org.apache.log4j.net.SocketReceiver;
 import org.apache.log4j.net.UDPReceiver;
 import org.apache.log4j.plugins.Receiver;
 
@@ -290,7 +289,6 @@ class ReceiverConfigurationPanel extends JPanel {
         networkReceiverPortComboBox.setOpaque(false);
 
         networkReceiverClassNameComboBoxModel = new DefaultComboBoxModel<>();
-        networkReceiverClassNameComboBoxModel.addElement(SocketReceiver.class.getName());
         networkReceiverClassNameComboBoxModel.addElement(UDPReceiver.class.getName());
 
         networkReceiverClassNameComboBox = new JComboBox<>(networkReceiverClassNameComboBoxModel);

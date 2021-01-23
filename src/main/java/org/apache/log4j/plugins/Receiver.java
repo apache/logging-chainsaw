@@ -31,15 +31,7 @@ import org.apache.log4j.spi.Thresholdable;
  * logging events inside the log4j environment.
  * <p></p>
  * <p>Receivers are meant to support the receiving of
- * remote logging events from another process. For example,
- * SocketAppender "appends" a logging event to a socket, configured
- * for a specific host and port number.  On the receiving side of
- * the socket can be a SocketReceiver object.  The SocketReceiver
- * object receives the logging event, and then "posts" it to the
- * log4j environment (LoggerRepository) on the receiving machine, to
- * be handled by the configured appenders, etc.  The various
- * settings in this environment (Logger levels, Appender filters &amp;
- * thresholds) are applied to the received logging event.
+ * remote logging events from another process.
  * <p></p>
  * <p>Receivers can also be used to "import" log messages from other
  * logging packages into the log4j environment.

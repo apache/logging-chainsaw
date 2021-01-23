@@ -22,7 +22,6 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.ChainsawConstants;
 import org.apache.log4j.chainsaw.Generator;
 import org.apache.log4j.chainsaw.helper.TableCellEditorFactory;
-import org.apache.log4j.net.SocketHubReceiver;
 import org.apache.log4j.plugins.Plugin;
 
 import javax.swing.*;
@@ -110,38 +109,6 @@ public class PluginPropertyEditorPanel extends JPanel {
             }
 
         });
-    }
-
-    public static void main(String[] args) {
-
-        JFrame frame = new JFrame("Property Editor Test bed");
-        frame.addWindowListener(new WindowAdapter() {
-            public void windowClosed(WindowEvent e) {
-                System.exit(1);
-            }
-        });
-
-        PluginPropertyEditorPanel panel = new PluginPropertyEditorPanel();
-
-
-        frame.getContentPane().add(panel);
-        frame.pack();
-
-        frame.setVisible(true);
-
-        SocketHubReceiver r = new SocketHubReceiver();
-
-        panel.setPlugin(r);
-
-        try {
-            Thread.sleep(3000);
-
-            panel.setPlugin(new Generator("MyPlugin"));
-        } catch (Exception e) {
-            // TODO: handle exception
-        }
-
-
     }
 
     /**

@@ -152,7 +152,7 @@ public class XMLSocketReceiver extends Receiver implements Runnable, PortBased, 
     }
 
     /**
-     * Starts the SocketReceiver with the current options.
+     * Starts the XMLSocketReceiver with the current options.
      */
     public void activateOptions() {
         if (!isActive()) {
@@ -263,7 +263,7 @@ public class XMLSocketReceiver extends Receiver implements Runnable, PortBased, 
             serverSocket = new ServerSocket(port);
         } catch (Exception e) {
             getLogger().error(
-                "error starting SocketReceiver (" + this.getName()
+                "error starting XMLSocketReceiver (" + this.getName()
                     + "), receiver did not start", e);
             active = false;
             doShutdown();

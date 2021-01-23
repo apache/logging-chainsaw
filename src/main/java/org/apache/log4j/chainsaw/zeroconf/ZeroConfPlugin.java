@@ -91,8 +91,6 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
     private static final String MULTICAST_APPENDER_SERVICE_NAME = "_log4j_xml_mcast_appender.local.";
     private static final String UDP_APPENDER_SERVICE_NAME = "_log4j_xml_udp_appender.local.";
     private static final String XML_SOCKET_APPENDER_SERVICE_NAME = "_log4j_xml_tcpconnect_appender.local.";
-    private static final String SOCKET_APPENDER_SERVICE_NAME = "_log4j_obj_tcpconnect_appender.local.";
-    private static final String SOCKETHUB_APPENDER_SERVICE_NAME = "_log4j_obj_tcpaccept_appender.local.";
     private static final String TCP_APPENDER_SERVICE_NAME = "_log4j._tcp.local.";
     private static final String NEW_UDP_APPENDER_SERVICE_NAME = "_log4j._udp.local.";
 
@@ -187,8 +185,6 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
     private void registerServiceListenersForAppenders() {
         Set<String> serviceNames = new HashSet<>();
         serviceNames.add(MULTICAST_APPENDER_SERVICE_NAME);
-        serviceNames.add(SOCKET_APPENDER_SERVICE_NAME);
-        serviceNames.add(SOCKETHUB_APPENDER_SERVICE_NAME);
         serviceNames.add(UDP_APPENDER_SERVICE_NAME);
         serviceNames.add(XML_SOCKET_APPENDER_SERVICE_NAME);
         serviceNames.add(TCP_APPENDER_SERVICE_NAME);
@@ -481,16 +477,9 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
         //TODO: add more checks (actual layout format, etc)
         if (TCP_APPENDER_SERVICE_NAME.equals(zone)) {
             //CHECK content type
-            //application/octet-stream = SocketReceiver
             //text/plain = VFSLogFilePatternReceiver (if structured=false)
             String contentType = info.getPropertyString("contentType").toLowerCase();
             //won't work with log4j2, as Chainsaw depends on log4j1.x
-            if ("application/octet-stream".equals(contentType)) {
-                SocketReceiver receiver = new SocketReceiver();
-                receiver.setPort(port);
-                receiver.setName(name + "-receiver");
-                return receiver;
-            }
             //this will work - regular text log files are fine
             if ("text/plain".equals(contentType)) {
                 VFSLogFilePatternReceiver receiver = new VFSLogFilePatternReceiver();
@@ -539,22 +528,6 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
             return receiver;
         }
 
-        //SocketAppender
-        if (SOCKET_APPENDER_SERVICE_NAME.equals(zone)) {
-            SocketReceiver receiver = new SocketReceiver();
-            receiver.setPort(port);
-            receiver.setName(name + "-receiver");
-            return receiver;
-        }
-
-        //SocketHubAppender
-        if (SOCKETHUB_APPENDER_SERVICE_NAME.equals(zone)) {
-            SocketHubReceiver receiver = new SocketHubReceiver();
-            receiver.setHost(hostAddress);
-            receiver.setPort(port);
-            receiver.setName(name + "-receiver");
-            return receiver;
-        }
         //not recognized
         LogLog.debug("Unable to find receiver for appender with service name: " + zone);
         return null;

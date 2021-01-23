@@ -21,7 +21,6 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.chainsaw.help.HelpManager;
 import org.apache.log4j.chainsaw.helper.OkCancelPanel;
 import org.apache.log4j.chainsaw.messages.MessageCenter;
-import org.apache.log4j.net.SocketHubReceiver;
 import org.apache.log4j.plugins.Plugin;
 import org.apache.log4j.plugins.Receiver;
 
@@ -144,26 +143,6 @@ public class NewReceiverDialogPanel extends JPanel {
         panel.pluginEditorPanel.setPlugin(receiverInstance);
 
         return panel;
-    }
-
-    public static void main(String[] args) throws Exception {
-
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-
-        NewReceiverDialogPanel panel = NewReceiverDialogPanel.create(
-            SocketHubReceiver.class);
-
-        JDialog dialog = new JDialog((JFrame) null, true);
-        dialog.getContentPane().add(panel);
-
-        ActionListener al = e -> System.exit(1);
-
-        panel.okPanel.getOkButton().addActionListener(al);
-        panel.okPanel.getCancelButton().addActionListener(al);
-
-        dialog.pack();
-
-        dialog.setVisible(true);
     }
 
     /**

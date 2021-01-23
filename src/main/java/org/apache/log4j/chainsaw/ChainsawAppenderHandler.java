@@ -19,7 +19,6 @@ package org.apache.log4j.chainsaw;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.helpers.Constants;
-import org.apache.log4j.net.SocketReceiver;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.LoggerRepositoryEx;
@@ -124,29 +123,6 @@ public class ChainsawAppenderHandler extends AppenderSkeleton {
     String getTabIdentifier(LoggingEvent e) {
         String ident = resolver.applyFields(identifierExpression, e);
         return ((ident != null) ? ident : DEFAULT_IDENTIFIER);
-    }
-
-    /**
-     * A little test bed
-     *
-     * @param args
-     */
-    public static void main(String[] args) throws InterruptedException {
-        ChainsawAppenderHandler handler = new ChainsawAppenderHandler();
-        handler.addEventBatchListener(new EventBatchListener() {
-            public String getInterestedIdentifier() {
-                return null;
-            }
-
-            public void receiveEventBatch(String identifier, List<LoggingEvent> events) {
-                System.out.println("received " + events.size());
-            }
-        });
-        LogManager.getRootLogger().addAppender(handler);
-        SocketReceiver receiver = new SocketReceiver(4445);
-        ((LoggerRepositoryEx) LogManager.getLoggerRepository()).getPluginRegistry().addPlugin(receiver);
-        receiver.activateOptions();
-        Thread.sleep(60000);
     }
 
     /**

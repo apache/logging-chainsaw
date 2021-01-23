@@ -19,7 +19,6 @@ package org.apache.log4j.chainsaw.receivers;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.apache.log4j.net.SocketReceiver;
 import org.apache.log4j.plugins.Plugin;
 import org.apache.log4j.plugins.PluginEvent;
 import org.apache.log4j.plugins.PluginListener;
@@ -83,12 +82,6 @@ public class ReceiversTreeModel extends DefaultTreeModel
                 final DefaultMutableTreeNode receiverNode = new DefaultMutableTreeNode(item);
 
                 item.addPropertyChangeListener(creatPluginPropertyChangeListener(item, receiverNode));
-                if (item instanceof SocketReceiver) {
-                    for (Object details : ((SocketReceiver) item).getConnectedSocketDetails()) {
-                        receiverNode.add(new DefaultMutableTreeNode(details));
-                    }
-                }
-
                 getRootNode().add(receiverNode);
             }
         }

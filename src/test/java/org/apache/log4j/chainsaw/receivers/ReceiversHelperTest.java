@@ -22,12 +22,7 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.chainsaw.receivers.ReceiversHelper;
 import org.apache.log4j.chainsaw.vfs.VFSLogFilePatternReceiver;
-import org.apache.log4j.net.JMSReceiver;
-import org.apache.log4j.net.MulticastReceiver;
-import org.apache.log4j.net.SocketHubReceiver;
-import org.apache.log4j.net.SocketReceiver;
-import org.apache.log4j.net.UDPReceiver;
-import org.apache.log4j.net.XMLSocketReceiver;
+import org.apache.log4j.net.*;
 import org.apache.log4j.db.DBReceiver;
 import org.apache.log4j.varia.LogFilePatternReceiver;
 
@@ -52,9 +47,7 @@ public class ReceiversHelperTest extends TestCase {
         Class[] expectedList =
             new Class[] {
                 MulticastReceiver.class, 
-                SocketHubReceiver.class, 
-                SocketReceiver.class,
-                UDPReceiver.class, 
+                UDPReceiver.class,
                 XMLSocketReceiver.class,
                 LogFilePatternReceiver.class,
                 JMSReceiver.class,
