@@ -19,81 +19,36 @@ package org.apache.log4j.chainsaw.osx;
 import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.LogUI;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.awt.Desktop;
 
 
 /**
- * This class adds dynamic hooks into OSX version of Java so that various
- * Mac-specific UI guidelines are adhered to.
+ * This class leverages the 'Desktop' awt API in order to follow Mac-specific UI guidelines.
  * <p>
- * This class uses reflection to build the necessary hooks so that there is no compile-time
- * dependency on a Mac SDK.
  *
  * @author psmith
  * @see "http://developer.apple.com/documentation/Java/index.html"
  */
 public class OSXIntegration {
     public static final boolean IS_OSX = System.getProperty("os.name").startsWith("Mac OS X");
-    private static final Logger LOG = Logger.getLogger(OSXIntegration.class);
-    private static Object applicationInstance;
+    private static final Desktop desktop = Desktop.getDesktop();
 
-    public static final void init(final LogUI logui) {
-        LOG.info("OSXIntegration.init() called");
-        if (!IS_OSX) {
-            LOG.info("Not OSX, ignoring...");
-            return;
-        }
-        try {
-            Class applicationClazz = Class.forName("com.apple.eawt.Application");
-            Class listenerClass = Class.forName("com.apple.eawt.ApplicationListener");
-            applicationInstance = applicationClazz.newInstance();
+    public static final void init(final LogUI logUI) {
+        desktop.setAboutHandler(e ->
+            logUI.showAboutBox()
+        );
 
-//            now register that we want that Preferences menu
-            Method enablePreferenceMethod = applicationClazz.getMethod("setEnabledPreferencesMenu", boolean.class);
-            enablePreferenceMethod.invoke(applicationInstance, Boolean.TRUE);
-
-
-            // no About menu for us for now.
-            Method enableAboutMethod = applicationClazz.getMethod("setEnabledAboutMenu", boolean.class);
-            enableAboutMethod.invoke(applicationInstance, Boolean.TRUE);
-
-            // Need to create a Proxy object to represent an anonymous impl of the ApplicationListener class
-            Object listenerProxy = Proxy.newProxyInstance(OSXIntegration.class.getClassLoader(),
-                new Class[]{listenerClass},
-                new InvocationHandler() {
-
-                    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                        switch (method.getName()) {
-                            case "handlePreferences":
-                                LOG.info("handlePreferences(...) called");
-                                logui.showApplicationPreferences();
-                                break;
-                            case "handleQuit":
-                                setHandled(args[0], logui.exit() ? Boolean.TRUE : Boolean.FALSE);
-
-                                break;
-                            case "handleAbout":
-                                logui.showAboutBox();
-                                setHandled(args[0], Boolean.TRUE);
-                                break;
-                        }
-//                    TODO think about File Open/Save options
-                        return null;
-                    }
-
-                    private void setHandled(Object event, Boolean val) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-                        Method handleMethod = event.getClass().getMethod("setHandled", boolean.class);
-                        handleMethod.invoke(event, val);
-                    }
-                });
-            // register the proxy object via the addApplicationListener method, cross fingers...
-            Method registerListenerMethod = applicationClazz.getMethod("addApplicationListener", listenerClass);
-            registerListenerMethod.invoke(applicationInstance, listenerProxy);
-        } catch (Exception e) {
-            LOG.error("Failed to setup OSXIntegration", e);
-        }
+        desktop.setPreferencesHandler(e ->
+            logUI.showApplicationPreferences()
+        );
+        desktop.setQuitHandler((e, r) -> {
+                if (
+                    logUI.exit()) {
+                    r.performQuit();
+                } else {
+                    r.cancelQuit();
+                }
+            }
+        );
     }
 }
