@@ -34,6 +34,8 @@ public class OSXIntegration {
     private static final Desktop desktop = Desktop.getDesktop();
 
     public static final void init(final LogUI logUI) {
+        if( !IS_OSX ) return;
+        
         desktop.setAboutHandler(e ->
             logUI.showAboutBox()
         );
