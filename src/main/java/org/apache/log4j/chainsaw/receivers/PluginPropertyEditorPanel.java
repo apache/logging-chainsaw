@@ -38,6 +38,8 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.util.*;
 import java.util.List;
+import javax.swing.event.CellEditorListener;
+import javax.swing.table.TableCellRenderer;
 
 
 /**
@@ -175,8 +177,10 @@ public class PluginPropertyEditorPanel extends JPanel {
             logger.debug("Cell value class " + valueClass +
                 " not know, using default editor");
 
-            return defaultEditor.getTableCellEditorComponent(table, value,
+            Component c = defaultEditor.getTableCellEditorComponent(table, value,
                 isSelected, row, column);
+            table.setRowHeight( row, c.getPreferredSize().height );
+            return c;
         }
 
         /* (non-Javadoc)
@@ -189,7 +193,7 @@ public class PluginPropertyEditorPanel extends JPanel {
 
     }
 
-    private static class PluginPropertyTableModel extends AbstractTableModel {
+    private class PluginPropertyTableModel extends AbstractTableModel {
 
         private final PropertyDescriptor[] descriptors;
         private final Plugin plugin;
@@ -314,6 +318,9 @@ public class PluginPropertyEditorPanel extends JPanel {
             } else {
                 super.setValueAt(aValue, rowIndex, columnIndex);
             }
+
+            // Since the value has been set, resize all of the rows(if required)
+            propertyTable.setRowHeight(ChainsawConstants.DEFAULT_ROW_HEIGHT);
         }
 
         /**
