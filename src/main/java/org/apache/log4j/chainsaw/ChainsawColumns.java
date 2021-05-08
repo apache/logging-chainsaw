@@ -43,8 +43,8 @@ public class ChainsawColumns {
         columnNames.add(ChainsawConstants.CLASS_COL_NAME);
         columnNames.add(ChainsawConstants.METHOD_COL_NAME);
         columnNames.add(ChainsawConstants.FILE_COL_NAME);
-        columnNames.add(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE.toUpperCase()); //add uppercase col name
         columnNames.add(ChainsawConstants.LINE_COL_NAME);
+        columnNames.add(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE.toUpperCase()); //add uppercase col name
 
         //NOTE:  ID must ALWAYS be last field because the model adds this value itself as an identifier to the end of the consructed vector
         columnNames.add(ChainsawConstants.ID_COL_NAME);
