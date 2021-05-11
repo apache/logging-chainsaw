@@ -116,7 +116,7 @@ public class XMLSocketNode extends ComponentBase implements Runnable {
         } catch (Exception e) {
             is = null;
             listenerException = e;
-            getLogger().error("Exception opening ObjectInputStream to " + socket, e);
+            getLogger().error("Exception opening InputStream to " + socket, e);
         }
 
         if (is != null) {
