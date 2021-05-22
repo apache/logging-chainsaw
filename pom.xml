@@ -121,6 +121,7 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <dependency.locations.enabled>false</dependency.locations.enabled>
+    <ChainsawReleaseVersion>2.0.0</ChainsawReleaseVersion>
   </properties>
 
   <build>
@@ -356,6 +357,31 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
         <version>3.7.1</version>
+        <dependencies>
+          <dependency>
+            <groupId>org.asciidoctor</groupId>
+            <artifactId>asciidoctor-maven-plugin</artifactId>
+            <version>1.5.6</version>
+          </dependency>
+        </dependencies>
+        <configuration>
+          <!-- only build English site even on other language OS -->
+          <locales>en</locales>
+          <!-- Exclude the navigation file for Maven 1 sites
+               and the changes file used by the changes-plugin,
+               as they interfere with the site generation. -->
+          <moduleExcludes>
+            <xdoc>navigation.xml,changes.xml</xdoc>
+          </moduleExcludes>
+          <asciidoc>
+            <attributes>
+              <!-- copy any site properties wanted in asciidoc files -->
+              <ChainsawReleaseVersion>${ChainsawReleaseVersion}</ChainsawReleaseVersion>
+              <Log4jReleaseManager>${Log4jReleaseManager}</Log4jReleaseManager>
+              <Log4jReleaseKey>${Log4jReleaseKey}</Log4jReleaseKey>
+            </attributes>
+          </asciidoc>
+        </configuration>
       </plugin>
     </plugins>
   </build>
