@@ -491,7 +491,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.1.1</version>
+        <version>3.3.0</version>
         <configuration>
           <bottom><![CDATA[<p align="center">Copyright &#169; {inceptionYear}-{currentYear} {organizationName}. All Rights Reserved.<br />
           Apache Logging, Apache Log4j, Log4j, Apache Chainsaw, Chainsaw, Apache, the Apache feather logo, the Apache Logging project logo,
