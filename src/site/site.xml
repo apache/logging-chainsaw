@@ -37,7 +37,7 @@
 	<menu name="Get Chainsaw">
 	   <item name="Download" href="/download.html"/>
 	   <item name="Changes" href="/changes-report.html"/>
-	   <item name="License" href="http://www.apache.org/licenses/"/>
+	   <item name="License" href="https://www.apache.org/licenses/LICENSE-2.0"/>
 	   <item name="Important Distribution Notes" href="/distributionnotes.html" />
 	</menu>
 
