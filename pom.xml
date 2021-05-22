@@ -480,6 +480,7 @@
           <reportSet>
             <reports>
               <report>jira-report</report>
+              <report>changes-report</report>
             </reports>
           </reportSet>
         </reportSets>
