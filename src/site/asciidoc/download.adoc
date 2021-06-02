@@ -69,7 +69,7 @@ gpg --verify apache-chainsaw-{ChainsawReleaseVersion}-src.tar.gz.asc apache-chai
 gpg --verify apache-chainsaw-{ChainsawReleaseVersion}-src.zip.asc apache-chainsaw-{ChainsawReleaseVersion}-src.zip
 ----
 
-Apache Log4j {ChainsawReleaseVersion} is signed by {Log4jReleaseManager} ({Log4jReleaseKey}).
+Apache Chainsaw {ChainsawReleaseVersion} is signed by {ChainsawReleaseManager} ({ChainsawReleaseKey}).
 
 Alternatively, you can verify the SHA512 signature on the files. A unix
 program called sha512sum is included in many unix distributions.

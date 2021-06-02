@@ -121,7 +121,9 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <dependency.locations.enabled>false</dependency.locations.enabled>
-    <ChainsawReleaseVersion>2.0.0</ChainsawReleaseVersion>
+    <ChainsawReleaseVersion>2.1.0</ChainsawReleaseVersion>
+    <ChainsawReleaseManager>Robert Middleton</ChainsawReleaseManager>
+    <ChainsawReleaseKey>B095DD52</ChainsawReleaseKey>
   </properties>
 
   <build>
@@ -377,8 +379,8 @@
             <attributes>
               <!-- copy any site properties wanted in asciidoc files -->
               <ChainsawReleaseVersion>${ChainsawReleaseVersion}</ChainsawReleaseVersion>
-              <Log4jReleaseManager>${Log4jReleaseManager}</Log4jReleaseManager>
-              <Log4jReleaseKey>${Log4jReleaseKey}</Log4jReleaseKey>
+              <ChainsawReleaseManager>${ChainsawReleaseManager}</ChainsawReleaseManager>
+              <ChainsawReleaseKey>${ChainsawReleaseKey}</ChainsawReleaseKey>
             </attributes>
           </asciidoc>
         </configuration>
