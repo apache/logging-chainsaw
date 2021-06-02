@@ -20,7 +20,7 @@
     <title>Apache Chainsaw&#x2122;</title>
   </properties>
   <body>
-    <release version="2.1.0" date="2018-??-??" description="Apache Chainsaw 2.1.0">
+    <release version="2.1.0" date="2021-06-01" description="Apache Chainsaw 2.1.0">
       <action issue="CHAINSAW-1" type="chore" dev="mattsicker">
         Modernize syntax for newer Java versions up to 1.8.
       </action>
