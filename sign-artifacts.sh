@@ -14,6 +14,5 @@ cd target
 for f in apache-chainsaw-*-bin.* apache-chainsaw-*-standalone.*
 do
     gpg --default-key="$GPG_KEY" --sign --detach-sign --armor "$f"
-    md5 "$f" >"$f.md5"
     shasum -a 512 "$f" >"$f.sha512"
 done
