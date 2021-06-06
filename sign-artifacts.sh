@@ -11,7 +11,7 @@ fi
 GPG_KEY="$1"
 
 cd target
-for f in apache-chainsaw-*-bin.* apache-chainsaw-*-standalone.* apache-chainsaw-source*.*
+for f in apache-chainsaw-*-bin.* apache-chainsaw-*-standalone.* apache-chainsaw-*-src.*
 do
     gpg --default-key="$GPG_KEY" --sign --detach-sign --armor "$f"
     shasum -a 512 "$f" >"$f.sha512"
