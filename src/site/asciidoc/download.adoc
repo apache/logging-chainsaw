@@ -27,22 +27,22 @@ signature are links to the originals on the main distribution server.
 |===
 |Distribution |Mirrors |Checksum |Signature
 
-|Apache Log4j 2 binary (tar.gz)
+|Apache Chainsaw binary (tar.gz)
 |https://www.apache.org/dyn/closer.lua/logging/chainsaw/{ChainsawReleaseVersion}/apache-chainsaw-{ChainsawReleaseVersion}-bin.tar.gz[apache-chainsaw-{ChainsawReleaseVersion}-bin.tar.gz]
 |https://www.apache.org/dist/logging/chainsaw/{ChainsawReleaseVersion}/apache-chainsaw-{ChainsawReleaseVersion}-bin.tar.gz.sha512[apache-chainsaw-{ChainsawReleaseVersion}-bin.tar.gz.sha512]
 |https://www.apache.org/dist/logging/chainsaw/{ChainsawReleaseVersion}/apache-chainsaw-{ChainsawReleaseVersion}-bin.tar.gz.asc[apache-chainsaw-{ChainsawReleaseVersion}-bin.tar.gz.asc]
 
-|Apache Log4j 2 binary (zip)
+|Apache Chainsaw binary (zip)
 |https://www.apache.org/dyn/closer.lua/logging/chainsaw/{ChainsawReleaseVersion}/apache-chainsaw-{ChainsawReleaseVersion}-bin.zip[apache-chainsaw-{ChainsawReleaseVersion}-bin.zip]
 |https://www.apache.org/dist/logging/chainsaw/{ChainsawReleaseVersion}/apache-chainsaw-{ChainsawReleaseVersion}-bin.zip.sha512[apache-chainsaw-{ChainsawReleaseVersion}-bin.zip.sha512]
 |https://www.apache.org/dist/logging/chainsaw/{ChainsawReleaseVersion}/apache-chainsaw-{ChainsawReleaseVersion}-bin.zip.asc[apache-chainsaw-{ChainsawReleaseVersion}-bin.zip.asc]
 
-|Apache Log4j 2 source (tar.gz)
+|Apache Chainsaw source (tar.gz)
 |https://www.apache.org/dyn/closer.lua/logging/chainsaw/{ChainsawReleaseVersion}/apache-chainsaw-{ChainsawReleaseVersion}-src.tar.gz[apache-chainsaw-{ChainsawReleaseVersion}-src.tar.gz]
 |https://www.apache.org/dist/logging/chainsaw/{ChainsawReleaseVersion}/apache-chainsaw-{ChainsawReleaseVersion}-src.tar.gz.sha512[apache-chainsaw-{ChainsawReleaseVersion}-src.tar.gz.sha512]
 |https://www.apache.org/dist/logging/chainsaw/{ChainsawReleaseVersion}/apache-chainsaw-{ChainsawReleaseVersion}-src.tar.gz.asc[apache-chainsaw-{ChainsawReleaseVersion}-src.tar.gz.asc]
 
-|Apache Log4j 2 source (zip)
+|Apache Chainsaw source (zip)
 |https://www.apache.org/dyn/closer.lua/logging/chainsaw/{ChainsawReleaseVersion}/apache-chainsaw-{ChainsawReleaseVersion}-src.zip[apache-chainsaw-{ChainsawReleaseVersion}-src.zip]
 |https://www.apache.org/dist/logging/chainsaw/{ChainsawReleaseVersion}/apache-chainsaw-{ChainsawReleaseVersion}-src.zip.sha512[apache-chainsaw-{ChainsawReleaseVersion}-src.zip.sha512]
 |https://www.apache.org/dist/logging/chainsaw/{ChainsawReleaseVersion}/apache-chainsaw-{ChainsawReleaseVersion}-src.zip.asc[apache-chainsaw-{ChainsawReleaseVersion}-src.zip.asc]
