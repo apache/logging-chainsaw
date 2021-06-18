@@ -16,16 +16,23 @@
 
 package org.apache.log4j.chainsaw.vfs;
 
-import org.apache.commons.vfs.*;
-import org.apache.commons.vfs.provider.URLFileName;
-import org.apache.commons.vfs.provider.sftp.SftpFileSystemConfigBuilder;
-import org.apache.commons.vfs.util.RandomAccessMode;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.vfs2.*;
+import org.apache.commons.vfs2.provider.URLFileName;
+import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
+import org.apache.commons.vfs2.util.RandomAccessMode;
 import org.apache.log4j.chainsaw.receivers.VisualReceiver;
 import org.apache.log4j.varia.LogFilePatternReceiver;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.ListIterator;
+import java.util.Vector;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -145,6 +152,7 @@ import java.util.zip.GZIPInputStream;
 public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements VisualReceiver {
 
     private boolean promptForUserInfo = false;
+    private String maxLogingDays = null;
     private Container container;
     private final Object waitForContainerLock = new Object();
     private boolean autoReconnect;
@@ -176,6 +184,37 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
 
     public boolean isPromptForUserInfo() {
         return promptForUserInfo;
+    }
+
+    
+    /**
+     * Use maxLogingDays to limit the loging to recent messages. 
+     * For example to see only data from 10 days, set this parameter do 10.
+     *
+     * @param maxLogingDays Don't open log files that are older than maxLogingDays
+     */
+    public void setMaxLogingDays(String maxLogingDays) {
+        this.maxLogingDays = maxLogingDays;
+    }
+
+    public String getMaxLogingDays() {
+        return maxLogingDays;
+    }
+    
+    private Long getStartLogingTime() {
+        if (getMaxLogingDays() == null) {
+            return 0L;
+        }
+        try {
+           long days = Integer.parseInt(getMaxLogingDays());
+           getLogger().info("MaxloggingDays that will be used is " + days);
+           return System.currentTimeMillis() - days * 3600 * 24 * 1000;
+        }
+        catch (NumberFormatException e) {
+            getLogger().error("exception parding MaxloggingDays " + getMaxLogingDays(),e);
+            return 0L;
+        }
+        // Can not reach here.
     }
 
     /**
@@ -318,14 +357,112 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
         private boolean isGZip(String fileName) {
             return fileName.endsWith( ".gz" );
         }
+        
+        private String getHostName(FileName fileName) {
+            if (fileName instanceof URLFileName) {
+                return ((URLFileName)fileName).getHostName();
+            }
+            return "unknown";
+        }
+
+        // Try to sort the files based on the time that they have been created.
+        // We would like to read them from the latest and then continue to the newest, which we will also tail.
+        private void Sort(Vector<FileObject> filesToRead) {
+            if (filesToRead.size() == 0) {
+                return;
+            }
+            Collections.sort(filesToRead, new Comparator<FileObject>() {
+                @Override
+                public int compare(FileObject o1, FileObject o2) {
+                    try {
+                        return Long.compare(o1.getContent().getLastModifiedTime(),
+                                o2.getContent().getLastModifiedTime());
+                    } catch (FileSystemException fse) {
+                        getLogger().error("Error, could not get file time", fse);
+                        return 0;
+                    }
+                }
+            });
+
+            getLogger().info("Going to read the following files");
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            
+            try {
+                Long StartTime = getStartLogingTime();
+                for (ListIterator<FileObject> iter = filesToRead.listIterator(); iter.hasNext(); ) {
+                    FileObject f =iter.next();
+                    boolean ignoring  = false;
+                    String dates = sdf.format(new Date(f.getContent().getLastModifiedTime()));
+                    if(f.getContent().getLastModifiedTime() < StartTime) {
+                        iter.remove();
+                        ignoring = true;
+                    }
+                    getLogger().info(
+                            "file = " + f.getName().getBaseName() + " last modified time " + dates + (ignoring ? " will not be read because of MaxLogingDays" : ""));
+                    
+                }
+            } catch (FileSystemException fse) {
+                getLogger().error("Error, could not get file time", fse);
+            }
+        }
 
         public void run() {
+            Vector<FileObject> filesToRead = new Vector<FileObject>();
+            getLogger().info("starting to read " + getFileURL());
+            if (!getFileURL().contains("*")) {
+                ProcessSingleFile(getFileURL(), null, null, false);
+                return;
+            }
+            
+            int atIndex = getFileURL().indexOf("@");
+            int protocolIndex = getFileURL().indexOf("://");
+            String loggableFileURL = atIndex > -1 ? getFileURL().substring(0, protocolIndex + "://".length()) + "username:password" + getFileURL().substring(atIndex) :getFileURL();
+            getLogger().info("starting to read loggableFileURL" + loggableFileURL);
+            
+            String dir = FilenameUtils.getFullPathNoEndSeparator(getFileURL());
+            String baseName = FilenameUtils.getName(getFileURL());
+            getLogger().debug("dir = " + dir + " name " + baseName);
+
+            try {
+                FileSystemManager fileSystemManager = VFS.getManager();
+                FileSystemOptions opts = new FileSystemOptions();
+                
+                try {
+                    SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
+                    SftpFileSystemConfigBuilder.getInstance( ).setUserDirIsRoot(opts, false);
+                } catch (NoClassDefFoundError ncdfe) {
+                    getLogger().warn("JSch not on classpath!", ncdfe);
+                }
+
+                FileObject localFileObject = fileSystemManager.resolveFile(dir, opts);
+                String dirName = localFileObject.getName().getPath();
+
+                FileObject[] children = localFileObject.getChildren();
+                for (int i = 0; i < children.length; i++) {
+                    if (FilenameUtils.wildcardMatchOnSystem(children[i].getName().getBaseName(), baseName)) {
+                        filesToRead.add(children[i]);
+                    }
+                }
+                Sort(filesToRead);
+                for (int i = 0; i < filesToRead.size(); i++) {
+                    ProcessSingleFile(filesToRead.get(i).getName().toString(), getHostName(filesToRead.get(i).getName()),//urlFileName.getHostName(),
+                        dirName + FileName.SEPARATOR + baseName, i != filesToRead.size() - 1);
+                }
+
+            } catch (FileSystemException fse) {
+                getLogger().info("Error processing directory " + loggableFileURL + " exiting", fse);
+            }
+        }
+
+        private void ProcessSingleFile(String fileUrl, String hostName, String cannonicalPath, boolean forceNoTail) {
+            Reader reader = null;
+            FileObject fileObject = null;
             //thread should end when we're no longer active
             while (reader == null && !terminated) {
-                int atIndex = getFileURL().indexOf("@");
-                int protocolIndex = getFileURL().indexOf("://");
+                int atIndex =fileUrl.indexOf("@");
+                int protocolIndex = fileUrl.indexOf("://");
 
-                String loggableFileURL = atIndex > -1 ? getFileURL().substring(0, protocolIndex + "://".length()) + "username:password" + getFileURL().substring(atIndex) : getFileURL();
+                String loggableFileURL = atIndex > -1 ? fileUrl.substring(0, protocolIndex + "://".length()) + "username:password" + fileUrl.substring(atIndex) :fileUrl;
                 getLogger().info("attempting to load file: " + loggableFileURL);
                 try {
                     FileSystemManager fileSystemManager = VFS.getManager();
@@ -333,21 +470,19 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                     //if jsch not in classpath, can get NoClassDefFoundError here
                     try {
                         SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
+                        SftpFileSystemConfigBuilder.getInstance( ).setUserDirIsRoot(opts, false);
                     } catch (NoClassDefFoundError ncdfe) {
                         getLogger().warn("JSch not on classpath!", ncdfe);
                     }
 
                     synchronized (fileSystemManager) {
-                        fileObject = fileSystemManager.resolveFile(getFileURL(), opts);
+                        fileObject = fileSystemManager.resolveFile(fileUrl, opts);
                         if (fileObject.exists()) {
                             reader = new InputStreamReader(fileObject.getContent().getInputStream(), "UTF-8");
                             //now that we have a reader, remove additional portions of the file url (sftp passwords, etc.)
                             //check to see if the name is a URLFileName..if so, set file name to not include username/pass
-                            if (fileObject.getName() instanceof URLFileName) {
-                                URLFileName urlFileName = (URLFileName) fileObject.getName();
-                                setHost(urlFileName.getHostName());
-                                setPath(urlFileName.getPath());
-                            }
+                            setHost(hostName != null ? hostName : getHostName(fileObject.getName()) );
+                            setPath(cannonicalPath != null ? cannonicalPath : fileObject.getName().getPath());
                         } else {
                             getLogger().info(loggableFileURL + " not available - will re-attempt to load after waiting " + MISSING_FILE_RETRY_MILLIS + " millis");
                         }
@@ -385,6 +520,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                         //if jsch not in classpath, can get NoClassDefFoundError here
                         try {
                             SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
+                            SftpFileSystemConfigBuilder.getInstance( ).setUserDirIsRoot(opts, false);
                         } catch (NoClassDefFoundError ncdfe) {
                             getLogger().warn("JSch not on classpath!", ncdfe);
                         }
@@ -393,11 +529,10 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                         synchronized (fileSystemManager) {
                             if (fileObject != null) {
                                 fileObject.getFileSystem().getFileSystemManager().closeFileSystem(fileObject.getFileSystem());
-                                fileObject.close();
                                 fileObject = null;
                             }
 
-                            fileObject = fileSystemManager.resolveFile(getFileURL(), opts);
+                            fileObject = fileSystemManager.resolveFile(fileUrl, opts);
                         }
 
                         //file may not exist..
@@ -410,12 +545,13 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                                 getLogger().info(getPath() + " - unable to refresh fileobject", err);
                             }
 
-                            if (isGZip(getFileURL())) {
+                            if (isGZip(fileUrl)) {
                                 InputStream gzipStream = new GZIPInputStream(fileObject.getContent().getInputStream());
                                 Reader decoder = new InputStreamReader(gzipStream,  "UTF-8");
                                 BufferedReader bufferedReader = new BufferedReader(decoder);
                                 process(bufferedReader);
                                 readingFinished = true;
+                                continue;
                             }
                             //could have been truncated or appended to (don't do anything if same size)
                             if (fileObject.getContent().getSize() < lastFileSize) {
@@ -455,7 +591,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                         if (isTailing() && fileLarger && !terminated) {
                             getLogger().debug(getPath() + " - tailing file - file size: " + lastFileSize);
                         }
-                    } while (isTailing() && !terminated && !readingFinished);
+                    } while (isTailing() && !terminated && !readingFinished && !forceNoTail);
                 } catch (IOException ioe) {
                     getLogger().info(getPath() + " - exception processing file", ioe);
                     try {
@@ -472,7 +608,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                     } catch (InterruptedException ie) {
                     }
                 }
-            } while (isAutoReconnect() && !terminated && !readingFinished);
+            } while (isAutoReconnect() && !terminated && !readingFinished && !forceNoTail);
             getLogger().debug(getPath() + " - processing complete");
         }
 
