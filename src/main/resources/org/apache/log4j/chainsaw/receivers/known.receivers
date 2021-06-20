@@ -25,3 +25,4 @@ org.apache.log4j.db.CustomSQLDBReceiver
 org.apache.log4j.varia.LogFilePatternReceiver
 org.apache.log4j.xml.LogFileXMLReceiver
 org.apache.log4j.chainsaw.vfs.VFSLogFilePatternReceiver
+org.apache.log4j.net.JsonReceiver
