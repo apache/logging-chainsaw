@@ -46,7 +46,8 @@ public class ReceiversHelperTest extends TestCase {
 
         Class[] expectedList =
             new Class[] {
-                MulticastReceiver.class, 
+                MulticastReceiver.class,
+                JsonReceiver.class,
                 UDPReceiver.class,
                 XMLSocketReceiver.class,
                 LogFilePatternReceiver.class,

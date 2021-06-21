@@ -456,6 +456,11 @@
       <version>1.18.0</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>com.owlike</groupId>
+      <artifactId>genson</artifactId>
+      <version>1.6</version>
+    </dependency>
   </dependencies>
 
   <reporting>
