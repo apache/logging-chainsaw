@@ -330,32 +330,6 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>webstart-maven-plugin</artifactId>
-        <configuration>
-          <jnlp>
-            <outputFile>webstart.jnlp</outputFile>
-            <mainClass>${chainsaw.mainclass}</mainClass>
-          </jnlp>
-          <sign>
-            <keystore>${chainsaw.webstart.keystore}</keystore>
-            <keypass>${chainsaw.webstart.keypass}</keypass>
-            <storepass>${chainsaw.webstart.storepass}</storepass>
-            <storetype/>
-            <alias>${chainsaw.webstart.alias}</alias>
-            <validity/>
-            <dnameCn/>
-            <dnameOu/>
-            <dnameO/>
-            <dnameL/>
-            <dnameSt/>
-            <dnameC/>
-            <verify>false</verify>
-          </sign>
-          <verbose>false</verbose>
-        </configuration>
-      </plugin>
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
         <version>3.7.1</version>
@@ -407,7 +381,7 @@
     <dependency>
       <groupId>com.thoughtworks.xstream</groupId>
       <artifactId>xstream</artifactId>
-      <version>1.4.11.1</version>
+      <version>1.4.17</version>
     </dependency>
     <dependency>
       <groupId>commons-vfs</groupId>

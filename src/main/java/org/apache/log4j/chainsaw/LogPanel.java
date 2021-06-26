@@ -847,7 +847,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             public void mouseClicked(MouseEvent e) {
                 LoggingEventWrapper loggingEventWrapper = searchModel.getRow(searchTable.getSelectedRow());
                 if (loggingEventWrapper != null) {
-                    int id = new Integer(loggingEventWrapper.getLoggingEvent().getProperty("log4jid"));
+                    int id = Integer.parseInt(loggingEventWrapper.getLoggingEvent().getProperty("log4jid"));
                     //preserve the table's viewble column
                     setSelectedEvent(id);
                 }
@@ -2049,14 +2049,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             XStream stream = buildXStreamForLogPanelPreference();
             ObjectInputStream in = null;
             try {
+                logger.info("configuration for panel exists: " + xmlFile + " - " + identifier + ", loading");
                 FileReader r = new FileReader(xmlFile);
                 in = stream.createObjectInputStream(r);
                 LogPanelPreferenceModel storedPrefs = (LogPanelPreferenceModel) in.readObject();
                 lowerPanelDividerLocation = in.readInt();
                 int treeDividerLocation = in.readInt();
                 String conversionPattern = in.readObject().toString();
-                Point p = (Point) in.readObject();
-                Dimension d = (Dimension) in.readObject();
                 //this version number is checked to identify whether there is a Vector comming next
                 int versionNumber = 0;
                 try {
@@ -2119,18 +2118,13 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                     lowerPanel.setDividerLocation(lowerPanelDividerLocation);
                     nameTreeAndMainPanelSplit.setDividerLocation(treeDividerLocation);
                     detailLayout.setConversionPattern(conversionPattern);
-                    if (p.x != 0 && p.y != 0) {
-                        undockedFrame.setLocation(p.x, p.y);
-                        undockedFrame.setSize(d);
-                    } else {
-                        undockedFrame.setLocation(0, 0);
-                        undockedFrame.setSize(new Dimension(1024, 768));
-                    }
+                    undockedFrame.setLocation(0, 0);
+                    undockedFrame.setSize(new Dimension(1024, 768));
                 } else {
                     loadDefaultColumnSettings(event);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.info("unable to load configuration for panel: " + xmlFile + " - " + identifier + " - using default settings", e);
                 loadDefaultColumnSettings(event);
                 // TODO need to log this..
             } finally {
@@ -2206,8 +2200,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             }
             s.writeInt(nameTreeAndMainPanelSplit.getDividerLocation());
             s.writeObject(detailLayout.getConversionPattern());
-            s.writeObject(undockedFrame.getLocation());
-            s.writeObject(undockedFrame.getSize());
             //this is a version number written to the file to identify that there is a Vector serialized after this
             s.writeInt(LOG_PANEL_SERIALIZATION_VERSION_NUMBER);
             //don't write filterexpressionvector, write the combobox's model's backing vector
