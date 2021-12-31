@@ -289,7 +289,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
          * important for the Web start version of Chainsaw
          */
         //configuration initialized here
-        logUI.ensureChainsawAppenderHandlerAdded();
         logger = LogManager.getLogger(LogUI.class);
 
         //set hostname, application and group properties which will cause Chainsaw and other apache-generated
@@ -413,7 +412,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
         cyclicBufferSize = model.getCyclicBufferSize();
 
-        handler = new ChainsawAppenderHandler(appender);
+        handler = new ChainsawAppenderHandler();
         handler.addEventBatchListener(new NewTabEventBatchReceiver());
 
         logger = LogManager.getLogger(LogUI.class);
@@ -1944,7 +1943,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                 Thread.currentThread().setContextClassLoader(previousTCCL);
             }
         }
-        ensureChainsawAppenderHandlerAdded();
     }
 
     private static void loadLookAndFeelUsingPluginClassLoader(String lookAndFeelClassName) {
@@ -1960,16 +1958,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         } finally {
             // now switch it back...
             Thread.currentThread().setContextClassLoader(previousTCCL);
-        }
-    }
-
-    /**
-     * Makes sure that the LoggerRepository has the ChainsawAppenderHandler
-     * added to the root logger so Chainsaw can receive all the events.
-     */
-    private void ensureChainsawAppenderHandlerAdded() {
-        if (!LogManager.getLoggerRepository().getRootLogger().isAttached(handler)) {
-            LogManager.getLoggerRepository().getRootLogger().addAppender(handler);
         }
     }
 

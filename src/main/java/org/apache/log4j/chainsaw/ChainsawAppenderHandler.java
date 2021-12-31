@@ -16,12 +16,9 @@
  */
 package org.apache.log4j.chainsaw;
 
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.LogManager;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
-import org.apache.log4j.spi.LoggerRepositoryEx;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.LoggingEventFieldResolver;
 
@@ -38,7 +35,7 @@ import java.util.*;
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  * @author Paul Smith &lt;psmith@apache.org&gt;
  */
-public class ChainsawAppenderHandler extends AppenderSkeleton {
+public class ChainsawAppenderHandler {
     private static final String DEFAULT_IDENTIFIER = "Unknown";
     private final Object mutex = new Object();
     private int sleepInterval = 1000;
@@ -60,13 +57,7 @@ public class ChainsawAppenderHandler extends AppenderSkeleton {
      */
     private WorkQueue worker = new WorkQueue();
 
-    public ChainsawAppenderHandler(final ChainsawAppender appender) {
-        super(true);
-        appender.setAppender(this);
-    }
-
     public ChainsawAppenderHandler() {
-        super(true);
     }
 
     public void setIdentifierExpression(String identifierExpression) {
