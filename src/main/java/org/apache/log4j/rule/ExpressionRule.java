@@ -19,8 +19,7 @@ package org.apache.log4j.rule;
 
 import java.util.Map;
 import java.util.Stack;
-
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
 
 /**
@@ -103,7 +102,7 @@ public class ExpressionRule extends AbstractRule {
     /**
      * {@inheritDoc}
      */
-  public boolean evaluate(final LoggingEvent event, Map matches) {
+  public boolean evaluate(final ChainsawLoggingEvent event, Map matches) {
     return rule.evaluate(event, matches);
   }
 

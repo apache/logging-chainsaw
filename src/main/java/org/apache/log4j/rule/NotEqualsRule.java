@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.LoggingEventFieldResolver;
@@ -103,7 +104,7 @@ public class NotEqualsRule extends AbstractRule {
   }
 
     /** {@inheritDoc} */
-  public boolean evaluate(final LoggingEvent event, Map matches) {
+  public boolean evaluate(final ChainsawLoggingEvent event, Map matches) {
     Object p2 = RESOLVER.getValue(field, event);
 
     boolean result = (p2 != null) && !(p2.toString().equals(value));

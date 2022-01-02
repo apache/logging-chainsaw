@@ -17,7 +17,9 @@
 package org.apache.log4j.chainsaw.logevents;
 
 import java.time.ZonedDateTime;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The ChainsawLoggingEvent is a Chainsaw-specific type of logging event.  This
@@ -37,6 +39,7 @@ public class ChainsawLoggingEvent {
     public final LocationInfo m_locationInfo;
     public final String m_ndc;
     public final Map<String,String> m_mdc;
+    private Map<String,String> m_properties;
 
     ChainsawLoggingEvent( ChainsawLoggingEventBuilder b ){
         m_timestamp = b.m_timestamp;
@@ -47,5 +50,26 @@ public class ChainsawLoggingEvent {
         m_locationInfo = b.m_locationInfo;
         m_ndc = b.m_ndc;
         m_mdc = b.m_mdc;
+        m_properties = new HashMap<>();
+    }
+
+    public void setProperty(String name, String value){
+        m_properties.put(name, value);
+    }
+
+    public String removeProperty(String name){
+        return m_properties.remove(name);
+    }
+
+    public String getProperty(String name){
+        return m_properties.get(name);
+    }
+
+    public Set<String> getPropertyKeySet(){
+        return m_properties.keySet();
+    }
+
+    public Map<String,String> getProperties(){
+        return new HashMap<>(m_properties);
     }
 }

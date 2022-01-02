@@ -22,6 +22,8 @@ import java.util.Hashtable;
 import java.util.List;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
 import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
@@ -40,6 +42,16 @@ public class ECSLogEvent {
     @JsonProperty("log.logger")
     public String logger;
     public List<String> tags;
+
+    ChainsawLoggingEvent toChainsawLoggingEvent( ChainsawLoggingEventBuilder build ){
+        build.clear();
+
+        build.setLevelFromString( level )
+                .setMessage(message)
+                .setLogger(logger);
+
+        return build.create();
+    }
 
     LoggingEvent toLoggingEvent(){
         Logger logger;

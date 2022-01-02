@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import org.apache.log4j.chainsaw.LogUI;
 import org.apache.log4j.net.JsonReceiver;
 
 
@@ -79,10 +80,11 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
     private final Logger logger = LogManager.getLogger(ReceiversPanel.class);
 
     private final PluginRegistry pluginRegistry;
+    private final LogUI m_parent;
 
-
-    public ReceiversPanel() {
+    public ReceiversPanel(LogUI parentUi) {
         super(new BorderLayout());
+        m_parent = parentUi;
         LoggerRepository repo = LogManager.getLoggerRepository();
         final ReceiversTreeModel model = new ReceiversTreeModel();
         if (repo instanceof LoggerRepositoryEx) {
@@ -653,12 +655,14 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
 
                                     panel.getOkPanel().getOkButton().addActionListener(
                                         e2 -> {
-                                            Plugin plugin = panel.getPlugin();
-                                            if (plugin.getName() != null && !plugin.getName().trim().equals("")) {
+                                            Receiver receiver = panel.getReceiver();
+                                            if (receiver.getName() != null && !receiver.getName().trim().equals("")) {
                                                 dialog.dispose();
-                                                pluginRegistry.addPlugin(plugin);
-                                                plugin.activateOptions();
-                                                MessageCenter.getInstance().addMessage("Plugin '" + plugin.getName() + "' started");
+                                                pluginRegistry.addPlugin(receiver);
+                                                receiver.activateOptions();
+                                                // Notify the LogUI that a new reciever has been created so it can spawn a new tab
+                                                m_parent.receiverAdded(receiver);
+                                                MessageCenter.getInstance().addMessage("Receiver '" + receiver.getName() + "' started");
                                             } else {
                                                 MessageCenter.getInstance().getLogger().error("Name required to create receiver");
                                             }

@@ -18,12 +18,14 @@ package org.apache.log4j.chainsaw;
 
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.rule.Rule;
-import org.apache.log4j.spi.LoggingEvent;
 
 import java.awt.*;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
 /**
  * Wrap access to a LoggingEvent.  All property updates need to go through this object and not through the wrapped logging event,
@@ -32,7 +34,7 @@ import java.util.Set;
  * Property reads can be made on the actual LoggingEvent.
  */
 public class LoggingEventWrapper {
-    private final LoggingEvent loggingEvent;
+    private final ChainsawLoggingEvent loggingEvent;
     private static final int DEFAULT_HEIGHT = -1;
 
     private Color colorRuleBackground = ChainsawConstants.COLOR_DEFAULT_BACKGROUND;
@@ -49,7 +51,7 @@ public class LoggingEventWrapper {
     private LoggingEventWrapper syncWrapper;
     private boolean displayed;
 
-    public LoggingEventWrapper(LoggingEvent loggingEvent) {
+    public LoggingEventWrapper(ChainsawLoggingEvent loggingEvent) {
         this.loggingEvent = loggingEvent;
     }
 
@@ -60,7 +62,7 @@ public class LoggingEventWrapper {
         loggingEventWrapper.syncWrapper = this;
     }
 
-    public LoggingEvent getLoggingEvent() {
+    public ChainsawLoggingEvent getLoggingEvent() {
         return loggingEvent;
     }
 
@@ -155,8 +157,10 @@ public class LoggingEventWrapper {
         displayed = b;
     }
 
-    public void setPreviousDisplayedEventTimestamp(long previousDisplayedEventTimeStamp) {
-        setProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE, String.valueOf(loggingEvent.getTimeStamp() - previousDisplayedEventTimeStamp));
+    public void setPreviousDisplayedEventTimestamp(ZonedDateTime previousDisplayedEventTimeStamp) {
+        long diffMs = ChronoUnit.MILLIS.between( loggingEvent.m_timestamp, previousDisplayedEventTimeStamp);
+        setProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE,
+                String.valueOf(loggingEvent.m_timestamp.toEpochSecond() - previousDisplayedEventTimeStamp.toEpochSecond()));
     }
 
     public boolean isDisplayed() {
@@ -181,6 +185,6 @@ public class LoggingEventWrapper {
     }
 
     public String toString() {
-        return "LoggingEventWrapper - id: " + id + " background: " + getBackground() + ", foreground: " + getForeground() + ", msg: " + loggingEvent.getMessage();
+        return "LoggingEventWrapper - id: " + id + " background: " + getBackground() + ", foreground: " + getForeground() + ", msg: " + loggingEvent.m_message;
     }
 }

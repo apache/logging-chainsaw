@@ -22,10 +22,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.log4j.chainsaw.logevents.Level;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.helpers.UtilLoggingLevel;
-import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.LoggingEventFieldResolver;
 
 /**
@@ -67,20 +66,17 @@ public class LevelInequalityRule {
         levelList.add(Level.WARN.toString());
         levelList.add(Level.INFO.toString());
         levelList.add(Level.DEBUG.toString());
-		Level trace = Level.toLevel(5000, null);
-		if (trace != null) {
-			levelList.add(trace.toString());
-		}
+        levelList.add(Level.TRACE.toString());
 
         utilLoggingLevelList = new LinkedList();
 
-        utilLoggingLevelList.add(UtilLoggingLevel.SEVERE.toString());
-        utilLoggingLevelList.add(UtilLoggingLevel.WARNING.toString());
-        utilLoggingLevelList.add(UtilLoggingLevel.INFO.toString());
-        utilLoggingLevelList.add(UtilLoggingLevel.CONFIG.toString());
-        utilLoggingLevelList.add(UtilLoggingLevel.FINE.toString());
-        utilLoggingLevelList.add(UtilLoggingLevel.FINER.toString());
-        utilLoggingLevelList.add(UtilLoggingLevel.FINEST.toString());
+//        utilLoggingLevelList.add(UtilLoggingLevel.SEVERE.toString());
+//        utilLoggingLevelList.add(UtilLoggingLevel.WARNING.toString());
+//        utilLoggingLevelList.add(UtilLoggingLevel.INFO.toString());
+//        utilLoggingLevelList.add(UtilLoggingLevel.CONFIG.toString());
+//        utilLoggingLevelList.add(UtilLoggingLevel.FINE.toString());
+//        utilLoggingLevelList.add(UtilLoggingLevel.FINER.toString());
+//        utilLoggingLevelList.add(UtilLoggingLevel.FINEST.toString());
 
     }
 
@@ -93,7 +89,7 @@ public class LevelInequalityRule {
     public static Rule getRule(final String inequalitySymbol,
                                final String value) {
 
-        Level thisLevel;
+        Level thisLevel = null;
 
         //if valid util.logging levels are used against events
         // with log4j levels, the
@@ -103,9 +99,9 @@ public class LevelInequalityRule {
         // if the user types a level name
         //that doesn't exist as either a log4j or util.logging level name
         if (levelList.contains(value.toUpperCase())) {
-            thisLevel = Level.toLevel(value.toUpperCase());
+            thisLevel = Level.valueOf(value.toUpperCase());
         } else if (utilLoggingLevelList.contains(value.toUpperCase())) {
-            thisLevel = UtilLoggingLevel.toLevel(value.toUpperCase());
+//            thisLevel = UtilLoggingLevel.toLevel(value.toUpperCase());
         } else {
             throw new IllegalArgumentException(
                     "Invalid level inequality rule - " + value
@@ -143,13 +139,13 @@ public class LevelInequalityRule {
          */
         public LessThanRule(final Level level) {
             super();
-            newLevelInt = level.toInt();
+            newLevelInt = level.ordinal();
         }
 
         /** {@inheritDoc} */
-        public boolean evaluate(final LoggingEvent event, Map matches) {
-            Level eventLevel = event.getLevel();
-            boolean result = (eventLevel.toInt() < newLevelInt);
+        public boolean evaluate(final ChainsawLoggingEvent event, Map matches) {
+            Level eventLevel = event.m_level;
+            boolean result = (eventLevel.ordinal() < newLevelInt);
             if (result && matches != null) {
                 Set entries = (Set) matches.get(LoggingEventFieldResolver.LEVEL_FIELD);
                 if (entries == null) {
@@ -177,13 +173,13 @@ public class LevelInequalityRule {
          */
         public GreaterThanRule(final Level level) {
             super();
-            newLevelInt = level.toInt();
+            newLevelInt = level.ordinal();
         }
 
         /** {@inheritDoc} */
-        public boolean evaluate(final LoggingEvent event, Map matches) {
-            Level eventLevel = event.getLevel();
-            boolean result = (eventLevel.toInt() > newLevelInt);
+        public boolean evaluate(final ChainsawLoggingEvent event, Map matches) {
+            Level eventLevel = event.m_level;
+            boolean result = (eventLevel.ordinal() > newLevelInt);
             if (result && matches != null) {
                 Set entries = (Set) matches.get(LoggingEventFieldResolver.LEVEL_FIELD);
                 if (entries == null) {
@@ -212,13 +208,13 @@ public class LevelInequalityRule {
          */
         public GreaterThanEqualsRule(final Level level) {
             super();
-            newLevelInt = level.toInt();
+            newLevelInt = level.ordinal();
         }
 
         /** {@inheritDoc} */
-        public boolean evaluate(final LoggingEvent event, Map matches) {
-            Level eventLevel = event.getLevel();
-            boolean result = eventLevel.toInt() >= newLevelInt;
+        public boolean evaluate(final ChainsawLoggingEvent event, Map matches) {
+            Level eventLevel = event.m_level;
+            boolean result = eventLevel.ordinal() >= newLevelInt;
             if (result && matches != null) {
                 Set entries = (Set) matches.get(LoggingEventFieldResolver.LEVEL_FIELD);
                 if (entries == null) {
@@ -248,13 +244,13 @@ public class LevelInequalityRule {
          */
         public LessThanEqualsRule(final Level level) {
             super();
-            newLevelInt = level.toInt();
+            newLevelInt = level.ordinal();
         }
 
         /** {@inheritDoc} */
-        public boolean evaluate(final LoggingEvent event, Map matches) {
-            Level eventLevel = event.getLevel();
-            boolean result = eventLevel.toInt() <= newLevelInt;
+        public boolean evaluate(final ChainsawLoggingEvent event, Map matches) {
+            Level eventLevel = event.m_level;
+            boolean result = eventLevel.ordinal() <= newLevelInt;
             if (result && matches != null) {
                 Set entries = (Set) matches.get(LoggingEventFieldResolver.LEVEL_FIELD);
                 if (entries == null) {

@@ -19,7 +19,6 @@ package org.apache.log4j.chainsaw;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
-import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
@@ -42,8 +41,6 @@ import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.rule.ColorRule;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
-import org.apache.log4j.spi.LoggingEvent;
-import org.apache.log4j.spi.LoggingEventFieldResolver;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -64,6 +61,10 @@ import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.log4j.chainsaw.logevents.Level;
+import org.apache.log4j.plugins.Receiver;
+import org.apache.log4j.spi.LoggingEventFieldResolver;
 
 
 /**
@@ -115,7 +116,7 @@ import java.util.List;
  * @see org.apache.log4j.rule.ExpressionRule
  * @see org.apache.log4j.spi.LoggingEventFieldResolver
  */
-public class LogPanel extends DockablePanel implements EventBatchListener, Profileable {
+public class LogPanel extends DockablePanel implements Profileable, ChainsawEventBatchListener {
     private static final DateFormat TIMESTAMP_DATE_FORMAT = new SimpleDateFormat(Constants.TIMESTAMP_RULE_FORMAT);
     private static final double DEFAULT_DETAIL_SPLIT_LOCATION = 0.71d;
     private static final double DEFAULT_LOG_TREE_SPLIT_LOCATION = 0.2d;
@@ -179,6 +180,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
     private ColorizedEventAndSearchMatchThumbnail colorizedEventAndSearchMatchThumbnail;
     private EventTimeDeltaMatchThumbnail eventTimeDeltaMatchThumbnail;
     private boolean isDetailPanelVisible;
+    private Receiver m_receiver;
 
     /**
      * Creates a new LogPanel object.  If a LogPanel with this identifier has
@@ -1621,7 +1623,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
                             ChainsawCyclicBufferTableModel cyclicBufferTableModel = (ChainsawCyclicBufferTableModel) currentTable.getModel();
                             LoggingEventWrapper loggingEventWrapper = cyclicBufferTableModel.getRow(row);
                             if (loggingEventWrapper != null) {
-                                ((TableColorizingRenderer) currentTable.getDefaultRenderer(Object.class)).setUseRelativeTimes(loggingEventWrapper.getLoggingEvent().getTimeStamp());
+                                ((TableColorizingRenderer) currentTable.getDefaultRenderer(Object.class)).setUseRelativeTimes(loggingEventWrapper.getLoggingEvent().m_timestamp);
                                 cyclicBufferTableModel.reFilter();
                             }
                             setEnabled(true);
@@ -1771,7 +1773,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             return (String) o;
         }
 
-        if (o instanceof Level) {
+        if (o instanceof org.apache.log4j.chainsaw.logevents.Level) {
             return o.toString();
         }
 
@@ -1781,7 +1783,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             String[] ti = (String[]) o;
             if (ti.length > 0 && (!(ti.length == 1 && ti[0].equals("")))) {
                 LoggingEventWrapper loggingEventWrapper = ((ChainsawCyclicBufferTableModel) (currentTable.getModel())).getRow(row);
-                value = new StringBuilder(loggingEventWrapper.getLoggingEvent().getMessage().toString());
+                value = new StringBuilder(loggingEventWrapper.getLoggingEvent().m_message);
                 for (int i = 0; i < ((String[]) o).length; i++) {
                     value.append('\n').append(((String[]) o)[i]);
                 }
@@ -1933,101 +1935,6 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
      */
     public String getInterestedIdentifier() {
         return getIdentifier();
-    }
-
-    /**
-     * Process events associated with the identifier.  Currently assumes it only
-     * receives events which share this LogPanel's identifier
-     *
-     * @param ident  identifier shared by events
-     * @param events list of LoggingEvent objects
-     */
-    public void receiveEventBatch(String ident, final List<LoggingEvent> events) {
-
-        SwingHelper.invokeOnEDT(() -> {
-            /*
-             * if this panel is paused, we totally ignore events
-             */
-            if (isPaused()) {
-                return;
-            }
-            final int selectedRow = table.getSelectedRow();
-            final int startingRow = table.getRowCount();
-            final LoggingEventWrapper selectedEvent;
-            if (selectedRow >= 0) {
-                selectedEvent = tableModel.getRow(selectedRow);
-            } else {
-                selectedEvent = null;
-            }
-
-            final int startingSearchRow = searchTable.getRowCount();
-
-            boolean rowAdded = false;
-            boolean searchRowAdded = false;
-
-            int addedRowCount = 0;
-            int searchAddedRowCount = 0;
-
-            for (Object event1 : events) {
-                //these are actual LoggingEvent instances
-                LoggingEvent event = (LoggingEvent) event1;
-                //create two separate loggingEventWrappers (main table and search table), as they have different info on display state
-                LoggingEventWrapper loggingEventWrapper1 = new LoggingEventWrapper(event);
-                //if the clearTableExpressionRule is not null, evaluate & clear the table if it matches
-                if (clearTableExpressionRule != null && clearTableExpressionRule.evaluate(event, null)) {
-                    logger.info("clear table expression matched - clearing table - matching event msg - " + event.getMessage());
-                    clearEvents();
-                }
-
-                updateOtherModels(event);
-                boolean isCurrentRowAdded = tableModel.isAddRow(loggingEventWrapper1);
-                if (isCurrentRowAdded) {
-                    addedRowCount++;
-                }
-                rowAdded = rowAdded || isCurrentRowAdded;
-
-                //create a new loggingEventWrapper via copy constructor to ensure same IDs
-                LoggingEventWrapper loggingEventWrapper2 = new LoggingEventWrapper(loggingEventWrapper1);
-                boolean isSearchCurrentRowAdded = searchModel.isAddRow(loggingEventWrapper2);
-                if (isSearchCurrentRowAdded) {
-                    searchAddedRowCount++;
-                }
-                searchRowAdded = searchRowAdded || isSearchCurrentRowAdded;
-            }
-            //fire after adding all events
-            if (rowAdded) {
-                tableModel.fireTableEvent(startingRow, startingRow + addedRowCount, addedRowCount);
-            }
-            if (searchRowAdded) {
-                searchModel.fireTableEvent(startingSearchRow, startingSearchRow + searchAddedRowCount, searchAddedRowCount);
-            }
-
-            //tell the model to notify the count listeners
-            tableModel.notifyCountListeners();
-
-            if (rowAdded) {
-                if (tableModel.isSortEnabled()) {
-                    tableModel.sort();
-                }
-
-                //always update detail pane (since we may be using a cyclic buffer which is full)
-                detailPaneUpdater.setSelectedRow(table.getSelectedRow());
-            }
-
-            if (searchRowAdded) {
-                if (searchModel.isSortEnabled()) {
-                    searchModel.sort();
-                }
-            }
-
-            if (!isScrollToBottom() && selectedEvent != null) {
-                final int newIndex = tableModel.getRowIndex(selectedEvent);
-                if (newIndex >= 0) {
-                    // Don't scroll, just maintain selection...
-                    table.setRowSelectionInterval(newIndex, newIndex);
-                }
-            }
-        });
     }
 
     /**
@@ -3029,12 +2936,12 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
      *
      * @param event
      */
-    private void updateOtherModels(LoggingEvent event) {
+    private void updateOtherModels(ChainsawLoggingEvent event) {
 
         /*
          * EventContainer is a LoggerNameModel imp, use that for notifing
          */
-        tableModel.addLoggerName(event.getLoggerName());
+        tableModel.addLoggerName(event.m_logger);
 
         filterModel.processNewLoggingEvent(event);
     }
@@ -3110,6 +3017,101 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             return "";
         }
         return selectedItem.toString();
+    }
+
+    public void setReceiver( Receiver rx ){
+        m_receiver = rx;
+        m_receiver.addPropertyChangeListener(((pce) -> {
+            if( pce.getPropertyName().equals( "name" ) ){
+                //this.identifier = pce.getNewValue();
+            }
+        }));
+        m_receiver.addChainsawEventBatchListener(this);
+    }
+
+    public void receiveChainsawEventBatch(List<ChainsawLoggingEvent> events){
+        SwingHelper.invokeOnEDT(() -> {
+            /*
+             * if this panel is paused, we totally ignore events
+             */
+            if (isPaused()) {
+                return;
+            }
+            final int selectedRow = table.getSelectedRow();
+            final int startingRow = table.getRowCount();
+            final LoggingEventWrapper selectedEvent;
+            if (selectedRow >= 0) {
+                selectedEvent = tableModel.getRow(selectedRow);
+            } else {
+                selectedEvent = null;
+            }
+
+            final int startingSearchRow = searchTable.getRowCount();
+
+            boolean rowAdded = false;
+            boolean searchRowAdded = false;
+
+            int addedRowCount = 0;
+            int searchAddedRowCount = 0;
+
+            for (ChainsawLoggingEvent event1 : events) {
+                //create two separate loggingEventWrappers (main table and search table), as they have different info on display state
+                LoggingEventWrapper loggingEventWrapper1 = new LoggingEventWrapper(event1);
+                //if the clearTableExpressionRule is not null, evaluate & clear the table if it matches
+                if (clearTableExpressionRule != null && clearTableExpressionRule.evaluate(event1, null)) {
+                    logger.info("clear table expression matched - clearing table - matching event msg - " + event1.m_message);
+                    clearEvents();
+                }
+
+                updateOtherModels(event1);
+                boolean isCurrentRowAdded = tableModel.isAddRow(loggingEventWrapper1);
+                if (isCurrentRowAdded) {
+                    addedRowCount++;
+                }
+                rowAdded = rowAdded || isCurrentRowAdded;
+
+                //create a new loggingEventWrapper via copy constructor to ensure same IDs
+                LoggingEventWrapper loggingEventWrapper2 = new LoggingEventWrapper(loggingEventWrapper1);
+                boolean isSearchCurrentRowAdded = searchModel.isAddRow(loggingEventWrapper2);
+                if (isSearchCurrentRowAdded) {
+                    searchAddedRowCount++;
+                }
+                searchRowAdded = searchRowAdded || isSearchCurrentRowAdded;
+            }
+            //fire after adding all events
+            if (rowAdded) {
+                tableModel.fireTableEvent(startingRow, startingRow + addedRowCount, addedRowCount);
+            }
+            if (searchRowAdded) {
+                searchModel.fireTableEvent(startingSearchRow, startingSearchRow + searchAddedRowCount, searchAddedRowCount);
+            }
+
+            //tell the model to notify the count listeners
+            tableModel.notifyCountListeners();
+
+            if (rowAdded) {
+                if (tableModel.isSortEnabled()) {
+                    tableModel.sort();
+                }
+
+                //always update detail pane (since we may be using a cyclic buffer which is full)
+                detailPaneUpdater.setSelectedRow(table.getSelectedRow());
+            }
+
+            if (searchRowAdded) {
+                if (searchModel.isSortEnabled()) {
+                    searchModel.sort();
+                }
+            }
+
+            if (!isScrollToBottom() && selectedEvent != null) {
+                final int newIndex = tableModel.getRowIndex(selectedEvent);
+                if (newIndex >= 0) {
+                    // Don't scroll, just maintain selection...
+                    table.setRowSelectionInterval(newIndex, newIndex);
+                }
+            }
+        });
     }
 
     /**
@@ -3491,19 +3493,19 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             LoggingEventWrapper loggingEventWrapper = throwableEventContainer.getRow(throwableTable.getSelectedRow());
 
             //throwable string representation may be a length-one empty array
-            String[] ti = loggingEventWrapper.getLoggingEvent().getThrowableStrRep();
-            if (ti != null && ti.length > 0 && (!(ti.length == 1 && ti[0].equals("")))) {
-                detailDialog.setTitle(throwableTable.getColumnName(throwableTable.getSelectedColumn()) + " detail...");
-                StringBuilder buf = new StringBuilder();
-                buf.append(loggingEventWrapper.getLoggingEvent().getMessage());
-                buf.append("\n");
-                for (String aTi : ti) {
-                    buf.append(aTi).append("\n    ");
-                }
-
-                detailArea.setText(buf.toString());
-                SwingHelper.invokeOnEDT(() -> centerAndSetVisible(detailDialog));
-            }
+//            String[] ti = loggingEventWrapper.getLoggingEvent().getThrowableStrRep();
+//            if (ti != null && ti.length > 0 && (!(ti.length == 1 && ti[0].equals("")))) {
+//                detailDialog.setTitle(throwableTable.getColumnName(throwableTable.getSelectedColumn()) + " detail...");
+//                StringBuilder buf = new StringBuilder();
+//                buf.append(loggingEventWrapper.getLoggingEvent().getMessage());
+//                buf.append("\n");
+//                for (String aTi : ti) {
+//                    buf.append(aTi).append("\n    ");
+//                }
+//
+//                detailArea.setText(buf.toString());
+//                SwingHelper.invokeOnEDT(() -> centerAndSetVisible(detailDialog));
+//            }
         }
     }
 
@@ -3728,7 +3730,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             for (Object aPrimaryList1 : primaryList) {
                 ThumbnailLoggingEventWrapper wrapper = (ThumbnailLoggingEventWrapper) aPrimaryList1;
                 if (!wrapper.loggingEventWrapper.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
-                    if (wrapper.loggingEventWrapper.getLoggingEvent().getLevel().toInt() < Level.WARN.toInt() && wrapper.loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE) == null) {
+                    if (wrapper.loggingEventWrapper.getLoggingEvent().m_level.ordinal() < Level.WARN.ordinal() && wrapper.loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE) == null) {
                         float ratio = (wrapper.rowNum / (float) rowCount);
                         //                System.out.println("error - ratio: " + ratio + ", component height: " + componentHeight);
                         int verticalLocation = (int) (componentHeight * ratio);
@@ -3746,7 +3748,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
             for (Object aPrimaryList : primaryList) {
                 ThumbnailLoggingEventWrapper wrapper = (ThumbnailLoggingEventWrapper) aPrimaryList;
                 if (!wrapper.loggingEventWrapper.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
-                    if (wrapper.loggingEventWrapper.getLoggingEvent().getLevel().toInt() >= Level.WARN.toInt() || wrapper.loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE) != null) {
+                    if (wrapper.loggingEventWrapper.getLoggingEvent().m_level.ordinal() >= Level.WARN.ordinal() || wrapper.loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE) != null) {
                         float ratio = (wrapper.rowNum / (float) rowCount);
                         //                System.out.println("error - ratio: " + ratio + ", component height: " + componentHeight);
                         int verticalLocation = (int) (componentHeight * ratio);
@@ -4001,7 +4003,7 @@ public class LogPanel extends DockablePanel implements EventBatchListener, Profi
         }
 
         public String toString() {
-            return "event - rownum: " + rowNum + ", level: " + loggingEventWrapper.getLoggingEvent().getLevel();
+            return "event - rownum: " + rowNum + ", level: " + loggingEventWrapper.getLoggingEvent().m_level;
         }
 
         public boolean equals(Object o) {

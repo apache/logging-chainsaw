@@ -17,14 +17,13 @@
 
 package org.apache.log4j.rule;
 
-import org.apache.log4j.spi.LoggingEvent;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
 /**
  * A Rule class implementing logical or.
@@ -88,7 +87,7 @@ public class OrRule extends AbstractRule {
   }
 
   /** {@inheritDoc} */
-  public boolean evaluate(final LoggingEvent event, Map matches) {
+  public boolean evaluate(final ChainsawLoggingEvent event, Map matches) {
       if (matches == null) {
         return (rule1.evaluate(event, null) || rule2.evaluate(event, null));
       }

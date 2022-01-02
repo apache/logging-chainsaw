@@ -31,6 +31,7 @@ import java.io.*;
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.List;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
 
 /**
@@ -160,7 +161,7 @@ public class RuleColorizer implements Colorizer {
         currentRuleSet = ruleSetName;
     }
 
-    public Color getBackgroundColor(LoggingEvent event) {
+    public Color getBackgroundColor(ChainsawLoggingEvent event) {
         if (rules.containsKey(currentRuleSet)) {
             List list = (List) rules.get(currentRuleSet);
 
@@ -176,7 +177,7 @@ public class RuleColorizer implements Colorizer {
         return null;
     }
 
-    public Color getForegroundColor(LoggingEvent event) {
+    public Color getForegroundColor(ChainsawLoggingEvent event) {
         if (rules.containsKey(currentRuleSet)) {
             List list = (List) rules.get(currentRuleSet);
 

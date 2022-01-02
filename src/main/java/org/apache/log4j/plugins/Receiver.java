@@ -17,8 +17,14 @@
 
 package org.apache.log4j.plugins;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.log4j.chainsaw.ChainsawEventBatchListener;
+import org.apache.log4j.chainsaw.EventBatchListener;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.Thresholdable;
 
@@ -54,11 +60,18 @@ public abstract class Receiver extends PluginSkeleton implements Thresholdable {
      */
     protected Level thresholdLevel;
 
+    private List<ChainsawEventBatchListener> m_eventListeners;
+    private WorkQueue m_worker;
+    private final Object mutex = new Object();
+    private int m_sleepInterval = 1000;
+
     /**
      * Create new instance.
      */
     protected Receiver() {
         super();
+        m_eventListeners = new ArrayList<>();
+        m_worker = new WorkQueue();
     }
 
     /**
@@ -95,6 +108,22 @@ public abstract class Receiver extends PluginSkeleton implements Thresholdable {
             || level.isGreaterOrEqual(thresholdLevel));
     }
 
+    public void addChainsawEventBatchListener( ChainsawEventBatchListener listen ){
+        if( listen != null ){
+            m_eventListeners.add( listen );
+        }
+    }
+
+    public void removeEventBatchListener( ChainsawEventBatchListener listen ){
+        if( listen != null ){
+            m_eventListeners.remove( listen );
+        }
+    }
+
+    public void append(final ChainsawLoggingEvent event){
+        m_worker.enqueue(event);
+    }
+
     /**
      * Posts the logging event to a logger in the configured logger
      * repository.
@@ -118,6 +147,97 @@ public abstract class Receiver extends PluginSkeleton implements Thresholdable {
             .isGreaterOrEqual(localLogger.getEffectiveLevel())) {
             // call the loggers appenders to process the event
             localLogger.callAppenders(event);
+        }
+    }
+
+    public int getQueueInterval() {
+        return m_sleepInterval;
+    }
+
+    public void setQueueInterval(int interval) {
+        m_sleepInterval = interval;
+    }
+
+    /**
+     * Queue of Events are placed in here, which are picked up by an asychronous
+     * thread. The WorkerThread looks for events once a second and processes all
+     * events accumulated during that time..
+     */
+    class WorkQueue {
+        final ArrayList<ChainsawLoggingEvent> queue = new ArrayList<>();
+        Thread workerThread;
+
+        protected WorkQueue() {
+            workerThread = new WorkerThread();
+            workerThread.start();
+        }
+
+        public final void enqueue(ChainsawLoggingEvent event) {
+            synchronized (mutex) {
+                queue.add(event);
+                mutex.notify();
+            }
+        }
+
+        public final void stop() {
+            synchronized (mutex) {
+                workerThread.interrupt();
+            }
+        }
+
+        /**
+         * The worker thread converts each queued event to a vector and forwards the
+         * vector on to the UI.
+         */
+        private class WorkerThread extends Thread {
+            public WorkerThread() {
+                super("Chainsaw-WorkerThread");
+                setDaemon(true);
+                setPriority(Thread.NORM_PRIORITY - 1);
+            }
+
+            public void run() {
+                List<ChainsawLoggingEvent> innerList = new ArrayList<>();
+                while (true) {
+                    innerList.clear();
+                    synchronized (mutex) {
+                        try {
+                            while ((queue.size() == 0)) {
+//                                setDataRate(0);
+                                mutex.wait();
+                            }
+                            if (queue.size() > 0) {
+                                innerList.addAll(queue);
+                                queue.clear();
+                            }
+                        } catch (InterruptedException ie) {
+                        }
+                    }
+
+                    for( ChainsawEventBatchListener evtListner : m_eventListeners ){
+                        evtListner.receiveChainsawEventBatch(innerList);
+                    }
+                    
+                    if (getQueueInterval() > 1000) {
+                        try {
+                            synchronized (this) {
+                                wait(getQueueInterval());
+                            }
+                        } catch (InterruptedException ie) {
+                        }
+                    } else {
+                        Thread.yield();
+                    }
+//                    if (size == 0) {
+//                        setDataRate(0.0);
+//                    } else {
+//                        long timeEnd = System.currentTimeMillis();
+//                        long diffInSeconds = (timeEnd - timeStart) / 1000;
+//                        double rate = (((double) size) / diffInSeconds);
+//                        setDataRate(rate);
+//                    }
+                }
+            }
         }
     }
 }

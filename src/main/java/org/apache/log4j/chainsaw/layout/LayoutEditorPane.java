@@ -136,7 +136,7 @@ public final class LayoutEditorPane extends JPanel {
         String pattern = patternEditor.getText();
         layout.setConversionPattern(pattern);
 
-        previewer.setText(layout.format(event));
+//        previewer.setText(layout.format(event));
     }
 
     /**

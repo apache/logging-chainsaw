@@ -12,13 +12,13 @@ package org.apache.log4j.chainsaw;
 
 import org.apache.log4j.EnhancedPatternLayout;
 import org.apache.log4j.Layout;
-import org.apache.log4j.spi.LoggingEvent;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.util.List;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
 public class CopyEventsToClipboardAction extends AbstractAction {
 
@@ -48,8 +48,8 @@ public class CopyEventsToClipboardAction extends AbstractAction {
         List filteredEvents = logUi.getCurrentLogPanel().getFilteredEvents();
         StringBuilder writer = new StringBuilder(filteredEvents.size() * EVENTSIZE_FUDGE_FACTOR);
         for (Object filteredEvent : filteredEvents) {
-            LoggingEvent event = ((LoggingEventWrapper) filteredEvent).getLoggingEvent();
-            writer.append(layout.format(event));
+            ChainsawLoggingEvent event = ((LoggingEventWrapper) filteredEvent).getLoggingEvent();
+            writer.append(event.m_message);
         }
 
         StringSelection stringSelection = new StringSelection(writer.toString());

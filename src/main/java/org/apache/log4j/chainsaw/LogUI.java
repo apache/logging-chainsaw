@@ -62,6 +62,7 @@ import java.net.URL;
 import java.security.*;
 import java.util.*;
 import java.util.List;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
 
 /**
@@ -279,7 +280,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         logUI.pluginRegistry = repositoryExImpl.getPluginRegistry();
 
         logUI.handler = new ChainsawAppenderHandler();
-        logUI.handler.addEventBatchListener(logUI.new NewTabEventBatchReceiver());
 
         /**
          * TODO until we work out how JoranConfigurator might be able to have
@@ -413,7 +413,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         cyclicBufferSize = model.getCyclicBufferSize();
 
         handler = new ChainsawAppenderHandler();
-        handler.addEventBatchListener(new NewTabEventBatchReceiver());
 
         logger = LogManager.getLogger(LogUI.class);
 
@@ -534,7 +533,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     }
 
     private void setupReceiverPanel() {
-        receiversPanel = new ReceiversPanel();
+        receiversPanel = new ReceiversPanel(this);
         receiversPanel.addPropertyChangeListener(
             "visible",
             evt -> getApplicationPreferenceModel().setReceivers(
@@ -1821,23 +1820,26 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     }
 
     private void buildLogPanel(
-        boolean customExpression, final String ident, final List<LoggingEvent> events)
+        boolean customExpression, final String ident, final List<ChainsawLoggingEvent> events, final Receiver rx)
         throws IllegalArgumentException {
         final LogPanel thisPanel = new LogPanel(getStatusBar(), ident, cyclicBufferSize, allColorizers, applicationPreferenceModel);
 
         getSettingsManager().addSettingsListener(thisPanel);
         getSettingsManager().configure(thisPanel);
 
+        if( customExpression && rx != null ){
+            thisPanel.setReceiver(rx);
+        }
 
         /**
          * Now add the panel as a batch listener so it can handle it's own
          * batchs
          */
         if (customExpression) {
-            handler.addCustomEventBatchListener(ident, thisPanel);
+//            handler.addCustomEventBatchListener(ident, thisPanel);
         } else {
             identifierPanels.add(thisPanel);
-            handler.addEventBatchListener(thisPanel);
+//            handler.addEventBatchListener(thisPanel);
         }
 
         TabIconHandler iconHandler = new TabIconHandler(ident);
@@ -1884,7 +1886,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                 getTabbedPane().addANewTab(
                     ident, thisPanel, new ImageIcon(ChainsawIcons.ANIM_RADIO_TOWER));
                 thisPanel.layoutComponents();
-                thisPanel.receiveEventBatch(ident, events);
+//                thisPanel.receiveEventBatch(ident, events);
                 if (!getTabbedPane().tabSetting.isChainsawLog()) {
                     displayPanel("chainsaw-log", false);
                 }
@@ -1894,11 +1896,19 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         MessageCenter.getInstance().getLogger().debug(msg);
     }
 
+    public void receiverAdded(Receiver rx){
+        List<ChainsawLoggingEvent> list = new ArrayList<>();
+        buildLogPanel(false, rx.getName(), list, rx);
+    }
+
+    public void receiverRemoved(Receiver rx){
+
+    }
 
     public void createCustomExpressionLogPanel(String ident) {
         //collect events matching the rule from all of the tabs
         try {
-            List<LoggingEvent> list = new ArrayList<>();
+            List<ChainsawLoggingEvent> list = new ArrayList<>();
             Rule rule = ExpressionRule.getRule(ident);
 
             for (Object identifierPanel : identifierPanels) {
@@ -1910,7 +1920,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                 }
             }
 
-            buildLogPanel(true, ident, list);
+            buildLogPanel(true, ident, list, null);
         } catch (IllegalArgumentException iae) {
             MessageCenter.getInstance().getLogger().info(
                 "Unable to add tab using expression: " + ident + ", reason: "
@@ -1958,74 +1968,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         } finally {
             // now switch it back...
             Thread.currentThread().setContextClassLoader(previousTCCL);
-        }
-    }
-
-    /**
-     * This class handles the recption of the Event batches and creates new
-     * LogPanels if the identifier is not in use otherwise it ignores the event
-     * batch.
-     *
-     * @author Paul Smith
-     * &lt;psmith@apache.org&gt;
-     */
-    private class NewTabEventBatchReceiver implements EventBatchListener {
-        /**
-         * DOCUMENT ME!
-         *
-         * @param ident
-         * @param events
-         */
-        public void receiveEventBatch(
-            final String ident, final List<LoggingEvent> events) {
-            if (events.size() == 0) {
-                return;
-            }
-
-            if (!isGUIFullyInitialized) {
-                synchronized (initializationLock) {
-                    while (!isGUIFullyInitialized) {
-                        System.out.println(
-                            "Wanting to add a row, but GUI not initialized, waiting...");
-
-                        /**
-                         * Lets wait 1 seconds and recheck.
-                         */
-                        try {
-                            initializationLock.wait(1000);
-                            logger.debug("waiting for initialization to complete");
-                        } catch (InterruptedException e) {
-                        }
-                    }
-                    logger.debug("out of system initialization wait loop");
-                }
-            }
-
-            if (!getPanelMap().containsKey(ident)) {
-                logger.debug("panel " + ident + " does not exist - creating");
-                try {
-                    buildLogPanel(false, ident, events);
-                } catch (IllegalArgumentException iae) {
-                    logger.error("error creating log panel", iae);
-                    //should not happen - not a custom expression panel
-                }
-            }
-        }
-
-        /*
-         * (non-Javadoc)
-         *
-         * @see org.apache.log4j.chainsaw.EventBatchListener#getInterestedIdentifier()
-         */
-
-        /**
-         * DOCUMENT ME!
-         *
-         * @return DOCUMENT ME!
-         */
-        public String getInterestedIdentifier() {
-            // we are interested in all batches so we can detect new identifiers
-            return null;
         }
     }
 

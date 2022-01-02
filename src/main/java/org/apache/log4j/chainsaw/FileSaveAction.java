@@ -103,8 +103,8 @@ class FileSaveAction extends AbstractAction {
                 }
                 for (Object aV : v) {
                     LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) aV;
-                    layout.setLocationInfo(loggingEventWrapper.getLoggingEvent().getThrowableInformation() != null);
-                    writer.write(layout.format(loggingEventWrapper.getLoggingEvent()));
+//                    layout.setLocationInfo(loggingEventWrapper.getLoggingEvent().getThrowableInformation() != null);
+//                    writer.write(layout.format(loggingEventWrapper.getLoggingEvent()));
                 }
             } catch (IOException ioe) {
                 LogLog.warn("Unable to save file", ioe);

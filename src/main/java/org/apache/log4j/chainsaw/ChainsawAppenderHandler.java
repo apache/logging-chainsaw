@@ -112,8 +112,9 @@ public class ChainsawAppenderHandler {
      * @return identifier
      */
     String getTabIdentifier(LoggingEvent e) {
-        String ident = resolver.applyFields(identifierExpression, e);
-        return ((ident != null) ? ident : DEFAULT_IDENTIFIER);
+        return "";
+//        String ident = resolver.applyFields(identifierExpression, e);
+//        return ((ident != null) ? ident : DEFAULT_IDENTIFIER);
     }
 
     /**
@@ -251,11 +252,11 @@ public class ChainsawAppenderHandler {
                                 }
                             }
                             for (Object o : customExpressionRules.entrySet()) {
-                                Map.Entry entry = (Map.Entry) o;
-                                Rule rule = (Rule) entry.getValue();
-                                if (rule.evaluate(e, null)) {
-                                    eventBatch.addEvent((String) entry.getKey(), e);
-                                }
+//                                Map.Entry entry = (Map.Entry) o;
+//                                Rule rule = (Rule) entry.getValue();
+//                                if (rule.evaluate(e, null)) {
+//                                    eventBatch.addEvent((String) entry.getKey(), e);
+//                                }
                             }
                             eventBatch.addEvent(getTabIdentifier(e), e);
                         }

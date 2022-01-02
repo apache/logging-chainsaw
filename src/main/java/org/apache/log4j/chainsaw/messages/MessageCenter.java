@@ -223,7 +223,8 @@ public class MessageCenter {
         public Component getListCellRendererComponent(
             JList list, Object value, int index, boolean isSelected,
             boolean cellHasFocus) {
-            value = layout.format(((LoggingEventWrapper) value).getLoggingEvent());
+            //value = layout.format(((LoggingEventWrapper) value).getLoggingEvent());
+            value = ((LoggingEventWrapper) value).getLoggingEvent().m_message;
 
             Component c =
                 super.getListCellRendererComponent(

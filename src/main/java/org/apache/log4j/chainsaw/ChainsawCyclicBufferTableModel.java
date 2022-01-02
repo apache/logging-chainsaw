@@ -23,8 +23,7 @@ import org.apache.log4j.chainsaw.color.RuleColorizer;
 import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.rule.Rule;
-import org.apache.log4j.spi.LocationInfo;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.log4j.chainsaw.logevents.LocationInfo;
 
 import javax.swing.*;
 import javax.swing.event.EventListenerList;
@@ -33,6 +32,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.*;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
 
 /**
@@ -499,7 +499,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
-        LoggingEvent event = null;
+        ChainsawLoggingEvent event = null;
 
         synchronized (mutex) {
             if (rowIndex < filteredList.size() && rowIndex > -1) {
@@ -511,11 +511,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
             return null;
         }
 
-        LocationInfo info = null;
-
-        if (event.locationInformationExists()) {
-            info = event.getLocationInformation();
-        }
+        LocationInfo info = event.m_locationInfo;
 
         switch (columnIndex + 1) {
             case ChainsawColumns.INDEX_ID_COL_NAME:
@@ -529,7 +525,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
                 return rowIndex;
 
             case ChainsawColumns.INDEX_LEVEL_COL_NAME:
-                return event.getLevel();
+                return event.m_level;
 
             case ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME:
                 return event.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
@@ -538,54 +534,53 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
                 return event.getProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
 
             case ChainsawColumns.INDEX_LOGGER_COL_NAME:
-                return event.getLoggerName();
+                return event.m_logger;
 
             case ChainsawColumns.INDEX_TIMESTAMP_COL_NAME:
-                return new Date(event.getTimeStamp());
+                return event.m_timestamp;
 
             case ChainsawColumns.INDEX_MESSAGE_COL_NAME:
-                return event.getRenderedMessage();
+                return event.m_message;
 
             case ChainsawColumns.INDEX_NDC_COL_NAME:
-                return event.getNDC();
+                return event.m_ndc;
 
             case ChainsawColumns.INDEX_THREAD_COL_NAME:
-                return event.getThreadName();
+                return event.m_threadName;
 
             case ChainsawColumns.INDEX_THROWABLE_COL_NAME:
-                return event.getThrowableStrRep();
+                return "IMPLEMENT ME";
 
             case ChainsawColumns.INDEX_CLASS_COL_NAME:
-                return ((info == null) || ("?".equals(info.getClassName()))) ? "" : info.getClassName();
+                return info == null ? "" : info.className;
 
             case ChainsawColumns.INDEX_FILE_COL_NAME:
-                return ((info == null) || ("?".equals(info.getFileName()))) ? "" : info.getFileName();
+                return info == null ? "" : info.fileName;
 
             case ChainsawColumns.INDEX_LINE_COL_NAME:
-                return ((info == null) || ("?".equals(info.getLineNumber()))) ? "" : info.getLineNumber();
+                return info == null ? -1 : info.lineNumber;
 
             case ChainsawColumns.INDEX_METHOD_COL_NAME:
-                return ((info == null) || ("?".equals(info.getMethodName()))) ? "" : info.getMethodName();
+                return info == null ? "" : info.methodName;
 
             default:
 
-                if (columnIndex < columnNames.size()) {
-                    //case may not match..try case sensitive and fall back to case-insensitive
-                    String result = event.getProperty(columnNames.get(columnIndex).toString());
-                    if (result == null) {
-                        String lowerColName = columnNames.get(columnIndex).toString().toLowerCase(Locale.ENGLISH);
-                        Set<Map.Entry> entrySet = event.getProperties().entrySet();
-                        for (Object anEntrySet : entrySet) {
-                            Map.Entry thisEntry = (Map.Entry) anEntrySet;
-                            if (thisEntry.getKey().toString().equalsIgnoreCase(lowerColName)) {
-                                result = thisEntry.getValue().toString();
-                            }
-                        }
-                    }
-                    if (result != null) {
-                        return result;
-                    }
-                }
+//                if (columnIndex < columnNames.size()) {
+//                    //case may not match..try case sensitive and fall back to case-insensitive
+//                    String result = event.getProperty(columnNames.get(columnIndex).toString());
+//                    if (result == null) {
+//                        String lowerColName = columnNames.get(columnIndex).toString().toLowerCase(Locale.ENGLISH);
+//                        Set<String> entrySet = event.entrySet();
+//                        for (String entry : entrySet) {
+//                            if (entry.equalsIgnoreCase(lowerColName)) {
+//                                result = thisEntry.getValue().toString();
+//                            }
+//                        }
+//                    }
+//                    if (result != null) {
+//                        return result;
+//                    }
+//                }
         }
         return "";
     }
@@ -643,10 +638,10 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
 
     private void updateEventMillisDelta(LoggingEventWrapper loggingEventWrapper, LoggingEventWrapper lastLoggingEventWrapper) {
         if (lastLoggingEventWrapper != null) {
-            loggingEventWrapper.setPreviousDisplayedEventTimestamp(lastLoggingEventWrapper.getLoggingEvent().getTimeStamp());
+            loggingEventWrapper.setPreviousDisplayedEventTimestamp(lastLoggingEventWrapper.getLoggingEvent().m_timestamp);
         } else {
             //delta to same event = 0
-            loggingEventWrapper.setPreviousDisplayedEventTimestamp(loggingEventWrapper.getLoggingEvent().getTimeStamp());
+            loggingEventWrapper.setPreviousDisplayedEventTimestamp(loggingEventWrapper.getLoggingEvent().m_timestamp);
         }
     }
 

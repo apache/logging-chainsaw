@@ -37,6 +37,23 @@ public class ChainsawLoggingEventBuilder {
 
     public ChainsawLoggingEventBuilder(){}
 
+    /**
+     * Copy fields from an already-existing log event.
+     * Clears any data that already exists in this builder.
+     */
+    public ChainsawLoggingEventBuilder copyFromEvent( final ChainsawLoggingEvent evt ){
+        clear();
+        m_timestamp = evt.m_timestamp;
+        m_level = evt.m_level;
+        m_message = evt.m_message;
+        m_threadName = evt.m_threadName;
+        m_logger = evt.m_logger;
+        m_locationInfo = evt.m_locationInfo;
+        m_ndc = evt.m_ndc;
+        m_mdc = new HashMap<>(evt.m_mdc);
+        return this;
+    }
+
     public void clear(){
         m_timestamp = null;
         m_level = null;
@@ -47,52 +64,52 @@ public class ChainsawLoggingEventBuilder {
         m_mdc = null;
     }
 
-    ChainsawLoggingEventBuilder setTimestamp( ZonedDateTime inTimestamp ){
+    public ChainsawLoggingEventBuilder setTimestamp( ZonedDateTime inTimestamp ){
         m_timestamp = inTimestamp;
         return this;
     }
 
-    ChainsawLoggingEventBuilder setLevel( Level inLevel ){
+    public ChainsawLoggingEventBuilder setLevel( Level inLevel ){
         m_level = inLevel;
         return this;
     }
 
-    ChainsawLoggingEventBuilder setLevelFromString( String inLevel ){
+    public ChainsawLoggingEventBuilder setLevelFromString( String inLevel ){
         m_level = Level.valueOf( inLevel );
         return this;
     }
 
-    ChainsawLoggingEventBuilder setMessage( String inMessage ){
+    public ChainsawLoggingEventBuilder setMessage( String inMessage ){
         m_message = inMessage;
         return this;
     }
 
-    ChainsawLoggingEventBuilder setThreadName( String threadName ){
+    public ChainsawLoggingEventBuilder setThreadName( String threadName ){
         m_threadName = threadName;
         return this;
     }
 
-    ChainsawLoggingEventBuilder setLogger( String logger ){
+    public ChainsawLoggingEventBuilder setLogger( String logger ){
         m_logger = logger;
         return this;
     }
 
-    ChainsawLoggingEventBuilder setLocationInfo( LocationInfo info ){
+    public ChainsawLoggingEventBuilder setLocationInfo( LocationInfo info ){
         m_locationInfo = info;
         return this;
     }
 
-    ChainsawLoggingEventBuilder setNDC( String ndc ){
+    public ChainsawLoggingEventBuilder setNDC( String ndc ){
         m_ndc = ndc;
         return this;
     }
 
-    ChainsawLoggingEventBuilder setMDC( Map<String,String> mdc ){
+    public ChainsawLoggingEventBuilder setMDC( Map<String,String> mdc ){
         m_mdc = mdc;
         return this;
     }
 
-    ChainsawLoggingEventBuilder addMDCEntry( String key, String value ){
+    public ChainsawLoggingEventBuilder addMDCEntry( String key, String value ){
         if( m_mdc == null ){
             m_mdc = new HashMap<>();
         }
@@ -100,7 +117,7 @@ public class ChainsawLoggingEventBuilder {
         return this;
     }
 
-    ChainsawLoggingEvent create(){
+    public ChainsawLoggingEvent create(){
         return new ChainsawLoggingEvent( this );
     }
 }

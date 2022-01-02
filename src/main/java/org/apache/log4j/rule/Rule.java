@@ -19,10 +19,9 @@
  */
 package org.apache.log4j.rule;
 
-import org.apache.log4j.spi.LoggingEvent;
-
 import java.beans.PropertyChangeListener;
 import java.util.Map;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
 
 /**
@@ -46,7 +45,7 @@ public interface Rule {
    * evaluation results 
    * @return true if this Rule instance accepts the event, otherwise false.
    */
-  boolean evaluate(LoggingEvent e, Map matches);
+  boolean evaluate(ChainsawLoggingEvent e, Map matches);
 
   /**
    * Adds a PropertyChangeListener to this instance, which is notified when

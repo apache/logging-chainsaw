@@ -120,7 +120,7 @@ public class NewReceiverDialogPanel extends JPanel {
      * @return NewReceiverDialogPanel
      * @throws IllegalArgumentException if the specified class is not a Receiver
      */
-    public static NewReceiverDialogPanel create(Class receiverClass) {
+    public static NewReceiverDialogPanel create(Class<? extends Receiver> receiverClass) {
 
         if (!Receiver.class.isAssignableFrom(receiverClass)) {
             throw new IllegalArgumentException(receiverClass.getName() +
@@ -156,9 +156,9 @@ public class NewReceiverDialogPanel extends JPanel {
     /**
      *
      */
-    public Plugin getPlugin() {
+    public Receiver getReceiver() {
 
-        return this.pluginEditorPanel.getPlugin();
+        return (Receiver)this.pluginEditorPanel.getPlugin();
     }
 
 }

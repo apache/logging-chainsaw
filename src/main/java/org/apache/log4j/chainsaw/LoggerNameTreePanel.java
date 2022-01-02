@@ -37,6 +37,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.util.List;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
 
 /**
@@ -137,14 +138,14 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener {
         visibilityRuleDelegate = new VisibilityRuleDelegate();
         colorRuleDelegate =
             new AbstractRule() {
-                public boolean evaluate(LoggingEvent e, Map matches) {
-                    boolean hiddenLogger = e.getLoggerName() != null && isHiddenLogger(e.getLoggerName());
+                public boolean evaluate(ChainsawLoggingEvent e, Map matches) {
+                    boolean hiddenLogger = e.m_logger != null && isHiddenLogger(e.m_logger);
                     boolean hiddenExpression = (ignoreExpressionRule != null && ignoreExpressionRule.evaluate(e, null));
                     boolean alwaysDisplayExpression = (alwaysDisplayExpressionRule != null && alwaysDisplayExpressionRule.evaluate(e, null));
                     boolean hidden = (!alwaysDisplayExpression) && (hiddenLogger || hiddenExpression);
                     String currentlySelectedLoggerName = getCurrentlySelectedLoggerName();
 
-                    return !isFocusOnSelected() && !hidden && currentlySelectedLoggerName != null && !"".equals(currentlySelectedLoggerName) && (e.getLoggerName().startsWith(currentlySelectedLoggerName + ".") || e.getLoggerName().endsWith(currentlySelectedLoggerName));
+                    return !isFocusOnSelected() && !hidden && currentlySelectedLoggerName != null && !"".equals(currentlySelectedLoggerName) && (e.m_logger.startsWith(currentlySelectedLoggerName + ".") || e.m_logger.endsWith(currentlySelectedLoggerName));
                 }
             };
 
@@ -1638,9 +1639,9 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener {
     }
 
     class VisibilityRuleDelegate extends AbstractRule {
-        public boolean evaluate(LoggingEvent e, Map matches) {
+        public boolean evaluate(ChainsawLoggingEvent e, Map matches) {
             String currentlySelectedLoggerName = getCurrentlySelectedLoggerName();
-            boolean hiddenLogger = e.getLoggerName() != null && isHiddenLogger(e.getLoggerName());
+            boolean hiddenLogger = e.m_logger != null && isHiddenLogger(e.m_logger);
             boolean hiddenExpression = (ignoreExpressionRule != null && ignoreExpressionRule.evaluate(e, null));
             boolean alwaysDisplayExpression = (alwaysDisplayExpressionRule != null && alwaysDisplayExpressionRule.evaluate(e, null));
             boolean hidden = (!alwaysDisplayExpression) && (hiddenLogger || hiddenExpression);
@@ -1648,10 +1649,10 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener {
                 //if there is no selected logger, pass if not hidden
                 return !hidden;
             }
-            boolean result = (e.getLoggerName() != null) && !hidden;
+            boolean result = (e.m_logger != null) && !hidden;
 
             if (result && isFocusOnSelected()) {
-                result = (e.getLoggerName() != null && (e.getLoggerName().startsWith(currentlySelectedLoggerName + ".") || e.getLoggerName().endsWith(currentlySelectedLoggerName)));
+                result = (e.m_logger != null && (e.m_logger.startsWith(currentlySelectedLoggerName + ".") || e.m_logger.endsWith(currentlySelectedLoggerName)));
             }
 
             return result;

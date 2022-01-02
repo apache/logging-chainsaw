@@ -14,31 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.log4j.chainsaw;
 
-package org.apache.log4j.chainsaw.color;
-
-import java.awt.*;
+import java.util.List;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
-
 /**
- * Given a LoggingEvent, can determine an appropriate
- * Color to use based on whatever this implementation
- * has been coded.
  *
- * @author Paul Smith &lt;psmith@apache.org&gt;
- * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
-public interface Colorizer {
-    /**
-     * Given a LoggingEvent, returns a Color to use for background,
-     * or null if this instance cannot determine one, or that
-     * the stanard color should be used.
-     *
-     * @param event
-     * @return background color
-     */
-    Color getBackgroundColor(ChainsawLoggingEvent event);
-
-    Color getForegroundColor(ChainsawLoggingEvent event);
+public interface ChainsawEventBatchListener {
+    void receiveChainsawEventBatch(List<ChainsawLoggingEvent> events);
 }

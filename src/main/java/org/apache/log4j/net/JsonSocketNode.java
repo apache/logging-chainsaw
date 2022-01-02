@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
 
 
 /**
@@ -45,7 +46,7 @@ import java.util.List;
  */
 public class JsonSocketNode extends ComponentBase implements Runnable {
     Socket m_socket;
-    Receiver m_receiver;
+    JsonReceiver m_receiver;
     SocketNodeEventListener m_listener;
     private List<Byte> m_jsonBuffer;
 
@@ -62,7 +63,7 @@ public class JsonSocketNode extends ComponentBase implements Runnable {
     /**
      * Constructor for socket and reciever.
      */
-    public JsonSocketNode(Socket socket, Receiver receiver) {
+    public JsonSocketNode(Socket socket, JsonReceiver receiver) {
         this.m_socket = socket;
         this.m_receiver = receiver;
     }
@@ -107,6 +108,7 @@ public class JsonSocketNode extends ComponentBase implements Runnable {
             try {
                 //read data from the socket.
                 // Once we have a full JSON message, parse it
+                ChainsawLoggingEventBuilder build = new ChainsawLoggingEventBuilder();
                 while (true) {
                     getLogger().debug( "About to deserialize values" );
                     Iterator<ECSLogEvent> iter = genson.deserializeValues(is, ECSLogEvent.class);
@@ -115,31 +117,32 @@ public class JsonSocketNode extends ComponentBase implements Runnable {
                     if( !iter.hasNext() ) break;
                     while( iter.hasNext() ){
                         ECSLogEvent evt = iter.next();
-                        LoggingEvent e = evt.toLoggingEvent();
-                        e.setProperty(Constants.HOSTNAME_KEY, hostName);
-
-                        // store the known remote info in an event property
-                        e.setProperty("log4j.remoteSourceInfo", remoteInfo);
-
-                        // if configured with a receiver, tell it to post the event
-                        if (m_receiver != null) {
-                            m_receiver.doPost(e);
-
-                            // else post it via the hierarchy
-                        } else {
-                            // get a logger from the hierarchy. The name of the logger
-                            // is taken to be the name contained in the event.
-                            remoteLogger = repository.getLogger(e.getLoggerName());
-
-                            //event.logger = remoteLogger;
-                            // apply the logger-level filter
-                            if (
-                                e.getLevel().isGreaterOrEqual(
-                                    remoteLogger.getEffectiveLevel())) {
-                                // finally log the event as if was generated locally
-                                remoteLogger.callAppenders(e);
-                            }
-                        }
+                        m_receiver.append(evt.toChainsawLoggingEvent(build));
+//                        LoggingEvent e = evt.toLoggingEvent();
+//                        e.setProperty(Constants.HOSTNAME_KEY, hostName);
+//
+//                        // store the known remote info in an event property
+//                        e.setProperty("log4j.remoteSourceInfo", remoteInfo);
+//
+//                        // if configured with a receiver, tell it to post the event
+//                        if (m_receiver != null) {
+//                            m_receiver.doPost(e);
+//
+//                            // else post it via the hierarchy
+//                        } else {
+//                            // get a logger from the hierarchy. The name of the logger
+//                            // is taken to be the name contained in the event.
+//                            remoteLogger = repository.getLogger(e.getLoggerName());
+//
+//                            //event.logger = remoteLogger;
+//                            // apply the logger-level filter
+//                            if (
+//                                e.getLevel().isGreaterOrEqual(
+//                                    remoteLogger.getEffectiveLevel())) {
+//                                // finally log the event as if was generated locally
+//                                remoteLogger.callAppenders(e);
+//                            }
+//                        }
                     }
                 }
             } catch (Exception e) {

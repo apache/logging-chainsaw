@@ -24,8 +24,8 @@ import java.text.SimpleDateFormat;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
-import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.LoggingEventFieldResolver;
 
 /**
@@ -78,7 +78,7 @@ public class TimestampEqualsRule extends AbstractRule {
   }
 
     /** {@inheritDoc} */
-  public boolean evaluate(final LoggingEvent event, Map matches) {
+  public boolean evaluate(final ChainsawLoggingEvent event, Map matches) {
     String eventTimeStampString = RESOLVER.getValue(LoggingEventFieldResolver.TIMESTAMP_FIELD, event).toString();
     long eventTimeStamp = Long.parseLong(eventTimeStampString) / 1000 * 1000;
     boolean result = (eventTimeStamp == timeStamp);
@@ -92,30 +92,4 @@ public class TimestampEqualsRule extends AbstractRule {
     }
     return result;
   }
-
-  /**
-    * Deserialize the state of the object.
-    *
-    * @param in object input stream
-    *
-    * @throws IOException if IO error during deserialization
-    * @throws ClassNotFoundException if class not found during
-   *   deserialization
-    */
-   private void readObject(final java.io.ObjectInputStream in)
-     throws IOException, ClassNotFoundException {
-     timeStamp = in.readLong();
-   }
-
-   /**
-    * Serialize the state of the object.
-    *
-    * @param out object output stream
-    *
-    * @throws IOException if IO error during serialization
-    */
-   private void writeObject(final java.io.ObjectOutputStream out)
-     throws IOException {
-     out.writeLong(timeStamp);
-   }
 }

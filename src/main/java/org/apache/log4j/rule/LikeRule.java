@@ -17,7 +17,6 @@
 
 package org.apache.log4j.rule;
 
-import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.LoggingEventFieldResolver;
 
 import java.io.IOException;
@@ -28,6 +27,7 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
 /**
  * A Rule class supporting java.util.regex regular expression syntax.
@@ -107,7 +107,7 @@ public class LikeRule extends AbstractRule {
   }
 
     /** {@inheritDoc} */
-  public boolean evaluate(final LoggingEvent event, Map matches) {
+  public boolean evaluate(final ChainsawLoggingEvent event, Map matches) {
     //no need to figure out what part of the string matched, just set the entire string as a match
     Object input = RESOLVER.getValue(field, event);
     if((input != null) && (pattern != null)) {
