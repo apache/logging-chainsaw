@@ -21,8 +21,6 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.ChainsawConstants;
 import org.apache.log4j.chainsaw.JTextComponentFormatter;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
-import org.apache.log4j.spi.LocationInfo;
-import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
 
 import javax.swing.*;
@@ -31,8 +29,13 @@ import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Hashtable;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
+import org.apache.log4j.chainsaw.logevents.Level;
+import org.apache.log4j.chainsaw.logevents.LocationInfo;
 
 
 /**
@@ -61,7 +64,7 @@ public final class LayoutEditorPane extends JPanel {
         new JScrollPane(
             ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
             ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-    private LoggingEvent event;
+    private ChainsawLoggingEvent event;
     private EventDetailLayout layout = new EventDetailLayout();
 
     /**
@@ -136,7 +139,7 @@ public final class LayoutEditorPane extends JPanel {
         String pattern = patternEditor.getText();
         layout.setConversionPattern(pattern);
 
-//        previewer.setText(layout.format(event));
+        previewer.setText(layout.format(event));
     }
 
     /**
@@ -158,21 +161,22 @@ public final class LayoutEditorPane extends JPanel {
 
         LocationInfo li =
             new LocationInfo(
-                "myfile.java", "com.mycompany.util.MyClass", "myMethod", "321");
+                "myfile.java", "com.mycompany.util.MyClass", "myMethod", 321);
 
         ThrowableInformation tsr = new ThrowableInformation(new Exception());
 
-        event = new LoggingEvent("org.apache.log4j.Logger",
-            Logger.getLogger("com.mycompany.mylogger"),
-            new Date().getTime(),
-            org.apache.log4j.Level.DEBUG,
-            "The quick brown fox jumped over the lazy dog",
-            "Thread-1",
-            tsr,
-            "NDC string",
-            li,
-            hashTable);
+        ChainsawLoggingEventBuilder build = new ChainsawLoggingEventBuilder();
+        build.setLevel( Level.DEBUG )
+                .setLocationInfo(li)
+                .setLogger("com.mycompany.mylogger")
+                .setMessage("The quick brown fox jumped over the lazy dog")
+                .setThreadName("Thread-1")
+                .setNDC("NDC string")
+                .setMDC(hashTable)
+                .setTimestamp(ZonedDateTime.now());
 
+        event = build.create();
+        event.setProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE, "20");
     }
 
     /**
