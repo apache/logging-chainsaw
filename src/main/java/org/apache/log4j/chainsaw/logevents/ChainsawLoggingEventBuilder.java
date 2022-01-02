@@ -50,7 +50,9 @@ public class ChainsawLoggingEventBuilder {
         m_logger = evt.m_logger;
         m_locationInfo = evt.m_locationInfo;
         m_ndc = evt.m_ndc;
-        m_mdc = new HashMap<>(evt.m_mdc);
+        if( evt.m_mdc != null ){
+            m_mdc = new HashMap<>(evt.m_mdc);
+        }
         return this;
     }
 
