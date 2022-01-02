@@ -84,7 +84,7 @@ public class ChainsawConstants {
     static final String FILE_COL_NAME = "FILE";
     static final String LINE_COL_NAME = "LINE";
     static final String PROPERTIES_COL_NAME = "PROPERTIES";
-    static final String MILLIS_DELTA_COL_NAME_LOWERCASE = "millisdelta";
+    public static final String MILLIS_DELTA_COL_NAME_LOWERCASE = "millisdelta";
     static final String ID_COL_NAME = "ID";
 
     //none is not a real column name, but is used by filters as a way to apply no filter for colors or display

@@ -17,10 +17,15 @@
 
 package org.apache.log4j.chainsaw.layout;
 
-import org.apache.log4j.EnhancedPatternLayout;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
+import org.apache.log4j.chainsaw.ChainsawConstants;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
 import org.apache.log4j.chainsaw.logevents.LocationInfo;
+import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.apache.logging.log4j.core.lookup.StrSubstitutor;
 
 
 /**
@@ -34,32 +39,28 @@ import org.apache.log4j.chainsaw.logevents.LocationInfo;
  * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 public class EventDetailLayout {
-    private final EnhancedPatternLayout patternLayout = new EnhancedPatternLayout();
+
+    private String m_conversionPattern;
+    private DateTimeFormatter m_dateFormat;
 
     public EventDetailLayout() {
+        m_dateFormat = DateTimeFormatter.ISO_DATE_TIME;
     }
 
     public void setConversionPattern(String conversionPattern) {
-        patternLayout.setConversionPattern(conversionPattern);
-        patternLayout.activateOptions();
+        m_conversionPattern = conversionPattern;
     }
 
     public String getConversionPattern() {
-        return patternLayout.getConversionPattern();
+        return m_conversionPattern;
     }
 
-    /* (non-Javadoc)
-     * @see org.apache.log4j.Layout#getFooter()
-     */
-    public String getFooter() {
-        return "";
+    public void setDateformat(DateTimeFormatter dateFormat){
+        m_dateFormat = dateFormat;
     }
 
-    /* (non-Javadoc)
-     * @see org.apache.log4j.Layout#getHeader()
-     */
-    public String getHeader() {
-        return "";
+    DateTimeFormatter getDateformat(){
+        return m_dateFormat;
     }
 
     //  /* (non-Javadoc)
@@ -225,13 +226,20 @@ public class EventDetailLayout {
      */
     public String format(final ChainsawLoggingEvent event) {
         ChainsawLoggingEvent newEvent = copyForHTML(event);
-        /**
-         * Layouts are not thread-safe, but are normally
-         * protected by the fact that their Appender is thread-safe.
-         *
-         * But here in Chainsaw there is no such guarantees.
-         */
-        return newEvent.m_message;
+
+        Map<String,String> valuesMap = new HashMap<>();
+        valuesMap.put("level", event.m_level.toString());
+        valuesMap.put("logger", event.m_logger);
+        valuesMap.put("time", event.m_timestamp.format(m_dateFormat));
+        valuesMap.put("millisdelta", event.getProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE));
+        valuesMap.put("thread", event.m_threadName);
+        valuesMap.put("message", event.m_message);
+        valuesMap.put("marker", "");
+        valuesMap.put("throwable", "");
+        StrSubstitutor sub = new StrSubstitutor(valuesMap);
+        String resolvedString = sub.replace(m_conversionPattern);
+
+        return resolvedString;
 //        synchronized (patternLayout) {
 //            return patternLayout.format(newEvent);
 //        }

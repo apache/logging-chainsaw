@@ -16,11 +16,11 @@
 
 -->
 <html><body><table cellspacing=3 cellpadding=0>
-<TR><TD><B>Level</B></TD><TD>%p</td></tr>
-<TR><TD><B>Logger</B><TD>%c</td></tr>
-<TR><TD><B>Time</B><TD>%d (ms delta: %X{millisdelta})</td></tr>
-<TR><TD><B>Thread</B><TD>%t</td></tr>
-<TR><TD><B>Message</B><TD>%m</td></tr>
-<TR><TD><B>Marker</B><TD>%X{marker}</td></tr>
-<TR><TD><B>Throwable</B><TD><pre>%throwable</pre></td></tr>
+<TR><TD><B>Level</B></TD><TD>${level}</td></tr>
+<TR><TD><B>Logger</B><TD>${logger}</td></tr>
+<TR><TD><B>Time</B><TD>${time} (ms delta: ${millisdelta})</td></tr>
+<TR><TD><B>Thread</B><TD>${thread}</td></tr>
+<TR><TD><B>Message</B><TD>${message}</td></tr>
+<TR><TD><B>Marker</B><TD>${marker}</td></tr>
+<TR><TD><B>Throwable</B><TD><pre>${throwable}</pre></td></tr>
 </table></body></html>

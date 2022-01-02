@@ -2927,7 +2927,7 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
     }
 
     private String getToolTipTextForEvent(LoggingEventWrapper loggingEventWrapper) {
-        return detailLayout.getHeader() + detailLayout.format(loggingEventWrapper.getLoggingEvent()) + detailLayout.getFooter();
+        return detailLayout.format(loggingEventWrapper.getLoggingEvent());
     }
 
     /**
@@ -3415,9 +3415,7 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
 
                 if (loggingEventWrapper != null) {
                     final StringBuilder buf = new StringBuilder();
-                    buf.append(detailLayout.getHeader())
-                        .append(detailLayout.format(loggingEventWrapper.getLoggingEvent())).append(
-                        detailLayout.getFooter());
+                    buf.append(detailLayout.format(loggingEventWrapper.getLoggingEvent()));
                     if (buf.length() > 0) {
                         try {
                             final Document doc = detail.getEditorKit().createDefaultDocument();
