@@ -32,6 +32,7 @@ import java.awt.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.HashMap;
@@ -557,7 +558,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
             return loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
         }
 
-        return dateFormatInUse.format((Date) field);
+        return ((ZonedDateTime)field).format(DateTimeFormatter.ISO_DATE);
     }
 
     /**

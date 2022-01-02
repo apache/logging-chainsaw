@@ -1827,7 +1827,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         getSettingsManager().addSettingsListener(thisPanel);
         getSettingsManager().configure(thisPanel);
 
-        if( customExpression && rx != null ){
+        if( !customExpression && rx != null ){
             thisPanel.setReceiver(rx);
         }
 

@@ -48,7 +48,8 @@ public class ECSLogEvent {
 
         build.setLevelFromString( level )
                 .setMessage(message)
-                .setLogger(logger);
+                .setLogger(logger)
+                .setTimestamp(ZonedDateTime.parse(timestamp));
 
         return build.create();
     }

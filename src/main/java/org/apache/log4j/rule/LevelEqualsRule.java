@@ -43,7 +43,7 @@ public class LevelEqualsRule extends AbstractRule {
     /**
      * Level.
      */
-    private transient Level level;
+    private final Level level;
 
     /**
      * List of levels.
@@ -61,6 +61,9 @@ public class LevelEqualsRule extends AbstractRule {
     private LevelEqualsRule(final Level level) {
         super();
         this.level = level;
+        if( null == this.level ){
+            System.out.println( "BAD BAD BAD" );
+        }
     }
 
     /**
@@ -88,8 +91,10 @@ public class LevelEqualsRule extends AbstractRule {
             thisLevel = Level.valueOf(value.toUpperCase());
         } else {
 //            thisLevel = UtilLoggingLevel.toLevel(value.toUpperCase());
+System.out.println( "value bad: " + value );
         }
 
+        System.out.println( "New LevelEqualsRule at level: " + thisLevel );
         return new LevelEqualsRule(thisLevel);
     }
 
@@ -100,6 +105,7 @@ public class LevelEqualsRule extends AbstractRule {
         //both util.logging and log4j contain 'info' - use the int values instead of equality
         //info level set to the same value for both levels
         Level eventLevel = event.m_level;
+        System.out.println( "Level is : " + level );
         boolean result = (level.ordinal() == eventLevel.ordinal());
         if (result && matches != null) {
             Set entries = (Set) matches.get(LoggingEventFieldResolver.LEVEL_FIELD);

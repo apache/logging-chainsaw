@@ -225,6 +225,7 @@ public final class LoggingEventFieldResolver {
 //        } else {
 //            return getExceptionMessage(throwableRep);
 //        }
+        return "";
     } else if (TIMESTAMP_FIELD.equals(upperField)) {
       return event.m_timestamp;
     } else if (THREAD_FIELD.equals(upperField)) {
@@ -244,6 +245,7 @@ public final class LoggingEventFieldResolver {
 //          }
 //      }
 //      return ((propValue == null) ? EMPTY_STRING : propValue.toString());
+        return "";
     } else {
         org.apache.log4j.chainsaw.logevents.LocationInfo info = event.m_locationInfo;
         if (CLASS_FIELD.equals(upperField)) {
