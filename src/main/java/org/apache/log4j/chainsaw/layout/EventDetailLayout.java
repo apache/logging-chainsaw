@@ -44,7 +44,7 @@ public class EventDetailLayout {
     private DateTimeFormatter m_dateFormat;
 
     public EventDetailLayout() {
-        m_dateFormat = DateTimeFormatter.ISO_DATE_TIME;
+        m_dateFormat = DateTimeFormatter.ISO_LOCAL_TIME;
     }
 
     public void setConversionPattern(String conversionPattern) {
@@ -59,7 +59,7 @@ public class EventDetailLayout {
         m_dateFormat = dateFormat;
     }
 
-    DateTimeFormatter getDateformat(){
+    public DateTimeFormatter getDateformat(){
         return m_dateFormat;
     }
 

@@ -59,6 +59,7 @@ import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
@@ -1113,6 +1114,7 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
             }
         });
         addPropertyChangeListener("detailPaneConversionPattern", detailPaneUpdater);
+        addPropertyChangeListener("detailPaneDatetimeFormat", detailPaneUpdater);
 
         searchPane = new JScrollPane(searchTable);
         searchPane.getVerticalScrollBar().setUnitIncrement(ChainsawConstants.DEFAULT_ROW_HEIGHT * 2);
@@ -1191,6 +1193,7 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
             e -> {
                 setDetailPaneConversionPattern(
                     layoutEditorPane.getConversionPattern());
+                setDetailPaneDatetimeFormat(layoutEditorPane.getDatetimeFormatter());
                 layoutEditorDialog.setVisible(false);
             });
 
@@ -1223,6 +1226,7 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
                 public void actionPerformed(ActionEvent e) {
                     layoutEditorPane.setConversionPattern(
                         getDetailPaneConversionPattern());
+                    layoutEditorPane.setDatetimeFormatter(getDetailPaneDatetimeFormat());
 
                     Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
                     Point p =
@@ -2686,6 +2690,18 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
      */
     private String getDetailPaneConversionPattern() {
         return (detailLayout).getConversionPattern();
+    }
+
+    private void setDetailPaneDatetimeFormat(DateTimeFormatter datetimeFormat){
+        DateTimeFormatter oldFormat = getDetailPaneDatetimeFormat();
+        detailLayout.setDateformat(datetimeFormat);
+        firePropertyChange(
+            "detailPaneDatetimeFormat", oldFormat,
+            getDetailPaneDatetimeFormat());
+    }
+
+    private DateTimeFormatter getDetailPaneDatetimeFormat() {
+        return detailLayout.getDateformat();
     }
 
     /**
