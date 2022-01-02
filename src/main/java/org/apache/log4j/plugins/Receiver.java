@@ -213,7 +213,6 @@ public abstract class Receiver extends PluginSkeleton implements Thresholdable {
                         }
                     }
 
-                    System.out.println( "Sending " + innerList.size() + " events to " + m_eventListeners.size() + " rx" );
                     for( ChainsawEventBatchListener evtListner : m_eventListeners ){
                         evtListner.receiveChainsawEventBatch(innerList);
                     }
