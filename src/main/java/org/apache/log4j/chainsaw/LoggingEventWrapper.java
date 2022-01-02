@@ -158,7 +158,7 @@ public class LoggingEventWrapper {
     }
 
     public void setPreviousDisplayedEventTimestamp(ZonedDateTime previousDisplayedEventTimeStamp) {
-        long diffMs = ChronoUnit.MILLIS.between( loggingEvent.m_timestamp, previousDisplayedEventTimeStamp);
+        long diffMs = ChronoUnit.MILLIS.between( previousDisplayedEventTimeStamp, loggingEvent.m_timestamp );
         setProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE,
                 String.valueOf(diffMs));
     }
