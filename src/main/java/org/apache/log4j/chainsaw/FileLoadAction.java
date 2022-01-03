@@ -99,7 +99,7 @@ class FileLoadAction extends AbstractAction {
         }
 
         if (url != null) {
-            importURL(parent.handler, decoder, name, url);
+//            importURL(parent.handler, decoder, name, url);
             MRUFileList.log4jMRU().opened(url);
         }
     }

@@ -29,6 +29,7 @@ import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -179,7 +180,7 @@ public final class LayoutEditorPane extends JPanel {
                 .setThreadName("Thread-1")
                 .setNDC("NDC string")
                 .setMDC(hashTable)
-                .setTimestamp(ZonedDateTime.now());
+                .setTimestamp(Instant.now());
 
         event = build.create();
         event.setProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE, "20");

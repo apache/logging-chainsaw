@@ -147,8 +147,8 @@ class FileMenu extends JMenu {
                 JMenuItem menuItem = new JMenuItem(new AbstractAction(title) {
 
                     public void actionPerformed(ActionEvent e) {
-                        FileLoadAction.importURL(logui.handler,
-                            new XMLDecoder(), name, url);
+//                        FileLoadAction.importURL(logui.handler,
+//                            new XMLDecoder(), name, url);
                     }
                 });
                 mrulog4j.add(menuItem);

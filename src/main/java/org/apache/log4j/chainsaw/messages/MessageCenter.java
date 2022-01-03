@@ -18,8 +18,6 @@
 package org.apache.log4j.chainsaw.messages;
 
 import org.apache.log4j.Layout;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.apache.log4j.TTCCLayout;
 import org.apache.log4j.chainsaw.ChainsawConstants;
 import org.apache.log4j.chainsaw.LoggingEventWrapper;
@@ -34,6 +32,8 @@ import javax.swing.event.ListDataListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeSupport;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -56,7 +56,7 @@ import java.beans.PropertyChangeSupport;
  */
 public class MessageCenter {
     private static final MessageCenter instance = new MessageCenter();
-    private final Logger logger = Logger.getLogger(MessageCenter.class);
+    private final Logger logger = LogManager.getLogger();
     private Layout layout = new TTCCLayout();
     private final JList<org.apache.log4j.spi.LoggingEvent> messageList = new JList<>();
     private final ListModelAppender appender = new ListModelAppender();
@@ -74,7 +74,6 @@ public class MessageCenter {
     private MessageCenter() {
         setupActions();
         setupComponentPanel();
-        setupLogger();
         setupListeners();
         setupPopMenu();
         setupToolbar();
@@ -141,12 +140,6 @@ public class MessageCenter {
         clearAction.putValue(
             "enabled",
             (appender.getModel().getSize() > 0) ? Boolean.TRUE : Boolean.FALSE);
-    }
-
-    private void setupLogger() {
-        logger.addAppender(appender);
-        logger.setAdditivity(true);
-        logger.setLevel(Boolean.getBoolean("log4j.debug") ? Level.DEBUG : Level.INFO);
     }
 
     private void setupComponentPanel() {

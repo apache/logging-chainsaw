@@ -17,8 +17,8 @@
 package org.apache.log4j.chainsaw.receivers;
 
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.log4j.chainsaw.plugins.PluginClassLoaderFactory;
 import org.apache.log4j.plugins.Plugin;
 import org.apache.log4j.plugins.PluginRegistry;
@@ -58,7 +58,7 @@ public class ReceiversHelper {
 
     private static final ReceiversHelper instance = new ReceiversHelper();
 
-    private final Logger logger = LogManager.getLogger(ReceiversHelper.class);
+    private final Logger logger = LogManager.getLogger();
     private List<Class> receiverClassList = new ArrayList<>();
 
     /**
@@ -127,7 +127,7 @@ public class ReceiversHelper {
 
 
     public void saveReceiverConfiguration(File file) {
-        LoggerRepository repo = LogManager.getLoggerRepository();
+        LoggerRepository repo = null;//LogManager.getLoggerRepository();
         PluginRegistry pluginRegistry = ((LoggerRepositoryEx) repo).getPluginRegistry();
         List<Plugin> fullPluginList = pluginRegistry.getPlugins();
         List<Plugin> pluginList = new ArrayList<>();

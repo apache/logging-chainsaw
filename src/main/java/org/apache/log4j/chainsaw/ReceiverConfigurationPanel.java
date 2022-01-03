@@ -16,8 +16,6 @@
  */
 package org.apache.log4j.chainsaw;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.net.UDPReceiver;
@@ -39,6 +37,8 @@ import java.net.URL;
 import java.util.List;
 import java.util.Locale;
 import org.apache.log4j.net.JsonReceiver;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -47,7 +47,7 @@ import org.apache.log4j.net.JsonReceiver;
  * @author Paul Smith
  */
 class ReceiverConfigurationPanel extends JPanel {
-    private final Logger logger = LogManager.getLogger(ReceiverConfigurationPanel.class);
+    private final Logger logger = LogManager.getLogger();
 
     private final PanelModel panelModel = new PanelModel();
 

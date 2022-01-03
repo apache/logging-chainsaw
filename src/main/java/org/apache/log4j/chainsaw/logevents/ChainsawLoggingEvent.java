@@ -16,6 +16,7 @@
  */
 package org.apache.log4j.chainsaw.logevents;
 
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,7 +32,7 @@ import java.util.Set;
  */
 public class ChainsawLoggingEvent {
 
-    public final ZonedDateTime m_timestamp;
+    public final Instant m_timestamp;
     public final Level m_level;
     public final String m_message;
     public final String m_threadName;

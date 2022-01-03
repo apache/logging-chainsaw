@@ -16,6 +16,7 @@
  */
 package org.apache.log4j.chainsaw.logevents;
 
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +27,7 @@ import java.util.Map;
 public class ChainsawLoggingEventBuilder {
 
     // All fields are package-private so that ChainsawLoggingEvent can access
-    ZonedDateTime m_timestamp;
+    Instant m_timestamp;
     Level m_level;
     String m_message;
     String m_threadName;
@@ -66,7 +67,7 @@ public class ChainsawLoggingEventBuilder {
         m_mdc = null;
     }
 
-    public ChainsawLoggingEventBuilder setTimestamp( ZonedDateTime inTimestamp ){
+    public ChainsawLoggingEventBuilder setTimestamp( Instant inTimestamp ){
         m_timestamp = inTimestamp;
         return this;
     }

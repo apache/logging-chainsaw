@@ -17,6 +17,7 @@
 
 package org.apache.log4j.chainsaw.layout;
 
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
@@ -230,7 +231,7 @@ public class EventDetailLayout {
         Map<String,String> valuesMap = new HashMap<>();
         valuesMap.put("level", event.m_level.toString());
         valuesMap.put("logger", event.m_logger);
-        valuesMap.put("time", event.m_timestamp.format(m_dateFormat));
+        valuesMap.put("time", event.m_timestamp.atZone(ZoneId.systemDefault()).format(m_dateFormat));
         valuesMap.put("millisdelta", event.getProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE));
         valuesMap.put("thread", event.m_threadName);
         valuesMap.put("message", event.m_message);

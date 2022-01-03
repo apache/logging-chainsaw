@@ -20,6 +20,7 @@ import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.rule.Rule;
 
 import java.awt.*;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -157,7 +158,7 @@ public class LoggingEventWrapper {
         displayed = b;
     }
 
-    public void setPreviousDisplayedEventTimestamp(ZonedDateTime previousDisplayedEventTimeStamp) {
+    public void setPreviousDisplayedEventTimestamp(Instant previousDisplayedEventTimeStamp) {
         long diffMs = ChronoUnit.MILLIS.between( previousDisplayedEventTimeStamp, loggingEvent.m_timestamp );
         setProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE,
                 String.valueOf(diffMs));

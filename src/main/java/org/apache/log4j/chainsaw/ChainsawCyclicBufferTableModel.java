@@ -17,8 +17,8 @@
 
 package org.apache.log4j.chainsaw;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.log4j.chainsaw.color.RuleColorizer;
 import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.helpers.Constants;
@@ -31,6 +31,7 @@ import javax.swing.table.AbstractTableModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.time.ZoneId;
 import java.util.*;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
@@ -65,7 +66,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     private final List<String> columnNames = new ArrayList<>(ChainsawColumns.getColumnsNames());
     private boolean sortEnabled = false;
     private boolean reachedCapacity = false;
-    private final Logger logger = LogManager.getLogger(ChainsawCyclicBufferTableModel.class);
+    private final Logger logger = LogManager.getLogger();
 
     //  protected final Object syncLock = new Object();
     private final LoggerNameModel loggerNameModelDelegate = new LoggerNameModelSupport();

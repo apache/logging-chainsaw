@@ -50,7 +50,7 @@ public class ECSLogEvent {
                 .setMessage(message)
                 .setLogger(logger)
                 .setThreadName(thread_name)
-                .setTimestamp(ZonedDateTime.parse(timestamp));
+                .setTimestamp(ZonedDateTime.parse(timestamp).toInstant());
 
         return build.create();
     }

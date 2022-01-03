@@ -16,7 +16,6 @@
  */
 package org.apache.log4j.chainsaw.osx;
 
-import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.LogUI;
 
 import java.awt.Desktop;

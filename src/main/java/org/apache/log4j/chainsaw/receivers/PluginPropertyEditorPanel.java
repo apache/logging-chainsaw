@@ -17,8 +17,8 @@
 package org.apache.log4j.chainsaw.receivers;
 
 import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.log4j.chainsaw.ChainsawConstants;
 import org.apache.log4j.chainsaw.Generator;
 import org.apache.log4j.chainsaw.helper.TableCellEditorFactory;
@@ -57,7 +57,7 @@ public class PluginPropertyEditorPanel extends JPanel {
     private TableModel defaultModel = new DefaultTableModel(
         new String[]{"Property", "Value"}, 1);
 
-    private static final Logger logger = LogManager.getLogger(PluginPropertyEditorPanel.class);
+    private static final Logger logger = LogManager.getLogger();
 
     /**
      *

@@ -63,6 +63,7 @@ import java.security.*;
 import java.util.*;
 import java.util.List;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.logging.log4j.core.LoggerContext;
 
 
 /**
@@ -99,7 +100,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     private final Map tableMap = new HashMap();
     private final List<String> filterableColumns = new ArrayList<>();
     private final Map<String, Component> panelMap = new HashMap<>();
-    ChainsawAppenderHandler handler;
+    private ChainsawAppender chainsawAppender;
     private ChainsawToolBarAndMenus tbms;
     private ChainsawAbout aboutBox;
     private final SettingsManager sm = SettingsManager.getInstance();
@@ -109,8 +110,9 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     private final List<LogPanel> identifierPanels = new ArrayList<>();
     private int dividerSize;
     private int cyclicBufferSize;
-    private static Logger logger;
     private static String configurationURLAppArg;
+
+    private static org.apache.logging.log4j.Logger logger = org.apache.logging.log4j.LogManager.getLogger();
 
     /**
      * Set to true, if and only if the GUI has completed it's full
@@ -204,7 +206,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
         }
 
-
         LogManager.setRepositorySelector(() -> repositoryExImpl, repositorySelectorGuard);
 
         final ApplicationPreferenceModel model = new ApplicationPreferenceModel();
@@ -279,7 +280,8 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         logUI.cyclicBufferSize = model.getCyclicBufferSize();
         logUI.pluginRegistry = repositoryExImpl.getPluginRegistry();
 
-        logUI.handler = new ChainsawAppenderHandler();
+        final LoggerContext ctx = (LoggerContext) org.apache.logging.log4j.LogManager.getContext(false);
+        logUI.chainsawAppender = ctx.getConfiguration().getAppender("chainsaw");
 
         /**
          * TODO until we work out how JoranConfigurator might be able to have
@@ -289,7 +291,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
          * important for the Web start version of Chainsaw
          */
         //configuration initialized here
-        logger = LogManager.getLogger(LogUI.class);
 
         //set hostname, application and group properties which will cause Chainsaw and other apache-generated
         //logging events to route (by default) to a tab named 'chainsaw-log'
@@ -375,6 +376,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
         LogManager.getRootLogger().setLevel(Level.TRACE);
         EventQueue.invokeLater(logUI::activateViewer);
+        EventQueue.invokeLater(logUI::buildChainsawLogPanel);
 
         logger.info("SecurityManager is now: " + System.getSecurityManager());
 
@@ -411,10 +413,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         SettingsManager.getInstance().configure(new ApplicationPreferenceModelSaver(model));
 
         cyclicBufferSize = model.getCyclicBufferSize();
-
-        handler = new ChainsawAppenderHandler();
-
-        logger = LogManager.getLogger(LogUI.class);
 
         setShutdownAction(
             new AbstractAction() {
@@ -466,8 +464,8 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                     final Decoder decoder = new XMLDecoder();
                     try {
                         getStatusBar().setMessage("Loading " + file.getAbsolutePath() + "...");
-                        FileLoadAction.importURL(handler, decoder, file
-                            .getName(), file.toURI().toURL());
+//                        FileLoadAction.importURL(handler, decoder, file
+//                            .getName(), file.toURI().toURL());
                     } catch (Exception e) {
                         String errorMsg = "Failed to import a file";
                         logger.error(errorMsg, e);
@@ -646,6 +644,11 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         }
     }
 
+    public void buildChainsawLogPanel(){
+        List<ChainsawLoggingEvent> events = new ArrayList<>();
+        buildLogPanel(false, "Chainsaw", events, chainsawAppender.getReceiver());
+    }
+
     /**
      * Activates itself as a viewer by configuring Size, and location of itself,
      * and configures the default Tabbed Pane elements with the correct layout,
@@ -664,19 +667,19 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
          * We add a simple appender to the MessageCenter logger
          * so that each message is displayed in the Status bar
          */
-        MessageCenter.getInstance().getLogger().addAppender(
-            new AppenderSkeleton() {
-                protected void append(LoggingEvent event) {
-                    getStatusBar().setMessage(event.getMessage().toString());
-                }
-
-                public void close() {
-                }
-
-                public boolean requiresLayout() {
-                    return false;
-                }
-            });
+//        MessageCenter.getInstance().getLogger().addAppender(
+//            new AppenderSkeleton() {
+//                protected void append(LoggingEvent event) {
+//                    getStatusBar().setMessage(event.getMessage().toString());
+//                }
+//
+//                public void close() {
+//                }
+//
+//                public boolean requiresLayout() {
+//                    return false;
+//                }
+//            });
 
 
         initSocketConnectionListener();
@@ -918,12 +921,12 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         final PopupListener tabPopupListener = new PopupListener(tabPopup);
         getTabbedPane().addMouseListener(tabPopupListener);
 
-        this.handler.addPropertyChangeListener(
-            "dataRate",
-            evt -> {
-                double dataRate = (Double) evt.getNewValue();
-                statusBar.setDataRate(dataRate);
-            });
+//        this.handler.addPropertyChangeListener(
+//            "dataRate",
+//            evt -> {
+//                double dataRate = (Double) evt.getNewValue();
+//                statusBar.setDataRate(dataRate);
+//            });
 
         getSettingsManager().addSettingsListener(this);
         getSettingsManager().addSettingsListener(MRUFileListPreferenceSaver.getInstance());
@@ -1196,10 +1199,10 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     }
 
     private void initPrefModelListeners() {
-        applicationPreferenceModel.addPropertyChangeListener(
-            "identifierExpression",
-            evt -> handler.setIdentifierExpression(evt.getNewValue().toString()));
-        handler.setIdentifierExpression(applicationPreferenceModel.getIdentifierExpression());
+//        applicationPreferenceModel.addPropertyChangeListener(
+//            "identifierExpression",
+//            evt -> handler.setIdentifierExpression(evt.getNewValue().toString()));
+//        handler.setIdentifierExpression(applicationPreferenceModel.getIdentifierExpression());
 
 
         applicationPreferenceModel.addPropertyChangeListener(
@@ -1209,13 +1212,13 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         ToolTipManager.sharedInstance().setDismissDelay(
             applicationPreferenceModel.getToolTipDisplayMillis());
 
-        applicationPreferenceModel.addPropertyChangeListener(
-            "responsiveness",
-            evt -> {
-                int value = (Integer) evt.getNewValue();
-                handler.setQueueInterval((value * 1000) - 750);
-            });
-        handler.setQueueInterval((applicationPreferenceModel.getResponsiveness() * 1000) - 750);
+//        applicationPreferenceModel.addPropertyChangeListener(
+//            "responsiveness",
+//            evt -> {
+//                int value = (Integer) evt.getNewValue();
+//                handler.setQueueInterval((value * 1000) - 750);
+//            });
+//        handler.setQueueInterval((applicationPreferenceModel.getResponsiveness() * 1000) - 750);
 
         applicationPreferenceModel.addPropertyChangeListener(
             "tabPlacement",
@@ -1558,7 +1561,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                     int progress = 1;
                     final int delay = 25;
 
-                    handler.close();
                     panel.setProgress(progress++);
 
                     Thread.sleep(delay);
@@ -2009,7 +2011,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                         }
 
                         try {
-                            Thread.sleep(handler.getQueueInterval() + 1000);
+                            Thread.sleep(1000);
                         } catch (InterruptedException ie) {
                         }
                     }

@@ -19,9 +19,6 @@ package org.apache.log4j.chainsaw;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.apache.log4j.chainsaw.color.ColorPanel;
 import org.apache.log4j.chainsaw.color.RuleColorizer;
 import org.apache.log4j.chainsaw.filter.FilterModel;
@@ -59,6 +56,7 @@ import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
@@ -66,6 +64,8 @@ import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.logevents.Level;
 import org.apache.log4j.plugins.Receiver;
 import org.apache.log4j.spi.LoggingEventFieldResolver;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -160,7 +160,7 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
     static final String COLORS_EXTENSION = ".colors";
     private static final int LOG_PANEL_SERIALIZATION_VERSION_NUMBER = 2; //increment when format changes
     private int previousLastIndex = -1;
-    private final Logger logger = LogManager.getLogger(LogPanel.class);
+    private final Logger logger = LogManager.getLogger();
     private AutoFilterComboBox filterCombo;
     private AutoFilterComboBox findCombo;
     private JScrollPane eventsPane;
@@ -196,7 +196,7 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
         this.statusBar = statusBar;
         this.applicationPreferenceModel = applicationPreferenceModel;
         this.logPanelPreferencesPanel = new LogPanelPreferencePanel(preferenceModel, applicationPreferenceModel);
-        logger.debug("creating logpanel for " + identifier);
+        logger.debug("creating logpanel for {}", identifier);
 
         setLayout(new BorderLayout());
 
@@ -1316,8 +1316,8 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
             new JRadioButtonMenuItem(
                 new AbstractAction("Set to TCCLayout") {
                     public void actionPerformed(ActionEvent e) {
-                        setDetailPaneConversionPattern(
-                            PatternLayout.TTCC_CONVERSION_PATTERN);
+//                        setDetailPaneConversionPattern(
+//                            PatternLayout.TTCC_CONVERSION_PATTERN);
                     }
                 });
         editDetailPopupMenu.add(tccLayoutRadio);
@@ -1627,7 +1627,7 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
                             ChainsawCyclicBufferTableModel cyclicBufferTableModel = (ChainsawCyclicBufferTableModel) currentTable.getModel();
                             LoggingEventWrapper loggingEventWrapper = cyclicBufferTableModel.getRow(row);
                             if (loggingEventWrapper != null) {
-                                ((TableColorizingRenderer) currentTable.getDefaultRenderer(Object.class)).setUseRelativeTimes(loggingEventWrapper.getLoggingEvent().m_timestamp);
+                                ((TableColorizingRenderer) currentTable.getDefaultRenderer(Object.class)).setUseRelativeTimes(loggingEventWrapper.getLoggingEvent().m_timestamp.atZone(ZoneId.systemDefault()));
                                 cyclicBufferTableModel.reFilter();
                             }
                             setEnabled(true);
