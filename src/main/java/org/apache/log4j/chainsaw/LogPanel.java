@@ -181,7 +181,7 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
     private ColorizedEventAndSearchMatchThumbnail colorizedEventAndSearchMatchThumbnail;
     private EventTimeDeltaMatchThumbnail eventTimeDeltaMatchThumbnail;
     private boolean isDetailPanelVisible;
-    private Receiver m_receiver;
+    private ChainsawReceiver m_receiver;
 
     /**
      * Creates a new LogPanel object.  If a LogPanel with this identifier has
@@ -3035,7 +3035,7 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
         return selectedItem.toString();
     }
 
-    public void setReceiver( Receiver rx ){
+    public void setReceiver( ChainsawReceiver rx ){
         m_receiver = rx;
         m_receiver.addPropertyChangeListener(((pce) -> {
             if( pce.getPropertyName().equals( "name" ) ){

@@ -1822,7 +1822,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     }
 
     private void buildLogPanel(
-        boolean customExpression, final String ident, final List<ChainsawLoggingEvent> events, final Receiver rx)
+        boolean customExpression, final String ident, final List<ChainsawLoggingEvent> events, final ChainsawReceiver rx)
         throws IllegalArgumentException {
         final LogPanel thisPanel = new LogPanel(getStatusBar(), ident, cyclicBufferSize, allColorizers, applicationPreferenceModel);
 
@@ -1898,7 +1898,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         MessageCenter.getInstance().getLogger().debug(msg);
     }
 
-    public void receiverAdded(Receiver rx){
+    public void receiverAdded(ChainsawReceiver rx){
         List<ChainsawLoggingEvent> list = new ArrayList<>();
         buildLogPanel(false, rx.getName(), list, rx);
     }

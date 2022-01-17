@@ -63,12 +63,16 @@ public final class ChainsawAppender extends AbstractOutputStreamAppender {
         m_receiver.append(builder.create());
     }
 
-    public Receiver getReceiver(){
+    public ChainsawReceiver getReceiver(){
         return m_receiver;
     }
 
-    class ChainsawAppenderReceiver extends Receiver {
-        public void shutdown(){}
-        public void activateOptions(){}
+    class ChainsawAppenderReceiver extends ChainsawReceiverSkeleton {
+
+        @Override
+        public void start() {}
+
+        @Override
+        public void shutdown() {}
     }
 }

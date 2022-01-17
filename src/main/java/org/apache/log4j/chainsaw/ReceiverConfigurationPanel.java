@@ -36,7 +36,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 import java.util.Locale;
-import org.apache.log4j.net.JsonReceiver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -291,7 +290,7 @@ class ReceiverConfigurationPanel extends JPanel {
 
         networkReceiverClassNameComboBoxModel = new DefaultComboBoxModel<>();
         networkReceiverClassNameComboBoxModel.addElement(UDPReceiver.class.getName());
-        networkReceiverClassNameComboBoxModel.addElement(JsonReceiver.class.getName());
+//        networkReceiverClassNameComboBoxModel.addElement(JsonReceiver.class.getName());
 
         networkReceiverClassNameComboBox = new JComboBox<>(networkReceiverClassNameComboBoxModel);
 

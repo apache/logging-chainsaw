@@ -22,7 +22,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.log4j.chainsaw.ChainsawConstants;
 import org.apache.log4j.chainsaw.Generator;
 import org.apache.log4j.chainsaw.helper.TableCellEditorFactory;
-import org.apache.log4j.plugins.Plugin;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -40,6 +39,7 @@ import java.util.*;
 import java.util.List;
 import javax.swing.event.CellEditorListener;
 import javax.swing.table.TableCellRenderer;
+import org.apache.log4j.chainsaw.ChainsawReceiver;
 
 
 /**
@@ -53,7 +53,7 @@ public class PluginPropertyEditorPanel extends JPanel {
     private final JScrollPane scrollPane = new JScrollPane();
     private final JTable propertyTable = new JTable();
 
-    private Plugin plugin;
+    private ChainsawReceiver m_receiver;
     private TableModel defaultModel = new DefaultTableModel(
         new String[]{"Property", "Value"}, 1);
 
@@ -65,7 +65,6 @@ public class PluginPropertyEditorPanel extends JPanel {
     public PluginPropertyEditorPanel() {
         super();
         initComponents();
-        setupListeners();
     }
 
     /**
@@ -85,50 +84,25 @@ public class PluginPropertyEditorPanel extends JPanel {
     }
 
     /**
-     *
-     */
-    private void setupListeners() {
-        addPropertyChangeListener("plugin", evt -> {
-
-            final Plugin p = (Plugin) evt.getNewValue();
-
-            if (p != null) {
-
-                try {
-
-                    PluginPropertyTableModel model =
-                        new PluginPropertyTableModel(p);
-                    propertyTable.setModel(model);
-                    propertyTable.getColumnModel().getColumn(1)
-                        .setCellEditor(new PluginTableCellEditor());
-                    propertyTable.setEnabled(true);
-                } catch (Throwable e) {
-                    logger.error("Failed to introspect the Plugin", e);
-                }
-            } else {
-                propertyTable.setModel(defaultModel);
-                propertyTable.setEnabled(false);
-            }
-
-        });
-    }
-
-    /**
      * @return Returns the plugin.
      */
-    public final Plugin getPlugin() {
+    public final ChainsawReceiver getPlugin() {
 
-        return plugin;
+        return m_receiver;
     }
 
     /**
      * @param plugin The plugin to set.
      */
-    public final void setPlugin(Plugin plugin) {
-
-        Plugin oldValue = this.plugin;
-        this.plugin = plugin;
-        firePropertyChange("plugin", oldValue, this.plugin);
+    public final void setReceiverAndProperties(ChainsawReceiver plugin, PropertyDescriptor[] descriptors) {
+        this.m_receiver = plugin;
+        
+        PluginPropertyTableModel model =
+            new PluginPropertyTableModel(descriptors);
+        propertyTable.setModel(model);
+        propertyTable.getColumnModel().getColumn(1)
+            .setCellEditor(new PluginTableCellEditor());
+        propertyTable.setEnabled(true);
     }
 
     /**
@@ -196,16 +170,12 @@ public class PluginPropertyEditorPanel extends JPanel {
     private class PluginPropertyTableModel extends AbstractTableModel {
 
         private final PropertyDescriptor[] descriptors;
-        private final Plugin plugin;
 
-        private PluginPropertyTableModel(Plugin p)
-            throws IntrospectionException {
+        private PluginPropertyTableModel(PropertyDescriptor[] descriptors){
             super();
 
-            BeanInfo beanInfo = Introspector.getBeanInfo(p.getClass());
-
-            List list = new ArrayList(Arrays.asList(
-                beanInfo.getPropertyDescriptors()));
+            List<PropertyDescriptor> list = new ArrayList<>(Arrays.asList(
+                descriptors));
 
             list.sort((o1, o2) -> {
 
@@ -215,8 +185,7 @@ public class PluginPropertyEditorPanel extends JPanel {
                 return d1.getDisplayName().compareToIgnoreCase(
                     d2.getDisplayName());
             });
-            this.plugin = p;
-            this.descriptors = (PropertyDescriptor[]) list.toArray(
+            this.descriptors = list.toArray(
                 new PropertyDescriptor[0]);
         }
 
@@ -233,7 +202,7 @@ public class PluginPropertyEditorPanel extends JPanel {
 
                     try {
 
-                        Object object = d.getReadMethod().invoke(plugin);
+                        Object object = d.getReadMethod().invoke(m_receiver);
 
                         if (object != null) {
 
@@ -305,7 +274,7 @@ public class PluginPropertyEditorPanel extends JPanel {
                         ", value=" + aValue + ", valueClass" + aValue.getClass());
 
                 try {
-                    descriptors[rowIndex].getWriteMethod().invoke(plugin,
+                    descriptors[rowIndex].getWriteMethod().invoke(m_receiver,
                         aValue);
                     fireTableCellUpdated(rowIndex, columnIndex);
                 } catch (IllegalArgumentException e) {

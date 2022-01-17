@@ -50,8 +50,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
+import org.apache.log4j.chainsaw.ChainsawReceiver;
 import org.apache.log4j.chainsaw.LogUI;
-import org.apache.log4j.net.JsonReceiver;
+import org.apache.log4j.chainsaw.ChainsawReceiverFactory;
 
 
 /**
@@ -167,9 +169,9 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
                             && (node.getUserObject() instanceof Plugin)) {
                         Plugin p = (Plugin) node.getUserObject();
                         logger.debug("plugin=" + p);
-                        pluginEditorPanel.setPlugin(p);
+//                        pluginEditorPanel.setPlugin(p);
                     } else {
-                        pluginEditorPanel.setPlugin(null);
+//                        pluginEditorPanel.setPlugin(null);
                     }
                 }
             });
@@ -607,79 +609,54 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
      */
     class NewReceiverPopupMenu extends JPopupMenu {
         NewReceiverPopupMenu() {
-            try {
-                final List receiverList =
-                    ReceiversHelper.getInstance().getKnownReceiverClasses();
-                String separatorCheck = null;
+            ServiceLoader<ChainsawReceiverFactory> sl = ServiceLoader.load(ChainsawReceiverFactory.class);
+            
+            for( ChainsawReceiverFactory crFactory : sl ){
+                add(
+                    new AbstractAction("New " + crFactory.getReceiverName() + "...") {
+                        public void actionPerformed(ActionEvent e) {
+                            Container container = SwingUtilities.getAncestorOfClass(JFrame.class, ReceiversPanel.this);
+                            final JDialog dialog = new JDialog((JFrame) container, "New " + crFactory.getReceiverName() + "...", true);
 
-                for (Object aReceiverList : receiverList) {
-                    final Class toCreate = (Class) aReceiverList;
-                    Package thePackage = toCreate.getPackage();
-                    final String name =
-                        toCreate.getName().substring(thePackage.getName().length() + 1);
+                            try {
+                                final NewReceiverDialogPanel panel =
+                                    NewReceiverDialogPanel.create(crFactory);
+                                dialog.getContentPane().add(panel);
+                                dialog.pack();
+                                SwingHelper.centerOnScreen(dialog);
 
-                    if (separatorCheck == null) {
-                        separatorCheck = name.substring(0, 1);
-                    } else {
-                        String current = name.substring(0, 1);
+                                /**
+                                 * Make the default button the ok button
+                                 */
+                                dialog.getRootPane().setDefaultButton(panel.getOkPanel().getOkButton());
 
-                        if (!current.equals(separatorCheck)) {
-                            addSeparator();
-                            separatorCheck = current;
-                        }
-                    }
-
-                    add(
-                        new AbstractAction("New " + name + "...") {
-                            public void actionPerformed(ActionEvent e) {
-                                Container container = SwingUtilities.getAncestorOfClass(JFrame.class, ReceiversPanel.this);
-                                final JDialog dialog = new JDialog((JFrame) container, "New " + toCreate.getName() + "...", true);
-
-                                try {
-                                    final NewReceiverDialogPanel panel =
-                                        NewReceiverDialogPanel.create(toCreate);
-                                    dialog.getContentPane().add(panel);
-                                    dialog.pack();
-                                    SwingHelper.centerOnScreen(dialog);
-
-                                    /**
-                                     * Make the default button the ok button
-                                     */
-                                    dialog.getRootPane().setDefaultButton(panel.getOkPanel().getOkButton());
-
-                                    /**
-                                     * Use the standard Cancel metaphor
-                                     */
-                                    SwingHelper.configureCancelForDialog(dialog, panel.getOkPanel().getCancelButton());
+                                /**
+                                 * Use the standard Cancel metaphor
+                                 */
+                                SwingHelper.configureCancelForDialog(dialog, panel.getOkPanel().getCancelButton());
 
 
-                                    panel.getOkPanel().getOkButton().addActionListener(
-                                        e2 -> {
-                                            Receiver receiver = panel.getReceiver();
-                                            if (receiver.getName() != null && !receiver.getName().trim().equals("")) {
-                                                dialog.dispose();
-                                                pluginRegistry.addPlugin(receiver);
-                                                receiver.activateOptions();
-                                                // Notify the LogUI that a new reciever has been created so it can spawn a new tab
-                                                m_parent.receiverAdded(receiver);
-                                                MessageCenter.getInstance().addMessage("Receiver '" + receiver.getName() + "' started");
-                                            } else {
-                                                MessageCenter.getInstance().getLogger().error("Name required to create receiver");
-                                            }
-                                        });
-                                    dialog.setVisible(true);
-                                } catch (Exception e1) {
-                                    e1.printStackTrace();
-                                    MessageCenter.getInstance().getLogger().error(
-                                        "Failed to create the new Receiver dialog", e1);
-                                }
+                                panel.getOkPanel().getOkButton().addActionListener(
+                                    e2 -> {
+                                        ChainsawReceiver receiver = panel.getReceiver();
+                                        if (receiver.getName() != null && !receiver.getName().trim().equals("")) {
+                                            dialog.dispose();
+                                            // Notify the LogUI that a new reciever has been created so it can spawn a new tab
+                                            m_parent.receiverAdded(receiver);
+                                            MessageCenter.getInstance().addMessage("Receiver '" + receiver.getName() + "' started");
+                                        } else {
+                                            MessageCenter.getInstance().getLogger().error("Name required to create receiver");
+                                        }
+                                    });
+                                dialog.setVisible(true);
+                            } catch (Exception e1) {
+                                e1.printStackTrace();
+                                MessageCenter.getInstance().getLogger().error(
+                                    "Failed to create the new Receiver dialog", e1);
                             }
-                        });
+                        }
+                    });
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new RuntimeException(e.getMessage());
-            }
         }
     }
 

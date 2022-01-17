@@ -27,8 +27,12 @@ import org.apache.log4j.plugins.Receiver;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.net.URL;
+import org.apache.log4j.chainsaw.ChainsawReceiver;
+import org.apache.log4j.chainsaw.ChainsawReceiverFactory;
 
 
 /**
@@ -120,27 +124,13 @@ public class NewReceiverDialogPanel extends JPanel {
      * @return NewReceiverDialogPanel
      * @throws IllegalArgumentException if the specified class is not a Receiver
      */
-    public static NewReceiverDialogPanel create(Class<? extends Receiver> receiverClass) {
+    public static NewReceiverDialogPanel create(ChainsawReceiverFactory recvFact) throws IntrospectionException {
 
-        if (!Receiver.class.isAssignableFrom(receiverClass)) {
-            throw new IllegalArgumentException(receiverClass.getName() +
-                " is not a Receiver");
-        }
-
-        Receiver receiverInstance = null;
-
-        try {
-            receiverInstance = (Receiver) receiverClass.newInstance();
-
-        } catch (Exception e) {
-            LogManager.getLogger(NewReceiverDialogPanel.class).error(
-                "Failed to create a new Receiver instance, this exception is unexpected",
-                e);
-        }
+        ChainsawReceiver recv = recvFact.create();
 
         NewReceiverDialogPanel panel = new NewReceiverDialogPanel();
 
-        panel.pluginEditorPanel.setPlugin(receiverInstance);
+        panel.pluginEditorPanel.setReceiverAndProperties(recv, recvFact.getPropertyDescriptors());
 
         return panel;
     }
@@ -156,9 +146,9 @@ public class NewReceiverDialogPanel extends JPanel {
     /**
      *
      */
-    public Receiver getReceiver() {
+    public ChainsawReceiver getReceiver() {
 
-        return (Receiver)this.pluginEditorPanel.getPlugin();
+        return this.pluginEditorPanel.getPlugin();
     }
 
 }
