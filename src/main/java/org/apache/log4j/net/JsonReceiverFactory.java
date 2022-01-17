@@ -29,14 +29,13 @@ public class JsonReceiverFactory implements ChainsawReceiverFactory {
 
     @Override
     public ChainsawReceiver create() {
-//        return new JsonReceiver();
-return null;
+        return new JsonReceiver();
     }
 
     @Override
     public PropertyDescriptor[] getPropertyDescriptors() throws IntrospectionException {
         return new PropertyDescriptor[]{
-//                new PropertyDescriptor("name", JsonReceiver.class)
+                new PropertyDescriptor("name", JsonReceiver.class)
 //                new PropertyDescriptor("address", MulticastReceiver.class),
 //                new PropertyDescriptor("port", MulticastReceiver.class),
 //                new PropertyDescriptor("threshold", MulticastReceiver.class),

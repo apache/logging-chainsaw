@@ -643,6 +643,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
                                             dialog.dispose();
                                             // Notify the LogUI that a new reciever has been created so it can spawn a new tab
                                             m_parent.receiverAdded(receiver);
+                                            receiver.start();
                                             MessageCenter.getInstance().addMessage("Receiver '" + receiver.getName() + "' started");
                                         } else {
                                             MessageCenter.getInstance().getLogger().error("Name required to create receiver");

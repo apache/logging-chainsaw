@@ -48,7 +48,7 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
     protected int m_port = DEFAULT_PORT;
     private boolean m_advertiseViaMulticastDNS;
     private ZeroConfSupport m_zeroConf;
-    private boolean active = true;
+    private boolean active = false;
     
     private static final Logger logger = LogManager.getLogger();
 
