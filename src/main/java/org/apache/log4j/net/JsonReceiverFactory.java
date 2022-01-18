@@ -35,9 +35,9 @@ public class JsonReceiverFactory implements ChainsawReceiverFactory {
     @Override
     public PropertyDescriptor[] getPropertyDescriptors() throws IntrospectionException {
         return new PropertyDescriptor[]{
-                new PropertyDescriptor("name", JsonReceiver.class)
-//                new PropertyDescriptor("address", MulticastReceiver.class),
-//                new PropertyDescriptor("port", MulticastReceiver.class),
+                new PropertyDescriptor("name", JsonReceiver.class),
+//                new PropertyDescriptor("address", JsonReceiver.class),
+                new PropertyDescriptor("port", JsonReceiver.class),
 //                new PropertyDescriptor("threshold", MulticastReceiver.class),
 //                new PropertyDescriptor("decoder", MulticastReceiver.class),
 //                new PropertyDescriptor("advertiseViaMulticastDNS", MulticastReceiver.class),

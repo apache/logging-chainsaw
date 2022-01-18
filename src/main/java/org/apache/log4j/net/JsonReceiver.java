@@ -108,6 +108,7 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
 
     @Override
     public void start() {
+        logger.debug("Starting receiver");
         if (!isActive()) {
             m_rxThread = new Thread(this);
             m_rxThread.setDaemon(true);
@@ -180,6 +181,10 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
     @Override
     public int getPort() {
         return m_port;
+    }
+    
+    public void setPort(int portnum){
+        m_port = portnum;
     }
 
     public void setAdvertiseViaMulticastDNS(boolean advertiseViaMulticastDNS) {
