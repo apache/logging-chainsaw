@@ -91,7 +91,13 @@ public abstract class ChainsawReceiverSkeleton implements ChainsawReceiver {
 
     @Override
     public void setName(String name) {
+        if( this.name.equals(name) ){
+            return;
+        }
+
+        String oldName = this.name;
         this.name = name;
+        propertySupport.firePropertyChange("name", oldName, name);
     }
 
     @Override
