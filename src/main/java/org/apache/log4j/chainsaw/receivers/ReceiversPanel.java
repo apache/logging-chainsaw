@@ -17,7 +17,6 @@
 
 package org.apache.log4j.chainsaw.receivers;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.PopupListener;
@@ -34,8 +33,6 @@ import org.apache.log4j.chainsaw.prefs.SettingsListener;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.net.SocketNodeEventListener;
 import org.apache.log4j.plugins.*;
-import org.apache.log4j.spi.LoggerRepository;
-import org.apache.log4j.spi.LoggerRepositoryEx;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -54,6 +51,7 @@ import java.util.ServiceLoader;
 import org.apache.log4j.chainsaw.ChainsawReceiver;
 import org.apache.log4j.chainsaw.LogUI;
 import org.apache.log4j.chainsaw.ChainsawReceiverFactory;
+import org.apache.log4j.chainsaw.logevents.Level;
 
 
 /**
@@ -81,38 +79,13 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
         new PluginPropertyEditorPanel();
     private final Logger logger = LogManager.getLogger(ReceiversPanel.class);
 
-    private final PluginRegistry pluginRegistry;
     private final LogUI m_parent;
 
     public ReceiversPanel(LogUI parentUi) {
         super(new BorderLayout());
         m_parent = parentUi;
-        LoggerRepository repo = LogManager.getLoggerRepository();
         final ReceiversTreeModel model = new ReceiversTreeModel();
-        if (repo instanceof LoggerRepositoryEx) {
-            pluginRegistry = ((LoggerRepositoryEx) repo).getPluginRegistry();
-            pluginRegistry.addPluginListener(model);
-
-            //iterate over visual receivers and call setcontainer
-            Collection c = pluginRegistry.getPlugins(VisualReceiver.class);
-            for (Object aC : c) {
-                ((VisualReceiver) aC).setContainer(this);
-            }
-
-            pluginRegistry.addPluginListener(new PluginListener() {
-                public void pluginStarted(PluginEvent e) {
-                    //if we get a plugin started callback, set the container
-                    if (e.getPlugin() instanceof VisualReceiver) {
-                        ((VisualReceiver) e.getPlugin()).setContainer(ReceiversPanel.this);
-                    }
-                }
-
-                public void pluginStopped(PluginEvent e) {
-                }
-            });
-        } else {
-            pluginRegistry = null;
-        }
+        m_parent.addReceiverEventListener(model);
 
         receiversTree.setModel(model);
 
@@ -270,12 +243,12 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
         restartReceiverButtonAction =
             new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
-                    Receiver selectedReceiver = getCurrentlySelectedReceiver();
+                    ChainsawReceiver selectedReceiver = getCurrentlySelectedReceiver();
                     if (selectedReceiver == null) {
                         return;
                     }
                     selectedReceiver.shutdown();
-                    selectedReceiver.activateOptions();
+                    selectedReceiver.start();
                     //allow the visual receiver to get a container on restart
                     if (selectedReceiver instanceof VisualReceiver) {
                         ((VisualReceiver) selectedReceiver).setContainer(ReceiversPanel.this);
@@ -298,7 +271,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
         showReceiverHelpAction =
             new AbstractAction("Help") {
                 public void actionPerformed(ActionEvent e) {
-                    Receiver receiver = getCurrentlySelectedReceiver();
+                    ChainsawReceiver receiver = getCurrentlySelectedReceiver();
 
                     if (receiver != null) {
                         HelpManager.getInstance().showHelpForClass(receiver.getClass());
@@ -322,13 +295,11 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
                             "Confirm", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
                         new Thread(
                             () -> {
-                                Collection allReceivers =
-                                    pluginRegistry.getPlugins(Receiver.class);
+                                List<ChainsawReceiver> allReceivers = m_parent.getAllReceivers();
 
-                                for (Object allReceiver : allReceivers) {
-                                    Receiver item = (Receiver) allReceiver;
-                                    item.shutdown();
-                                    item.activateOptions();
+                                for (ChainsawReceiver rx : allReceivers) {
+                                    rx.shutdown();
+                                    rx.start();
                                 }
 
                                 updateReceiverTreeInDispatchThread();
@@ -419,7 +390,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
      *
      * @return Receiver or null
      */
-    private Receiver getCurrentlySelectedReceiver() {
+    private ChainsawReceiver getCurrentlySelectedReceiver() {
         DefaultMutableTreeNode node =
             (DefaultMutableTreeNode) receiversTree.getLastSelectedPathComponent();
 
@@ -429,8 +400,8 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
 
         Object userObject = node.getUserObject();
 
-        if (userObject instanceof Receiver) {
-            return (Receiver) userObject;
+        if (userObject instanceof ChainsawReceiver) {
+            return (ChainsawReceiver) userObject;
         }
 
         return null;
@@ -524,7 +495,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
 
                     if (receivers != null) {
                         for (Receiver receiver : receivers) {
-                            pluginRegistry.stopPlugin(receiver.getName());
+                            receiver.shutdown();
                         }
                     }
                 }).start();
@@ -642,7 +613,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
                                         if (receiver.getName() != null && !receiver.getName().trim().equals("")) {
                                             dialog.dispose();
                                             // Notify the LogUI that a new reciever has been created so it can spawn a new tab
-                                            m_parent.receiverAdded(receiver);
+                                            m_parent.addReceiver(receiver);
                                             receiver.start();
                                             MessageCenter.getInstance().addMessage("Receiver '" + receiver.getName() + "' started");
                                         } else {
@@ -720,7 +691,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
 
             addSeparator();
 
-            final Receiver r = getCurrentlySelectedReceiver();
+            final ChainsawReceiver r = getCurrentlySelectedReceiver();
             add(createLevelRadioButton(r, Level.TRACE));
             add(createLevelRadioButton(r, Level.DEBUG));
             add(createLevelRadioButton(r, Level.INFO));
@@ -734,7 +705,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
         }
 
         private JRadioButtonMenuItem createLevelRadioButton(
-            final Receiver r, final Level l) {
+            final ChainsawReceiver r, final Level l) {
             Map<String, Icon> levelIconMap = LevelIconFactory.getInstance().getLevelToIconMap();
 
             Action action =

@@ -27,6 +27,7 @@ import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.*;
+import org.apache.log4j.chainsaw.ChainsawReceiver;
 
 
 /**
@@ -76,6 +77,8 @@ public class ReceiverTreeCellRenderer extends DefaultTreeCellRenderer {
             Generator generator = (Generator) o;
             setText(generator.getName());
             setIcon(ChainsawIcons.ICON_HELP);
+        }else if(o instanceof ChainsawReceiver){
+            setText(((ChainsawReceiver) o).getName());
         } else {
             setText("(Unknown Type) :: " + o);
         }

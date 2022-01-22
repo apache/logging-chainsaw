@@ -111,6 +111,8 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     private int dividerSize;
     private int cyclicBufferSize;
     private static String configurationURLAppArg;
+    private List<ChainsawReceiver> m_receivers = new ArrayList<>();
+    private List<ReceiverEventListener> m_receiverListeners = new ArrayList<>();
 
     private static org.apache.logging.log4j.Logger logger = org.apache.logging.log4j.LogManager.getLogger();
 
@@ -1898,15 +1900,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         MessageCenter.getInstance().getLogger().debug(msg);
     }
 
-    public void receiverAdded(ChainsawReceiver rx){
-        List<ChainsawLoggingEvent> list = new ArrayList<>();
-        buildLogPanel(false, rx.getName(), list, rx);
-    }
-
-    public void receiverRemoved(Receiver rx){
-
-    }
-
     public void createCustomExpressionLogPanel(String ident) {
         //collect events matching the rule from all of the tabs
         try {
@@ -2034,5 +2027,37 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                 getTabbedPane().setIconAt(getTabbedPane().indexOfTab(ident), SELECTED);
             }
         }
+    }
+    
+    public void addReceiver(ChainsawReceiver rx){
+        m_receivers.add(rx);
+        List<ChainsawLoggingEvent> list = new ArrayList<>();
+        buildLogPanel(false, rx.getName(), list, rx);
+        
+        for(ReceiverEventListener listen : m_receiverListeners){
+            listen.receiverAdded(rx);
+        }
+    }
+    
+    public void removeReceiver(ChainsawReceiver rx){
+        if( !m_receivers.remove(rx) ){
+            return;
+        }
+        
+        for(ReceiverEventListener listen : m_receiverListeners){
+            listen.receiverRemoved(rx);
+        }
+    }
+    
+    public void addReceiverEventListener(ReceiverEventListener listener){
+        m_receiverListeners.add(listener);
+    }
+    
+    public void removeReceiverEventListener(ReceiverEventListener listener){
+        m_receiverListeners.remove(listener);
+    }
+    
+    public List<ChainsawReceiver> getAllReceivers(){
+        return m_receivers;
     }
 }

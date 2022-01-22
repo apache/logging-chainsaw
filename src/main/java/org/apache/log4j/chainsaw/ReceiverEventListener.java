@@ -14,18 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.log4j.chainsaw.logevents;
+package org.apache.log4j.chainsaw;
 
 /**
- *
+ * A ReceiverEventListener is an interface that lets you listen to events, such
+ * as receivers being added or removed.
  */
-public enum Level {
-    ALL,
-    TRACE,
-    DEBUG,
-    INFO,
-    WARN,
-    ERROR,
-    FATAL,
-    OFF
+public interface ReceiverEventListener {
+    
+    public void receiverAdded(ChainsawReceiver rx);
+    
+    public void receiverRemoved(ChainsawReceiver rx);
 }

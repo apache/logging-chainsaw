@@ -17,14 +17,8 @@
 
 package org.apache.log4j.chainsaw.receivers;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.apache.log4j.plugins.Plugin;
-import org.apache.log4j.plugins.PluginEvent;
-import org.apache.log4j.plugins.PluginListener;
-import org.apache.log4j.plugins.Receiver;
-import org.apache.log4j.spi.LoggerRepository;
-import org.apache.log4j.spi.LoggerRepositoryEx;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -33,6 +27,8 @@ import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Vector;
+import org.apache.log4j.chainsaw.ChainsawReceiver;
+import org.apache.log4j.chainsaw.ReceiverEventListener;
 
 
 /**
@@ -42,7 +38,7 @@ import java.util.Vector;
  * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 public class ReceiversTreeModel extends DefaultTreeModel
-    implements PluginListener {
+    implements ReceiverEventListener {
     private static final String ROOTNODE_LABEL = "Receivers";
     final DefaultMutableTreeNode NoReceiversNode =
         new DefaultMutableTreeNode("No Receivers defined");
@@ -62,36 +58,36 @@ public class ReceiversTreeModel extends DefaultTreeModel
      * @return ReceiversTreeModel
      */
     public final synchronized ReceiversTreeModel refresh() {
-        RootNode.removeAllChildren();
-
-        LoggerRepository repo = LogManager.getLoggerRepository();
-        Collection receivers;
-        if (repo instanceof LoggerRepositoryEx) {
-            receivers = ((LoggerRepositoryEx) repo).getPluginRegistry().getPlugins(Receiver.class);
-        } else {
-            receivers = new Vector();
-        }
-
-        updateRootDisplay();
-
-        if (receivers.size() == 0) {
-            getRootNode().add(NoReceiversNode);
-        } else {
-            for (Object receiver : receivers) {
-                final Receiver item = (Receiver) receiver;
-                final DefaultMutableTreeNode receiverNode = new DefaultMutableTreeNode(item);
-
-                item.addPropertyChangeListener(creatPluginPropertyChangeListener(item, receiverNode));
-                getRootNode().add(receiverNode);
-            }
-        }
-
-        reload();
+//        RootNode.removeAllChildren();
+//
+//        LoggerRepository repo = LogManager.getLoggerRepository();
+//        Collection receivers;
+//        if (repo instanceof LoggerRepositoryEx) {
+//            receivers = ((LoggerRepositoryEx) repo).getPluginRegistry().getPlugins(Receiver.class);
+//        } else {
+//            receivers = new Vector();
+//        }
+//
+//        updateRootDisplay();
+//
+//        if (receivers.size() == 0) {
+//            getRootNode().add(NoReceiversNode);
+//        } else {
+//            for (Object receiver : receivers) {
+//                final Receiver item = (Receiver) receiver;
+//                final DefaultMutableTreeNode receiverNode = new DefaultMutableTreeNode(item);
+//
+//                item.addPropertyChangeListener(creatPluginPropertyChangeListener(item, receiverNode));
+//                getRootNode().add(receiverNode);
+//            }
+//        }
+//
+//        reload();
 
         return this;
     }
 
-    private PropertyChangeListener creatPluginPropertyChangeListener(final Receiver item, final DefaultMutableTreeNode receiverNode) {
+    private PropertyChangeListener creatPluginPropertyChangeListener(final ChainsawReceiver item, final DefaultMutableTreeNode receiverNode) {
         return evt -> {
             logger.debug(evt.toString());
             ReceiversTreeModel.this.fireTreeNodesChanged(item, receiverNode.getPath(), null, null);
@@ -112,28 +108,7 @@ public class ReceiversTreeModel extends DefaultTreeModel
         return (DefaultMutableTreeNode) getRoot();
     }
 
-    /* (non-Javadoc)
-     * @see org.apache.log4j.plugins.PluginListener#pluginStarted(org.apache.log4j.plugins.PluginEvent)
-     */
-    public void pluginStarted(PluginEvent e) {
-        if (e.getPlugin() instanceof Receiver) {
-            if (NoReceiversNode.getParent() == getRootNode()) {
-                int index = getRootNode().getIndex(NoReceiversNode);
-                getRootNode().remove(NoReceiversNode);
-                nodesWereRemoved(
-                    getRootNode(), new int[]{index}, new Object[]{NoReceiversNode});
-            }
-
-            Receiver receiver = (Receiver) e.getPlugin();
-            DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(receiver);
-            getRootNode().add(newNode);
-            receiver.addPropertyChangeListener(creatPluginPropertyChangeListener(receiver, newNode));
-            nodesWereInserted(
-                getRootNode(), new int[]{getRootNode().getIndex(newNode)});
-        }
-    }
-
-    TreeNode resolvePluginNode(Plugin p) {
+    TreeNode resolvePluginNode(ChainsawReceiver p) {
         /**
          * Lets walk the tree, top-down until we find the node with the plugin
          * attached.
@@ -154,27 +129,40 @@ public class ReceiversTreeModel extends DefaultTreeModel
         return treeNode;
     }
 
-    /* (non-Javadoc)
-     * @see org.apache.log4j.plugins.PluginListener#pluginStopped(org.apache.log4j.plugins.PluginEvent)
-     */
-    public void pluginStopped(PluginEvent e) {
-        if (e.getPlugin() instanceof Receiver) {
-            Receiver receiver = (Receiver) e.getPlugin();
-            DefaultMutableTreeNode node =
-                (DefaultMutableTreeNode) resolvePluginNode(receiver);
-            if (node != null) {
-                int index = getRootNode().getIndex(node);
-                getRootNode().remove(node);
-                nodesWereRemoved(
-                    getRootNode(), new int[]{index}, new Object[]{node});
-            }
+    @Override
+    public void receiverAdded(ChainsawReceiver rx) {
+        if (NoReceiversNode.getParent() == getRootNode()) {
+            int index = getRootNode().getIndex(NoReceiversNode);
+            getRootNode().remove(NoReceiversNode);
+            nodesWereRemoved(
+                getRootNode(), new int[]{index}, new Object[]{NoReceiversNode});
+        }
 
-            if (getRootNode().getChildCount() == 0) {
-                getRootNode().add(NoReceiversNode);
+        
+        DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(rx);
+        getRootNode().add(newNode);
+        rx.addPropertyChangeListener(creatPluginPropertyChangeListener(rx, newNode));
+        nodesWereInserted(
+            getRootNode(), new int[]{getRootNode().getIndex(newNode)});
+            
+    }
 
-                int index = getRootNode().getIndex(NoReceiversNode);
-                nodesWereInserted(getRootNode(), new int[]{index});
-            }
+    @Override
+    public void receiverRemoved(ChainsawReceiver rx) {
+        DefaultMutableTreeNode node =
+            (DefaultMutableTreeNode) resolvePluginNode(rx);
+        if (node != null) {
+            int index = getRootNode().getIndex(node);
+            getRootNode().remove(node);
+            nodesWereRemoved(
+                getRootNode(), new int[]{index}, new Object[]{node});
+        }
+
+        if (getRootNode().getChildCount() == 0) {
+            getRootNode().add(NoReceiversNode);
+
+            int index = getRootNode().getIndex(NoReceiversNode);
+            nodesWereInserted(getRootNode(), new int[]{index});
         }
     }
 }
