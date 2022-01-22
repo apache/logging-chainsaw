@@ -42,9 +42,11 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -80,6 +82,8 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
     private final Logger logger = LogManager.getLogger(ReceiversPanel.class);
 
     private final LogUI m_parent;
+    private final Map<Class,PropertyDescriptor[]> m_classToProperties = 
+            new HashMap<>();
 
     public ReceiversPanel(LogUI parentUi) {
         super(new BorderLayout());
@@ -139,12 +143,13 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
 
                     if (
                         (node != null) && (node.getUserObject() != null)
-                            && (node.getUserObject() instanceof Plugin)) {
-                        Plugin p = (Plugin) node.getUserObject();
+                            && (node.getUserObject() instanceof ChainsawReceiver)) {
+                        ChainsawReceiver p = (ChainsawReceiver) node.getUserObject();
                         logger.debug("plugin=" + p);
-//                        pluginEditorPanel.setPlugin(p);
+                        pluginEditorPanel.setReceiverAndProperties(p, 
+                                m_classToProperties.get(p.getClass()));
                     } else {
-//                        pluginEditorPanel.setPlugin(null);
+                        pluginEditorPanel.setReceiverAndProperties(null, null);
                     }
                 }
             });
@@ -606,7 +611,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
                                  */
                                 SwingHelper.configureCancelForDialog(dialog, panel.getOkPanel().getCancelButton());
 
-
+                                final PropertyDescriptor[] descriptors = crFactory.getPropertyDescriptors();
                                 panel.getOkPanel().getOkButton().addActionListener(
                                     e2 -> {
                                         ChainsawReceiver receiver = panel.getReceiver();
@@ -615,6 +620,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
                                             // Notify the LogUI that a new reciever has been created so it can spawn a new tab
                                             m_parent.addReceiver(receiver);
                                             receiver.start();
+                                            m_classToProperties.put(receiver.getClass(), descriptors);
                                             MessageCenter.getInstance().addMessage("Receiver '" + receiver.getName() + "' started");
                                         } else {
                                             MessageCenter.getInstance().getLogger().error("Name required to create receiver");

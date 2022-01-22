@@ -97,12 +97,17 @@ public class PluginPropertyEditorPanel extends JPanel {
     public final void setReceiverAndProperties(ChainsawReceiver plugin, PropertyDescriptor[] descriptors) {
         this.m_receiver = plugin;
         
-        PluginPropertyTableModel model =
-            new PluginPropertyTableModel(descriptors);
-        propertyTable.setModel(model);
-        propertyTable.getColumnModel().getColumn(1)
-            .setCellEditor(new PluginTableCellEditor());
-        propertyTable.setEnabled(true);
+        if(descriptors != null){
+            PluginPropertyTableModel model =
+                new PluginPropertyTableModel(descriptors);
+            propertyTable.setModel(model);
+            propertyTable.getColumnModel().getColumn(1)
+                .setCellEditor(new PluginTableCellEditor());
+            propertyTable.setEnabled(true);
+        }else{
+            propertyTable.setModel(defaultModel);
+            propertyTable.setEnabled(false);
+        }
     }
 
     /**
