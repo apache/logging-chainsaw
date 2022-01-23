@@ -16,7 +16,6 @@
  */
 package org.apache.log4j.chainsaw;
 
-import org.apache.log4j.chainsaw.messages.MessageCenter;
 import org.apache.log4j.helpers.OptionConverter;
 import org.apache.log4j.pattern.*;
 import org.apache.log4j.xml.Log4jEntityResolver;
@@ -256,7 +255,7 @@ public class LogFilePatternLayoutBuilder {
                 }
             }
         }
-        MessageCenter.getInstance().getLogger().info("getXMLFileAppenderConfiguration for file: " + file + ", result: " + result);
+//        logger.info("getXMLFileAppenderConfiguration for file: " + file + ", result: " + result);
         return result;
     }
 }

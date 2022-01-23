@@ -19,7 +19,6 @@ package org.apache.log4j.chainsaw.help;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.log4j.chainsaw.messages.MessageCenter;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -58,7 +57,7 @@ class HelpLocator {
         try {
             classLoaders.add(new HelpResourceLoader(url));
         } catch (Exception e) {
-            MessageCenter.getInstance().getLogger().error(
+            logger.error(
                 "Failed to setup the resoure loaders for the Help Subsystem");
         }
     }

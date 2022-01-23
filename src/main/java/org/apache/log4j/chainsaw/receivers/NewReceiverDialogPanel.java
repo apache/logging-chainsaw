@@ -17,10 +17,8 @@
 
 package org.apache.log4j.chainsaw.receivers;
 
-import org.apache.log4j.LogManager;
 import org.apache.log4j.chainsaw.help.HelpManager;
 import org.apache.log4j.chainsaw.helper.OkCancelPanel;
-import org.apache.log4j.chainsaw.messages.MessageCenter;
 import org.apache.log4j.plugins.Plugin;
 import org.apache.log4j.plugins.Receiver;
 
@@ -33,6 +31,8 @@ import java.io.IOException;
 import java.net.URL;
 import org.apache.log4j.chainsaw.ChainsawReceiver;
 import org.apache.log4j.chainsaw.ChainsawReceiverFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 
 /**
@@ -49,6 +49,7 @@ public class NewReceiverDialogPanel extends JPanel {
     private final JEditorPane javaDocPane = new JEditorPane();
     private final JScrollPane javaDocScroller = new JScrollPane(javaDocPane);
     private final JSplitPane splitter = new JSplitPane();
+    private static final Logger logger = LogManager.getLogger();
 
     private NewReceiverDialogPanel() {
         setupComponents();
@@ -74,7 +75,7 @@ public class NewReceiverDialogPanel extends JPanel {
                 try {
                     javaDocPane.setPage(url);
                 } catch (IOException e) {
-                    MessageCenter.getInstance().getLogger().error(
+                    logger.error(
                         "Failed to load the Help resource for " +
                             plugin.getClass(), e);
                 }

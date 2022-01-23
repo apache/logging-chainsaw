@@ -26,7 +26,6 @@ import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.chainsaw.icons.LevelIconFactory;
 import org.apache.log4j.chainsaw.icons.LineIconFactory;
-import org.apache.log4j.chainsaw.messages.MessageCenter;
 import org.apache.log4j.chainsaw.prefs.LoadSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SettingsListener;
@@ -53,6 +52,7 @@ import java.util.ServiceLoader;
 import org.apache.log4j.chainsaw.ChainsawReceiver;
 import org.apache.log4j.chainsaw.LogUI;
 import org.apache.log4j.chainsaw.ChainsawReceiverFactory;
+import org.apache.log4j.chainsaw.ChainsawStatusBar;
 import org.apache.log4j.chainsaw.logevents.Level;
 
 
@@ -84,9 +84,11 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
     private final LogUI m_parent;
     private final Map<Class,PropertyDescriptor[]> m_classToProperties = 
             new HashMap<>();
+    private final ChainsawStatusBar m_statusBar;
 
-    public ReceiversPanel(LogUI parentUi) {
+    public ReceiversPanel(LogUI parentUi, ChainsawStatusBar sb) {
         super(new BorderLayout());
+        m_statusBar = sb;
         m_parent = parentUi;
         final ReceiversTreeModel model = new ReceiversTreeModel();
         m_parent.addReceiverEventListener(model);
@@ -308,7 +310,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
                                 }
 
                                 updateReceiverTreeInDispatchThread();
-                                MessageCenter.getInstance().getLogger().info(
+                                m_statusBar.setMessage(
                                     "All Receivers have been (re)started");
                             }).start();
                     }
@@ -621,15 +623,14 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
                                             m_parent.addReceiver(receiver);
                                             receiver.start();
                                             m_classToProperties.put(receiver.getClass(), descriptors);
-                                            MessageCenter.getInstance().addMessage("Receiver '" + receiver.getName() + "' started");
+                                            m_statusBar.setMessage("Receiver '" + receiver.getName() + "' started");
                                         } else {
-                                            MessageCenter.getInstance().getLogger().error("Name required to create receiver");
+                                            logger.error("Name required to create receiver");
                                         }
                                     });
                                 dialog.setVisible(true);
                             } catch (Exception e1) {
-                                e1.printStackTrace();
-                                MessageCenter.getInstance().getLogger().error(
+                                logger.error(
                                     "Failed to create the new Receiver dialog", e1);
                             }
                         }

@@ -18,7 +18,6 @@
 package org.apache.log4j.chainsaw;
 
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
-import org.apache.log4j.chainsaw.messages.MessageCenter;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -207,7 +206,7 @@ public class ChainsawStatusBar extends JPanel {
      */
     void remoteConnectionReceived(String source) {
         lastReceivedConnection = System.currentTimeMillis();
-        MessageCenter.getInstance().getLogger().info("Connection received from " + source);
+        setMessage("Connection received from " + source);
         connectionThread.interrupt();
 
         //    TODO and maybe play a sound?

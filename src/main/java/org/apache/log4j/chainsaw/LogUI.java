@@ -25,7 +25,6 @@ import org.apache.log4j.chainsaw.help.Tutorial;
 import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.chainsaw.icons.LineIconFactory;
-import org.apache.log4j.chainsaw.messages.MessageCenter;
 import org.apache.log4j.chainsaw.osx.OSXIntegration;
 import org.apache.log4j.chainsaw.plugins.PluginClassLoaderFactory;
 import org.apache.log4j.chainsaw.prefs.*;
@@ -252,10 +251,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         ApplicationPreferenceModel model, Action newShutdownAction) {
 
         if (model.isOkToRemoveSecurityManager()) {
-            MessageCenter
-                .getInstance()
-                .addMessage(
-                    "User has authorised removal of Java Security Manager via preferences");
+//            statusBar.setMessage("User has authorised removal of Java Security Manager via preferences");
             System.setSecurityManager(null);
             // this SHOULD set the Policy/Permission stuff for any
             // code loaded from our custom classloader.  
@@ -526,14 +522,14 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             Plugin plugin = pluginClass.newInstance();
             pluginRegistry.addPlugin(plugin);
             plugin.activateOptions();
-            MessageCenter.getInstance().getLogger().info("Looks like ZeroConf is available... WooHoo!");
+            statusBar.setMessage("Looks like ZeroConf is available... WooHoo!");
         } catch (Throwable e) {
-            MessageCenter.getInstance().getLogger().error("Doesn't look like ZeroConf is available", e);
+            statusBar.setMessage("Doesn't look like ZeroConf is available");
         }
     }
 
     private void setupReceiverPanel() {
-        receiversPanel = new ReceiversPanel(this);
+        receiversPanel = new ReceiversPanel(this, statusBar);
         receiversPanel.addPropertyChangeListener(
             "visible",
             evt -> getApplicationPreferenceModel().setReceivers(
@@ -664,27 +660,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         initGUI();
 
         initPrefModelListeners();
-
-        /**
-         * We add a simple appender to the MessageCenter logger
-         * so that each message is displayed in the Status bar
-         */
-//        MessageCenter.getInstance().getLogger().addAppender(
-//            new AppenderSkeleton() {
-//                protected void append(LoggingEvent event) {
-//                    getStatusBar().setMessage(event.getMessage().toString());
-//                }
-//
-//                public void close() {
-//                }
-//
-//                public boolean requiresLayout() {
-//                    return false;
-//                }
-//            });
-
-
-        initSocketConnectionListener();
 
         if (pluginRegistry.getPlugins(Receiver.class).size() == 0) {
             noReceiversDefined = true;
@@ -976,8 +951,8 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
             container.add(new JScrollPane(tutorialArea), BorderLayout.CENTER);
         } catch (Exception e) {
-            MessageCenter.getInstance().getLogger().error(
-                "Error occurred loading the Tutorial", e);
+            logger.error("Can't load tutorial", e);
+            statusBar.setMessage("Can't load tutorail");
         }
 
         tutorialFrame.setIconImage(new ImageIcon(ChainsawIcons.HELP).getImage());
@@ -1079,7 +1054,8 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                         try {
                             tutorialArea.setPage(e.getURL());
                         } catch (IOException e1) {
-                            MessageCenter.getInstance().getLogger().error(
+                            statusBar.setMessage("Failed to change URL for tutorial");
+                            logger.error(
                                 "Failed to change the URL for the Tutorial", e1);
                         }
                     }
@@ -1127,77 +1103,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         mainReceiverSplitPane.setDividerSize(0);
         receiversPanel.setVisible(false);
         mainReceiverSplitPane.repaint();
-    }
-
-    private void initSocketConnectionListener() {
-        final SocketNodeEventListener socketListener =
-            new SocketNodeEventListener() {
-                public void socketOpened(String remoteInfo) {
-                    statusBar.remoteConnectionReceived(remoteInfo);
-                }
-
-                public void socketClosedEvent(Exception e) {
-                    MessageCenter.getInstance().getLogger().info(
-                        "Connection lost! :: " + e.getMessage());
-                }
-            };
-
-        PluginListener pluginListener =
-            new PluginListener() {
-                public void pluginStarted(PluginEvent e) {
-                    MessageCenter.getInstance().getLogger().info(
-                        e.getPlugin().getName() + " started!");
-
-                    Method method = getAddListenerMethod(e.getPlugin());
-
-                    if (method != null) {
-                        try {
-                            method.invoke(e.getPlugin(), socketListener);
-                        } catch (Exception ex) {
-                            MessageCenter.getInstance().getLogger().error(
-                                "Failed to add a SocketNodeEventListener", ex);
-                        }
-                    }
-                }
-
-                Method getRemoveListenerMethod(Plugin p) {
-                    try {
-                        return p.getClass().getMethod(
-                            "removeSocketNodeEventListener",
-                            SocketNodeEventListener.class);
-                    } catch (Exception e) {
-                        return null;
-                    }
-                }
-
-                Method getAddListenerMethod(Plugin p) {
-                    try {
-                        return p.getClass().getMethod(
-                            "addSocketNodeEventListener",
-                            SocketNodeEventListener.class);
-                    } catch (Exception e) {
-                        return null;
-                    }
-                }
-
-                public void pluginStopped(PluginEvent e) {
-                    Method method = getRemoveListenerMethod(e.getPlugin());
-
-                    if (method != null) {
-                        try {
-                            method.invoke(e.getPlugin(), socketListener);
-                        } catch (Exception ex) {
-                            MessageCenter.getInstance().getLogger().error(
-                                "Failed to remove SocketNodeEventListener", ex);
-                        }
-                    }
-
-                    MessageCenter.getInstance().getLogger().info(
-                        e.getPlugin().getName() + " stopped!");
-                }
-            };
-
-        pluginRegistry.addPluginListener(pluginListener);
     }
 
     private void initPrefModelListeners() {
@@ -1327,9 +1232,9 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                                 networkReceiver.activateOptions();
                                 receiversPanel.updateReceiverTreeInDispatchThread();
                             } catch (Exception e3) {
-                                MessageCenter.getInstance().getLogger().error(
+                                logger.error(
                                     "Error creating Receiver", e3);
-                                MessageCenter.getInstance().getLogger().info(
+                                statusBar.setMessage(
                                     "An error occurred creating your Receiver");
                             }
                         } else if (receiverConfigurationPanel.getModel().isLog4jConfig()) {
@@ -1395,9 +1300,9 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                                     receiversPanel.updateReceiverTreeInDispatchThread();
                                 }
                             } catch (Exception e2) {
-                                MessageCenter.getInstance().getLogger().error(
+                                logger.error(
                                     "Error creating Receiver", e2);
-                                MessageCenter.getInstance().getLogger().info(
+                                statusBar.setMessage(
                                     "An error occurred creating your Receiver");
                             }
                         }
@@ -1415,8 +1320,8 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                             }
                         }
                         if (configURL != null) {
-                            MessageCenter.getInstance().getLogger().debug(
-                                "Initialiazing Log4j with " + configURL.toExternalForm());
+//                            MessageCenter.getInstance().getLogger().debug(
+//                                "Initialiazing Log4j with " + configURL.toExternalForm());
                             final URL finalURL = configURL;
                             new Thread(
                                 () -> {
@@ -1625,7 +1530,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
      * actionPerformed(...) method.
      */
     private void performShutdownAction() {
-        MessageCenter.getInstance().getLogger().debug(
+        logger.debug(
             "Calling the shutdown Action. Goodbye!");
 
         shutdownAction.actionPerformed(
@@ -1651,7 +1556,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
      * @param visible
      */
     private void setStatusBarVisible(final boolean visible) {
-        MessageCenter.getInstance().getLogger().debug(
+        logger.debug(
             "Setting StatusBar to " + visible);
         SwingUtilities.invokeLater(
             () -> statusBar.setVisible(visible));
@@ -1826,7 +1731,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     private void buildLogPanel(
         boolean customExpression, final String ident, final List<ChainsawLoggingEvent> events, final ChainsawReceiver rx)
         throws IllegalArgumentException {
-        final LogPanel thisPanel = new LogPanel(getStatusBar(), ident, cyclicBufferSize, allColorizers, applicationPreferenceModel);
+        final LogPanel thisPanel = new LogPanel(getStatusBar(), ident, cyclicBufferSize, allColorizers, applicationPreferenceModel, statusBar);
 
         getSettingsManager().addSettingsListener(thisPanel);
         getSettingsManager().configure(thisPanel);
@@ -1897,7 +1802,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             });
 
         String msg = "added tab " + ident;
-        MessageCenter.getInstance().getLogger().debug(msg);
+        logger.debug(msg);
     }
 
     public void createCustomExpressionLogPanel(String ident) {
@@ -1917,7 +1822,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
             buildLogPanel(true, ident, list, null);
         } catch (IllegalArgumentException iae) {
-            MessageCenter.getInstance().getLogger().info(
+            statusBar.setMessage(
                 "Unable to add tab using expression: " + ident + ", reason: "
                     + iae.getMessage());
         }

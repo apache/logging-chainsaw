@@ -28,7 +28,6 @@ import org.apache.log4j.chainsaw.icons.LineIconFactory;
 import org.apache.log4j.chainsaw.layout.DefaultLayoutFactory;
 import org.apache.log4j.chainsaw.layout.EventDetailLayout;
 import org.apache.log4j.chainsaw.layout.LayoutEditorPane;
-import org.apache.log4j.chainsaw.messages.MessageCenter;
 import org.apache.log4j.chainsaw.prefs.LoadSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.Profileable;
 import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
@@ -182,6 +181,7 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
     private EventTimeDeltaMatchThumbnail eventTimeDeltaMatchThumbnail;
     private boolean isDetailPanelVisible;
     private ChainsawReceiver m_receiver;
+    private ChainsawStatusBar m_statusBar;
 
     /**
      * Creates a new LogPanel object.  If a LogPanel with this identifier has
@@ -191,7 +191,9 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
      * @param identifier used to load and save settings
      */
     public LogPanel(final ChainsawStatusBar statusBar, final String identifier, int cyclicBufferSize,
-                    Map<String, RuleColorizer> allColorizers, final ApplicationPreferenceModel applicationPreferenceModel) {
+                    Map<String, RuleColorizer> allColorizers, final ApplicationPreferenceModel applicationPreferenceModel,
+                    ChainsawStatusBar sb) {
+        m_statusBar = sb;
         this.identifier = identifier;
         this.statusBar = statusBar;
         this.applicationPreferenceModel = applicationPreferenceModel;
@@ -633,7 +635,7 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
                         }
 
                         if (msg != null && wasWarning) {
-                            MessageCenter.getInstance().getLogger().info(msg);
+                            m_statusBar.setMessage(msg);
                         }
                     }
                 }
