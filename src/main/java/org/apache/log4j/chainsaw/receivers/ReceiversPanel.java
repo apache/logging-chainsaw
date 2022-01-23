@@ -363,7 +363,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
     private void saveReceivers() {
         File saveConfigFile = SwingHelper.promptForFile(this, null, "Save receiver configuration XML file", false);
         if (saveConfigFile != null) {
-            ReceiversHelper.getInstance().saveReceiverConfiguration(saveConfigFile);
+            m_parent.saveReceiversToFile(saveConfigFile);
         }
     }
 
@@ -575,7 +575,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
 
     public void saveSettings(SaveSettingsEvent event) {
         File file = new File(SettingsManager.getInstance().getSettingsDirectory(), "receiver-config.xml");
-        ReceiversHelper.getInstance().saveReceiverConfiguration(file);
+        m_parent.saveReceiversToFile(file);
     }
 
     /**

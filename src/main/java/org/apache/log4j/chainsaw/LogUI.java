@@ -28,7 +28,6 @@ import org.apache.log4j.chainsaw.icons.LineIconFactory;
 import org.apache.log4j.chainsaw.osx.OSXIntegration;
 import org.apache.log4j.chainsaw.plugins.PluginClassLoaderFactory;
 import org.apache.log4j.chainsaw.prefs.*;
-import org.apache.log4j.chainsaw.receivers.ReceiversHelper;
 import org.apache.log4j.chainsaw.receivers.ReceiversPanel;
 import org.apache.log4j.chainsaw.vfs.VFSLogFilePatternReceiver;
 import org.apache.log4j.net.SocketNodeEventListener;
@@ -51,8 +50,12 @@ import javax.swing.event.EventListenerList;
 import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.BeanInfo;
+import java.beans.Introspector;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyDescriptor;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -61,8 +64,17 @@ import java.net.URL;
 import java.security.*;
 import java.util.*;
 import java.util.List;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 
 /**
@@ -1342,7 +1354,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                         }
                         File saveConfigFile = receiverConfigurationPanel.getModel().getSaveConfigFile();
                         if (saveConfigFile != null) {
-                            ReceiversHelper.getInstance().saveReceiverConfiguration(saveConfigFile);
+                            saveReceiversToFile(saveConfigFile);
                         }
                     });
 
@@ -1964,5 +1976,54 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     
     public List<ChainsawReceiver> getAllReceivers(){
         return m_receivers;
+    }
+
+    public void saveReceiversToFile(File file){
+        try {
+            //we programmatically register the ZeroConf plugin in the plugin registry
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document document = builder.newDocument();
+            Element rootElement = document.createElementNS("http://jakarta.apache.org/log4j/", "configuration");
+            rootElement.setPrefix("log4j");
+            rootElement.setAttribute("xmlns:log4j", "http://jakarta.apache.org/log4j/");
+            rootElement.setAttribute("debug", "true");
+
+            for (ChainsawReceiver receiver : m_receivers) {
+                Element pluginElement = document.createElement("plugin");
+                pluginElement.setAttribute("name", receiver.getName());
+                pluginElement.setAttribute("class", receiver.getClass().getName());
+
+                BeanInfo beanInfo = Introspector.getBeanInfo(receiver.getClass());
+                List<PropertyDescriptor> list = new ArrayList<>(Arrays.asList(beanInfo.getPropertyDescriptors()));
+
+                for (PropertyDescriptor desc : list) {
+                    Object o = desc.getReadMethod().invoke(receiver);
+                    if (o != null) {
+                        Element paramElement = document.createElement("param");
+                        paramElement.setAttribute("name", desc.getName());
+                        paramElement.setAttribute("value", o.toString());
+                        pluginElement.appendChild(paramElement);
+                    }
+                }
+
+                rootElement.appendChild(pluginElement);
+
+            }
+
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+            DOMSource source = new DOMSource(rootElement);
+            FileOutputStream stream = new FileOutputStream(file);
+            StreamResult result = new StreamResult(stream);
+            transformer.transform(source, result);
+            stream.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
