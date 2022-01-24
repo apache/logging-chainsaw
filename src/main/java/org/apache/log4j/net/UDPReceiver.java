@@ -28,6 +28,10 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.log4j.chainsaw.ChainsawReceiverSkeleton;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -36,7 +40,7 @@ import java.util.List;
  *
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
-public class UDPReceiver extends Receiver implements PortBased, Pauseable {
+public class UDPReceiver extends ChainsawReceiverSkeleton implements PortBased {
     private static final int PACKET_LENGTH = 16384;
     private UDPReceiverThread receiverThread;
     private String encoding;
@@ -44,13 +48,14 @@ public class UDPReceiver extends Receiver implements PortBased, Pauseable {
     //default to log4j xml decoder
     private String decoder = "org.apache.log4j.xml.XMLDecoder";
     private Decoder decoderImpl;
-    protected boolean paused;
-    private transient boolean closed = false;
+    private boolean closed = false;
     private int port;
     private DatagramSocket socket;
-    UDPHandlerThread handlerThread;
     private boolean advertiseViaMulticastDNS;
     private ZeroConfSupport zeroConf;
+    private boolean active = true;
+
+    private static final Logger logger = LogManager.getLogger();
 
     /**
      * The MulticastDNS zone advertised by a UDPReceiver
@@ -89,14 +94,6 @@ public class UDPReceiver extends Receiver implements PortBased, Pauseable {
         this.decoder = decoder;
     }
 
-    public boolean isPaused() {
-        return paused;
-    }
-
-    public void setPaused(boolean b) {
-        paused = b;
-    }
-
     public void setAdvertiseViaMulticastDNS(boolean advertiseViaMulticastDNS) {
         this.advertiseViaMulticastDNS = advertiseViaMulticastDNS;
     }
@@ -122,10 +119,6 @@ public class UDPReceiver extends Receiver implements PortBased, Pauseable {
         }
 
         try {
-            if (handlerThread != null) {
-                handlerThread.close();
-                handlerThread.join();
-            }
             if (receiverThread != null) {
                 receiverThread.join();
             }
@@ -133,13 +126,8 @@ public class UDPReceiver extends Receiver implements PortBased, Pauseable {
         }
     }
 
-    /**
-     * Returns true if this receiver is active.
-     */
-//  public synchronized boolean isActive() {
-//    return isActive;
-//}
-    public void activateOptions() {
+    @Override
+    public void start() {
         try {
             Class c = Class.forName(decoder);
             Object o = c.newInstance();
@@ -148,17 +136,15 @@ public class UDPReceiver extends Receiver implements PortBased, Pauseable {
                 this.decoderImpl = (Decoder) o;
             }
         } catch (ClassNotFoundException cnfe) {
-            getLogger().warn("Unable to find decoder", cnfe);
+            logger.warn("Unable to find decoder", cnfe);
         } catch (IllegalAccessException | InstantiationException iae) {
-            getLogger().warn("Could not construct decoder", iae);
+            logger.warn("Could not construct decoder", iae);
         }
 
         try {
             socket = new DatagramSocket(port);
             receiverThread = new UDPReceiverThread();
             receiverThread.start();
-            handlerThread = new UDPHandlerThread();
-            handlerThread.start();
             if (advertiseViaMulticastDNS) {
                 zeroConf = new ZeroConfSupport(ZONE, port, getName());
                 zeroConf.advertise();
@@ -169,76 +155,10 @@ public class UDPReceiver extends Receiver implements PortBased, Pauseable {
         }
     }
 
-    class UDPHandlerThread extends Thread {
-        private final List<String> list = new ArrayList<>();
-
-        public UDPHandlerThread() {
-            setDaemon(true);
-        }
-
-        public void append(String data) {
-            synchronized (list) {
-                list.add(data);
-                list.notify();
-            }
-        }
-
-        /**
-         * Allow the UDPHandlerThread to wakeup and exit gracefully.
-         */
-        void close() {
-            synchronized (list) {
-                list.notify();
-            }
-        }
-
-        public void run() {
-            ArrayList<String> list2 = new ArrayList<>();
-
-            while (!UDPReceiver.this.closed) {
-                synchronized (list) {
-                    try {
-                        while (!UDPReceiver.this.closed && list.size() == 0) {
-                            list.wait(300);
-                        }
-
-                        if (list.size() > 0) {
-                            list2.addAll(list);
-                            list.clear();
-                        }
-                    } catch (InterruptedException ie) {
-                    }
-                }
-
-                if (list2.size() > 0) {
-
-                    for (Object aList2 : list2) {
-                        String data = (String) aList2;
-                        List<LoggingEvent> v = decoderImpl.decodeEvents(data);
-
-                        if (v != null) {
-
-                            for (Object aV : v) {
-                                if (!isPaused()) {
-                                    doPost((LoggingEvent) aV);
-                                }
-                            }
-                        }
-                    }
-
-                    list2.clear();
-                } else {
-                    try {
-                        synchronized (this) {
-                            wait(1000);
-                        }
-                    } catch (InterruptedException ie) {
-                    }
-                }
-            } // while
-            getLogger().debug(UDPReceiver.this.getName() + "'s handler thread is exiting");
-        } // run
-    } // UDPHandlerThread
+    @Override
+    public boolean isActive() {
+        return active;
+    }
 
     class UDPReceiverThread extends Thread {
         public UDPReceiverThread() {
@@ -255,12 +175,16 @@ public class UDPReceiver extends Receiver implements PortBased, Pauseable {
 
                     //this string constructor which accepts a charset throws an exception if it is
                     //null
+                    String data;
                     if (encoding == null) {
-                        handlerThread.append(
-                            new String(p.getData(), 0, p.getLength()));
+                        data = new String(p.getData(), 0, p.getLength());
                     } else {
-                        handlerThread.append(
-                            new String(p.getData(), 0, p.getLength(), encoding));
+                        data = new String(p.getData(), 0, p.getLength(), encoding);
+                    }
+
+                    List<ChainsawLoggingEvent> v = decoderImpl.decodeEvents(data);
+                    for( ChainsawLoggingEvent evt : v ){
+                        append(evt);
                     }
                 } catch (SocketException se) {
                     //disconnected

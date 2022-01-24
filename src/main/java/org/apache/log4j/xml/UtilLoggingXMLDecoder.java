@@ -17,12 +17,8 @@
 
 package org.apache.log4j.xml;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.apache.log4j.helpers.UtilLoggingLevel;
 import org.apache.log4j.spi.Decoder;
-import org.apache.log4j.spi.LocationInfo;
-import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -36,8 +32,12 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
 import java.io.*;
 import java.net.URL;
+import java.time.Instant;
 import java.util.*;
 import java.util.zip.ZipInputStream;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
+import org.apache.log4j.chainsaw.logevents.LocationInfo;
 
 
 /**
@@ -79,6 +79,8 @@ public class UtilLoggingXMLDecoder implements Decoder {
      * Owner.
      */
     private Component owner = null;
+
+    private ChainsawLoggingEventBuilder builder = new ChainsawLoggingEventBuilder();
 
     private static final String ENCODING = "UTF-8";
 
@@ -173,7 +175,7 @@ public class UtilLoggingXMLDecoder implements Decoder {
      * @return Vector of LoggingEvents
      * @throws IOException if IO error during processing.
      */
-    public Vector<LoggingEvent> decode(final URL url) throws IOException {
+    public Vector<ChainsawLoggingEvent> decode(final URL url) throws IOException {
         LineNumberReader reader;
         boolean isZipFile = url.getPath().toLowerCase().endsWith(".zip");
         InputStream inputStream;
@@ -192,10 +194,10 @@ public class UtilLoggingXMLDecoder implements Decoder {
         } else {
             reader = new LineNumberReader(new InputStreamReader(inputStream, ENCODING));
         }
-        Vector<LoggingEvent> v = new Vector<>();
+        Vector<ChainsawLoggingEvent> v = new Vector<>();
 
         String line;
-        Vector<LoggingEvent> events;
+        Vector<ChainsawLoggingEvent> events;
         try {
             while ((line = reader.readLine()) != null) {
                 StringBuilder buffer = new StringBuilder(line);
@@ -227,7 +229,7 @@ public class UtilLoggingXMLDecoder implements Decoder {
      * @param document to decode events from
      * @return Vector of LoggingEvents
      */
-    public Vector<LoggingEvent> decodeEvents(final String document) {
+    public Vector<ChainsawLoggingEvent> decodeEvents(final String document) {
 
         if (document != null) {
 
@@ -279,14 +281,14 @@ public class UtilLoggingXMLDecoder implements Decoder {
      * @param data XML fragment
      * @return a single LoggingEvent or null
      */
-    public LoggingEvent decode(final String data) {
+    public ChainsawLoggingEvent decode(final String data) {
         Document document = parse(data);
 
         if (document == null) {
             return null;
         }
 
-        Vector<LoggingEvent> events = decodeEvents(document);
+        Vector<ChainsawLoggingEvent> events = decodeEvents(document);
 
         if (events.size() > 0) {
             return events.firstElement();
@@ -301,8 +303,8 @@ public class UtilLoggingXMLDecoder implements Decoder {
      * @param document XML document
      * @return Vector of LoggingEvents
      */
-    private Vector<LoggingEvent> decodeEvents(final Document document) {
-        Vector<LoggingEvent> events = new Vector<>();
+    private Vector<ChainsawLoggingEvent> decodeEvents(final Document document) {
+        Vector<ChainsawLoggingEvent> events = new Vector<>();
 
         NodeList eventList = document.getElementsByTagName("record");
 
@@ -310,11 +312,11 @@ public class UtilLoggingXMLDecoder implements Decoder {
              eventIndex++) {
             Node eventNode = eventList.item(eventIndex);
 
-            Logger logger = null;
+            String logger = null;
             long timeStamp = 0L;
-            Level level = null;
+            String level = null;
             String threadName = null;
-            Object message = null;
+            String message = null;
             String ndc = null;
             String[] exception = null;
             String className = null;
@@ -336,7 +338,7 @@ public class UtilLoggingXMLDecoder implements Decoder {
                 String tagName = list.item(y).getNodeName();
 
                 if (tagName.equalsIgnoreCase("logger")) {
-                    logger = Logger.getLogger(getCData(list.item(y)));
+                    logger = getCData(list.item(y));
                 }
 
                 if (tagName.equalsIgnoreCase("millis")) {
@@ -344,7 +346,7 @@ public class UtilLoggingXMLDecoder implements Decoder {
                 }
 
                 if (tagName.equalsIgnoreCase("level")) {
-                    level = UtilLoggingLevel.toLevel(getCData(list.item(y)));
+                    level = getCData(list.item(y));
                 }
 
                 if (tagName.equalsIgnoreCase("thread")) {
@@ -415,9 +417,10 @@ public class UtilLoggingXMLDecoder implements Decoder {
                 || (className != null)
                 || (methodName != null)
                 || (lineNumber != null)) {
-                info = new LocationInfo(fileName, className, methodName, lineNumber);
+                info = new LocationInfo(fileName, className, methodName, 
+                        Integer.parseInt(lineNumber));
             } else {
-                info = LocationInfo.NA_LOCATION_INFO;
+                info = null;
             }
 
             ThrowableInformation throwableInfo = null;
@@ -425,15 +428,18 @@ public class UtilLoggingXMLDecoder implements Decoder {
                 throwableInfo = new ThrowableInformation(exception);
             }
 
-            LoggingEvent loggingEvent = new LoggingEvent(null,
-                logger, timeStamp, level, message,
-                threadName,
-                throwableInfo,
-                ndc,
-                info,
-                properties);
+            builder.clear();
+            builder.setLogger(logger)
+                    .setTimestamp(Instant.ofEpochMilli(timeStamp))
+                    .setLevelFromString(level)
+                    .setMessage(message)
+                    .setThreadName(threadName)
+                    .setMDC(properties)
+                    .setNDC(ndc)
+                    .setLocationInfo(info);
 
-            events.add(loggingEvent);
+
+            events.add(builder.create());
 
         }
         return events;

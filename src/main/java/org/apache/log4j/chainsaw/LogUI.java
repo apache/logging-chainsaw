@@ -1274,8 +1274,8 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                                             fileReceiver.setTailing(true);
                                             fileReceiver.setLogFormat(receiverPattern);
                                             fileReceiver.setTimestampFormat(timestampFormat);
-                                            fileReceiver.setThreshold(Level.TRACE);
-                                            pluginRegistry.addPlugin(fileReceiver);
+//                                            fileReceiver.setThreshold(Level.TRACE);
+//                                            pluginRegistry.addPlugin(fileReceiver);
                                             fileReceiver.activateOptions();
                                             receiversPanel.updateReceiverTreeInDispatchThread();
                                         } catch (URISyntaxException e1) {
@@ -1305,9 +1305,9 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                                         fileReceiver.setLogFormat(receiverConfigurationPanel.getModel().getLogFormat());
                                     }
                                     fileReceiver.setTimestampFormat(receiverConfigurationPanel.getModel().getLogFormatTimestampFormat());
-                                    fileReceiver.setThreshold(Level.TRACE);
-
-                                    pluginRegistry.addPlugin(fileReceiver);
+//                                    fileReceiver.setThreshold(Level.TRACE);
+//
+//                                    pluginRegistry.addPlugin(fileReceiver);
                                     fileReceiver.activateOptions();
                                     receiversPanel.updateReceiverTreeInDispatchThread();
                                 }

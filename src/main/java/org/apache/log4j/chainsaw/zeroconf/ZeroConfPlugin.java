@@ -50,6 +50,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.*;
+import org.apache.log4j.chainsaw.ChainsawReceiver;
 
 /**
  * This plugin is designed to detect specific Zeroconf zones (Rendevouz/Bonjour,
@@ -436,19 +437,21 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
     private void connectTo(ServiceInfo info) {
         LOG.info("Connection request for " + info);
         //Chainsaw can construct receivers from discovered appenders
-        Receiver receiver = getReceiver(info);
+        ChainsawReceiver receiver = getReceiver(info);
         //if null, unable to resolve the service name..no-op
         if (receiver == null) {
             return;
         }
-        ((LoggerRepositoryEx) LogManager.getLoggerRepository()).getPluginRegistry().addPlugin(receiver);
-        receiver.activateOptions();
-        LOG.info("Receiver '" + receiver.getName() + "' has been started");
+        // TODO tell LogUI that we have a new receiver
 
-        // ServiceInfo obeys equals() and hashCode() contracts, so this should be safe.
-        synchronized (serviceInfoToReceiveMap) {
-            serviceInfoToReceiveMap.put(info, receiver);
-        }
+//        ((LoggerRepositoryEx) LogManager.getLoggerRepository()).getPluginRegistry().addPlugin(receiver);
+//        receiver.activateOptions();
+//        LOG.info("Receiver '" + receiver.getName() + "' has been started");
+//
+//        // ServiceInfo obeys equals() and hashCode() contracts, so this should be safe.
+//        synchronized (serviceInfoToReceiveMap) {
+//            serviceInfoToReceiveMap.put(info, receiver);
+//        }
 
 //         this instance of the menu item needs to be disabled, and have an icon added
         JMenuItem item = locateMatchingMenuItem(info.getName());
@@ -460,7 +463,7 @@ public class ZeroConfPlugin extends GUIPluginSkeleton {
 //        discoveredDevices.fireContentsChanged();
     }
 
-    private Receiver getReceiver(ServiceInfo info) {
+    private ChainsawReceiver getReceiver(ServiceInfo info) {
         String zone = info.getType();
         int port = info.getPort();
         String hostAddress = info.getHostAddress();

@@ -17,25 +17,28 @@
 
 package org.apache.log4j.varia;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.plugins.Receiver;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
-import org.apache.log4j.spi.LocationInfo;
-import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
 
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.*;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import org.apache.log4j.chainsaw.ChainsawReceiverSkeleton;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
+import org.apache.log4j.chainsaw.logevents.Level;
+import org.apache.log4j.chainsaw.logevents.LocationInfo;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * LogFilePatternReceiver can parse and tail log files, converting entries into
@@ -127,7 +130,7 @@ import java.util.regex.PatternSyntaxException;
  *
  * @author Scott Deboy
  */
-public class LogFilePatternReceiver extends Receiver {
+public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
     private final List<String> keywords = new ArrayList<>();
 
     private static final String PROP_START = "PROP(";
@@ -196,6 +199,12 @@ public class LogFilePatternReceiver extends Receiver {
 
     //default to one line - this number is incremented for each (NL) found in the logFormat
     private int lineCount = 1;
+
+    protected boolean active = false;
+
+    private ChainsawLoggingEventBuilder build = new ChainsawLoggingEventBuilder();
+
+    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
 
     public LogFilePatternReceiver() {
         keywords.add(TIMESTAMP);
@@ -475,11 +484,11 @@ public class LogFilePatternReceiver extends Receiver {
      *
      * @return event
      */
-    private LoggingEvent buildEvent() {
+    private ChainsawLoggingEvent buildEvent() {
         if (currentMap.size() == 0) {
             if (additionalLines.size() > 0) {
                 for (Object additionalLine : additionalLines) {
-                    getLogger().debug("found non-matching line: " + additionalLine);
+                    logger.debug("found non-matching line: " + additionalLine);
                 }
             }
             additionalLines.clear();
@@ -494,7 +503,7 @@ public class LogFilePatternReceiver extends Receiver {
             currentMap.put(MESSAGE, buildMessage((String) currentMap.get(MESSAGE),
                 exceptionLine));
         }
-        LoggingEvent event = convertToEvent(currentMap, exception);
+        ChainsawLoggingEvent event = convertToEvent(currentMap, exception);
         currentMap.clear();
         additionalLines.clear();
         return event;
@@ -531,10 +540,10 @@ public class LogFilePatternReceiver extends Receiver {
             exceptionMatcher = exceptionPattern.matcher(input);
             if (eventMatcher.matches()) {
                 //build an event from the previous match (held in current map)
-                LoggingEvent event = buildEvent();
+                ChainsawLoggingEvent event = buildEvent();
                 if (event != null) {
                     if (passesExpression(event)) {
-                        doPost(event);
+                        append(event);
                     }
                 }
                 currentMap.putAll(processEvent(eventMatcher.toMatchResult()));
@@ -551,10 +560,10 @@ public class LogFilePatternReceiver extends Receiver {
                     String lastTime = (String) currentMap.get(TIMESTAMP);
                     //build an event from the previous match (held in current map)
                     if (currentMap.size() > 0) {
-                        LoggingEvent event = buildEvent();
+                        ChainsawLoggingEvent event = buildEvent();
                         if (event != null) {
                             if (passesExpression(event)) {
-                                doPost(event);
+                                append(event);
                             }
                         }
                     }
@@ -569,10 +578,10 @@ public class LogFilePatternReceiver extends Receiver {
         }
 
         //process last event if one exists
-        LoggingEvent event = buildEvent();
+        ChainsawLoggingEvent event = buildEvent();
         if (event != null) {
             if (passesExpression(event)) {
-                doPost(event);
+                append(event);
             }
         }
     }
@@ -587,7 +596,7 @@ public class LogFilePatternReceiver extends Receiver {
      * @param event
      * @return true if expression isn't set, or the result of the evaluation otherwise
      */
-    private boolean passesExpression(LoggingEvent event) {
+    private boolean passesExpression(ChainsawLoggingEvent event) {
         if (event != null) {
             if (expressionRule != null) {
 //                return (expressionRule.evaluate(event, null));
@@ -683,7 +692,7 @@ public class LogFilePatternReceiver extends Receiver {
                 expressionRule = ExpressionRule.getRule(filterExpression);
             }
         } catch (Exception e) {
-            getLogger().warn("Invalid filter expression: " + filterExpression, e);
+            logger.warn("Invalid filter expression: " + filterExpression, e);
         }
 
         List<String> buildingKeywords = new ArrayList<>();
@@ -782,7 +791,7 @@ public class LogFilePatternReceiver extends Receiver {
         }
 
         regexp = newPattern;
-        getLogger().debug("regexp is " + regexp);
+        logger.debug("regexp is " + regexp);
     }
 
     private void updateCustomLevelDefinitionMap() {
@@ -792,7 +801,7 @@ public class LogFilePatternReceiver extends Receiver {
             customLevelDefinitionMap.clear();
             while (entryTokenizer.hasMoreTokens()) {
                 StringTokenizer innerTokenizer = new StringTokenizer(entryTokenizer.nextToken(), "=");
-                customLevelDefinitionMap.put(innerTokenizer.nextToken(), Level.toLevel(innerTokenizer.nextToken()));
+//                customLevelDefinitionMap.put(innerTokenizer.nextToken(), Level.toLevel(innerTokenizer.nextToken()));
             }
         }
     }
@@ -836,7 +845,7 @@ public class LogFilePatternReceiver extends Receiver {
         int propLength = oldString.length();
         int startPos = inputString.indexOf(oldString);
         if (startPos == -1) {
-            getLogger().info("string: " + oldString + " not found in input: " + inputString + " - returning input");
+            logger.info("string: " + oldString + " not found in input: " + inputString + " - returning input");
             return inputString;
         }
         if (startPos == 0) {
@@ -891,7 +900,7 @@ public class LogFilePatternReceiver extends Receiver {
      * @param exception
      * @return logging event
      */
-    private LoggingEvent convertToEvent(Map fieldMap, String[] exception) {
+    private ChainsawLoggingEvent convertToEvent(Map fieldMap, String[] exception) {
         if (fieldMap == null) {
             return null;
         }
@@ -904,11 +913,11 @@ public class LogFilePatternReceiver extends Receiver {
             exception = emptyException;
         }
 
-        Logger logger;
+        String logger;
         long timeStamp = 0L;
         String level;
         String threadName;
-        Object message;
+        String message;
         String ndc;
         String className;
         String methodName;
@@ -916,7 +925,7 @@ public class LogFilePatternReceiver extends Receiver {
         String lineNumber;
         Hashtable properties = new Hashtable();
 
-        logger = Logger.getLogger((String) fieldMap.remove(LOGGER));
+        logger = (String) fieldMap.remove(LOGGER);
 
         if ((dateFormat != null) && fieldMap.containsKey(TIMESTAMP)) {
             try {
@@ -931,31 +940,31 @@ public class LogFilePatternReceiver extends Receiver {
             timeStamp = System.currentTimeMillis();
         }
 
-        message = fieldMap.remove(MESSAGE);
+        message = (String)fieldMap.remove(MESSAGE);
         if (message == null) {
             message = "";
         }
 
         level = (String) fieldMap.remove(LEVEL);
-        Level levelImpl;
-        if (level == null) {
-            levelImpl = Level.DEBUG;
-        } else {
-            //first try to resolve against custom level definition map, then fall back to regular levels
-            levelImpl = customLevelDefinitionMap.get(level);
-            if (levelImpl == null) {
-                levelImpl = Level.toLevel(level.trim());
-                if (!level.equals(levelImpl.toString())) {
-                    //check custom level map
-                    if (levelImpl == null) {
-                        levelImpl = Level.DEBUG;
-                        getLogger().debug("found unexpected level: " + level + ", logger: " + logger.getName() + ", msg: " + message);
-                        //make sure the text that couldn't match a level is added to the message
-                        message = level + " " + message;
-                    }
-                }
-            }
-        }
+//        Level levelImpl;
+//        if (level == null) {
+//            levelImpl = Level.DEBUG;
+//        } else {
+//            //first try to resolve against custom level definition map, then fall back to regular levels
+//            levelImpl = customLevelDefinitionMap.get(level);
+//            if (levelImpl == null) {
+//                levelImpl = Level.toLevel(level.trim());
+//                if (!level.equals(levelImpl.toString())) {
+//                    //check custom level map
+//                    if (levelImpl == null) {
+//                        levelImpl = Level.DEBUG;
+//                        logger.debug("found unexpected level: " + level + ", logger: " + logger.getName() + ", msg: " + message);
+//                        //make sure the text that couldn't match a level is added to the message
+//                        message = level + " " + message;
+//                    }
+//                }
+//            }
+//        }
 
         threadName = (String) fieldMap.remove(THREAD);
 
@@ -979,24 +988,25 @@ public class LogFilePatternReceiver extends Receiver {
         //all remaining entries in fieldmap are properties
         properties.putAll(fieldMap);
 
-        LocationInfo info;
+        LocationInfo info = null;
 
         if ((eventFileName != null) || (className != null) || (methodName != null)
             || (lineNumber != null)) {
-            info = new LocationInfo(eventFileName, className, methodName, lineNumber);
-        } else {
-            info = LocationInfo.NA_LOCATION_INFO;
+            info = new LocationInfo(eventFileName, className, methodName, 
+                    Integer.parseInt(lineNumber));
         }
 
-        LoggingEvent event = new LoggingEvent(null,
-            logger, timeStamp, levelImpl, message,
-            threadName,
-            new ThrowableInformation(exception),
-            ndc,
-            info,
-            properties);
+        build.clear();
+        build.setLogger(logger)
+                .setTimestamp(Instant.ofEpochMilli(timeStamp))
+                .setLevelFromString(level)
+                .setMessage(message)
+                .setThreadName(threadName)
+                .setLocationInfo(info)
+                .setNDC(ndc)
+                .setMDC(properties);
 
-        return event;
+        return build.create();
     }
 
 //  public static void main(String[] args) {
@@ -1018,8 +1028,9 @@ public class LogFilePatternReceiver extends Receiver {
     /**
      * Close the reader.
      */
+    @Override
     public void shutdown() {
-        getLogger().info(getPath() + " shutdown");
+        logger.info(getPath() + " shutdown");
         active = false;
         try {
             if (reader != null) {
@@ -1034,18 +1045,19 @@ public class LogFilePatternReceiver extends Receiver {
     /**
      * Read and process the log file.
      */
-    public void activateOptions() {
-        getLogger().info("activateOptions");
+    @Override
+    public void start() {
+        logger.info("activateOptions");
         active = true;
         Runnable runnable = new Runnable() {
             public void run() {
                 initialize();
                 while (reader == null) {
-                    getLogger().info("attempting to load file: " + getFileURL());
+                    logger.info("attempting to load file: " + getFileURL());
                     try {
                         reader = new InputStreamReader(new URL(getFileURL()).openStream(), "UTF-8");
                     } catch (FileNotFoundException fnfe) {
-                        getLogger().info("file not available - will try again");
+                        logger.info("file not available - will try again");
                         synchronized (this) {
                             try {
                                 wait(MISSING_FILE_RETRY_MILLIS);
@@ -1053,7 +1065,7 @@ public class LogFilePatternReceiver extends Receiver {
                             }
                         }
                     } catch (IOException ioe) {
-                        getLogger().warn("unable to load file", ioe);
+                        logger.warn("unable to load file", ioe);
                         return;
                     }
                 }
@@ -1069,15 +1081,15 @@ public class LogFilePatternReceiver extends Receiver {
                         } catch (InterruptedException ie) {
                         }
                         if (tailing) {
-                            getLogger().debug("tailing file");
+                            logger.debug("tailing file");
                         }
                     } while (tailing);
 
                 } catch (IOException ioe) {
                     //io exception - probably shut down
-                    getLogger().info("stream closed");
+                    logger.info("stream closed");
                 }
-                getLogger().debug("processing " + path + " complete");
+                logger.debug("processing " + path + " complete");
                 shutdown();
             }
         };

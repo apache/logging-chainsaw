@@ -20,12 +20,15 @@ package org.apache.log4j.net;
 import org.apache.log4j.plugins.Pauseable;
 import org.apache.log4j.plugins.Receiver;
 import org.apache.log4j.spi.Decoder;
-import org.apache.log4j.spi.LoggingEvent;
 
 import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.log4j.chainsaw.ChainsawReceiverSkeleton;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -35,8 +38,8 @@ import java.util.List;
  *
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
-public class MulticastReceiver extends Receiver implements PortBased,
-    AddressBased, Pauseable {
+public class MulticastReceiver extends ChainsawReceiverSkeleton implements PortBased,
+    AddressBased {
     private static final int PACKET_LENGTH = 16384;
     private int port;
     private String address;
@@ -46,11 +49,12 @@ public class MulticastReceiver extends Receiver implements PortBased,
     //default to log4j xml decoder
     private String decoder = "org.apache.log4j.xml.XMLDecoder";
     private Decoder decoderImpl;
-    private MulticastHandlerThread handlerThread;
     private MulticastReceiverThread receiverThread;
-    private boolean paused;
     private boolean advertiseViaMulticastDNS;
     private ZeroConfSupport zeroConf;
+    private boolean active = false;
+
+    private static final Logger logger = LogManager.getLogger();
 
     /**
      * The MulticastDNS zone advertised by a MulticastReceiver
@@ -97,9 +101,6 @@ public class MulticastReceiver extends Receiver implements PortBased,
         if (advertiseViaMulticastDNS) {
             zeroConf.unadvertise();
         }
-        if (handlerThread != null) {
-            handlerThread.interrupt();
-        }
         if (receiverThread != null) {
             receiverThread.interrupt();
         }
@@ -112,15 +113,16 @@ public class MulticastReceiver extends Receiver implements PortBased,
         this.address = address;
     }
 
-    public boolean isPaused() {
-        return paused;
+    public void setAdvertiseViaMulticastDNS(boolean advertiseViaMulticastDNS) {
+        this.advertiseViaMulticastDNS = advertiseViaMulticastDNS;
     }
 
-    public void setPaused(boolean b) {
-        paused = b;
+    public boolean isAdvertiseViaMulticastDNS() {
+        return advertiseViaMulticastDNS;
     }
 
-    public void activateOptions() {
+    @Override
+    public void start() {
         InetAddress addr = null;
 
         try {
@@ -131,9 +133,9 @@ public class MulticastReceiver extends Receiver implements PortBased,
                 this.decoderImpl = (Decoder) o;
             }
         } catch (ClassNotFoundException cnfe) {
-            getLogger().warn("Unable to find decoder", cnfe);
+            logger.warn("Unable to find decoder", cnfe);
         } catch (IllegalAccessException | InstantiationException iae) {
-            getLogger().warn("Could not construct decoder", iae);
+            logger.warn("Could not construct decoder", iae);
         }
 
         try {
@@ -148,8 +150,6 @@ public class MulticastReceiver extends Receiver implements PortBased,
             socket.joinGroup(addr);
             receiverThread = new MulticastReceiverThread();
             receiverThread.start();
-            handlerThread = new MulticastHandlerThread();
-            handlerThread.start();
             if (advertiseViaMulticastDNS) {
                 zeroConf = new ZeroConfSupport(ZONE, port, getName());
                 zeroConf.advertise();
@@ -160,12 +160,9 @@ public class MulticastReceiver extends Receiver implements PortBased,
         }
     }
 
-    public void setAdvertiseViaMulticastDNS(boolean advertiseViaMulticastDNS) {
-        this.advertiseViaMulticastDNS = advertiseViaMulticastDNS;
-    }
-
-    public boolean isAdvertiseViaMulticastDNS() {
-        return advertiseViaMulticastDNS;
+    @Override
+    public boolean isActive() {
+        return active;
     }
 
     class MulticastHandlerThread extends Thread {
@@ -204,16 +201,7 @@ public class MulticastReceiver extends Receiver implements PortBased,
 
                     for (Object aList2 : list2) {
                         String data = (String) aList2;
-                        List<LoggingEvent> v = decoderImpl.decodeEvents(data.trim());
-
-                        if (v != null) {
-
-                            for (Object aV : v) {
-                                if (!isPaused()) {
-                                    doPost((LoggingEvent) aV);
-                                }
-                            }
-                        }
+                        
                     }
 
                     list2.clear();
@@ -246,12 +234,22 @@ public class MulticastReceiver extends Receiver implements PortBased,
 
                     //this string constructor which accepts a charset throws an exception if it is
                     //null
+                    String data;
                     if (encoding == null) {
-                        handlerThread.append(
-                            new String(p.getData(), 0, p.getLength()));
+                        data =
+                            new String(p.getData(), 0, p.getLength());
                     } else {
-                        handlerThread.append(
-                            new String(p.getData(), 0, p.getLength(), encoding));
+                        data =
+                            new String(p.getData(), 0, p.getLength(), encoding);
+                    }
+
+                    List<ChainsawLoggingEvent> v = decoderImpl.decodeEvents(data.trim());
+
+                    if (v != null) {
+
+                        for (ChainsawLoggingEvent aV : v) {
+                            append(aV);
+                        }
                     }
                 } catch (SocketException se) {
                     //disconnected
@@ -260,7 +258,7 @@ public class MulticastReceiver extends Receiver implements PortBased,
                 }
             }
 
-            getLogger().debug("{}'s thread is ending.", MulticastReceiver.this.getName());
+            logger.debug("{}'s thread is ending.", MulticastReceiver.this.getName());
         }
     }
 }

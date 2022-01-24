@@ -17,6 +17,7 @@
 
 package org.apache.log4j.net;
 
+import java.io.InputStream;
 import org.apache.log4j.plugins.Pauseable;
 import org.apache.log4j.plugins.Plugin;
 import org.apache.log4j.plugins.Receiver;
@@ -27,6 +28,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
 import java.util.Vector;
+import org.apache.log4j.chainsaw.ChainsawReceiverSkeleton;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.log4j.spi.Decoder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -49,8 +55,7 @@ import java.util.Vector;
  * @author Mark Womack
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
-public class XMLSocketReceiver extends Receiver implements Runnable, PortBased, Pauseable {
-    private boolean paused;
+public class XMLSocketReceiver extends ChainsawReceiverSkeleton implements Runnable, PortBased {
     //default to log4j xml decoder
     protected String decoder = "org.apache.log4j.xml.XMLDecoder";
     private ServerSocket serverSocket;
@@ -60,6 +65,9 @@ public class XMLSocketReceiver extends Receiver implements Runnable, PortBased, 
     protected int port = DEFAULT_PORT;
     private boolean advertiseViaMulticastDNS;
     private ZeroConfSupport zeroConf;
+    private boolean active = false;
+
+    private static final Logger logger = LogManager.getLogger();
 
     /**
      * The MulticastDNS zone advertised by an XMLSocketReceiver
@@ -72,15 +80,6 @@ public class XMLSocketReceiver extends Receiver implements Runnable, PortBased, 
      */
 
     public XMLSocketReceiver() {
-    }
-
-    public XMLSocketReceiver(int _port) {
-        port = _port;
-    }
-
-    public XMLSocketReceiver(int _port, LoggerRepository _repository) {
-        port = _port;
-        repository = _repository;
     }
 
     /**
@@ -106,49 +105,6 @@ public class XMLSocketReceiver extends Receiver implements Runnable, PortBased, 
      */
     public void setDecoder(String _decoder) {
         decoder = _decoder;
-    }
-
-    public boolean isPaused() {
-        return paused;
-    }
-
-    public void setPaused(boolean b) {
-        paused = b;
-    }
-
-    /**
-     * Returns true if the receiver is the same class and they are
-     * configured for the same properties, and super class also considers
-     * them to be equivalent. This is used by PluginRegistry when determining
-     * if the a similarly configured receiver is being started.
-     *
-     * @param testPlugin The plugin to test equivalency against.
-     * @return boolean True if the testPlugin is equivalent to this plugin.
-     */
-    public boolean isEquivalent(Plugin testPlugin) {
-        if ((testPlugin != null) && testPlugin instanceof XMLSocketReceiver) {
-            XMLSocketReceiver sReceiver = (XMLSocketReceiver) testPlugin;
-
-            return (port == sReceiver.getPort() && super.isEquivalent(testPlugin));
-        }
-
-        return false;
-    }
-
-    public int hashCode() {
-
-        int result = 37 * (repository != null ? repository.hashCode() : 0);
-        result = result * 37 + port;
-        return (result * 37 + (getName() != null ? getName().hashCode() : 0));
-    }
-
-    /**
-     * Sets the flag to indicate if receiver is active or not.
-     *
-     * @param b new value
-     */
-    protected synchronized void setActive(final boolean b) {
-        active = b;
     }
 
     /**
@@ -181,6 +137,7 @@ public class XMLSocketReceiver extends Receiver implements Runnable, PortBased, 
      * Called when the receiver should be stopped. Closes the
      * server socket and all of the open sockets.
      */
+    @Override
     public synchronized void shutdown() {
         // mark this as no longer running
         active = false;
@@ -199,13 +156,10 @@ public class XMLSocketReceiver extends Receiver implements Runnable, PortBased, 
     private synchronized void doShutdown() {
         active = false;
 
-        getLogger().debug("{} doShutdown called", getName());
+        logger.debug("{} doShutdown called", getName());
 
         // close the server socket
         closeServerSocket();
-
-        // close all of the accepted sockets
-        closeAllAcceptedSockets();
 
         if (advertiseViaMulticastDNS) {
             zeroConf.unadvertise();
@@ -216,7 +170,7 @@ public class XMLSocketReceiver extends Receiver implements Runnable, PortBased, 
      * Closes the server socket, if created.
      */
     private void closeServerSocket() {
-        getLogger().debug("{} closing server socket", getName());
+        logger.debug("{} closing server socket", getName());
 
         try {
             if (serverSocket != null) {
@@ -230,39 +184,22 @@ public class XMLSocketReceiver extends Receiver implements Runnable, PortBased, 
     }
 
     /**
-     * Closes all the connected sockets in the List.
-     */
-    private synchronized void closeAllAcceptedSockets() {
-        for (Object aSocketList : socketList) {
-            try {
-                ((Socket) aSocketList).close();
-            } catch (Exception e) {
-                // ignore for now
-            }
-        }
-
-        // clear member variables
-        socketList.clear();
-    }
-
-    /**
      * Loop, accepting new socket connections.
      */
     public void run() {
         /**
          * Ensure we start fresh.
          */
-        getLogger().debug("performing socket cleanup prior to entering loop for {}", name);
+        logger.debug("performing socket cleanup prior to entering loop for {}", name);
         closeServerSocket();
-        closeAllAcceptedSockets();
-        getLogger().debug("socket cleanup complete for {}", name);
+        logger.debug("socket cleanup complete for {}", name);
         active = true;
 
         // start the server socket
         try {
             serverSocket = new ServerSocket(port);
         } catch (Exception e) {
-            getLogger().error(
+            logger.error(
                 "error starting XMLSocketReceiver (" + this.getName()
                     + "), receiver did not start", e);
             active = false;
@@ -274,26 +211,22 @@ public class XMLSocketReceiver extends Receiver implements Runnable, PortBased, 
         Socket socket = null;
 
         try {
-            getLogger().debug("in run-about to enter while isactiveloop");
+            logger.debug("in run-about to enter while isactiveloop");
 
             active = true;
 
             while (!rThread.isInterrupted()) {
                 // if we have a socket, start watching it
-                if (socket != null) {
-                    getLogger().debug("socket not null - creating and starting socketnode");
-                    socketList.add(socket);
-
-                    XMLSocketNode node = new XMLSocketNode(decoder, socket, this);
-                    node.setLoggerRepository(this.repository);
-                    new Thread(node).start();
+                if (socket != null ) {
+                    logger.debug("socket not null - parsing data");
+                    parseIncomingData(socket);
                 }
 
-                getLogger().debug("waiting to accept socket");
+                logger.debug("waiting to accept socket");
 
                 // wait for a socket to open, then loop to start it
                 socket = serverSocket.accept();
-                getLogger().debug("accepted socket");
+                logger.debug("accepted socket");
             }
 
             // socket not watched because we a no longer running
@@ -302,19 +235,79 @@ public class XMLSocketReceiver extends Receiver implements Runnable, PortBased, 
                 socket.close();
             }
         } catch (Exception e) {
-            getLogger().warn(
+            logger.warn(
                 "socket server disconnected, stopping");
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.apache.log4j.plugins.Receiver#doPost(org.apache.log4j.spi.LoggingEvent)
-     */
-    public void doPost(LoggingEvent event) {
-        if (!isPaused()) {
-            super.doPost(event);
+    @Override
+    public void start() {
+        logger.debug("Starting receiver");
+        if (!isActive()) {
+            rThread = new Thread(this);
+            rThread.setDaemon(true);
+            rThread.start();
+
+            if (advertiseViaMulticastDNS) {
+                zeroConf = new ZeroConfSupport(ZONE, port, getName());
+                zeroConf.advertise();
+            }
+
+            active = true;
         }
     }
 
+    @Override
+    public boolean isActive() {
+        return active;
+    }
 
+    private void parseIncomingData(Socket sock){
+        InputStream is;
+        Decoder d = null;
+        
+        try{
+            d = (Decoder) Class.forName(decoder).getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
+            logger.error("Unable to load correct decoder", e);
+            return;
+        }
+
+        try {
+            is = sock.getInputStream();
+        } catch (Exception e) {
+            is = null;
+            logger.error("Exception opening InputStream to " + sock, e);
+            return;
+        }
+
+        while (is != null) {
+            try{
+                byte[] b = new byte[1024];
+                int length = is.read(b);
+                if (length == -1) {
+                    logger.info(
+                        "no bytes read from stream - closing connection.");
+                    break;
+                }
+                List<ChainsawLoggingEvent> v = d.decodeEvents(new String(b, 0, length));
+
+                for( ChainsawLoggingEvent evt : v ){
+                    append(evt);
+                }
+            }catch(Exception ex){
+                logger.error(ex);
+                break;
+            }
+        }
+
+        // close the socket
+        try {
+            if (is != null) {
+                is.close();
+            }
+        } catch (Exception e) {
+            //logger.info("Could not close connection.", e);
+        }
+    }
 }

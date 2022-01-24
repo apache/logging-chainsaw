@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.nio.CharBuffer;
 import java.util.Vector;
 import java.net.URL;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
 /**
  * Tests for XMLDecoder.
@@ -58,28 +59,28 @@ public class XMLDecoderTest extends TestCase {
     public void testDecodeEventsString1() throws Exception {
         String xmlStr = getStringFromResource("xmlLayout.1.xml", 10000);
         XMLDecoder decoder = new XMLDecoder();
-        Vector<org.apache.log4j.spi.LoggingEvent> events = decoder.decodeEvents(xmlStr);
+        Vector<ChainsawLoggingEvent> events = decoder.decodeEvents(xmlStr);
         assertEquals(17, events.size());
     }
 
   public void testDecodeEventsString2() throws Exception {
       String xmlStr = getStringFromResource("xsltLayout.1.xml", 10000);
       XMLDecoder decoder = new XMLDecoder();
-      Vector<org.apache.log4j.spi.LoggingEvent> events = decoder.decodeEvents(xmlStr);
+      Vector<ChainsawLoggingEvent> events = decoder.decodeEvents(xmlStr);
       assertEquals(15, events.size());
   }
 
     public void testDecodeEventsURL1() throws Exception {
         URL resource = XMLDecoderTest.class.getResource("xmlLayout.1.xml");
         XMLDecoder decoder = new XMLDecoder();
-        Vector<org.apache.log4j.spi.LoggingEvent> events = decoder.decode(resource);
+        Vector<ChainsawLoggingEvent> events = decoder.decode(resource);
         assertEquals(17, events.size());
     }
 
     public void testDecodeEventsURL2() throws Exception {
         URL resource = XMLDecoderTest.class.getResource("xsltLayout.1.xml");
         XMLDecoder decoder = new XMLDecoder();
-        Vector<org.apache.log4j.spi.LoggingEvent> events = decoder.decode(resource);
+        Vector<ChainsawLoggingEvent> events = decoder.decode(resource);
         assertEquals(15, events.size());
     }
 

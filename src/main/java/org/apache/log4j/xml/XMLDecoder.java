@@ -17,11 +17,7 @@
 
 package org.apache.log4j.xml;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.apache.log4j.spi.Decoder;
-import org.apache.log4j.spi.LocationInfo;
-import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -35,11 +31,16 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
 import java.io.*;
 import java.net.URL;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
 import java.util.zip.ZipInputStream;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
+import org.apache.log4j.chainsaw.logevents.Level;
+import org.apache.log4j.chainsaw.logevents.LocationInfo;
 
 
 /**
@@ -96,6 +97,8 @@ public class XMLDecoder implements Decoder {
      * Owner.
      */
     private Component owner = null;
+
+    private ChainsawLoggingEventBuilder builder = new ChainsawLoggingEventBuilder();
 
     /**
      * Create new instance.
@@ -175,7 +178,7 @@ public class XMLDecoder implements Decoder {
      * @return Vector of LoggingEvents
      * @throws IOException if IO error during processing.
      */
-    public Vector<LoggingEvent> decode(final URL url) throws IOException {
+    public Vector<ChainsawLoggingEvent> decode(final URL url) throws IOException {
         LineNumberReader reader;
         boolean isZipFile = url.getPath().toLowerCase().endsWith(".zip");
         InputStream inputStream;
@@ -195,10 +198,10 @@ public class XMLDecoder implements Decoder {
             reader = new LineNumberReader(new InputStreamReader(inputStream, ENCODING));
         }
 
-        Vector<LoggingEvent> v = new Vector<>();
+        Vector<ChainsawLoggingEvent> v = new Vector<>();
 
         String line;
-        Vector<LoggingEvent> events;
+        Vector<ChainsawLoggingEvent> events;
         try {
             while ((line = reader.readLine()) != null) {
                 StringBuilder buffer = new StringBuilder(line);
@@ -230,7 +233,7 @@ public class XMLDecoder implements Decoder {
      * @param document to decode events from
      * @return Vector of LoggingEvents
      */
-    public Vector<LoggingEvent> decodeEvents(final String document) {
+    public Vector<ChainsawLoggingEvent> decodeEvents(final String document) {
         if (document != null) {
             if (document.trim().equals("")) {
                 return null;
@@ -279,14 +282,14 @@ public class XMLDecoder implements Decoder {
      * @param data XML fragment
      * @return a single LoggingEvent or null
      */
-    public LoggingEvent decode(final String data) {
+    public ChainsawLoggingEvent decode(final String data) {
         Document document = parse(data);
 
         if (document == null) {
             return null;
         }
 
-        Vector<LoggingEvent> events = decodeEvents(document);
+        Vector<ChainsawLoggingEvent> events = decodeEvents(document);
 
         if (events.size() > 0) {
             return events.firstElement();
@@ -301,14 +304,14 @@ public class XMLDecoder implements Decoder {
      * @param document XML document
      * @return Vector of LoggingEvents
      */
-    private Vector<LoggingEvent> decodeEvents(final Document document) {
-        Vector<LoggingEvent> events = new Vector<>();
+    private Vector<ChainsawLoggingEvent> decodeEvents(final Document document) {
+        Vector<ChainsawLoggingEvent> events = new Vector<>();
 
-        Logger logger;
+        String logger;
         long timeStamp;
-        Level level;
+        String level;
         String threadName;
-        Object message = null;
+        String message = null;
         String ndc = null;
         String[] exception = null;
         String className = null;
@@ -329,9 +332,9 @@ public class XMLDecoder implements Decoder {
             if (eventNode.getNodeType() != Node.ELEMENT_NODE) {
                 continue;
             }
-            logger = Logger.getLogger(eventNode.getAttributes().getNamedItem("logger").getNodeValue());
+            logger = eventNode.getAttributes().getNamedItem("logger").getNodeValue();
             timeStamp = Long.parseLong(eventNode.getAttributes().getNamedItem("timestamp").getNodeValue());
-            level = Level.toLevel(eventNode.getAttributes().getNamedItem("level").getNodeValue());
+            level = eventNode.getAttributes().getNamedItem("level").getNodeValue();
             threadName = eventNode.getAttributes().getNamedItem("thread").getNodeValue();
 
             NodeList list = eventNode.getChildNodes();
@@ -431,25 +434,28 @@ public class XMLDecoder implements Decoder {
                 || (className != null)
                 || (methodName != null)
                 || (lineNumber != null)) {
-                info = new LocationInfo(fileName, className, methodName, lineNumber);
+                info = new LocationInfo(fileName, className, methodName, 
+                        Integer.parseInt(lineNumber));
             } else {
-                info = LocationInfo.NA_LOCATION_INFO;
+                info = null;
             }
             ThrowableInformation throwableInfo = null;
             if (exception != null) {
                 throwableInfo = new ThrowableInformation(exception);
             }
 
-            LoggingEvent loggingEvent = new LoggingEvent(null,
-                logger, timeStamp, level, message,
-                threadName,
-                throwableInfo,
-                ndc,
-                info,
-                properties);
+            builder.clear();
+            builder.setLogger(logger)
+                    .setTimestamp(Instant.ofEpochMilli(timeStamp))
+                    .setLevelFromString(level)
+                    .setMessage(message)
+                    .setThreadName(threadName)
+                    .setMDC(properties)
+                    .setNDC(ndc)
+                    .setLocationInfo(info);
 
 
-            events.add(loggingEvent);
+            events.add(builder.create());
 
             message = null;
             ndc = null;

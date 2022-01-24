@@ -20,7 +20,8 @@ import java.beans.PropertyChangeListener;
 import org.apache.log4j.chainsaw.logevents.Level;
 
 /**
- * A receiver receives log events from a source.
+ * A receiver receives log events from a source.  A ChainsawReceiver will create
+ * from 1...N ChainsawReceiverNodes
  */
 public interface ChainsawReceiver {
     
