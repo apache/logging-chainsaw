@@ -22,8 +22,6 @@ import java.io.Serializable;
 import java.util.Map;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
-import org.apache.log4j.spi.LoggingEvent;
-
 
 /**
  * A Rule class which also holds a color.

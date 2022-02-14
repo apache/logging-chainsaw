@@ -18,8 +18,6 @@
 package org.apache.log4j.chainsaw;
 
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
-import org.apache.log4j.helpers.LogLog;
-import org.apache.log4j.xml.XMLLayout;
 
 import javax.swing.*;
 import java.awt.*;
@@ -30,6 +28,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -41,6 +41,8 @@ import java.util.zip.ZipOutputStream;
  * @author Stephen Pain
  */
 class FileSaveAction extends AbstractAction {
+    private static final Logger logger = LogManager.getLogger();
+
     private LogUI parent;
     private JFileChooser chooser = null;
 
@@ -88,8 +90,8 @@ class FileSaveAction extends AbstractAction {
                 return;
             }
 
-            XMLLayout layout = new XMLLayout();
-            layout.setProperties(true);
+//            XMLLayout layout = new XMLLayout();
+//            layout.setProperties(true);
             boolean saveAsZip = selectedFile.getName().toLowerCase(Locale.ENGLISH).endsWith(".zip");
             Writer writer = null;
             try {
@@ -107,7 +109,7 @@ class FileSaveAction extends AbstractAction {
 //                    writer.write(layout.format(loggingEventWrapper.getLoggingEvent()));
                 }
             } catch (IOException ioe) {
-                LogLog.warn("Unable to save file", ioe);
+                logger.warn("Unable to save file", ioe);
             } finally {
                 if (writer != null) {
                     try {

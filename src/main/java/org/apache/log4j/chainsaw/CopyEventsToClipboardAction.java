@@ -10,9 +10,6 @@
  */
 package org.apache.log4j.chainsaw;
 
-import org.apache.log4j.EnhancedPatternLayout;
-import org.apache.log4j.Layout;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
@@ -30,13 +27,12 @@ public class CopyEventsToClipboardAction extends AbstractAction {
      * Layout pattern uses a simple but concise format that reads well and has a fixed size set of
      * useful columns before the message. Nice format for pasting into issue trackers.
      */
-    private final Layout layout = new EnhancedPatternLayout(
-        "[%d{ISO8601} %-5p][%20.20c][%t] %m%n");
+//    private final Layout layout = new EnhancedPatternLayout(
+//        "[%d{ISO8601} %-5p][%20.20c][%t] %m%n");
 
     public CopyEventsToClipboardAction(LogUI parent) {
         super("Copy events to clipboard");
         this.logUi = parent;
-        layout.activateOptions();
 
         putValue(Action.SHORT_DESCRIPTION,
             "Copies to the clipboard currently visible events to a human-readable, log-like format");

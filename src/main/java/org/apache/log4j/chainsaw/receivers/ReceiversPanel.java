@@ -17,8 +17,8 @@
 
 package org.apache.log4j.chainsaw.receivers;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.log4j.chainsaw.PopupListener;
 import org.apache.log4j.chainsaw.SmallButton;
 import org.apache.log4j.chainsaw.help.HelpManager;

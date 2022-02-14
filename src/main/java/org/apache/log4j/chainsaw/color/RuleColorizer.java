@@ -22,7 +22,6 @@ import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.rule.ColorRule;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
-import org.apache.log4j.spi.LoggingEvent;
 
 import java.awt.*;
 import java.beans.PropertyChangeListener;

@@ -20,13 +20,8 @@ import com.owlike.genson.annotation.JsonProperty;
 import java.time.ZonedDateTime;
 import java.util.Hashtable;
 import java.util.List;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
-import org.apache.log4j.spi.LocationInfo;
-import org.apache.log4j.spi.LoggingEvent;
-import org.apache.log4j.spi.ThrowableInformation;
 
 /**
  * Represents a LogEvent as from a ECS(ElasticSearch) event.
@@ -53,46 +48,5 @@ public class ECSLogEvent {
                 .setTimestamp(ZonedDateTime.parse(timestamp).toInstant());
 
         return build.create();
-    }
-
-    LoggingEvent toLoggingEvent(){
-        Logger logger;
-        long timeStamp;
-        Level level;
-        String ndc = null;
-        String[] exception = null;
-        String className = null;
-        String methodName = null;
-        String fileName = null;
-        String lineNumber = null;
-        Hashtable properties = null;
-
-        logger = Logger.getLogger(this.logger);
-        timeStamp = ZonedDateTime.parse(this.timestamp).toInstant().toEpochMilli();
-        level = Level.toLevel(this.level);
-
-        LocationInfo info;
-        if ((fileName != null)
-            || (className != null)
-            || (methodName != null)
-            || (lineNumber != null)) {
-            info = new LocationInfo(fileName, className, methodName, lineNumber);
-        } else {
-            info = LocationInfo.NA_LOCATION_INFO;
-        }
-        ThrowableInformation throwableInfo = null;
-        if (exception != null) {
-            throwableInfo = new ThrowableInformation(exception);
-        }
-
-        LoggingEvent loggingEvent = new LoggingEvent(null,
-                logger, timeStamp, level, message,
-                this.thread_name,
-                throwableInfo,
-                ndc,
-                info,
-                properties);
-
-        return loggingEvent;
     }
 }

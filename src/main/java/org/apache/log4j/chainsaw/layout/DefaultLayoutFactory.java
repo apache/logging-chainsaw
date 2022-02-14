@@ -17,12 +17,11 @@
 
 package org.apache.log4j.chainsaw.layout;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.PatternLayout;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -32,6 +31,7 @@ import java.net.URL;
  */
 public class DefaultLayoutFactory {
     private volatile static String defaultPatternLayout = null;
+    private static final Logger logger = LogManager.getLogger();
 
     private DefaultLayoutFactory() {
     }
@@ -50,7 +50,7 @@ public class DefaultLayoutFactory {
             DefaultLayoutFactory.class.getClassLoader().getResource(fileNamePath);
 
         if (defaultLayoutURL == null) {
-            LogManager.getLogger(DefaultLayoutFactory.class).warn(
+            logger.warn(
                 "Could not locate the default Layout for Event Details and Tooltips");
         } else {
             try {
@@ -72,7 +72,7 @@ public class DefaultLayoutFactory {
                     }
                 }
             } catch (Exception e) {
-                content = new StringBuffer(PatternLayout.TTCC_CONVERSION_PATTERN);
+                content = new StringBuffer("%m");
             }
             String trimmedContent = content.toString().trim();
             //the default docs contain the apache license header, strip that out before displaying

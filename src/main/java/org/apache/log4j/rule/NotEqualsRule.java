@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.Stack;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
-import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.LoggingEventFieldResolver;
 
 

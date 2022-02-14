@@ -18,12 +18,10 @@
 package org.apache.log4j.plugins;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.ChainsawEventBatchListener;
-import org.apache.log4j.chainsaw.EventBatchListener;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.Thresholdable;

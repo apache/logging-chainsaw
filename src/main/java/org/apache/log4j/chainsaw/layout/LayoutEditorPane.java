@@ -17,11 +17,9 @@
 
 package org.apache.log4j.chainsaw.layout;
 
-import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.ChainsawConstants;
 import org.apache.log4j.chainsaw.JTextComponentFormatter;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
-import org.apache.log4j.spi.ThrowableInformation;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -169,8 +167,6 @@ public final class LayoutEditorPane extends JPanel {
         LocationInfo li =
             new LocationInfo(
                 "myfile.java", "com.mycompany.util.MyClass", "myMethod", 321);
-
-        ThrowableInformation tsr = new ThrowableInformation(new Exception());
 
         ChainsawLoggingEventBuilder build = new ChainsawLoggingEventBuilder();
         build.setLevel( Level.DEBUG )
