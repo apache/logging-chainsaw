@@ -32,8 +32,6 @@ import org.apache.log4j.chainsaw.receivers.ReceiversPanel;
 import org.apache.log4j.chainsaw.vfs.VFSLogFilePatternReceiver;
 import org.apache.log4j.net.SocketNodeEventListener;
 import org.apache.log4j.plugins.*;
-import org.apache.log4j.rewrite.PropertyRewritePolicy;
-import org.apache.log4j.rewrite.RewriteAppender;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.Decoder;
@@ -294,42 +292,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
          * important for the Web start version of Chainsaw
          */
         //configuration initialized here
-
-        //set hostname, application and group properties which will cause Chainsaw and other apache-generated
-        //logging events to route (by default) to a tab named 'chainsaw-log'
-        PropertyRewritePolicy policy = new PropertyRewritePolicy();
-        policy.setProperties("hostname=chainsaw,application=log,group=chainsaw");
-
-        RewriteAppender rewriteAppender = new RewriteAppender();
-        rewriteAppender.setRewritePolicy(policy);
-
-        Enumeration appenders = Logger.getLogger("org.apache").getAllAppenders();
-        if (!appenders.hasMoreElements()) {
-            appenders = Logger.getRootLogger().getAllAppenders();
-        }
-        while (appenders.hasMoreElements()) {
-            Appender nextAppender = (Appender) appenders.nextElement();
-            rewriteAppender.addAppender(nextAppender);
-        }
-        Logger.getLogger("org.apache").removeAllAppenders();
-        Logger.getLogger("org.apache").addAppender(rewriteAppender);
-        Logger.getLogger("org.apache").setAdditivity(false);
-
-        //commons-vfs uses httpclient for http filesystem support, route this to the chainsaw-log tab as well
-        appenders = Logger.getLogger("httpclient").getAllAppenders();
-        if (!appenders.hasMoreElements()) {
-            appenders = Logger.getRootLogger().getAllAppenders();
-        }
-        while (appenders.hasMoreElements()) {
-            Appender nextAppender = (Appender) appenders.nextElement();
-            rewriteAppender.addAppender(nextAppender);
-        }
-        Logger.getLogger("httpclient").removeAllAppenders();
-        Logger.getLogger("httpclient").addAppender(rewriteAppender);
-        Logger.getLogger("httpclient").setAdditivity(false);
-
-        //set the commons.vfs.cache logger to info, since it can contain password information
-        Logger.getLogger("org.apache.commons.vfs.cache").setLevel(Level.INFO);
 
         Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
             e.printStackTrace();
