@@ -18,7 +18,6 @@
 package org.apache.log4j.xml;
 
 import org.apache.log4j.helpers.Constants;
-import org.apache.log4j.plugins.Receiver;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.Decoder;

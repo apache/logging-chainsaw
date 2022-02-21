@@ -31,7 +31,6 @@ import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SettingsListener;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.net.SocketNodeEventListener;
-import org.apache.log4j.plugins.*;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -414,7 +413,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
         return null;
     }
 
-    private Receiver[] getSelectedReceivers() {
+    private ChainsawReceiver[] getSelectedReceivers() {
         TreePath[] paths = receiversTree.getSelectionPaths();
         Collection receivers = new ArrayList();
 
@@ -422,12 +421,12 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
             DefaultMutableTreeNode node =
                 (DefaultMutableTreeNode) path.getLastPathComponent();
 
-            if ((node != null) && node.getUserObject() instanceof Receiver) {
+            if ((node != null) && node.getUserObject() instanceof ChainsawReceiver) {
                 receivers.add(node.getUserObject());
             }
         }
 
-        return (Receiver[]) receivers.toArray(new Receiver[0]);
+        return (ChainsawReceiver[]) receivers.toArray(new ChainsawReceiver[0]);
     }
 
     /**
@@ -456,15 +455,8 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
      * The user is NOT asked to confirm this operation
      */
     private void pauseCurrentlySelectedReceiver() {
-        new Thread(
-            () -> {
-                Object obj = getCurrentlySelectedUserObject();
-
-                if ((obj != null) && obj instanceof Pauseable) {
-                    ((Pauseable) obj).setPaused(true);
-                    updateCurrentlySelectedNodeInDispatchThread();
-                }
-            }).start();
+        getCurrentlySelectedReceiver().setPaused(true);
+        updateCurrentlySelectedNodeInDispatchThread();
     }
 
     /**
@@ -472,16 +464,8 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
      * true
      */
     private void playCurrentlySelectedReceiver() {
-        new Thread(
-            () -> {
-                Object obj = getCurrentlySelectedUserObject();
-
-                if ((obj != null) && obj instanceof Pauseable) {
-                    ((Pauseable) obj).setPaused(false);
-
-                    updateCurrentlySelectedNodeInDispatchThread();
-                }
-            }).start();
+        getCurrentlySelectedReceiver().setPaused(false);
+        updateCurrentlySelectedNodeInDispatchThread();
     }
 
     /**
@@ -498,10 +482,10 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
                 "Confirm stop of Receiver", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
             new Thread(
                 () -> {
-                    Receiver[] receivers = getSelectedReceivers();
+                    ChainsawReceiver[] receivers = getSelectedReceivers();
 
                     if (receivers != null) {
-                        for (Receiver receiver : receivers) {
+                        for (ChainsawReceiver receiver : receivers) {
                             receiver.shutdown();
                         }
                     }
@@ -516,10 +500,10 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
     private void updateActions() {
         Object object = getCurrentlySelectedUserObject();
 
-        if ((object != null) && object instanceof Pauseable) {
-            Pauseable pauseable = (Pauseable) object;
+        if ((object != null) && object instanceof ChainsawReceiver) {
+            ChainsawReceiver pauseable = (ChainsawReceiver) object;
 
-            if (!pauseable.isPaused()) {
+            if (!pauseable.getPaused()) {
                 pauseReceiverButtonAction.setEnabled(true);
                 playReceiverButtonAction.setEnabled(false);
             } else {
@@ -531,7 +515,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
             playReceiverButtonAction.setEnabled(false);
         }
 
-        if (object instanceof Receiver) {
+        if (object instanceof ChainsawReceiver) {
             newReceiverButtonAction.setEnabled(true);
             shutdownReceiverButtonAction.setEnabled(true);
             restartReceiverButtonAction.setEnabled(true);

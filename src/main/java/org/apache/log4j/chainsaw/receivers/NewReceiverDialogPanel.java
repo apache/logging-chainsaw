@@ -19,8 +19,6 @@ package org.apache.log4j.chainsaw.receivers;
 
 import org.apache.log4j.chainsaw.help.HelpManager;
 import org.apache.log4j.chainsaw.helper.OkCancelPanel;
-import org.apache.log4j.plugins.Plugin;
-import org.apache.log4j.plugins.Receiver;
 
 import javax.swing.*;
 import java.awt.*;
@@ -68,17 +66,17 @@ public class NewReceiverDialogPanel extends JPanel {
         pluginEditorPanel.addPropertyChangeListener("plugin",
             evt -> {
 
-                Plugin plugin = (Plugin) evt.getNewValue();
-                URL url = HelpManager.getInstance().getHelpForClass(
-                    plugin.getClass());
-
-                try {
-                    javaDocPane.setPage(url);
-                } catch (IOException e) {
-                    logger.error(
-                        "Failed to load the Help resource for " +
-                            plugin.getClass(), e);
-                }
+//                Plugin plugin = (Plugin) evt.getNewValue();
+//                URL url = HelpManager.getInstance().getHelpForClass(
+//                    plugin.getClass());
+//
+//                try {
+//                    javaDocPane.setPage(url);
+//                } catch (IOException e) {
+//                    logger.error(
+//                        "Failed to load the Help resource for " +
+//                            plugin.getClass(), e);
+//                }
             });
     }
 

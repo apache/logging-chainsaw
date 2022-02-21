@@ -19,7 +19,6 @@ package org.apache.log4j.chainsaw;
 import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.net.UDPReceiver;
-import org.apache.log4j.plugins.Receiver;
 
 import javax.swing.*;
 import javax.swing.text.SimpleAttributeSet;
@@ -695,9 +694,9 @@ class ReceiverConfigurationPanel extends JPanel {
             return Integer.parseInt(networkReceiverPortComboBoxModel.getSelectedItem().toString());
         }
 
-        Class<? extends Receiver> getNetworkReceiverClass() throws ClassNotFoundException {
-            return Class.forName(networkReceiverClassNameComboBoxModel.getSelectedItem().toString()).asSubclass(Receiver.class);
-        }
+//        Class<? extends Receiver> getNetworkReceiverClass() throws ClassNotFoundException {
+//            return Class.forName(networkReceiverClassNameComboBoxModel.getSelectedItem().toString()).asSubclass(Receiver.class);
+//        }
 
         boolean isLoadConfig() {
 

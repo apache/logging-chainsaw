@@ -25,18 +25,11 @@ import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.chainsaw.icons.LineIconFactory;
 import org.apache.log4j.chainsaw.osx.OSXIntegration;
-import org.apache.log4j.chainsaw.plugins.PluginClassLoaderFactory;
 import org.apache.log4j.chainsaw.prefs.*;
 import org.apache.log4j.chainsaw.receivers.ReceiversPanel;
-import org.apache.log4j.chainsaw.vfs.VFSLogFilePatternReceiver;
-import org.apache.log4j.net.SocketNodeEventListener;
-import org.apache.log4j.plugins.*;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.Decoder;
-import org.apache.log4j.spi.LoggerRepository;
-import org.apache.log4j.spi.LoggerRepositoryEx;
-import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.apache.log4j.xml.XMLDecoder;
 
@@ -236,7 +229,13 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             }
 
             if (lookAndFeelClassName != null && !(lookAndFeelClassName.trim().equals(""))) {
-                loadLookAndFeelUsingPluginClassLoader(lookAndFeelClassName);
+                try{
+                    UIManager.setLookAndFeel(lookAndFeelClassName);
+                }catch(Exception ex){}
+            }else{
+                try{
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                }catch(Exception ex){}
             }
             createChainsawGUI(model, null);
         });
@@ -309,7 +308,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             try {
                 URL configURL = new URL(config);
                 logger.info("Using '" + config + "' for auto-configuration");
-                logUI.loadConfigurationUsingPluginClassLoader(configURL);
+//                logUI.loadConfigurationUsingPluginClassLoader(configURL);
             } catch (MalformedURLException e) {
                 logger.error("Initial configuration - failed to convert config string to url", e);
             } catch (IOException e) {
@@ -328,7 +327,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                     URL newConfigurationURL = new URL(newConfiguration);
                     File file = new File(newConfigurationURL.toURI());
                     if (file.exists()) {
-                        logUI.loadConfigurationUsingPluginClassLoader(newConfigurationURL);
+//                        logUI.loadConfigurationUsingPluginClassLoader(newConfigurationURL);
                     } else {
                         logger.info("Updated configuration but file does not exist");
                     }
@@ -387,7 +386,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         SettingsManager.getInstance().configure(new ApplicationPreferenceModelSaver(model));
 
         EventQueue.invokeLater(() -> {
-            loadLookAndFeelUsingPluginClassLoader(model.getLookAndFeelClassName());
+//            loadLookAndFeelUsingPluginClassLoader(model.getLookAndFeelClassName());
             createChainsawGUI(model, null);
             getApplicationPreferenceModel().apply(model);
             activateViewer();
@@ -458,38 +457,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
         OSXIntegration.init(this);
 
-    }
-
-    private void initPlugins(PluginRegistry pluginRegistry) {
-        pluginRegistry.addPluginListener(
-            new PluginListener() {
-                public void pluginStarted(PluginEvent e) {
-                    if (e.getPlugin() instanceof JComponent) {
-                        JComponent plugin = (JComponent) e.getPlugin();
-                        getTabbedPane().addANewTab(plugin.getName(), plugin, null, null);
-                        getPanelMap().put(plugin.getName(), plugin);
-                    }
-                }
-
-                public void pluginStopped(PluginEvent e) {
-                    //TODO remove the plugin from the gui
-                }
-            });
-
-        // TODO this should all be in a config file
-//    ChainsawCentral cc = new ChainsawCentral();
-//    pluginRegistry.addPlugin(cc);
-//    cc.activateOptions();
-
-        try {
-            Class<? extends Plugin> pluginClass = Class.forName("org.apache.log4j.chainsaw.zeroconf.ZeroConfPlugin").asSubclass(Plugin.class);
-            Plugin plugin = pluginClass.newInstance();
-            pluginRegistry.addPlugin(plugin);
-            plugin.activateOptions();
-            statusBar.setMessage("Looks like ZeroConf is available... WooHoo!");
-        } catch (Throwable e) {
-            statusBar.setMessage("Doesn't look like ZeroConf is available");
-        }
     }
 
     private void setupReceiverPanel() {
@@ -1791,49 +1758,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             statusBar.setMessage(
                 "Unable to add tab using expression: " + ident + ", reason: "
                     + iae.getMessage());
-        }
-    }
-
-    /**
-     * Loads the log4j configuration file specified by the url, using
-     * the PluginClassLoader instance as a TCCL, but only replacing it temporarily, with the original
-     * TCCL being restored in a finally block to ensure consitency.
-     *
-     * @param url
-     */
-    private void loadConfigurationUsingPluginClassLoader(final URL url) {
-        ClassLoader classLoader = PluginClassLoaderFactory.getInstance().getClassLoader();
-        ClassLoader previousTCCL = Thread.currentThread().getContextClassLoader();
-
-        if (url != null) {
-            try {
-                // we temporarily swap the TCCL so that plugins can find resources
-                Thread.currentThread().setContextClassLoader(classLoader);
-                try {
-                    DOMConfigurator.configure(url);
-                } catch (Exception e) {
-                    logger.warn("Unable to load configuration URL: " + url, e);
-                }
-            } finally {
-                // now switch it back...
-                Thread.currentThread().setContextClassLoader(previousTCCL);
-            }
-        }
-    }
-
-    private static void loadLookAndFeelUsingPluginClassLoader(String lookAndFeelClassName) {
-        ClassLoader classLoader = PluginClassLoaderFactory.getInstance().getClassLoader();
-        ClassLoader previousTCCL = Thread.currentThread().getContextClassLoader();
-        try {
-            // we temporarily swap the TCCL so that plugins can find resources
-            Thread.currentThread().setContextClassLoader(classLoader);
-            UIManager.setLookAndFeel(lookAndFeelClassName);
-            UIManager.getLookAndFeelDefaults().put("ClassLoader", classLoader);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            // now switch it back...
-            Thread.currentThread().setContextClassLoader(previousTCCL);
         }
     }
 

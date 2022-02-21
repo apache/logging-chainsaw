@@ -17,8 +17,6 @@
 
 package org.apache.log4j.net;
 
-import org.apache.log4j.plugins.Pauseable;
-import org.apache.log4j.plugins.Receiver;
 import org.apache.log4j.spi.Decoder;
 
 import java.io.IOException;

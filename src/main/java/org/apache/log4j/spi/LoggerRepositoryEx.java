@@ -20,7 +20,6 @@ package org.apache.log4j.spi;
 import org.apache.log4j.Appender;
 import org.apache.log4j.Category;
 import org.apache.log4j.Logger;
-import org.apache.log4j.plugins.PluginRegistry;
 import org.apache.log4j.scheduler.Scheduler;
 
 import java.util.List;
@@ -132,7 +131,7 @@ public interface LoggerRepositoryEx extends LoggerRepository {
      *
      * @return plug in registry.
      */
-    PluginRegistry getPluginRegistry();
+//    PluginRegistry getPluginRegistry();
 
     /**
      * Return the {@link Scheduler} for this LoggerRepository.

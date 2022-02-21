@@ -20,7 +20,6 @@ package org.apache.log4j.chainsaw.receivers;
 import org.apache.log4j.chainsaw.Generator;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.chainsaw.icons.LevelIconFactory;
-import org.apache.log4j.plugins.Plugin;
 import org.apache.log4j.spi.Thresholdable;
 
 import javax.swing.*;
@@ -71,8 +70,6 @@ public class ReceiverTreeCellRenderer extends DefaultTreeCellRenderer {
         } else if (o instanceof String) {
             setText(o.toString());
             setIcon(null);
-        } else if (o instanceof Plugin) {
-            setText(((Plugin) o).getName());
         } else if (o instanceof Generator) {
             Generator generator = (Generator) o;
             setText(generator.getName());

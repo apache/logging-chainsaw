@@ -61,7 +61,6 @@ import java.util.*;
 import java.util.List;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.logevents.Level;
-import org.apache.log4j.plugins.Receiver;
 import org.apache.log4j.spi.LoggingEventFieldResolver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
