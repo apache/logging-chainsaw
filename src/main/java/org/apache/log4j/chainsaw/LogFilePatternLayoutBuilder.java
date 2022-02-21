@@ -16,10 +16,6 @@
  */
 package org.apache.log4j.chainsaw;
 
-import org.apache.log4j.helpers.OptionConverter;
-import org.apache.log4j.pattern.*;
-import org.apache.log4j.xml.Log4jEntityResolver;
-import org.apache.log4j.xml.SAXErrorHandler;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -37,15 +33,6 @@ import java.io.InputStream;
 import java.util.*;
 
 public class LogFilePatternLayoutBuilder {
-    public static String getLogFormatFromPatternLayout(String patternLayout) {
-        String input = OptionConverter.convertSpecialChars(patternLayout);
-        List converters = new ArrayList();
-        List fields = new ArrayList();
-        Map converterRegistry = null;
-
-        PatternParser.parse(input, converters, fields, converterRegistry, PatternParser.getPatternLayoutRules());
-        return getFormatFromConverters(converters);
-    }
 
     public static String getTimeStampFormat(String patternLayout) {
         int basicIndex = patternLayout.indexOf("%d");
@@ -71,55 +58,6 @@ public class LogFilePatternLayoutBuilder {
             return "dd MMM yyyy HH:mm:ss,SSS";
         }
         return timestampFormat;
-    }
-
-    private static String getFormatFromConverters(List converters) {
-        StringBuffer buffer = new StringBuffer();
-        for (Object converter1 : converters) {
-            LoggingEventPatternConverter converter = (LoggingEventPatternConverter) converter1;
-            if (converter instanceof DatePatternConverter) {
-                buffer.append("TIMESTAMP");
-            } else if (converter instanceof MessagePatternConverter) {
-                buffer.append("MESSAGE");
-            } else if (converter instanceof LoggerPatternConverter) {
-                buffer.append("LOGGER");
-            } else if (converter instanceof ClassNamePatternConverter) {
-                buffer.append("CLASS");
-            } else if (converter instanceof RelativeTimePatternConverter) {
-                buffer.append("PROP(RELATIVETIME)");
-            } else if (converter instanceof ThreadPatternConverter) {
-                buffer.append("THREAD");
-            } else if (converter instanceof NDCPatternConverter) {
-                buffer.append("NDC");
-            } else if (converter instanceof LiteralPatternConverter) {
-                LiteralPatternConverter literal = (LiteralPatternConverter) converter;
-                //format shouldn't normally take a null, but we're getting a literal, so passing in the buffer will work
-                literal.format(null, buffer);
-            } else if (converter instanceof SequenceNumberPatternConverter) {
-                buffer.append("PROP(log4jid)");
-            } else if (converter instanceof LevelPatternConverter) {
-                buffer.append("LEVEL");
-            } else if (converter instanceof MethodLocationPatternConverter) {
-                buffer.append("METHOD");
-            } else if (converter instanceof FullLocationPatternConverter) {
-                buffer.append("PROP(locationInfo)");
-            } else if (converter instanceof LineLocationPatternConverter) {
-                buffer.append("LINE");
-            } else if (converter instanceof FileLocationPatternConverter) {
-                buffer.append("FILE");
-            } else if (converter instanceof PropertiesPatternConverter) {
-//                PropertiesPatternConverter propertiesConverter = (PropertiesPatternConverter) converter;
-//                String option = propertiesConverter.getOption();
-//                if (option != null && option.length() > 0) {
-//                    buffer.append("PROP(" + option + ")");
-//                } else {
-                buffer.append("PROP(PROPERTIES)");
-//                }
-            } else if (converter instanceof LineSeparatorPatternConverter) {
-                //done
-            }
-        }
-        return buffer.toString();
     }
 
     public static Map<String, Map<String, String>> getAppenderConfiguration(File file) {
@@ -202,8 +140,8 @@ public class LogFilePatternLayoutBuilder {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder = dbf.newDocumentBuilder();
 
-            docBuilder.setErrorHandler(new SAXErrorHandler());
-            docBuilder.setEntityResolver(new Log4jEntityResolver());
+//            docBuilder.setErrorHandler(new SAXErrorHandler());
+//            docBuilder.setEntityResolver(new Log4jEntityResolver());
             Document doc = docBuilder.parse(src);
             NodeList appenders = doc.getElementsByTagName("appender");
             for (int i = 0; i < appenders.getLength(); i++) {

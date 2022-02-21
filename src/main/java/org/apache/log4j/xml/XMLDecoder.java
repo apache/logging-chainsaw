@@ -119,7 +119,7 @@ public class XMLDecoder implements Decoder {
         try {
             docBuilder = dbf.newDocumentBuilder();
 //            docBuilder.setErrorHandler(new SAXErrorHandler());
-//            docBuilder.setEntityResolver(new Log4jEntityResolver());
+            docBuilder.setEntityResolver(new Log4jEntityResolver());
         } catch (ParserConfigurationException pce) {
             System.err.println("Unable to get document builder");
         }
