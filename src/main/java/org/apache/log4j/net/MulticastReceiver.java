@@ -50,8 +50,6 @@ public class MulticastReceiver extends ChainsawReceiverSkeleton implements PortB
     private String decoder = "org.apache.log4j.xml.XMLDecoder";
     private Decoder decoderImpl;
     private MulticastReceiverThread receiverThread;
-    private boolean advertiseViaMulticastDNS;
-    private ZeroConfSupport zeroConf;
     private boolean active = false;
 
     private static final Logger logger = LogManager.getLogger();
@@ -98,9 +96,6 @@ public class MulticastReceiver extends ChainsawReceiverSkeleton implements PortB
 
     public synchronized void shutdown() {
         active = false;
-        if (advertiseViaMulticastDNS) {
-            zeroConf.unadvertise();
-        }
         if (receiverThread != null) {
             receiverThread.interrupt();
         }
@@ -111,14 +106,6 @@ public class MulticastReceiver extends ChainsawReceiverSkeleton implements PortB
 
     public void setAddress(String address) {
         this.address = address;
-    }
-
-    public void setAdvertiseViaMulticastDNS(boolean advertiseViaMulticastDNS) {
-        this.advertiseViaMulticastDNS = advertiseViaMulticastDNS;
-    }
-
-    public boolean isAdvertiseViaMulticastDNS() {
-        return advertiseViaMulticastDNS;
     }
 
     @Override
@@ -150,10 +137,6 @@ public class MulticastReceiver extends ChainsawReceiverSkeleton implements PortB
             socket.joinGroup(addr);
             receiverThread = new MulticastReceiverThread();
             receiverThread.start();
-            if (advertiseViaMulticastDNS) {
-                zeroConf = new ZeroConfSupport(ZONE, port, getName());
-                zeroConf.advertise();
-            }
 
         } catch (IOException ioe) {
             ioe.printStackTrace();

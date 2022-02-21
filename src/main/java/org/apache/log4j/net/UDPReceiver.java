@@ -17,19 +17,14 @@
 
 package org.apache.log4j.net;
 
-import org.apache.log4j.plugins.Pauseable;
-import org.apache.log4j.plugins.Receiver;
-import org.apache.log4j.spi.Decoder;
-import org.apache.log4j.spi.LoggingEvent;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
-import java.util.ArrayList;
 import java.util.List;
 import org.apache.log4j.chainsaw.ChainsawReceiverSkeleton;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.log4j.spi.Decoder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -51,8 +46,6 @@ public class UDPReceiver extends ChainsawReceiverSkeleton implements PortBased {
     private boolean closed = false;
     private int port;
     private DatagramSocket socket;
-    private boolean advertiseViaMulticastDNS;
-    private ZeroConfSupport zeroConf;
     private boolean active = true;
 
     private static final Logger logger = LogManager.getLogger();
@@ -94,14 +87,6 @@ public class UDPReceiver extends ChainsawReceiverSkeleton implements PortBased {
         this.decoder = decoder;
     }
 
-    public void setAdvertiseViaMulticastDNS(boolean advertiseViaMulticastDNS) {
-        this.advertiseViaMulticastDNS = advertiseViaMulticastDNS;
-    }
-
-    public boolean isAdvertiseViaMulticastDNS() {
-        return advertiseViaMulticastDNS;
-    }
-
     public synchronized void shutdown() {
         if (closed == true) {
             return;
@@ -112,10 +97,6 @@ public class UDPReceiver extends ChainsawReceiverSkeleton implements PortBased {
         // was waiting to receive data from the socket.
         if (socket != null) {
             socket.close();
-        }
-
-        if (advertiseViaMulticastDNS) {
-            zeroConf.unadvertise();
         }
 
         try {
@@ -145,10 +126,6 @@ public class UDPReceiver extends ChainsawReceiverSkeleton implements PortBased {
             socket = new DatagramSocket(port);
             receiverThread = new UDPReceiverThread();
             receiverThread.start();
-            if (advertiseViaMulticastDNS) {
-                zeroConf = new ZeroConfSupport(ZONE, port, getName());
-                zeroConf.advertise();
-            }
             active = true;
         } catch (IOException ioe) {
             ioe.printStackTrace();

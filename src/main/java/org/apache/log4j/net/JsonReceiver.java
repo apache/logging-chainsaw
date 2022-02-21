@@ -38,8 +38,6 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
     private Thread m_rxThread;
     public static final int DEFAULT_PORT = 4449;
     protected int m_port = DEFAULT_PORT;
-    private boolean m_advertiseViaMulticastDNS;
-    private ZeroConfSupport m_zeroConf;
     private boolean active = false;
     
     private static final Logger logger = LogManager.getLogger();
@@ -75,10 +73,6 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
 
         // close the server socket
         closeServerSocket();
-
-        if (m_advertiseViaMulticastDNS) {
-            m_zeroConf.unadvertise();
-        }
     }
 
     /**
@@ -105,11 +99,6 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
             m_rxThread = new Thread(this);
             m_rxThread.setDaemon(true);
             m_rxThread.start();
-
-            if (m_advertiseViaMulticastDNS) {
-                m_zeroConf = new ZeroConfSupport(ZONE, m_port, getName());
-                m_zeroConf.advertise();
-            }
 
             active = true;
         }
@@ -177,14 +166,6 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
     
     public void setPort(int portnum){
         m_port = portnum;
-    }
-
-    public void setAdvertiseViaMulticastDNS(boolean advertiseViaMulticastDNS) {
-        m_advertiseViaMulticastDNS = advertiseViaMulticastDNS;
-    }
-
-    public boolean isAdvertiseViaMulticastDNS() {
-        return m_advertiseViaMulticastDNS;
     }
 
     @Override

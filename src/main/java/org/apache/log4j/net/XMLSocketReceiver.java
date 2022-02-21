@@ -18,12 +18,6 @@
 package org.apache.log4j.net;
 
 import java.io.InputStream;
-import org.apache.log4j.plugins.Pauseable;
-import org.apache.log4j.plugins.Plugin;
-import org.apache.log4j.plugins.Receiver;
-import org.apache.log4j.spi.LoggerRepository;
-import org.apache.log4j.spi.LoggingEvent;
-
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
@@ -63,8 +57,6 @@ public class XMLSocketReceiver extends ChainsawReceiverSkeleton implements Runna
     private Thread rThread;
     public static final int DEFAULT_PORT = 4448;
     protected int port = DEFAULT_PORT;
-    private boolean advertiseViaMulticastDNS;
-    private ZeroConfSupport zeroConf;
     private boolean active = false;
 
     private static final Logger logger = LogManager.getLogger();
@@ -116,21 +108,8 @@ public class XMLSocketReceiver extends ChainsawReceiverSkeleton implements Runna
             rThread.setDaemon(true);
             rThread.start();
 
-            if (advertiseViaMulticastDNS) {
-                zeroConf = new ZeroConfSupport(ZONE, port, getName());
-                zeroConf.advertise();
-            }
-
             active = true;
         }
-    }
-
-    public void setAdvertiseViaMulticastDNS(boolean advertiseViaMulticastDNS) {
-        this.advertiseViaMulticastDNS = advertiseViaMulticastDNS;
-    }
-
-    public boolean isAdvertiseViaMulticastDNS() {
-        return advertiseViaMulticastDNS;
     }
 
     /**
@@ -160,10 +139,6 @@ public class XMLSocketReceiver extends ChainsawReceiverSkeleton implements Runna
 
         // close the server socket
         closeServerSocket();
-
-        if (advertiseViaMulticastDNS) {
-            zeroConf.unadvertise();
-        }
     }
 
     /**
@@ -247,11 +222,6 @@ public class XMLSocketReceiver extends ChainsawReceiverSkeleton implements Runna
             rThread = new Thread(this);
             rThread.setDaemon(true);
             rThread.start();
-
-            if (advertiseViaMulticastDNS) {
-                zeroConf = new ZeroConfSupport(ZONE, port, getName());
-                zeroConf.advertise();
-            }
 
             active = true;
         }
