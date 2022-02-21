@@ -21,7 +21,6 @@ import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.Decoder;
-import org.apache.log4j.spi.LoggingEvent;
 
 import java.io.*;
 import java.net.MalformedURLException;

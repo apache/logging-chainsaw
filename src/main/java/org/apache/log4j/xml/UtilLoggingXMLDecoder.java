@@ -18,7 +18,6 @@
 package org.apache.log4j.xml;
 
 import org.apache.log4j.spi.Decoder;
-import org.apache.log4j.spi.ThrowableInformation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -102,7 +101,7 @@ public class UtilLoggingXMLDecoder implements Decoder {
 
         try {
             docBuilder = dbf.newDocumentBuilder();
-            docBuilder.setErrorHandler(new SAXErrorHandler());
+//            docBuilder.setErrorHandler(new SAXErrorHandler());
             docBuilder.setEntityResolver(new UtilLoggingEntityResolver());
         } catch (ParserConfigurationException pce) {
             System.err.println("Unable to get document builder");
@@ -422,10 +421,10 @@ public class UtilLoggingXMLDecoder implements Decoder {
                 info = null;
             }
 
-            ThrowableInformation throwableInfo = null;
-            if (exception != null) {
-                throwableInfo = new ThrowableInformation(exception);
-            }
+//            ThrowableInformation throwableInfo = null;
+//            if (exception != null) {
+//                throwableInfo = new ThrowableInformation(exception);
+//            }
 
             builder.clear();
             builder.setLogger(logger)

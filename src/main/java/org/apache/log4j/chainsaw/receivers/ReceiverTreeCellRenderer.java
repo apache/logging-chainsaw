@@ -20,7 +20,6 @@ package org.apache.log4j.chainsaw.receivers;
 import org.apache.log4j.chainsaw.Generator;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.chainsaw.icons.LevelIconFactory;
-import org.apache.log4j.spi.Thresholdable;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -88,10 +87,10 @@ public class ReceiverTreeCellRenderer extends DefaultTreeCellRenderer {
         levelLabel.setText(null);
         levelLabel.setIcon(null);
 
-        if (o instanceof Thresholdable) {
-            Thresholdable t = (Thresholdable) o;
+        if (o instanceof ChainsawReceiver) {
+            ChainsawReceiver t = (ChainsawReceiver) o;
 
-            if (t.getThreshold() != null) {
+            if (t.getThreshold()!= null) {
                 levelLabel.setIcon(
                     LevelIconFactory.getInstance().getLevelToIconMap().get(
                         t.getThreshold().toString()));

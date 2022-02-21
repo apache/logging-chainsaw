@@ -20,7 +20,6 @@ package org.apache.log4j.varia;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
-import org.apache.log4j.spi.ThrowableInformation;
 
 import java.io.*;
 import java.net.MalformedURLException;
