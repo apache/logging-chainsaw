@@ -21,7 +21,6 @@ import org.apache.log4j.*;
 import org.apache.log4j.chainsaw.color.RuleColorizer;
 import org.apache.log4j.chainsaw.dnd.FileDnDTarget;
 import org.apache.log4j.chainsaw.help.HelpManager;
-import org.apache.log4j.chainsaw.help.Tutorial;
 import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.chainsaw.icons.LineIconFactory;
@@ -893,128 +892,139 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             SwingHelper.invokeOnEDT(this::showReceiverConfigurationPanel);
         }
 
-//        Container container = tutorialFrame.getContentPane();
-//        final JEditorPane tutorialArea = new JEditorPane();
-//        tutorialArea.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
-//        tutorialArea.setEditable(false);
-//        container.setLayout(new BorderLayout());
-//
-//        try {
-//            tutorialArea.setPage(ChainsawConstants.TUTORIAL_URL);
-//            JTextComponentFormatter.applySystemFontAndSize(tutorialArea);
-//
-//            container.add(new JScrollPane(tutorialArea), BorderLayout.CENTER);
-//        } catch (Exception e) {
-//            logger.error("Can't load tutorial", e);
-//            statusBar.setMessage("Can't load tutorail");
-//        }
-//
-//        tutorialFrame.setIconImage(new ImageIcon(ChainsawIcons.HELP).getImage());
-//        tutorialFrame.setSize(new Dimension(640, 480));
-//
-//        final Action startTutorial =
-//            new AbstractAction(
-//                "Start Tutorial", new ImageIcon(ChainsawIcons.ICON_RESUME_RECEIVER)) {
-//                public void actionPerformed(ActionEvent e) {
-//                    if (
-//                        JOptionPane.showConfirmDialog(
-//                            null,
-//                            "This will start 3 \"Generator\" receivers for use in the Tutorial.  Is that ok?",
-//                            "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-//                        new Thread(new Tutorial()).start();
-//                        putValue("TutorialStarted", Boolean.TRUE);
-//                    } else {
-//                        putValue("TutorialStarted", Boolean.FALSE);
-//                    }
-//                }
-//            };
-//
-//        final Action stopTutorial =
-//            new AbstractAction(
-//                "Stop Tutorial", new ImageIcon(ChainsawIcons.ICON_STOP_RECEIVER)) {
-//                public void actionPerformed(ActionEvent e) {
-//                    if (
-//                        JOptionPane.showConfirmDialog(
-//                            null,
-//                            "This will stop all of the \"Generator\" receivers used in the Tutorial, but leave any other Receiver untouched.  Is that ok?",
-//                            "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-//                        new Thread(
-//                            () -> {
-//                                LoggerRepository repo1 = LogManager.getLoggerRepository();
-//                                if (repo1 instanceof LoggerRepositoryEx) {
-//                                    PluginRegistry pluginRegistry = ((LoggerRepositoryEx) repo1).getPluginRegistry();
-//                                    List list = pluginRegistry.getPlugins(Generator.class);
-//
-//                                    for (Object aList : list) {
-//                                        Plugin plugin = (Plugin) aList;
-//                                        pluginRegistry.stopPlugin(plugin.getName());
-//                                    }
-//                                }
-//                            }).start();
-//                        setEnabled(false);
-//                        startTutorial.putValue("TutorialStarted", Boolean.FALSE);
-//                    }
-//                }
-//            };
-//
-//        stopTutorial.putValue(
-//            Action.SHORT_DESCRIPTION,
-//            "Removes all of the Tutorials Generator Receivers, leaving all other Receivers untouched");
-//        startTutorial.putValue(
-//            Action.SHORT_DESCRIPTION,
-//            "Begins the Tutorial, starting up some Generator Receivers so you can see Chainsaw in action");
-//        stopTutorial.setEnabled(false);
-//
-//        final SmallToggleButton startButton = new SmallToggleButton(startTutorial);
-//        PropertyChangeListener pcl =
-//            evt -> {
-//                stopTutorial.setEnabled(
-//                    startTutorial.getValue("TutorialStarted").equals(Boolean.TRUE));
-//                startButton.setSelected(stopTutorial.isEnabled());
-//            };
-//
-//        startTutorial.addPropertyChangeListener(pcl);
-//        stopTutorial.addPropertyChangeListener(pcl);
-//
-//        pluginRegistry.addPluginListener(
-//            new PluginListener() {
-//                public void pluginStarted(PluginEvent e) {
-//                }
-//
-//                public void pluginStopped(PluginEvent e) {
-//                    List list = pluginRegistry.getPlugins(Generator.class);
-//
-//                    if (list.size() == 0) {
-//                        startTutorial.putValue("TutorialStarted", Boolean.FALSE);
-//                    }
-//                }
-//            });
-//
-//        final SmallButton stopButton = new SmallButton(stopTutorial);
-//
-//        final JToolBar tutorialToolbar = new JToolBar();
-//        tutorialToolbar.setFloatable(false);
-//        tutorialToolbar.add(startButton);
-//        tutorialToolbar.add(stopButton);
-//        container.add(tutorialToolbar, BorderLayout.NORTH);
-//        tutorialArea.addHyperlinkListener(
-//            e -> {
-//                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-//                    if (e.getDescription().equals("StartTutorial")) {
-//                        startTutorial.actionPerformed(null);
-//                    } else if (e.getDescription().equals("StopTutorial")) {
-//                        stopTutorial.actionPerformed(null);
-//                    } else {
-//                        try {
-//                            tutorialArea.setPage(e.getURL());
-//                        } catch (IOException e1) {
-//                            statusBar.setMessage("Failed to change URL for tutorial");
-//                            logger.error(
-//                                "Failed to change the URL for the Tutorial", e1);
-//                        }
-//                    }
-//                }
-//            });
+        Container container = tutorialFrame.getContentPane();
+        final JEditorPane tutorialArea = new JEditorPane();
+        tutorialArea.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+        tutorialArea.setEditable(false);
+        container.setLayout(new BorderLayout());
+
+        try {
+            tutorialArea.setPage(ChainsawConstants.TUTORIAL_URL);
+            JTextComponentFormatter.applySystemFontAndSize(tutorialArea);
+
+            container.add(new JScrollPane(tutorialArea), BorderLayout.CENTER);
+        } catch (Exception e) {
+            logger.error("Can't load tutorial", e);
+            statusBar.setMessage("Can't load tutorail");
+        }
+
+        tutorialFrame.setIconImage(new ImageIcon(ChainsawIcons.HELP).getImage());
+        tutorialFrame.setSize(new Dimension(640, 480));
+
+        final Action startTutorial =
+            new AbstractAction(
+                "Start Tutorial", new ImageIcon(ChainsawIcons.ICON_RESUME_RECEIVER)) {
+                public void actionPerformed(ActionEvent e) {
+                    if (
+                        JOptionPane.showConfirmDialog(
+                            null,
+                            "This will start 3 \"Generator\" receivers for use in the Tutorial.  Is that ok?",
+                            "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                        // Create and start generators
+                        Generator[] generators = {
+                            new Generator("Generator 1"),
+                            new Generator("Generator 2"),
+                            new Generator("Generator 3"),
+                        };
+                        
+                        for( Generator gen : generators ){
+                            addReceiver(gen);
+                            gen.start();
+                        }
+
+                        putValue("TutorialStarted", Boolean.TRUE);
+                    } else {
+                        putValue("TutorialStarted", Boolean.FALSE);
+                    }
+                }
+            };
+
+        final Action stopTutorial =
+            new AbstractAction(
+                "Stop Tutorial", new ImageIcon(ChainsawIcons.ICON_STOP_RECEIVER)) {
+                public void actionPerformed(ActionEvent e) {
+                    if (
+                        JOptionPane.showConfirmDialog(
+                            null,
+                            "This will stop all of the \"Generator\" receivers used in the Tutorial, but leave any other Receiver untouched.  Is that ok?",
+                            "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                        new Thread(
+                            () -> {
+                                for( ChainsawReceiver rx : m_receivers ){
+                                    if( rx instanceof Generator ){
+                                        rx.shutdown();
+                                    }
+                                }
+                            }).start();
+                        setEnabled(false);
+                        startTutorial.putValue("TutorialStarted", Boolean.FALSE);
+                    }
+                }
+            };
+
+        stopTutorial.putValue(
+            Action.SHORT_DESCRIPTION,
+            "Removes all of the Tutorials Generator Receivers, leaving all other Receivers untouched");
+        startTutorial.putValue(
+            Action.SHORT_DESCRIPTION,
+            "Begins the Tutorial, starting up some Generator Receivers so you can see Chainsaw in action");
+        stopTutorial.setEnabled(false);
+
+        final SmallToggleButton startButton = new SmallToggleButton(startTutorial);
+        PropertyChangeListener pcl =
+            evt -> {
+                stopTutorial.setEnabled(
+                    startTutorial.getValue("TutorialStarted").equals(Boolean.TRUE));
+                startButton.setSelected(stopTutorial.isEnabled());
+            };
+
+        startTutorial.addPropertyChangeListener(pcl);
+        stopTutorial.addPropertyChangeListener(pcl);
+
+        addReceiverEventListener(new ReceiverEventListener() {
+            @Override
+            public void receiverAdded(ChainsawReceiver rx) {}
+
+            @Override
+            public void receiverRemoved(ChainsawReceiver rx1) {
+                int count = 0;
+                for( ChainsawReceiver rx : m_receivers ){
+                    if( rx instanceof Generator ){
+                        count++;
+                    }
+                }
+
+                if (count == 0) {
+                    startTutorial.putValue("TutorialStarted", Boolean.FALSE);
+                }
+            }
+        });
+
+        final SmallButton stopButton = new SmallButton(stopTutorial);
+
+        final JToolBar tutorialToolbar = new JToolBar();
+        tutorialToolbar.setFloatable(false);
+        tutorialToolbar.add(startButton);
+        tutorialToolbar.add(stopButton);
+        container.add(tutorialToolbar, BorderLayout.NORTH);
+        tutorialArea.addHyperlinkListener(
+            e -> {
+                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                    if (e.getDescription().equals("StartTutorial")) {
+                        startTutorial.actionPerformed(null);
+                    } else if (e.getDescription().equals("StopTutorial")) {
+                        stopTutorial.actionPerformed(null);
+                    } else {
+                        try {
+                            tutorialArea.setPage(e.getURL());
+                        } catch (IOException e1) {
+                            statusBar.setMessage("Failed to change URL for tutorial");
+                            logger.error(
+                                "Failed to change the URL for the Tutorial", e1);
+                        }
+                    }
+                }
+            });
 
         /**
          * loads the saved tab settings and if there are hidden tabs,
