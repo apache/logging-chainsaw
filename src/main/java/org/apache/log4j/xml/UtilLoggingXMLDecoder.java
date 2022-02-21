@@ -17,7 +17,6 @@
 
 package org.apache.log4j.xml;
 
-import org.apache.log4j.helpers.UtilLoggingLevel;
 import org.apache.log4j.spi.Decoder;
 import org.apache.log4j.spi.ThrowableInformation;
 import org.w3c.dom.Document;

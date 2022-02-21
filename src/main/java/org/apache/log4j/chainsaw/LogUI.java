@@ -30,7 +30,6 @@ import org.apache.log4j.chainsaw.receivers.ReceiversPanel;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.Decoder;
-import org.apache.log4j.xml.DOMConfigurator;
 import org.apache.log4j.xml.XMLDecoder;
 
 import javax.swing.*;
@@ -337,7 +336,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             }
         });
 
-        LogManager.getRootLogger().setLevel(Level.TRACE);
         EventQueue.invokeLater(logUI::activateViewer);
         EventQueue.invokeLater(logUI::buildChainsawLogPanel);
 
@@ -366,9 +364,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         if (OSXIntegration.IS_OSX) {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
         }
-
-        //if Chainsaw is launched as an appender, ensure the root logger level is TRACE
-        LogManager.getRootLogger().setLevel(Level.TRACE);
 
         final ApplicationPreferenceModel model = new ApplicationPreferenceModel();
         SettingsManager.getInstance().configure(new ApplicationPreferenceModelSaver(model));

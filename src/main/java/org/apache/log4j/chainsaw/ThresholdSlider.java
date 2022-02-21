@@ -17,10 +17,11 @@
 
 package org.apache.log4j.chainsaw;
 
-import org.apache.log4j.Level;
+import org.apache.log4j.chainsaw.logevents.Level;
 
 import javax.swing.*;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -43,19 +44,7 @@ final class ThresholdSlider extends JSlider {
             };
 
         priorityList = Arrays.asList(levels);
-
-        priorityList.sort((o1, o2) -> {
-            Level p1 = (Level) o1;
-            Level p2 = (Level) o2;
-
-            if (p1.toInt() == p2.toInt()) {
-                return 0;
-            } else if (p1.toInt() < p2.toInt()) {
-                return -1;
-            }
-
-            return 1;
-        });
+        Collections.sort(priorityList);
 
         setModel(
             new DefaultBoundedRangeModel(

@@ -26,7 +26,6 @@ import java.util.Set;
 
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.logevents.Level;
-import org.apache.log4j.helpers.UtilLoggingLevel;
 import org.apache.log4j.spi.LoggingEventFieldResolver;
 
 /**
