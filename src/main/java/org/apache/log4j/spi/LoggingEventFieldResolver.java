@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Locale;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
 import org.apache.log4j.rule.InFixToPostFix;
 
@@ -154,7 +155,7 @@ public final class LoggingEventFieldResolver {
      * @return evaluted expression
      */
   public String applyFields(final String replaceText,
-                            final LoggingEvent event) {
+                            final ChainsawLoggingEvent event) {
       if (replaceText == null) {
         return null;
       }
@@ -206,53 +207,55 @@ public final class LoggingEventFieldResolver {
      * @return value of field
      */
   public Object getValue(final String fieldName,
-                         final LoggingEvent event) {
+                         final ChainsawLoggingEvent event) {
     String upperField = fieldName.toUpperCase(Locale.US);
     if (LOGGER_FIELD.equals(upperField)) {
-      return event.getLoggerName();
+      return event.m_logger;
     } else if (LEVEL_FIELD.equals(upperField)) {
-      return event.getLevel();
+      return event.m_level;
     } else if (MSG_FIELD.equals(upperField)) {
-      return event.getMessage();
+      return event.m_message;
     } else if (NDC_FIELD.equals(upperField)) {
-      String ndcValue = event.getNDC();
+      String ndcValue = event.m_ndc;
       return ((ndcValue == null) ? EMPTY_STRING : ndcValue);
     } else if (EXCEPTION_FIELD.equals(upperField)) {
-        String[] throwableRep = event.getThrowableStrRep();
-        if (throwableRep == null) {
-            return EMPTY_STRING;
-        } else {
-            return getExceptionMessage(throwableRep);
-        }
+//        String[] throwableRep = event.getThrowableStrRep();
+//        if (throwableRep == null) {
+//            return EMPTY_STRING;
+//        } else {
+//            return getExceptionMessage(throwableRep);
+//        }
+        return "";
     } else if (TIMESTAMP_FIELD.equals(upperField)) {
-      return new Long(event.timeStamp);
+      return event.m_timestamp;
     } else if (THREAD_FIELD.equals(upperField)) {
-      return event.getThreadName();
+      return event.m_threadName;
     } else if (upperField.startsWith(PROP_FIELD)) {
       //note: need to use actual fieldname since case matters
-      Object propValue = event.getMDC(fieldName.substring(5));
-      if (propValue == null) {
-          //case-specific match didn't work, try case insensitive match
-          String lowerPropKey = fieldName.substring(5).toLowerCase();
-          Set entrySet = event.getProperties().entrySet();
-          for (Iterator iter = entrySet.iterator();iter.hasNext();) {
-              Map.Entry thisEntry = (Map.Entry) iter.next();
-              if (thisEntry.getKey().toString().equalsIgnoreCase(lowerPropKey)) {
-                  propValue = thisEntry.getValue();
-              }
-          }
-      }
-      return ((propValue == null) ? EMPTY_STRING : propValue.toString());
+//      Object propValue = event.getMDC(fieldName.substring(5));
+//      if (propValue == null) {
+//          //case-specific match didn't work, try case insensitive match
+//          String lowerPropKey = fieldName.substring(5).toLowerCase();
+//          Set entrySet = event.getProperties().entrySet();
+//          for (Iterator iter = entrySet.iterator();iter.hasNext();) {
+//              Map.Entry thisEntry = (Map.Entry) iter.next();
+//              if (thisEntry.getKey().toString().equalsIgnoreCase(lowerPropKey)) {
+//                  propValue = thisEntry.getValue();
+//              }
+//          }
+//      }
+//      return ((propValue == null) ? EMPTY_STRING : propValue.toString());
+        return "";
     } else {
-        LocationInfo info = event.getLocationInformation();
+        org.apache.log4j.chainsaw.logevents.LocationInfo info = event.m_locationInfo;
         if (CLASS_FIELD.equals(upperField)) {
-            return ((info == null) ? EMPTY_STRING : info.getClassName());
+            return ((info == null) ? EMPTY_STRING : info.className);
         } else if (FILE_FIELD.equals(upperField)) {
-            return ((info == null) ? EMPTY_STRING : info.getFileName());
+            return ((info == null) ? EMPTY_STRING : info.fileName);
         } else if (LINE_FIELD.equals(upperField)) {
-            return ((info == null) ? EMPTY_STRING : info.getLineNumber());
+            return ((info == null) ? EMPTY_STRING : info.lineNumber);
         } else if (METHOD_FIELD.equals(upperField)) {
-            return ((info == null) ? EMPTY_STRING : info.getMethodName());
+            return ((info == null) ? EMPTY_STRING : info.methodName);
         }
     }
 

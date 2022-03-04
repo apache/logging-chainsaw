@@ -19,11 +19,11 @@ package org.apache.log4j.chainsaw;
 
 import org.apache.log4j.rule.AbstractRule;
 import org.apache.log4j.rule.Rule;
-import org.apache.log4j.spi.LoggingEvent;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Map;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
 
 /**
@@ -50,7 +50,7 @@ public class RuleMediator extends AbstractRule {
     /* (non-Javadoc)
      * @see org.apache.log4j.chainsaw.rule.Rule#evaluate(org.apache.log4j.spi.LoggingEvent)
      */
-    public boolean evaluate(LoggingEvent e, Map matches) {
+    public boolean evaluate(ChainsawLoggingEvent e, Map matches) {
         if (findRuleRequired) {
             if (findRule == null) {
                 return false;

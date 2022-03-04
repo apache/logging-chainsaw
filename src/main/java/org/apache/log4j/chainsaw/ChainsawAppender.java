@@ -16,166 +16,58 @@
  */
 package org.apache.log4j.chainsaw;
 
-import org.apache.log4j.Appender;
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.helpers.Constants;
-import org.apache.log4j.helpers.OptionConverter;
-import org.apache.log4j.spi.LoggingEvent;
+import java.time.Instant;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.appender.AbstractOutputStreamAppender;
+import org.apache.logging.log4j.core.config.plugins.Plugin;
+import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
+import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+@Plugin(name = "ChainsawAppender", category = "Core", elementType = "appender", printObject = true)
+public final class ChainsawAppender extends AbstractOutputStreamAppender {
 
+    private ChainsawAppenderReceiver m_receiver = new ChainsawAppenderReceiver();
 
-/**
- * ChainsawAppender receives LoggingEvents from the local
- * Log4J environment, and appends them into a model that
- * can be used inside a Swing GUI
- *
- * @author Paul Smith
- * @version 1.0
- */
-public class ChainsawAppender
-    extends AppenderSkeleton {
+    private ChainsawAppender(String name) {
+        super(name, null, null, true, true, null);
+    }
 
-    private Appender appender;
+    @PluginFactory
+    public static ChainsawAppender createAppender(@PluginAttribute("name") String name) {
+        System.out.println( "create the chainsaw appender" );
 
-    /**
-     * The in-JVM singleton instance of the ChainsawAppender.
-     * <p>
-     * If somehow Log4j initialises more than one, then the first one to
-     * initialise wins!
-     */
-    private static ChainsawAppender sSharedAppender = null;
-
-    /**
-     * The classname of the viewer to create to view the events.
-     */
-    private String viewerClassname;
-    private String hostname = "localhost";
-    private String application = "app";
-
-    /**
-     * Constructor, initialises the singleton instance of the appender
-     */
-    public ChainsawAppender() {
-        super(false);
-        synchronized (ChainsawAppender.class) {
-            if (sSharedAppender == null) {
-                sSharedAppender = this;
-            }
+        if (name == null) {
+            LOGGER.error("No name provided for ChainsawAppender");
+            return null;
         }
+        
+        return new ChainsawAppender(name);
     }
 
-    /**
-     * Return the singleton instance of the ChainsawAppender, it should only
-     * be initialised once.
-     *
-     * @return the One and only instance of the ChainsawAppender that is
-     * allowed to be referenced by the GUI
-     */
-    static ChainsawAppender getInstance() {
-        return sSharedAppender;
+    @Override
+    public void append(final LogEvent event){
+        ChainsawLoggingEventBuilder builder = new ChainsawLoggingEventBuilder();
+
+        builder.setLevelFromString( event.getLevel().name() )
+                .setLogger( event.getLoggerName() )
+                .setMessage( event.getMessage().getFormattedMessage() )
+                .setThreadName( event.getThreadName() )
+                .setTimestamp( Instant.ofEpochMilli(event.getInstant().getEpochMillisecond()) );
+
+        m_receiver.append(builder.create());
     }
 
-    /**
-     * This appender does not require layout and so return false
-     *
-     * @return false and only false
-     */
-    public boolean requiresLayout() {
-        return false;
+    public ChainsawReceiver getReceiver(){
+        return m_receiver;
     }
 
-    public Appender getAppender() {
-        return appender;
+    class ChainsawAppenderReceiver extends ChainsawReceiverSkeleton {
+
+        @Override
+        public void start() {}
+
+        @Override
+        public void shutdown() {}
     }
-
-    public void setAppender(Appender appender) {
-        this.appender = appender;
-    }
-
-    /**
-     * Appends the event
-     *
-     * @param aEvent the LoggingEvent to append
-     */
-    protected void append(LoggingEvent aEvent) {
-        if (hostname != null) {
-            aEvent.setProperty(Constants.HOSTNAME_KEY, hostname);
-        }
-
-        if (application != null) {
-            aEvent.setProperty(Constants.APPLICATION_KEY, application);
-        }
-
-        appender.doAppend(aEvent);
-    }
-
-    /**
-     * Instantiates and activates an instance of a ChainsawViewer
-     * to view the contents of this appender.
-     */
-    public void activateOptions() {
-        if (viewerClassname == null) {
-            viewerClassname = "org.apache.log4j.chainsaw.DefaultViewer";
-        }
-
-        ChainsawViewer viewer =
-            (ChainsawViewer) OptionConverter.instantiateByClassName(viewerClassname,
-                ChainsawViewer.class, null);
-
-        if (viewer != null) {
-            viewer.activateViewer(this);
-        }
-        try {
-            hostname = InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException uhe) {
-            try {
-                hostname = InetAddress.getLocalHost().getHostAddress();
-            } catch (UnknownHostException uhe2) {
-            }
-        }
-    }
-
-    /**
-     * Close does nothing
-     */
-    public void close() {
-    }
-
-    /**
-     * Sets the viewer class to use to view the events.  The class must
-     * implement the ChainsawViewer interface.
-     *
-     * @param classname The class name of the viewer class.
-     */
-    public void setViewerClass(String classname) {
-        viewerClassname = classname;
-    }
-
-    /**
-     * Gets the viewer class to use to view the events.
-     *
-     * @return The class name of the viewer class.
-     */
-    public String getViewerClass() {
-        return viewerClassname;
-    }
-
-    /**
-     * The <b>Application</b> option takes a string value which should be the
-     * name of the application getting logged
-     */
-    public void setApplication(String lapp) {
-        this.application = lapp;
-    }
-
-    /**
-     * Returns value of the <b>Application</b> option.
-     */
-    public String getApplication() {
-        return application;
-    }
-
-
 }

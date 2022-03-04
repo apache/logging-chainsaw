@@ -27,6 +27,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.util.zip.GZIPInputStream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A VFS-enabled version of org.apache.log4j.varia.LogFilePatternReceiver.
@@ -150,12 +152,15 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
     private boolean autoReconnect;
     private VFSReader vfsReader;
 
+    private static final Logger logger = LogManager.getLogger();
+
     public VFSLogFilePatternReceiver() {
         super();
     }
 
+    @Override
     public void shutdown() {
-        getLogger().info("shutdown VFSLogFilePatternReceiver");
+        logger.info("shutdown VFSLogFilePatternReceiver");
         active = false;
         container = null;
         if (vfsReader != null) {
@@ -231,7 +236,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                     while (container == null) {
                         try {
                             waitForContainerLock.wait(1000);
-                            getLogger().debug("waiting for setContainer call");
+                            logger.debug("waiting for setContainer call");
                         } catch (InterruptedException ie) {
                         }
                     }
@@ -246,7 +251,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                         while ((containerFrame1 = (Frame) SwingUtilities.getAncestorOfClass(Frame.class, container)) == null) {
                             try {
                                 waitForContainerLock.wait(1000);
-                                getLogger().debug("waiting for container's frame to be available");
+                                logger.debug("waiting for container's frame to be available");
                             } catch (InterruptedException ie) {
                             }
                         }
@@ -265,7 +270,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                     f.setLocation(d.width / 2, d.height / 2);
                     f.setVisible(true);
                     if (null == f.getUserName() || null == f.getPassword()) {
-                        getLogger().info("Username and password not both provided, not using credentials");
+                        logger.info("Username and password not both provided, not using credentials");
                     } else {
                         String oldURL = getFileURL();
                         int index = oldURL.indexOf("://");
@@ -305,7 +310,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                 vfsReader = new VFSReader();
                 new Thread(vfsReader).start();
             } else {
-                getLogger().info("null URL - unable to parse file");
+                logger.info("null URL - unable to parse file");
             }
         }
     }
@@ -326,7 +331,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                 int protocolIndex = getFileURL().indexOf("://");
 
                 String loggableFileURL = atIndex > -1 ? getFileURL().substring(0, protocolIndex + "://".length()) + "username:password" + getFileURL().substring(atIndex) : getFileURL();
-                getLogger().info("attempting to load file: " + loggableFileURL);
+                logger.info("attempting to load file: " + loggableFileURL);
                 try {
                     FileSystemManager fileSystemManager = VFS.getManager();
                     FileSystemOptions opts = new FileSystemOptions();
@@ -334,7 +339,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                     try {
                         SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
                     } catch (NoClassDefFoundError ncdfe) {
-                        getLogger().warn("JSch not on classpath!", ncdfe);
+                        logger.warn("JSch not on classpath!", ncdfe);
                     }
 
                     synchronized (fileSystemManager) {
@@ -349,13 +354,13 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                                 setPath(urlFileName.getPath());
                             }
                         } else {
-                            getLogger().info(loggableFileURL + " not available - will re-attempt to load after waiting " + MISSING_FILE_RETRY_MILLIS + " millis");
+                            logger.info(loggableFileURL + " not available - will re-attempt to load after waiting " + MISSING_FILE_RETRY_MILLIS + " millis");
                         }
                     }
                 } catch (FileSystemException fse) {
-                    getLogger().info(loggableFileURL + " not available - may be due to incorrect credentials, but will re-attempt to load after waiting " + MISSING_FILE_RETRY_MILLIS + " millis", fse);
+                    logger.info(loggableFileURL + " not available - may be due to incorrect credentials, but will re-attempt to load after waiting " + MISSING_FILE_RETRY_MILLIS + " millis", fse);
                 } catch (UnsupportedEncodingException e) {
-                    getLogger().info("UTF-8 not available", e);
+                    logger.info("UTF-8 not available", e);
                 }
                 if (reader == null) {
                     synchronized (this) {
@@ -371,7 +376,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                 return;
             }
             initialize();
-            getLogger().debug(getPath() + " exists");
+            logger.debug(getPath() + " exists");
             boolean readingFinished = false;
 
             do {
@@ -386,7 +391,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                         try {
                             SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
                         } catch (NoClassDefFoundError ncdfe) {
-                            getLogger().warn("JSch not on classpath!", ncdfe);
+                            logger.warn("JSch not on classpath!", ncdfe);
                         }
 
                         //fileobject was created above, release it and construct a new one
@@ -407,7 +412,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                                 //available in vfs as of 30 Mar 2006 - will load but not tail if not available
                                 fileObject.refresh();
                             } catch (Error err) {
-                                getLogger().info(getPath() + " - unable to refresh fileobject", err);
+                                logger.info(getPath() + " - unable to refresh fileobject", err);
                             }
 
                             if (isGZip(getFileURL())) {
@@ -420,7 +425,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                             //could have been truncated or appended to (don't do anything if same size)
                             if (fileObject.getContent().getSize() < lastFileSize) {
                                 reader = new InputStreamReader(fileObject.getContent().getInputStream(), "UTF-8");
-                                getLogger().debug(getPath() + " was truncated");
+                                logger.debug(getPath() + " was truncated");
                                 lastFileSize = 0; //seek to beginning of file
                                 lastFilePointer = 0;
                             } else if (fileObject.getContent().getSize() > lastFileSize) {
@@ -440,10 +445,10 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                                     reader = null;
                                 }
                             } catch (IOException ioe) {
-                                getLogger().debug(getPath() + " - unable to close reader", ioe);
+                                logger.debug(getPath() + " - unable to close reader", ioe);
                             }
                         } else {
-                            getLogger().info(getPath() + " - not available - will re-attempt to load after waiting " + getWaitMillis() + " millis");
+                            logger.info(getPath() + " - not available - will re-attempt to load after waiting " + getWaitMillis() + " millis");
                         }
 
                         try {
@@ -453,17 +458,17 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                         } catch (InterruptedException ie) {
                         }
                         if (isTailing() && fileLarger && !terminated) {
-                            getLogger().debug(getPath() + " - tailing file - file size: " + lastFileSize);
+                            logger.debug(getPath() + " - tailing file - file size: " + lastFileSize);
                         }
                     } while (isTailing() && !terminated && !readingFinished);
                 } catch (IOException ioe) {
-                    getLogger().info(getPath() + " - exception processing file", ioe);
+                    logger.info(getPath() + " - exception processing file", ioe);
                     try {
                         if (fileObject != null) {
                             fileObject.close();
                         }
                     } catch (FileSystemException e) {
-                        getLogger().info(getPath() + " - exception processing file", e);
+                        logger.info(getPath() + " - exception processing file", e);
                     }
                     try {
                         synchronized (this) {
@@ -473,7 +478,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                     }
                 }
             } while (isAutoReconnect() && !terminated && !readingFinished);
-            getLogger().debug(getPath() + " - processing complete");
+            logger.debug(getPath() + " - processing complete");
         }
 
         public void terminate() {

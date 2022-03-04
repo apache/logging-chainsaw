@@ -60,30 +60,30 @@ class FileMenu extends JMenu {
             }
         };
 
-        loadLog4JAction =
-            new FileLoadAction(
-                logUI, new XMLDecoder(logUI), "Open log4j XML-formatted file (.xml or .zip)...", false);
+        loadLog4JAction = null;
+//            new FileLoadAction(
+//                logUI, new XMLDecoder(logUI), "Open log4j XML-formatted file (.xml or .zip)...", false);
 
-        loadLog4JAction.putValue(
-            Action.ACCELERATOR_KEY,
-            KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        loadLog4JAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_L);
-        loadLog4JAction.putValue(Action.SHORT_DESCRIPTION, "Loads events from a local XMLLayout-formatted file ");
-        loadLog4JAction.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.FILE_OPEN));
+//        loadLog4JAction.putValue(
+//            Action.ACCELERATOR_KEY,
+//            KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+//        loadLog4JAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_L);
+//        loadLog4JAction.putValue(Action.SHORT_DESCRIPTION, "Loads events from a local XMLLayout-formatted file ");
+//        loadLog4JAction.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.FILE_OPEN));
 
-        loadUtilLoggingAction =
-            new FileLoadAction(
-                logUI, new UtilLoggingXMLDecoder(logUI),
-                "Open util.logging XML-formatted file (.xml or .zip)...", false);
+        loadUtilLoggingAction = null;
+//            new FileLoadAction(
+//                logUI, new UtilLoggingXMLDecoder(logUI),
+//                "Open util.logging XML-formatted file (.xml or .zip)...", false);
 
-        remoteLog4JAction =
-            new FileLoadAction(
-                logUI, new XMLDecoder(logUI), "Open remote log4j XML-formatted file (.xml or .zip)...",
-                true);
-        remoteUtilLoggingAction =
-            new FileLoadAction(
-                logUI, new UtilLoggingXMLDecoder(logUI),
-                "Open remote util.logging XML-formatted file (.xml or .zip)...", true);
+        remoteLog4JAction = null;
+//            new FileLoadAction(
+//                logUI, new XMLDecoder(logUI), "Open remote log4j XML-formatted file (.xml or .zip)...",
+//                true);
+        remoteUtilLoggingAction = null;
+//            new FileLoadAction(
+//                logUI, new UtilLoggingXMLDecoder(logUI),
+//                "Open remote util.logging XML-formatted file (.xml or .zip)...", true);
 
         saveAction = new FileSaveAction(logUI);
 
@@ -147,8 +147,8 @@ class FileMenu extends JMenu {
                 JMenuItem menuItem = new JMenuItem(new AbstractAction(title) {
 
                     public void actionPerformed(ActionEvent e) {
-                        FileLoadAction.importURL(logui.handler,
-                            new XMLDecoder(), name, url);
+//                        FileLoadAction.importURL(logui.handler,
+//                            new XMLDecoder(), name, url);
                     }
                 });
                 mrulog4j.add(menuItem);

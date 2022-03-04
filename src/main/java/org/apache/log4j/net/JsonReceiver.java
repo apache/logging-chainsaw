@@ -16,16 +16,16 @@
  */
 package org.apache.log4j.net;
 
+import com.owlike.genson.Genson;
+import com.owlike.genson.GensonBuilder;
+import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.List;
-import java.util.Vector;
-import static org.apache.log4j.net.XMLSocketReceiver.ZONE;
-import org.apache.log4j.plugins.Pauseable;
-import org.apache.log4j.plugins.Plugin;
-import org.apache.log4j.plugins.Receiver;
-import org.apache.log4j.spi.LoggerRepository;
-import org.apache.log4j.spi.LoggingEvent;
+import java.util.Iterator;
+import org.apache.log4j.chainsaw.ChainsawReceiverSkeleton;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * The JsonReceiver class receives log events over a TCP socket(as JSON) and
@@ -33,17 +33,14 @@ import org.apache.log4j.spi.LoggingEvent;
  *
  * @author Robert Middleton
  */
-public class JsonReceiver extends Receiver implements Runnable, PortBased, Pauseable {
-    private boolean m_paused;
-    //default to log4j xml decoder
-    protected String m_decoder = "org.apache.log4j.xml.XMLDecoder";
+public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, PortBased {
     private ServerSocket m_serverSocket;
-    private List<Socket> m_socketList = new Vector<>();
     private Thread m_rxThread;
     public static final int DEFAULT_PORT = 4449;
     protected int m_port = DEFAULT_PORT;
-    private boolean m_advertiseViaMulticastDNS;
-    private ZeroConfSupport m_zeroConf;
+    private boolean active = false;
+    
+    private static final Logger logger = LogManager.getLogger();
 
     /**
      * The MulticastDNS zone advertised by an XMLSocketReceiver
@@ -51,15 +48,6 @@ public class JsonReceiver extends Receiver implements Runnable, PortBased, Pause
     public static final String ZONE = "_log4j_json_tcpaccept_receiver.local.";
 
     public JsonReceiver() {
-    }
-
-    public JsonReceiver(int _port) {
-        m_port = _port;
-    }
-
-    public JsonReceiver(int _port, LoggerRepository _repository) {
-        m_port = _port;
-        repository = _repository;
     }
 
     @Override
@@ -81,24 +69,17 @@ public class JsonReceiver extends Receiver implements Runnable, PortBased, Pause
     private synchronized void doShutdown() {
         active = false;
 
-        getLogger().debug("{} doShutdown called", getName());
+        logger.debug("{} doShutdown called", getName());
 
         // close the server socket
         closeServerSocket();
-
-        // close all of the accepted sockets
-        closeAllAcceptedSockets();
-
-        if (m_advertiseViaMulticastDNS) {
-            m_zeroConf.unadvertise();
-        }
     }
 
     /**
      * Closes the server socket, if created.
      */
     private void closeServerSocket() {
-        getLogger().debug("{} closing server socket", getName());
+        logger.debug("{} closing server socket", getName());
 
         try {
             if (m_serverSocket != null) {
@@ -111,33 +92,13 @@ public class JsonReceiver extends Receiver implements Runnable, PortBased, Pause
         m_serverSocket = null;
     }
 
-    /**
-     * Closes all the connected sockets in the List.
-     */
-    private synchronized void closeAllAcceptedSockets() {
-        for (Socket sock : m_socketList) {
-            try {
-                sock.close();
-            } catch (Exception e) {
-                // ignore for now
-            }
-        }
-
-        // clear member variables
-        m_socketList.clear();
-    }
-
     @Override
-    public void activateOptions() {
+    public void start() {
+        logger.debug("Starting receiver");
         if (!isActive()) {
             m_rxThread = new Thread(this);
             m_rxThread.setDaemon(true);
             m_rxThread.start();
-
-            if (m_advertiseViaMulticastDNS) {
-                m_zeroConf = new ZeroConfSupport(ZONE, m_port, getName());
-                m_zeroConf.advertise();
-            }
 
             active = true;
         }
@@ -148,17 +109,16 @@ public class JsonReceiver extends Receiver implements Runnable, PortBased, Pause
         /**
          * Ensure we start fresh.
          */
-        getLogger().debug("performing socket cleanup prior to entering loop for {}", name);
+        logger.debug("performing socket cleanup prior to entering loop for {}", name);
         closeServerSocket();
-        closeAllAcceptedSockets();
-        getLogger().debug("socket cleanup complete for {}", name);
+        logger.debug("socket cleanup complete for {}", name);
         active = true;
 
         // start the server socket
         try {
-            m_serverSocket = new ServerSocket(m_port);
+            m_serverSocket = new ServerSocket(m_port, 1);
         } catch (Exception e) {
-            getLogger().error(
+            logger.error(
                 "error starting JsonReceiver (" + this.getName()
                     + "), receiver did not start", e);
             active = false;
@@ -170,26 +130,22 @@ public class JsonReceiver extends Receiver implements Runnable, PortBased, Pause
         Socket socket = null;
 
         try {
-            getLogger().debug("in run-about to enter while isactiveloop");
+            logger.debug("in run-about to enter while isactiveloop");
 
             active = true;
 
             while (!m_rxThread.isInterrupted()) {
                 // if we have a socket, start watching it
-                if (socket != null) {
-                    getLogger().debug("socket not null - creating and starting socketnode");
-                    m_socketList.add(socket);
-
-                    JsonSocketNode node = new JsonSocketNode(socket, this);
-                    node.setLoggerRepository(this.repository);
-                    new Thread(node).start();
+                if (socket != null ) {
+                    logger.debug("socket not null - parsing data");
+                    parseIncomingData(socket);
                 }
 
-                getLogger().debug("waiting to accept socket");
+                logger.debug("waiting to accept socket");
 
                 // wait for a socket to open, then loop to start it
                 socket = m_serverSocket.accept();
-                getLogger().debug("accepted socket");
+                logger.debug("accepted socket");
             }
 
             // socket not watched because we a no longer running
@@ -198,7 +154,7 @@ public class JsonReceiver extends Receiver implements Runnable, PortBased, Pause
                 socket.close();
             }
         } catch (Exception e) {
-            getLogger().warn(
+            logger.warn(
                 "socket server disconnected, stopping");
         }
     }
@@ -207,39 +163,59 @@ public class JsonReceiver extends Receiver implements Runnable, PortBased, Pause
     public int getPort() {
         return m_port;
     }
-
-    @Override
-    public void setPaused(boolean paused) {
-        m_paused = paused;
+    
+    public void setPort(int portnum){
+        m_port = portnum;
     }
 
     @Override
-    public boolean isPaused() {
-        return m_paused;
+    public boolean isActive() {
+        return active;
     }
-
-    public boolean isEquivalent(Plugin testPlugin) {
-        if ((testPlugin != null) && testPlugin instanceof JsonReceiver) {
-            JsonReceiver sReceiver = (JsonReceiver) testPlugin;
-
-            return (m_port == sReceiver.getPort() && super.isEquivalent(testPlugin));
+    
+    private void parseIncomingData(Socket sock){
+        InputStream is;
+        
+        try {
+            is = sock.getInputStream();
+        } catch (Exception e) {
+            is = null;
+            logger.error("Exception opening InputStream to " + sock, e);
+            return;
         }
 
-        return false;
-    }
+        if (is != null) {
+            Genson genson = new GensonBuilder()
+                    .useDateAsTimestamp(true)
+                    .create();
 
-    public void setAdvertiseViaMulticastDNS(boolean advertiseViaMulticastDNS) {
-        m_advertiseViaMulticastDNS = advertiseViaMulticastDNS;
-    }
+            try {
+                //read data from the socket.
+                // Once we have a full JSON message, parse it
+                ChainsawLoggingEventBuilder build = new ChainsawLoggingEventBuilder();
+                while (true) {
+                    logger.debug( "About to deserialize values" );
+                    Iterator<ECSLogEvent> iter = genson.deserializeValues(is, ECSLogEvent.class);
+                    // Because the socket can be closed, if we don't have anything parsed
+                    // assume that the socket is closed.
+                    if( !iter.hasNext() ) break;
+                    while( iter.hasNext() ){
+                        ECSLogEvent evt = iter.next();
+                        append(evt.toChainsawLoggingEvent(build));
+                    }
+                }
+            } catch (Exception e) {
+                logger.error("Unexpected exception. Closing connection.", e);
+            }
+        }
 
-    public boolean isAdvertiseViaMulticastDNS() {
-        return m_advertiseViaMulticastDNS;
-    }
-
-    @Override
-    public void doPost(LoggingEvent event) {
-        if (!isPaused()) {
-            super.doPost(event);
+        // close the socket
+        try {
+            if (is != null) {
+                is.close();
+            }
+        } catch (Exception e) {
+            //logger.info("Could not close connection.", e);
         }
     }
 }

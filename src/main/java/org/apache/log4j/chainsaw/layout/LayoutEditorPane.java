@@ -17,13 +17,9 @@
 
 package org.apache.log4j.chainsaw.layout;
 
-import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.ChainsawConstants;
 import org.apache.log4j.chainsaw.JTextComponentFormatter;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
-import org.apache.log4j.spi.LocationInfo;
-import org.apache.log4j.spi.LoggingEvent;
-import org.apache.log4j.spi.ThrowableInformation;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -31,8 +27,16 @@ import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
+import org.apache.log4j.chainsaw.logevents.Level;
+import org.apache.log4j.chainsaw.logevents.LocationInfo;
 
 
 /**
@@ -61,8 +65,10 @@ public final class LayoutEditorPane extends JPanel {
         new JScrollPane(
             ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
             ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-    private LoggingEvent event;
+    private ChainsawLoggingEvent event;
     private EventDetailLayout layout = new EventDetailLayout();
+    private DateTimeFormatter m_datetimeFormat;
+    private final JComboBox m_datetimeCombo = new JComboBox();
 
     /**
      *
@@ -75,6 +81,7 @@ public final class LayoutEditorPane extends JPanel {
         cutAction = createCutAction();
         initComponents();
         setupListeners();
+        m_datetimeFormat = DateTimeFormatter.ISO_DATE_TIME;
     }
 
     /**
@@ -135,6 +142,7 @@ public final class LayoutEditorPane extends JPanel {
     private void updatePreview() {
         String pattern = patternEditor.getText();
         layout.setConversionPattern(pattern);
+        layout.setDateformat(m_datetimeFormat);
 
         previewer.setText(layout.format(event));
     }
@@ -158,21 +166,20 @@ public final class LayoutEditorPane extends JPanel {
 
         LocationInfo li =
             new LocationInfo(
-                "myfile.java", "com.mycompany.util.MyClass", "myMethod", "321");
+                "myfile.java", "com.mycompany.util.MyClass", "myMethod", 321);
 
-        ThrowableInformation tsr = new ThrowableInformation(new Exception());
+        ChainsawLoggingEventBuilder build = new ChainsawLoggingEventBuilder();
+        build.setLevel( Level.DEBUG )
+                .setLocationInfo(li)
+                .setLogger("com.mycompany.mylogger")
+                .setMessage("The quick brown fox jumped over the lazy dog")
+                .setThreadName("Thread-1")
+                .setNDC("NDC string")
+                .setMDC(hashTable)
+                .setTimestamp(Instant.now());
 
-        event = new LoggingEvent("org.apache.log4j.Logger",
-            Logger.getLogger("com.mycompany.mylogger"),
-            new Date().getTime(),
-            org.apache.log4j.Level.DEBUG,
-            "The quick brown fox jumped over the lazy dog",
-            "Thread-1",
-            tsr,
-            "NDC string",
-            li,
-            hashTable);
-
+        event = build.create();
+        event.setProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE, "20");
     }
 
     /**
@@ -207,7 +214,9 @@ public final class LayoutEditorPane extends JPanel {
 //    editorToolbar.add(new JButton(copyAction));
 //    editorToolbar.add(new JButton(cutAction));
 
+        configureDatetimeFormatters();
         editorToolbar.add(Box.createHorizontalGlue());
+        editorToolbar.add(m_datetimeCombo);
 
         okCancelToolbar.add(Box.createHorizontalGlue());
         okCancelToolbar.add(okButton);
@@ -220,6 +229,40 @@ public final class LayoutEditorPane extends JPanel {
         add(patternEditorScroll);
         add(previewEditorScroll);
         add(okCancelToolbar);
+    }
+
+    private void configureDatetimeFormatters(){
+        java.util.List<DatetimeFormatterOption> options = new ArrayList<>();
+
+        options.add( new DatetimeFormatterOption( DateTimeFormatter.BASIC_ISO_DATE, "Basic ISO Date(20111203)" ) );
+        options.add( new DatetimeFormatterOption( DateTimeFormatter.ISO_LOCAL_DATE, "ISO Local Date(2011-12-03)" ) );
+        options.add( new DatetimeFormatterOption( DateTimeFormatter.ISO_OFFSET_DATE, "ISO Offset Date(2011-12-03+01:00)" ) );
+        options.add( new DatetimeFormatterOption( DateTimeFormatter.ISO_DATE, "ISO Date('2011-12-03+01:00'; '2011-12-03')" ) );
+        options.add( new DatetimeFormatterOption( DateTimeFormatter.ISO_LOCAL_TIME, "ISO Local Time(10:15:30)" ) );
+        options.add( new DatetimeFormatterOption( DateTimeFormatter.ISO_OFFSET_TIME, "ISO Offset Time(10:15:30+01:00)" ) );
+        options.add( new DatetimeFormatterOption( DateTimeFormatter.ISO_TIME, "ISO Time('10:15:30+01:00'; '10:15:30')" ) );
+        options.add( new DatetimeFormatterOption( DateTimeFormatter.ISO_LOCAL_DATE_TIME, "ISO Local Date Time(2011-12-03T10:15:30)" ) );
+        options.add( new DatetimeFormatterOption( DateTimeFormatter.ISO_OFFSET_DATE_TIME, "ISO Offset Date Time(2011-12-03T10:15:30+01:00)" ) );
+        options.add( new DatetimeFormatterOption( DateTimeFormatter.ISO_ZONED_DATE_TIME, "ISO Zoned Date Time(2011-12-03T10:15:30+01:00[Europe/Paris])" ) );
+        options.add( new DatetimeFormatterOption( DateTimeFormatter.ISO_DATE_TIME, "ISO Date Time(2011-12-03T10:15:30+01:00[Europe/Paris])" ) );
+        options.add( new DatetimeFormatterOption( DateTimeFormatter.ISO_ORDINAL_DATE, "ISO Ordinal Date(2012-337)" ) );
+        options.add( new DatetimeFormatterOption( DateTimeFormatter.ISO_WEEK_DATE, "ISO Week Date(2012-W48-6)" ) );
+        options.add( new DatetimeFormatterOption( DateTimeFormatter.ISO_INSTANT, "ISO Instant(2011-12-03T10:15:30Z)" ) );
+        options.add( new DatetimeFormatterOption( DateTimeFormatter.RFC_1123_DATE_TIME, "RFC 1123 DateTue, 3 Jun 2008 11:05:30 GMT)" ) );
+
+        for( DatetimeFormatterOption opt : options ){
+            m_datetimeCombo.addItem(opt);
+
+            if( opt.m_formatter.equals( m_datetimeFormat ) ){
+                m_datetimeCombo.setSelectedItem(opt);
+            }
+        }
+
+        m_datetimeCombo.addActionListener((ae) -> {
+            DatetimeFormatterOption option = (DatetimeFormatterOption)m_datetimeCombo.getSelectedItem();
+            m_datetimeFormat = option.m_formatter;
+            updatePreview();
+        });
     }
 
     public void setConversionPattern(String pattern) {
@@ -236,6 +279,39 @@ public final class LayoutEditorPane extends JPanel {
 
     public void addCancelActionListener(ActionListener l) {
         cancelButton.addActionListener(l);
+    }
+
+    public void setDatetimeFormatter( DateTimeFormatter formatter ){
+        m_datetimeFormat = formatter;
+
+        for( int x = 0; x < m_datetimeCombo.getItemCount(); x++ ){
+            DatetimeFormatterOption opt = (DatetimeFormatterOption)m_datetimeCombo.getItemAt(x);
+            if( opt.m_formatter == formatter ){
+                m_datetimeCombo.setSelectedIndex(x);
+                break;
+            }
+        }
+
+        updatePreview();
+    }
+
+    public DateTimeFormatter getDatetimeFormatter(){
+        return m_datetimeFormat;
+    }
+
+    private class DatetimeFormatterOption {
+        final DateTimeFormatter m_formatter;
+        final String m_text;
+
+        DatetimeFormatterOption( DateTimeFormatter formatter, String text ){
+            m_formatter = formatter;
+            m_text = text;
+        }
+
+        @Override
+        public String toString(){
+            return m_text;
+        }
     }
 
     public static void main(String[] args) {

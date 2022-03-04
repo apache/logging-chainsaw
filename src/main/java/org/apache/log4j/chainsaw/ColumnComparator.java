@@ -18,9 +18,9 @@
 package org.apache.log4j.chainsaw;
 
 import org.apache.log4j.helpers.Constants;
-import org.apache.log4j.spi.LoggingEvent;
 
 import java.util.Comparator;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
 
 /**
@@ -46,37 +46,37 @@ public class ColumnComparator implements Comparator {
 
 //		TODO not everything catered for here yet...
 
-            LoggingEvent e1 = ((LoggingEventWrapper) o1).getLoggingEvent();
-            LoggingEvent e2 = ((LoggingEventWrapper) o2).getLoggingEvent();
+            ChainsawLoggingEvent e1 = ((LoggingEventWrapper) o1).getLoggingEvent();
+            ChainsawLoggingEvent e2 = ((LoggingEventWrapper) o2).getLoggingEvent();
 
             switch (index + 1) {
                 case ChainsawColumns.INDEX_LEVEL_COL_NAME:
-                    sort = e1.getLevel().isGreaterOrEqual(e2.getLevel()) ? 1 : (-1);
+                    sort = e1.m_level.ordinal() >= (e2.m_level.ordinal()) ? 1 : (-1);
 
                     break;
 
                 case ChainsawColumns.INDEX_LOGGER_COL_NAME:
-                    sort = e1.getLoggerName().compareToIgnoreCase(e2.getLoggerName());
+                    sort = e1.m_logger.compareToIgnoreCase(e2.m_logger);
 
                     break;
 
                 case ChainsawColumns.INDEX_MESSAGE_COL_NAME:
                     sort =
-                        e1.getMessage().toString().compareToIgnoreCase(
-                            e2.getMessage().toString());
+                        e1.m_message.compareToIgnoreCase(
+                            e2.m_message);
 
                     break;
 
                 case ChainsawColumns.INDEX_NDC_COL_NAME:
-                    if (e1.getNDC() != null && e2.getNDC() != null) {
+                    if (e1.m_ndc != null && e2.m_ndc != null) {
                         sort =
-                            e1.getNDC().compareToIgnoreCase(
-                                e2.getNDC());
-                    } else if (e1.getNDC() == null && e2.getNDC() == null) {
+                            e1.m_ndc.compareToIgnoreCase(
+                                e2.m_ndc);
+                    } else if (e1.m_ndc == null && e2.m_ndc == null) {
                         sort = 0;
-                    } else if (e1.getNDC() == null) {
+                    } else if (e1.m_ndc == null) {
                         sort = -1;
-                    } else if (e2.getNDC() == null) {
+                    } else if (e2.m_ndc == null) {
                         sort = 1;
                     }
 
@@ -85,11 +85,11 @@ public class ColumnComparator implements Comparator {
                 case ChainsawColumns.INDEX_METHOD_COL_NAME:
 
                     if (
-                        (e1.locationInformationExists())
-                            & (e2.locationInformationExists())) {
+                        (e1.m_locationInfo != null)
+                            && (e2.m_locationInfo != null)) {
                         sort =
-                            e1.getLocationInformation().getMethodName().compareToIgnoreCase(
-                                e2.getLocationInformation().getMethodName());
+                            e1.m_locationInfo.methodName.compareToIgnoreCase(
+                                e2.m_locationInfo.methodName);
                     }
 
                     break;
@@ -97,11 +97,11 @@ public class ColumnComparator implements Comparator {
                 case ChainsawColumns.INDEX_CLASS_COL_NAME:
 
                     if (
-                        (e1.locationInformationExists())
-                            & (e2.locationInformationExists())) {
+                        (e1.m_locationInfo != null)
+                            && (e2.m_locationInfo != null)) {
                         sort =
-                            e1.getLocationInformation().getClassName().compareToIgnoreCase(
-                                e2.getLocationInformation().getClassName());
+                            e1.m_locationInfo.className.compareToIgnoreCase(
+                                e2.m_locationInfo.className);
                     }
 
                     break;
@@ -109,21 +109,21 @@ public class ColumnComparator implements Comparator {
                 case ChainsawColumns.INDEX_FILE_COL_NAME:
 
                     if (
-                        (e1.locationInformationExists())
-                            & (e2.locationInformationExists())) {
+                        (e1.m_locationInfo != null)
+                            && (e2.m_locationInfo != null)) {
                         sort =
-                            e1.getLocationInformation().getFileName().compareToIgnoreCase(
-                                e2.getLocationInformation().getFileName());
+                            e1.m_locationInfo.methodName.compareToIgnoreCase(
+                                e2.m_locationInfo.methodName);
                     }
 
                     break;
 
                 case ChainsawColumns.INDEX_TIMESTAMP_COL_NAME:
-                    sort = (Long.compare(e1.getTimeStamp(), e2.getTimeStamp()));
+                    sort = e1.m_timestamp.compareTo(e2.m_timestamp);
                     break;
 
                 case ChainsawColumns.INDEX_THREAD_COL_NAME:
-                    sort = e1.getThreadName().compareToIgnoreCase(e2.getThreadName());
+                    sort = e1.m_threadName.compareToIgnoreCase(e2.m_threadName);
                     break;
 
                 case ChainsawColumns.INDEX_ID_COL_NAME:
@@ -133,27 +133,25 @@ public class ColumnComparator implements Comparator {
                     break;
 
                 case ChainsawColumns.INDEX_THROWABLE_COL_NAME:
-                    if (e1.getThrowableStrRep() != null && e2.getThrowableStrRep() != null) {
-                        String[] s1 = e1.getThrowableStrRep();
-                        String[] s2 = e2.getThrowableStrRep();
-                        boolean foundDiff = false;
-                        for (int i = 0; i < s1.length; i++) {
-                            if (foundDiff || i > s2.length) {
-                                break;
-                            }
-                            sort = s1[i].compareToIgnoreCase(s2[i]);
-                            foundDiff = sort != 0;
-                        }
-                    }
+//                    if (e1.getThrowableStrRep() != null && e2.getThrowableStrRep() != null) {
+//                        String[] s1 = e1.getThrowableStrRep();
+//                        String[] s2 = e2.getThrowableStrRep();
+//                        boolean foundDiff = false;
+//                        for (int i = 0; i < s1.length; i++) {
+//                            if (foundDiff || i > s2.length) {
+//                                break;
+//                            }
+//                            sort = s1[i].compareToIgnoreCase(s2[i]);
+//                            foundDiff = sort != 0;
+//                        }
+//                    }
                     break;
 
                 case ChainsawColumns.INDEX_LINE_COL_NAME:
                     if (
-                        (e1.locationInformationExists())
-                            & (e2.locationInformationExists())) {
-                        sort =
-                            e1.getLocationInformation().getLineNumber().compareToIgnoreCase(
-                                e2.getLocationInformation().getLineNumber());
+                        (e1.m_locationInfo != null)
+                            && (e2.m_locationInfo != null)) {
+                        sort = e1.m_locationInfo.lineNumber - e2.m_locationInfo.lineNumber;
                     }
                     break;
 

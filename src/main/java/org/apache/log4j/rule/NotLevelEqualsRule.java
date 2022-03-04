@@ -23,10 +23,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.log4j.chainsaw.logevents.Level;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.helpers.UtilLoggingLevel;
-import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.LoggingEventFieldResolver;
 
 /**
@@ -74,10 +73,7 @@ public class NotLevelEqualsRule extends AbstractRule {
         levelList.add(Level.WARN.toString());
         levelList.add(Level.INFO.toString());
         levelList.add(Level.DEBUG.toString());
-		Level trace = Level.toLevel(5000, null);
-		if (trace != null) {
-			levelList.add(trace.toString());
-	    }
+        levelList.add(Level.TRACE.toString());
     }
 
     /**
@@ -86,11 +82,11 @@ public class NotLevelEqualsRule extends AbstractRule {
      * @return instance of NotLevelEqualsRule.
      */
     public static Rule getRule(final String value) {
-        Level thisLevel;
+        Level thisLevel = null;
         if (levelList.contains(value.toUpperCase())) {
-            thisLevel = Level.toLevel(value.toUpperCase());
+            thisLevel = Level.valueOf(value.toUpperCase());
           } else {
-            thisLevel = UtilLoggingLevel.toLevel(value.toUpperCase());
+//            thisLevel = UtilLoggingLevel.toLevel(value.toUpperCase());
         }
 
         return new NotLevelEqualsRule(thisLevel);
@@ -99,11 +95,11 @@ public class NotLevelEqualsRule extends AbstractRule {
     /**
      * {@inheritDoc}
      */
-    public boolean evaluate(final LoggingEvent event, Map matches) {
+    public boolean evaluate(final ChainsawLoggingEvent event, Map matches) {
         //both util.logging and log4j contain 'info' - use the int values instead of equality
         //info level set to the same value for both levels
-        Level eventLevel = event.getLevel();
-        boolean result = level.toInt() != eventLevel.toInt();
+        Level eventLevel = event.m_level;
+        boolean result = level.ordinal() != eventLevel.ordinal();
         if (result && matches != null) {
             Set entries = (Set) matches.get(LoggingEventFieldResolver.LEVEL_FIELD);
             if (entries == null) {
@@ -113,37 +109,5 @@ public class NotLevelEqualsRule extends AbstractRule {
             entries.add(eventLevel);
         }
         return result;
-    }
-
-    /**
-     * Deserialize the state of the object.
-     *
-     * @param in object input stream.
-     *
-     * @throws IOException if error in reading stream for deserialization.
-     */
-    private void readObject(final java.io.ObjectInputStream in)
-            throws IOException {
-        populateLevels();
-        boolean isUtilLogging = in.readBoolean();
-        int levelInt = in.readInt();
-        if (isUtilLogging) {
-            level = UtilLoggingLevel.toLevel(levelInt);
-        } else {
-            level = Level.toLevel(levelInt);
-        }
-    }
-
-    /**
-     * Serialize the state of the object.
-     *
-     * @param out object output stream.
-     *
-     * @throws IOException if error in writing stream during serialization.
-     */
-    private void writeObject(final java.io.ObjectOutputStream out)
-            throws IOException {
-        out.writeBoolean(level instanceof UtilLoggingLevel);
-        out.writeInt(level.toInt());
     }
 }

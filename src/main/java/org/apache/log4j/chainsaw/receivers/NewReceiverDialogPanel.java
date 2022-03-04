@@ -17,18 +17,20 @@
 
 package org.apache.log4j.chainsaw.receivers;
 
-import org.apache.log4j.LogManager;
 import org.apache.log4j.chainsaw.help.HelpManager;
 import org.apache.log4j.chainsaw.helper.OkCancelPanel;
-import org.apache.log4j.chainsaw.messages.MessageCenter;
-import org.apache.log4j.plugins.Plugin;
-import org.apache.log4j.plugins.Receiver;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.net.URL;
+import org.apache.log4j.chainsaw.ChainsawReceiver;
+import org.apache.log4j.chainsaw.ChainsawReceiverFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 
 /**
@@ -45,6 +47,7 @@ public class NewReceiverDialogPanel extends JPanel {
     private final JEditorPane javaDocPane = new JEditorPane();
     private final JScrollPane javaDocScroller = new JScrollPane(javaDocPane);
     private final JSplitPane splitter = new JSplitPane();
+    private static final Logger logger = LogManager.getLogger();
 
     private NewReceiverDialogPanel() {
         setupComponents();
@@ -63,17 +66,17 @@ public class NewReceiverDialogPanel extends JPanel {
         pluginEditorPanel.addPropertyChangeListener("plugin",
             evt -> {
 
-                Plugin plugin = (Plugin) evt.getNewValue();
-                URL url = HelpManager.getInstance().getHelpForClass(
-                    plugin.getClass());
-
-                try {
-                    javaDocPane.setPage(url);
-                } catch (IOException e) {
-                    MessageCenter.getInstance().getLogger().error(
-                        "Failed to load the Help resource for " +
-                            plugin.getClass(), e);
-                }
+//                Plugin plugin = (Plugin) evt.getNewValue();
+//                URL url = HelpManager.getInstance().getHelpForClass(
+//                    plugin.getClass());
+//
+//                try {
+//                    javaDocPane.setPage(url);
+//                } catch (IOException e) {
+//                    logger.error(
+//                        "Failed to load the Help resource for " +
+//                            plugin.getClass(), e);
+//                }
             });
     }
 
@@ -120,27 +123,13 @@ public class NewReceiverDialogPanel extends JPanel {
      * @return NewReceiverDialogPanel
      * @throws IllegalArgumentException if the specified class is not a Receiver
      */
-    public static NewReceiverDialogPanel create(Class receiverClass) {
+    public static NewReceiverDialogPanel create(ChainsawReceiverFactory recvFact) throws IntrospectionException {
 
-        if (!Receiver.class.isAssignableFrom(receiverClass)) {
-            throw new IllegalArgumentException(receiverClass.getName() +
-                " is not a Receiver");
-        }
-
-        Receiver receiverInstance = null;
-
-        try {
-            receiverInstance = (Receiver) receiverClass.newInstance();
-
-        } catch (Exception e) {
-            LogManager.getLogger(NewReceiverDialogPanel.class).error(
-                "Failed to create a new Receiver instance, this exception is unexpected",
-                e);
-        }
+        ChainsawReceiver recv = recvFact.create();
 
         NewReceiverDialogPanel panel = new NewReceiverDialogPanel();
 
-        panel.pluginEditorPanel.setPlugin(receiverInstance);
+        panel.pluginEditorPanel.setReceiverAndProperties(recv, recvFact.getPropertyDescriptors());
 
         return panel;
     }
@@ -156,7 +145,7 @@ public class NewReceiverDialogPanel extends JPanel {
     /**
      *
      */
-    public Plugin getPlugin() {
+    public ChainsawReceiver getReceiver() {
 
         return this.pluginEditorPanel.getPlugin();
     }

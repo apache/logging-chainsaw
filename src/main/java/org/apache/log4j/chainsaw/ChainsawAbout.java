@@ -16,12 +16,13 @@
  */
 package org.apache.log4j.chainsaw;
 
-import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.help.HelpManager;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A simple About box telling people stuff about this project
@@ -29,7 +30,7 @@ import java.awt.*;
  * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 class ChainsawAbout extends JDialog {
-    private static final Logger LOG = Logger.getLogger(ChainsawAbout.class);
+    private static final Logger LOG = LogManager.getLogger();
 
     private final JEditorPane editPane = new JEditorPane("text/html", "");
 

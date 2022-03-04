@@ -16,12 +16,9 @@
  */
 package org.apache.log4j.chainsaw;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.net.UDPReceiver;
-import org.apache.log4j.plugins.Receiver;
 
 import javax.swing.*;
 import javax.swing.text.SimpleAttributeSet;
@@ -38,7 +35,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 import java.util.Locale;
-import org.apache.log4j.net.JsonReceiver;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -47,7 +45,7 @@ import org.apache.log4j.net.JsonReceiver;
  * @author Paul Smith
  */
 class ReceiverConfigurationPanel extends JPanel {
-    private final Logger logger = LogManager.getLogger(ReceiverConfigurationPanel.class);
+    private final Logger logger = LogManager.getLogger();
 
     private final PanelModel panelModel = new PanelModel();
 
@@ -291,7 +289,7 @@ class ReceiverConfigurationPanel extends JPanel {
 
         networkReceiverClassNameComboBoxModel = new DefaultComboBoxModel<>();
         networkReceiverClassNameComboBoxModel.addElement(UDPReceiver.class.getName());
-        networkReceiverClassNameComboBoxModel.addElement(JsonReceiver.class.getName());
+//        networkReceiverClassNameComboBoxModel.addElement(JsonReceiver.class.getName());
 
         networkReceiverClassNameComboBox = new JComboBox<>(networkReceiverClassNameComboBoxModel);
 
@@ -696,9 +694,9 @@ class ReceiverConfigurationPanel extends JPanel {
             return Integer.parseInt(networkReceiverPortComboBoxModel.getSelectedItem().toString());
         }
 
-        Class<? extends Receiver> getNetworkReceiverClass() throws ClassNotFoundException {
-            return Class.forName(networkReceiverClassNameComboBoxModel.getSelectedItem().toString()).asSubclass(Receiver.class);
-        }
+//        Class<? extends Receiver> getNetworkReceiverClass() throws ClassNotFoundException {
+//            return Class.forName(networkReceiverClassNameComboBoxModel.getSelectedItem().toString()).asSubclass(Receiver.class);
+//        }
 
         boolean isLoadConfig() {
 

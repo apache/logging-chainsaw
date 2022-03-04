@@ -17,8 +17,6 @@
 package org.apache.log4j.chainsaw.dnd;
 
 
-import org.apache.log4j.Logger;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
@@ -29,6 +27,8 @@ import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * This class provides all the functionality to work out when files are dragged onto
@@ -44,7 +44,7 @@ public class FileDnDTarget implements DropTargetListener {
     /**
      * Logger for this class
      */
-    private static final Logger LOG = Logger.getLogger(FileDnDTarget.class);
+    private static final Logger LOG = LogManager.getLogger();
 
     protected int acceptableActions = DnDConstants.ACTION_COPY;
 

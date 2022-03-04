@@ -16,7 +16,7 @@
  */
 package org.apache.log4j.chainsaw.helper;
 
-import org.apache.log4j.Level;
+import org.apache.log4j.chainsaw.logevents.Level;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;

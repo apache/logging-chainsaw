@@ -18,16 +18,18 @@
 package org.apache.log4j.xml;
 
 import org.apache.log4j.helpers.Constants;
-import org.apache.log4j.plugins.Receiver;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.Decoder;
-import org.apache.log4j.spi.LoggingEvent;
 
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
+import org.apache.log4j.chainsaw.ChainsawReceiverSkeleton;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * LogFileXMLReceiver will read an xml-formated log file and make the events in the log file
@@ -55,7 +57,7 @@ import java.util.Collection;
  * @since 1.3
  */
 
-public class LogFileXMLReceiver extends Receiver {
+public class LogFileXMLReceiver extends ChainsawReceiverSkeleton {
     private String fileURL;
     private Rule expressionRule;
     private String filterExpression;
@@ -68,6 +70,8 @@ public class LogFileXMLReceiver extends Receiver {
     private String host;
     private String path;
     private boolean useCurrentThread;
+
+    private static final Logger logger = LogManager.getLogger();
 
     /**
      * Accessor
@@ -143,7 +147,7 @@ public class LogFileXMLReceiver extends Receiver {
         this.filterExpression = filterExpression;
     }
 
-    private boolean passesExpression(LoggingEvent event) {
+    private boolean passesExpression(ChainsawLoggingEvent event) {
         if (event != null) {
             if (expressionRule != null) {
                 return (expressionRule.evaluate(event, null));
@@ -174,67 +178,10 @@ public class LogFileXMLReceiver extends Receiver {
         }
     }
 
-    /**
-     * Process the file
-     */
-    public void activateOptions() {
-        Runnable runnable = () -> {
-            try {
-                URL url = new URL(fileURL);
-                host = url.getHost();
-                if (host != null && host.equals("")) {
-                    host = FILE_KEY;
-                }
-                path = url.getPath();
-            } catch (MalformedURLException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            }
-
-            try {
-                if (filterExpression != null) {
-                    expressionRule = ExpressionRule.getRule(filterExpression);
-                }
-            } catch (Exception e) {
-                getLogger().warn("Invalid filter expression: " + filterExpression, e);
-            }
-
-            Class c;
-            try {
-                c = Class.forName(decoder);
-                Object o = c.newInstance();
-                if (o instanceof Decoder) {
-                    decoderInstance = (Decoder) o;
-                }
-            } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-
-            try {
-                reader = new InputStreamReader(new URL(getFileURL()).openStream());
-                process(reader);
-            } catch (FileNotFoundException fnfe) {
-                getLogger().info("file not available");
-            } catch (IOException ioe) {
-                getLogger().warn("unable to load file", ioe);
-                return;
-            }
-        };
-        if (useCurrentThread) {
-            runnable.run();
-        } else {
-            Thread thread = new Thread(runnable, "LogFileXMLReceiver-" + getName());
-
-            thread.start();
-
-        }
-    }
-
     private void process(Reader unbufferedReader) throws IOException {
         BufferedReader bufferedReader = new BufferedReader(unbufferedReader);
         char[] content = new char[10000];
-        getLogger().debug("processing starting: " + fileURL);
+        logger.debug("processing starting: " + fileURL);
         int length;
         do {
             System.out.println("in do loop-about to process");
@@ -250,18 +197,17 @@ public class LogFileXMLReceiver extends Receiver {
                 }
             }
         } while (tailing);
-        getLogger().debug("processing complete: " + fileURL);
+        logger.debug("processing complete: " + fileURL);
 
         shutdown();
     }
 
-    private void processEvents(Collection<LoggingEvent> c) {
+    private void processEvents(Collection<ChainsawLoggingEvent> c) {
         if (c == null) {
             return;
         }
 
-        for (Object aC : c) {
-            LoggingEvent evt = (LoggingEvent) aC;
+        for (ChainsawLoggingEvent evt : c) {
             if (passesExpression(evt)) {
                 if (evt.getProperty(Constants.HOSTNAME_KEY) != null) {
                     evt.setProperty(Constants.HOSTNAME_KEY, host);
@@ -269,7 +215,7 @@ public class LogFileXMLReceiver extends Receiver {
                 if (evt.getProperty(Constants.APPLICATION_KEY) != null) {
                     evt.setProperty(Constants.APPLICATION_KEY, path);
                 }
-                doPost(evt);
+                append(evt);
             }
         }
     }
@@ -292,6 +238,61 @@ public class LogFileXMLReceiver extends Receiver {
      */
     public final void setUseCurrentThread(boolean useCurrentThread) {
         this.useCurrentThread = useCurrentThread;
+    }
+
+    @Override
+    public void start() {
+        Runnable runnable = () -> {
+            try {
+                URL url = new URL(fileURL);
+                host = url.getHost();
+                if (host != null && host.equals("")) {
+                    host = FILE_KEY;
+                }
+                path = url.getPath();
+            } catch (MalformedURLException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+
+            try {
+                if (filterExpression != null) {
+                    expressionRule = ExpressionRule.getRule(filterExpression);
+                }
+            } catch (Exception e) {
+                logger.warn("Invalid filter expression: " + filterExpression, e);
+            }
+
+            Class c;
+            try {
+                c = Class.forName(decoder);
+                Object o = c.newInstance();
+                if (o instanceof Decoder) {
+                    decoderInstance = (Decoder) o;
+                }
+            } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+            try {
+                reader = new InputStreamReader(new URL(getFileURL()).openStream());
+                process(reader);
+            } catch (FileNotFoundException fnfe) {
+                logger.info("file not available");
+            } catch (IOException ioe) {
+                logger.warn("unable to load file", ioe);
+                return;
+            }
+        };
+        if (useCurrentThread) {
+            runnable.run();
+        } else {
+            Thread thread = new Thread(runnable, "LogFileXMLReceiver-" + getName());
+
+            thread.start();
+
+        }
     }
 
 }

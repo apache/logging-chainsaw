@@ -17,14 +17,16 @@
 
 package org.apache.log4j.chainsaw.layout;
 
-import org.apache.log4j.EnhancedPatternLayout;
-import org.apache.log4j.Layout;
-import org.apache.log4j.Logger;
-import org.apache.log4j.spi.LocationInfo;
-import org.apache.log4j.spi.LoggingEvent;
-
-import java.util.Hashtable;
-import java.util.Set;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
+import org.apache.log4j.chainsaw.ChainsawConstants;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
+import org.apache.log4j.chainsaw.logevents.LocationInfo;
+import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.apache.logging.log4j.core.lookup.StrSubstitutor;
 
 
 /**
@@ -37,33 +39,29 @@ import java.util.Set;
  *
  * @author Paul Smith &lt;psmith@apache.org&gt;
  */
-public class EventDetailLayout extends Layout {
-    private final EnhancedPatternLayout patternLayout = new EnhancedPatternLayout();
+public class EventDetailLayout {
+
+    private String m_conversionPattern;
+    private DateTimeFormatter m_dateFormat;
 
     public EventDetailLayout() {
+        m_dateFormat = DateTimeFormatter.ISO_LOCAL_TIME;
     }
 
     public void setConversionPattern(String conversionPattern) {
-        patternLayout.setConversionPattern(conversionPattern);
-        patternLayout.activateOptions();
+        m_conversionPattern = conversionPattern;
     }
 
     public String getConversionPattern() {
-        return patternLayout.getConversionPattern();
+        return m_conversionPattern;
     }
 
-    /* (non-Javadoc)
-     * @see org.apache.log4j.Layout#getFooter()
-     */
-    public String getFooter() {
-        return "";
+    public void setDateformat(DateTimeFormatter dateFormat){
+        m_dateFormat = dateFormat;
     }
 
-    /* (non-Javadoc)
-     * @see org.apache.log4j.Layout#getHeader()
-     */
-    public String getHeader() {
-        return "";
+    public DateTimeFormatter getDateformat(){
+        return m_dateFormat;
     }
 
     //  /* (non-Javadoc)
@@ -177,76 +175,39 @@ public class EventDetailLayout extends Layout {
      * @param event
      * @return new LoggingEvent
      */
-    private static LoggingEvent copyForHTML(LoggingEvent event) {
-        Logger logger = Logger.getLogger(event.getLoggerName());
-        String threadName = event.getThreadName();
-        Object msg = escape(event.getMessage().toString());
-        String ndc = event.getNDC();
-//    Hashtable mdc = formatMDC(event);
-        LocationInfo li = null;
-        if (event.locationInformationExists()) {
-            li = formatLocationInfo(event);
-        }
-        Hashtable<String, String> properties = formatProperties(event);
-        LoggingEvent copy = new LoggingEvent(null,
-            logger, event.getTimeStamp(),
-            event.getLevel(),
-            msg,
-            threadName,
-            event.getThrowableInformation(),
-            ndc,
-            li,
-            properties);
+    private static ChainsawLoggingEvent copyForHTML(final ChainsawLoggingEvent event) {
+        ChainsawLoggingEventBuilder build = new ChainsawLoggingEventBuilder();
+        build.copyFromEvent(event);
 
-        return copy;
+        build.setMessage(escape(event.m_message));
+        LocationInfo li = event.m_locationInfo;
+        if( li != null ){
+            li = new LocationInfo(escape(li.fileName),
+                    escape(li.className),
+                    escape(li.methodName),
+                    li.lineNumber
+            );
+            build.setLocationInfo(li);
+        }
+
+        return build.create();
     }
 
-//  /**
-//  * @param event
-//  * @return
-//  */
-//  private static Hashtable formatMDC(LoggingEvent event) {
-//    Set keySet = event.getMDCKeySet();
-//    Hashtable hashTable = new Hashtable();
+    /**
+     * @param event
+     * @return
+     */
+//    private static Hashtable<String, String> formatProperties(LoggingEvent event) {
+//        Set keySet = event.getPropertyKeySet();
+//        Hashtable<String, String> hashTable = new Hashtable<>();
 //
-//    for (Iterator iter = keySet.iterator(); iter.hasNext();) {
-//      Object key = (Object) iter.next();
-//      Object value = event.getMDC(key.toString());
-//      hashTable.put(escape(key.toString()), escape(value.toString()));
+//        for (Object key : keySet) {
+//            Object value = event.getProperty(key.toString());
+//            hashTable.put(escape(key.toString()), escape(value.toString()));
+//        }
+//
+//        return hashTable;
 //    }
-//
-//    return hashTable;
-//  }
-
-    /**
-     * @param event
-     * @return
-     */
-    private static LocationInfo formatLocationInfo(LoggingEvent event) {
-        LocationInfo info = event.getLocationInformation();
-        LocationInfo newInfo =
-            new LocationInfo(
-                escape(info.getFileName()), escape(info.getClassName()),
-                escape(info.getMethodName()), escape(info.getLineNumber()));
-
-        return newInfo;
-    }
-
-    /**
-     * @param event
-     * @return
-     */
-    private static Hashtable<String, String> formatProperties(LoggingEvent event) {
-        Set keySet = event.getPropertyKeySet();
-        Hashtable<String, String> hashTable = new Hashtable<>();
-
-        for (Object key : keySet) {
-            Object value = event.getProperty(key.toString());
-            hashTable.put(escape(key.toString()), escape(value.toString()));
-        }
-
-        return hashTable;
-    }
 
     /* (non-Javadoc)
      * @see org.apache.log4j.Layout#ignoresThrowable()
@@ -264,16 +225,24 @@ public class EventDetailLayout extends Layout {
     /* (non-Javadoc)
      * @see org.apache.log4j.Layout#format(java.io.Writer, org.apache.log4j.spi.LoggingEvent)
      */
-    public String format(final LoggingEvent event) {
-        LoggingEvent newEvent = copyForHTML(event);
-        /**
-         * Layouts are not thread-safe, but are normally
-         * protected by the fact that their Appender is thread-safe.
-         *
-         * But here in Chainsaw there is no such guarantees.
-         */
-        synchronized (patternLayout) {
-            return patternLayout.format(newEvent);
-        }
+    public String format(final ChainsawLoggingEvent event) {
+        ChainsawLoggingEvent newEvent = copyForHTML(event);
+
+        Map<String,String> valuesMap = new HashMap<>();
+        valuesMap.put("level", event.m_level.toString());
+        valuesMap.put("logger", event.m_logger);
+        valuesMap.put("time", event.m_timestamp.atZone(ZoneId.systemDefault()).format(m_dateFormat));
+        valuesMap.put("millisdelta", event.getProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE));
+        valuesMap.put("thread", event.m_threadName);
+        valuesMap.put("message", event.m_message);
+        valuesMap.put("marker", "");
+        valuesMap.put("throwable", "");
+        StrSubstitutor sub = new StrSubstitutor(valuesMap);
+        String resolvedString = sub.replace(m_conversionPattern);
+
+        return resolvedString;
+//        synchronized (patternLayout) {
+//            return patternLayout.format(newEvent);
+//        }
     }
 }

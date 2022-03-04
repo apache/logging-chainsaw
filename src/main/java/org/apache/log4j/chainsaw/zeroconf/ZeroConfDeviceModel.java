@@ -28,7 +28,7 @@ public class ZeroConfDeviceModel extends AbstractTableModel implements ServiceLi
 
     private List<ServiceInfo> deviceList = new ArrayList<>();
     private ZeroConfPreferenceModel zeroConfPreferenceModel;
-    private transient ZeroConfPlugin plugin;
+//    private transient ZeroConfPlugin plugin;
 
     public ZeroConfDeviceModel() {
     }
@@ -58,7 +58,7 @@ public class ZeroConfDeviceModel extends AbstractTableModel implements ServiceLi
             case 2:
                 return zeroConfPreferenceModel.getAutoConnectDevices().contains(getAutoConnectHandle(info)) ? Boolean.TRUE : Boolean.FALSE;
             case 3:
-                return plugin.isConnectedTo(info) ? "Connected" : "Not Connected";
+//                return plugin.isConnectedTo(info) ? "Connected" : "Not Connected";
 //                return plugin.isConnectedTo(info)?new ImageIcon(ChainsawIcons.ANIM_NET_CONNECT):new ImageIcon();
             default:
                 return "";
@@ -135,9 +135,9 @@ public class ZeroConfDeviceModel extends AbstractTableModel implements ServiceLi
         fireTableDataChanged();
     }
 
-    void setZeroConfPluginParent(ZeroConfPlugin parent) {
-        this.plugin = parent;
-    }
+//    void setZeroConfPluginParent(ZeroConfPlugin parent) {
+//        this.plugin = parent;
+//    }
 
 
 }

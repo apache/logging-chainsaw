@@ -17,9 +17,8 @@
 
 package org.apache.log4j.chainsaw.color;
 
-import org.apache.log4j.spi.LoggingEvent;
-
 import java.awt.*;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
 
 /**
@@ -39,7 +38,7 @@ public interface Colorizer {
      * @param event
      * @return background color
      */
-    Color getBackgroundColor(LoggingEvent event);
+    Color getBackgroundColor(ChainsawLoggingEvent event);
 
-    Color getForegroundColor(LoggingEvent event);
+    Color getForegroundColor(ChainsawLoggingEvent event);
 }

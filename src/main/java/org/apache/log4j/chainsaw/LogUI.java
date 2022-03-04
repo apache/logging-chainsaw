@@ -21,28 +21,15 @@ import org.apache.log4j.*;
 import org.apache.log4j.chainsaw.color.RuleColorizer;
 import org.apache.log4j.chainsaw.dnd.FileDnDTarget;
 import org.apache.log4j.chainsaw.help.HelpManager;
-import org.apache.log4j.chainsaw.help.Tutorial;
 import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.chainsaw.icons.LineIconFactory;
-import org.apache.log4j.chainsaw.messages.MessageCenter;
 import org.apache.log4j.chainsaw.osx.OSXIntegration;
-import org.apache.log4j.chainsaw.plugins.PluginClassLoaderFactory;
 import org.apache.log4j.chainsaw.prefs.*;
-import org.apache.log4j.chainsaw.receivers.ReceiversHelper;
 import org.apache.log4j.chainsaw.receivers.ReceiversPanel;
-import org.apache.log4j.chainsaw.vfs.VFSLogFilePatternReceiver;
-import org.apache.log4j.net.SocketNodeEventListener;
-import org.apache.log4j.plugins.*;
-import org.apache.log4j.rewrite.PropertyRewritePolicy;
-import org.apache.log4j.rewrite.RewriteAppender;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.Decoder;
-import org.apache.log4j.spi.LoggerRepository;
-import org.apache.log4j.spi.LoggerRepositoryEx;
-import org.apache.log4j.spi.LoggingEvent;
-import org.apache.log4j.xml.DOMConfigurator;
 import org.apache.log4j.xml.XMLDecoder;
 
 import javax.swing.*;
@@ -52,8 +39,12 @@ import javax.swing.event.EventListenerList;
 import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.BeanInfo;
+import java.beans.Introspector;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyDescriptor;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -62,6 +53,17 @@ import java.net.URL;
 import java.security.*;
 import java.util.*;
 import java.util.List;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 
 /**
@@ -98,7 +100,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     private final Map tableMap = new HashMap();
     private final List<String> filterableColumns = new ArrayList<>();
     private final Map<String, Component> panelMap = new HashMap<>();
-    ChainsawAppenderHandler handler;
+    private ChainsawAppender chainsawAppender;
     private ChainsawToolBarAndMenus tbms;
     private ChainsawAbout aboutBox;
     private final SettingsManager sm = SettingsManager.getInstance();
@@ -108,8 +110,11 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     private final List<LogPanel> identifierPanels = new ArrayList<>();
     private int dividerSize;
     private int cyclicBufferSize;
-    private static Logger logger;
     private static String configurationURLAppArg;
+    private List<ChainsawReceiver> m_receivers = new ArrayList<>();
+    private List<ReceiverEventListener> m_receiverListeners = new ArrayList<>();
+
+    private static org.apache.logging.log4j.Logger logger = org.apache.logging.log4j.LogManager.getLogger();
 
     /**
      * Set to true, if and only if the GUI has completed it's full
@@ -134,10 +139,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     private EventListenerList shutdownListenerList = new EventListenerList();
     private WelcomePanel welcomePanel;
 
-    private static final Object repositorySelectorGuard = new Object();
-    private static final LoggerRepositoryExImpl repositoryExImpl = new LoggerRepositoryExImpl(LogManager.getLoggerRepository());
-
-    private PluginRegistry pluginRegistry;
     //map of tab names to rulecolorizers
     private Map<String, RuleColorizer> allColorizers = new HashMap<>();
     private ReceiverConfigurationPanel receiverConfigurationPanel = new ReceiverConfigurationPanel();
@@ -203,9 +204,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
         }
 
-
-        LogManager.setRepositorySelector(() -> repositoryExImpl, repositorySelectorGuard);
-
         final ApplicationPreferenceModel model = new ApplicationPreferenceModel();
 
         SettingsManager.getInstance().configure(new ApplicationPreferenceModelSaver(model));
@@ -230,7 +228,13 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             }
 
             if (lookAndFeelClassName != null && !(lookAndFeelClassName.trim().equals(""))) {
-                loadLookAndFeelUsingPluginClassLoader(lookAndFeelClassName);
+                try{
+                    UIManager.setLookAndFeel(lookAndFeelClassName);
+                }catch(Exception ex){}
+            }else{
+                try{
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                }catch(Exception ex){}
             }
             createChainsawGUI(model, null);
         });
@@ -248,10 +252,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         ApplicationPreferenceModel model, Action newShutdownAction) {
 
         if (model.isOkToRemoveSecurityManager()) {
-            MessageCenter
-                .getInstance()
-                .addMessage(
-                    "User has authorised removal of Java Security Manager via preferences");
+//            statusBar.setMessage("User has authorised removal of Java Security Manager via preferences");
             System.setSecurityManager(null);
             // this SHOULD set the Policy/Permission stuff for any
             // code loaded from our custom classloader.  
@@ -276,10 +277,9 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             showSplash(logUI);
         }
         logUI.cyclicBufferSize = model.getCyclicBufferSize();
-        logUI.pluginRegistry = repositoryExImpl.getPluginRegistry();
 
-        logUI.handler = new ChainsawAppenderHandler();
-        logUI.handler.addEventBatchListener(logUI.new NewTabEventBatchReceiver());
+        final LoggerContext ctx = (LoggerContext) org.apache.logging.log4j.LogManager.getContext(false);
+        logUI.chainsawAppender = ctx.getConfiguration().getAppender("chainsaw");
 
         /**
          * TODO until we work out how JoranConfigurator might be able to have
@@ -289,44 +289,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
          * important for the Web start version of Chainsaw
          */
         //configuration initialized here
-        logUI.ensureChainsawAppenderHandlerAdded();
-        logger = LogManager.getLogger(LogUI.class);
-
-        //set hostname, application and group properties which will cause Chainsaw and other apache-generated
-        //logging events to route (by default) to a tab named 'chainsaw-log'
-        PropertyRewritePolicy policy = new PropertyRewritePolicy();
-        policy.setProperties("hostname=chainsaw,application=log,group=chainsaw");
-
-        RewriteAppender rewriteAppender = new RewriteAppender();
-        rewriteAppender.setRewritePolicy(policy);
-
-        Enumeration appenders = Logger.getLogger("org.apache").getAllAppenders();
-        if (!appenders.hasMoreElements()) {
-            appenders = Logger.getRootLogger().getAllAppenders();
-        }
-        while (appenders.hasMoreElements()) {
-            Appender nextAppender = (Appender) appenders.nextElement();
-            rewriteAppender.addAppender(nextAppender);
-        }
-        Logger.getLogger("org.apache").removeAllAppenders();
-        Logger.getLogger("org.apache").addAppender(rewriteAppender);
-        Logger.getLogger("org.apache").setAdditivity(false);
-
-        //commons-vfs uses httpclient for http filesystem support, route this to the chainsaw-log tab as well
-        appenders = Logger.getLogger("httpclient").getAllAppenders();
-        if (!appenders.hasMoreElements()) {
-            appenders = Logger.getRootLogger().getAllAppenders();
-        }
-        while (appenders.hasMoreElements()) {
-            Appender nextAppender = (Appender) appenders.nextElement();
-            rewriteAppender.addAppender(nextAppender);
-        }
-        Logger.getLogger("httpclient").removeAllAppenders();
-        Logger.getLogger("httpclient").addAppender(rewriteAppender);
-        Logger.getLogger("httpclient").setAdditivity(false);
-
-        //set the commons.vfs.cache logger to info, since it can contain password information
-        Logger.getLogger("org.apache.commons.vfs.cache").setLevel(Level.INFO);
 
         Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
             e.printStackTrace();
@@ -345,7 +307,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             try {
                 URL configURL = new URL(config);
                 logger.info("Using '" + config + "' for auto-configuration");
-                logUI.loadConfigurationUsingPluginClassLoader(configURL);
+//                logUI.loadConfigurationUsingPluginClassLoader(configURL);
             } catch (MalformedURLException e) {
                 logger.error("Initial configuration - failed to convert config string to url", e);
             } catch (IOException e) {
@@ -364,7 +326,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                     URL newConfigurationURL = new URL(newConfiguration);
                     File file = new File(newConfigurationURL.toURI());
                     if (file.exists()) {
-                        logUI.loadConfigurationUsingPluginClassLoader(newConfigurationURL);
+//                        logUI.loadConfigurationUsingPluginClassLoader(newConfigurationURL);
                     } else {
                         logger.info("Updated configuration but file does not exist");
                     }
@@ -374,8 +336,8 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             }
         });
 
-        LogManager.getRootLogger().setLevel(Level.TRACE);
         EventQueue.invokeLater(logUI::activateViewer);
+        EventQueue.invokeLater(logUI::buildChainsawLogPanel);
 
         logger.info("SecurityManager is now: " + System.getSecurityManager());
 
@@ -403,20 +365,10 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
         }
 
-        LogManager.setRepositorySelector(() -> repositoryExImpl, repositorySelectorGuard);
-
-        //if Chainsaw is launched as an appender, ensure the root logger level is TRACE
-        LogManager.getRootLogger().setLevel(Level.TRACE);
-
         final ApplicationPreferenceModel model = new ApplicationPreferenceModel();
         SettingsManager.getInstance().configure(new ApplicationPreferenceModelSaver(model));
 
         cyclicBufferSize = model.getCyclicBufferSize();
-
-        handler = new ChainsawAppenderHandler(appender);
-        handler.addEventBatchListener(new NewTabEventBatchReceiver());
-
-        logger = LogManager.getLogger(LogUI.class);
 
         setShutdownAction(
             new AbstractAction() {
@@ -429,7 +381,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         SettingsManager.getInstance().configure(new ApplicationPreferenceModelSaver(model));
 
         EventQueue.invokeLater(() -> {
-            loadLookAndFeelUsingPluginClassLoader(model.getLookAndFeelClassName());
+//            loadLookAndFeelUsingPluginClassLoader(model.getLookAndFeelClassName());
             createChainsawGUI(model, null);
             getApplicationPreferenceModel().apply(model);
             activateViewer();
@@ -468,8 +420,8 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                     final Decoder decoder = new XMLDecoder();
                     try {
                         getStatusBar().setMessage("Loading " + file.getAbsolutePath() + "...");
-                        FileLoadAction.importURL(handler, decoder, file
-                            .getName(), file.toURI().toURL());
+//                        FileLoadAction.importURL(handler, decoder, file
+//                            .getName(), file.toURI().toURL());
                     } catch (Exception e) {
                         String errorMsg = "Failed to import a file";
                         logger.error(errorMsg, e);
@@ -502,40 +454,8 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
     }
 
-    private void initPlugins(PluginRegistry pluginRegistry) {
-        pluginRegistry.addPluginListener(
-            new PluginListener() {
-                public void pluginStarted(PluginEvent e) {
-                    if (e.getPlugin() instanceof JComponent) {
-                        JComponent plugin = (JComponent) e.getPlugin();
-                        getTabbedPane().addANewTab(plugin.getName(), plugin, null, null);
-                        getPanelMap().put(plugin.getName(), plugin);
-                    }
-                }
-
-                public void pluginStopped(PluginEvent e) {
-                    //TODO remove the plugin from the gui
-                }
-            });
-
-        // TODO this should all be in a config file
-//    ChainsawCentral cc = new ChainsawCentral();
-//    pluginRegistry.addPlugin(cc);
-//    cc.activateOptions();
-
-        try {
-            Class<? extends Plugin> pluginClass = Class.forName("org.apache.log4j.chainsaw.zeroconf.ZeroConfPlugin").asSubclass(Plugin.class);
-            Plugin plugin = pluginClass.newInstance();
-            pluginRegistry.addPlugin(plugin);
-            plugin.activateOptions();
-            MessageCenter.getInstance().getLogger().info("Looks like ZeroConf is available... WooHoo!");
-        } catch (Throwable e) {
-            MessageCenter.getInstance().getLogger().error("Doesn't look like ZeroConf is available", e);
-        }
-    }
-
     private void setupReceiverPanel() {
-        receiversPanel = new ReceiversPanel();
+        receiversPanel = new ReceiversPanel(this, statusBar);
         receiversPanel.addPropertyChangeListener(
             "visible",
             evt -> getApplicationPreferenceModel().setReceivers(
@@ -648,42 +568,22 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         }
     }
 
+    public void buildChainsawLogPanel(){
+        List<ChainsawLoggingEvent> events = new ArrayList<>();
+        buildLogPanel(false, "Chainsaw", events, chainsawAppender.getReceiver());
+    }
+
     /**
      * Activates itself as a viewer by configuring Size, and location of itself,
      * and configures the default Tabbed Pane elements with the correct layout,
      * table columns, and sets itself viewable.
      */
     public void activateViewer() {
-        LoggerRepository repo = LogManager.getLoggerRepository();
-        if (repo instanceof LoggerRepositoryEx) {
-            this.pluginRegistry = ((LoggerRepositoryEx) repo).getPluginRegistry();
-        }
         initGUI();
 
         initPrefModelListeners();
 
-        /**
-         * We add a simple appender to the MessageCenter logger
-         * so that each message is displayed in the Status bar
-         */
-        MessageCenter.getInstance().getLogger().addAppender(
-            new AppenderSkeleton() {
-                protected void append(LoggingEvent event) {
-                    getStatusBar().setMessage(event.getMessage().toString());
-                }
-
-                public void close() {
-                }
-
-                public boolean requiresLayout() {
-                    return false;
-                }
-            });
-
-
-        initSocketConnectionListener();
-
-        if (pluginRegistry.getPlugins(Receiver.class).size() == 0) {
+        if (m_receivers.size() == 0) {
             noReceiversDefined = true;
         }
 
@@ -808,13 +708,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
         getContentPane().add(mainReceiverSplitPane, BorderLayout.CENTER);
 
-        /**
-         * We need to make sure that all the internal GUI components have been added to the
-         * JFrame so that any plugns that get activated during initPlugins(...) method
-         * have access to inject menus
-         */
-        initPlugins(pluginRegistry);
-
         mainReceiverSplitPane.setResizeWeight(1.0);
         addWindowListener(
             new WindowAdapter() {
@@ -920,12 +813,12 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         final PopupListener tabPopupListener = new PopupListener(tabPopup);
         getTabbedPane().addMouseListener(tabPopupListener);
 
-        this.handler.addPropertyChangeListener(
-            "dataRate",
-            evt -> {
-                double dataRate = (Double) evt.getNewValue();
-                statusBar.setDataRate(dataRate);
-            });
+//        this.handler.addPropertyChangeListener(
+//            "dataRate",
+//            evt -> {
+//                double dataRate = (Double) evt.getNewValue();
+//                statusBar.setDataRate(dataRate);
+//            });
 
         getSettingsManager().addSettingsListener(this);
         getSettingsManager().addSettingsListener(MRUFileListPreferenceSaver.getInstance());
@@ -973,8 +866,8 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
             container.add(new JScrollPane(tutorialArea), BorderLayout.CENTER);
         } catch (Exception e) {
-            MessageCenter.getInstance().getLogger().error(
-                "Error occurred loading the Tutorial", e);
+            logger.error("Can't load tutorial", e);
+            statusBar.setMessage("Can't load tutorail");
         }
 
         tutorialFrame.setIconImage(new ImageIcon(ChainsawIcons.HELP).getImage());
@@ -989,7 +882,18 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                             null,
                             "This will start 3 \"Generator\" receivers for use in the Tutorial.  Is that ok?",
                             "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                        new Thread(new Tutorial()).start();
+                        // Create and start generators
+                        Generator[] generators = {
+                            new Generator("Generator 1"),
+                            new Generator("Generator 2"),
+                            new Generator("Generator 3"),
+                        };
+                        
+                        for( Generator gen : generators ){
+                            addReceiver(gen);
+                            gen.start();
+                        }
+
                         putValue("TutorialStarted", Boolean.TRUE);
                     } else {
                         putValue("TutorialStarted", Boolean.FALSE);
@@ -1008,14 +912,9 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                             "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                         new Thread(
                             () -> {
-                                LoggerRepository repo1 = LogManager.getLoggerRepository();
-                                if (repo1 instanceof LoggerRepositoryEx) {
-                                    PluginRegistry pluginRegistry = ((LoggerRepositoryEx) repo1).getPluginRegistry();
-                                    List list = pluginRegistry.getPlugins(Generator.class);
-
-                                    for (Object aList : list) {
-                                        Plugin plugin = (Plugin) aList;
-                                        pluginRegistry.stopPlugin(plugin.getName());
+                                for( ChainsawReceiver rx : m_receivers ){
+                                    if( rx instanceof Generator ){
+                                        rx.shutdown();
                                     }
                                 }
                             }).start();
@@ -1044,19 +943,24 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         startTutorial.addPropertyChangeListener(pcl);
         stopTutorial.addPropertyChangeListener(pcl);
 
-        pluginRegistry.addPluginListener(
-            new PluginListener() {
-                public void pluginStarted(PluginEvent e) {
-                }
+        addReceiverEventListener(new ReceiverEventListener() {
+            @Override
+            public void receiverAdded(ChainsawReceiver rx) {}
 
-                public void pluginStopped(PluginEvent e) {
-                    List list = pluginRegistry.getPlugins(Generator.class);
-
-                    if (list.size() == 0) {
-                        startTutorial.putValue("TutorialStarted", Boolean.FALSE);
+            @Override
+            public void receiverRemoved(ChainsawReceiver rx1) {
+                int count = 0;
+                for( ChainsawReceiver rx : m_receivers ){
+                    if( rx instanceof Generator ){
+                        count++;
                     }
                 }
-            });
+
+                if (count == 0) {
+                    startTutorial.putValue("TutorialStarted", Boolean.FALSE);
+                }
+            }
+        });
 
         final SmallButton stopButton = new SmallButton(stopTutorial);
 
@@ -1076,7 +980,8 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                         try {
                             tutorialArea.setPage(e.getURL());
                         } catch (IOException e1) {
-                            MessageCenter.getInstance().getLogger().error(
+                            statusBar.setMessage("Failed to change URL for tutorial");
+                            logger.error(
                                 "Failed to change the URL for the Tutorial", e1);
                         }
                     }
@@ -1126,82 +1031,11 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         mainReceiverSplitPane.repaint();
     }
 
-    private void initSocketConnectionListener() {
-        final SocketNodeEventListener socketListener =
-            new SocketNodeEventListener() {
-                public void socketOpened(String remoteInfo) {
-                    statusBar.remoteConnectionReceived(remoteInfo);
-                }
-
-                public void socketClosedEvent(Exception e) {
-                    MessageCenter.getInstance().getLogger().info(
-                        "Connection lost! :: " + e.getMessage());
-                }
-            };
-
-        PluginListener pluginListener =
-            new PluginListener() {
-                public void pluginStarted(PluginEvent e) {
-                    MessageCenter.getInstance().getLogger().info(
-                        e.getPlugin().getName() + " started!");
-
-                    Method method = getAddListenerMethod(e.getPlugin());
-
-                    if (method != null) {
-                        try {
-                            method.invoke(e.getPlugin(), socketListener);
-                        } catch (Exception ex) {
-                            MessageCenter.getInstance().getLogger().error(
-                                "Failed to add a SocketNodeEventListener", ex);
-                        }
-                    }
-                }
-
-                Method getRemoveListenerMethod(Plugin p) {
-                    try {
-                        return p.getClass().getMethod(
-                            "removeSocketNodeEventListener",
-                            SocketNodeEventListener.class);
-                    } catch (Exception e) {
-                        return null;
-                    }
-                }
-
-                Method getAddListenerMethod(Plugin p) {
-                    try {
-                        return p.getClass().getMethod(
-                            "addSocketNodeEventListener",
-                            SocketNodeEventListener.class);
-                    } catch (Exception e) {
-                        return null;
-                    }
-                }
-
-                public void pluginStopped(PluginEvent e) {
-                    Method method = getRemoveListenerMethod(e.getPlugin());
-
-                    if (method != null) {
-                        try {
-                            method.invoke(e.getPlugin(), socketListener);
-                        } catch (Exception ex) {
-                            MessageCenter.getInstance().getLogger().error(
-                                "Failed to remove SocketNodeEventListener", ex);
-                        }
-                    }
-
-                    MessageCenter.getInstance().getLogger().info(
-                        e.getPlugin().getName() + " stopped!");
-                }
-            };
-
-        pluginRegistry.addPluginListener(pluginListener);
-    }
-
     private void initPrefModelListeners() {
-        applicationPreferenceModel.addPropertyChangeListener(
-            "identifierExpression",
-            evt -> handler.setIdentifierExpression(evt.getNewValue().toString()));
-        handler.setIdentifierExpression(applicationPreferenceModel.getIdentifierExpression());
+//        applicationPreferenceModel.addPropertyChangeListener(
+//            "identifierExpression",
+//            evt -> handler.setIdentifierExpression(evt.getNewValue().toString()));
+//        handler.setIdentifierExpression(applicationPreferenceModel.getIdentifierExpression());
 
 
         applicationPreferenceModel.addPropertyChangeListener(
@@ -1211,13 +1045,13 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         ToolTipManager.sharedInstance().setDismissDelay(
             applicationPreferenceModel.getToolTipDisplayMillis());
 
-        applicationPreferenceModel.addPropertyChangeListener(
-            "responsiveness",
-            evt -> {
-                int value = (Integer) evt.getNewValue();
-                handler.setQueueInterval((value * 1000) - 750);
-            });
-        handler.setQueueInterval((applicationPreferenceModel.getResponsiveness() * 1000) - 750);
+//        applicationPreferenceModel.addPropertyChangeListener(
+//            "responsiveness",
+//            evt -> {
+//                int value = (Integer) evt.getNewValue();
+//                handler.setQueueInterval((value * 1000) - 750);
+//            });
+//        handler.setQueueInterval((applicationPreferenceModel.getResponsiveness() * 1000) - 750);
 
         applicationPreferenceModel.addPropertyChangeListener(
             "tabPlacement",
@@ -1277,179 +1111,179 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
      * Displays a dialog which will provide options for selecting a configuration
      */
     private void showReceiverConfigurationPanel() {
-        SwingUtilities.invokeLater(
-            () -> {
-                final JDialog dialog = new JDialog(LogUI.this, true);
-                dialog.setTitle("Load events into Chainsaw");
-                dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-
-                dialog.setResizable(false);
-
-                receiverConfigurationPanel.setCompletionActionListener(
-                    e -> {
-                        dialog.setVisible(false);
-
-                        if (receiverConfigurationPanel.getModel().isCancelled()) {
-                            return;
-                        }
-                        applicationPreferenceModel.setShowNoReceiverWarning(!receiverConfigurationPanel.isDontWarnMeAgain());
-                        //remove existing plugins
-                        List<Plugin> plugins = pluginRegistry.getPlugins();
-                        for (Object plugin1 : plugins) {
-                            Plugin plugin = (Plugin) plugin1;
-                            //don't stop ZeroConfPlugin if it is registered
-                            if (!plugin.getName().toLowerCase(Locale.ENGLISH).contains("zeroconf")) {
-                                pluginRegistry.stopPlugin(plugin.getName());
-                            }
-                        }
-                        URL configURL = null;
-
-                        if (receiverConfigurationPanel.getModel().isNetworkReceiverMode()) {
-                            int port = receiverConfigurationPanel.getModel().getNetworkReceiverPort();
-
-                            try {
-                                Class<? extends Receiver> receiverClass = receiverConfigurationPanel.getModel().getNetworkReceiverClass();
-                                Receiver networkReceiver = receiverClass.newInstance();
-                                networkReceiver.setName(receiverClass.getSimpleName() + "-" + port);
-
-                                Method portMethod =
-                                    networkReceiver.getClass().getMethod(
-                                        "setPort", int.class);
-                                portMethod.invoke(
-                                    networkReceiver, port);
-
-                                networkReceiver.setThreshold(Level.TRACE);
-
-                                pluginRegistry.addPlugin(networkReceiver);
-                                networkReceiver.activateOptions();
-                                receiversPanel.updateReceiverTreeInDispatchThread();
-                            } catch (Exception e3) {
-                                MessageCenter.getInstance().getLogger().error(
-                                    "Error creating Receiver", e3);
-                                MessageCenter.getInstance().getLogger().info(
-                                    "An error occurred creating your Receiver");
-                            }
-                        } else if (receiverConfigurationPanel.getModel().isLog4jConfig()) {
-                            File log4jConfigFile = receiverConfigurationPanel.getModel().getLog4jConfigFile();
-                            if (log4jConfigFile != null) {
-                                try {
-                                    Map<String, Map<String, String>> entries = LogFilePatternLayoutBuilder.getAppenderConfiguration(log4jConfigFile);
-                                    for (Object o : entries.entrySet()) {
-                                        try {
-                                            Map.Entry entry = (Map.Entry) o;
-                                            String name = (String) entry.getKey();
-                                            Map values = (Map) entry.getValue();
-                                            //values: conversion, file
-                                            String conversionPattern = values.get("conversion").toString();
-                                            File file = new File(values.get("file").toString());
-                                            URL fileURL = file.toURI().toURL();
-                                            String timestampFormat = LogFilePatternLayoutBuilder.getTimeStampFormat(conversionPattern);
-                                            String receiverPattern = LogFilePatternLayoutBuilder.getLogFormatFromPatternLayout(conversionPattern);
-                                            VFSLogFilePatternReceiver fileReceiver = new VFSLogFilePatternReceiver();
-                                            fileReceiver.setName(name);
-                                            fileReceiver.setAutoReconnect(true);
-                                            fileReceiver.setContainer(LogUI.this);
-                                            fileReceiver.setAppendNonMatches(true);
-                                            fileReceiver.setFileURL(fileURL.toURI().toString());
-                                            fileReceiver.setTailing(true);
-                                            fileReceiver.setLogFormat(receiverPattern);
-                                            fileReceiver.setTimestampFormat(timestampFormat);
-                                            fileReceiver.setThreshold(Level.TRACE);
-                                            pluginRegistry.addPlugin(fileReceiver);
-                                            fileReceiver.activateOptions();
-                                            receiversPanel.updateReceiverTreeInDispatchThread();
-                                        } catch (URISyntaxException e1) {
-                                            e1.printStackTrace();
-                                        }
-                                    }
-                                } catch (IOException e1) {
-                                    e1.printStackTrace();
-                                }
-                            }
-                        } else if (receiverConfigurationPanel.getModel().isLoadConfig()) {
-                            configURL = receiverConfigurationPanel.getModel().getConfigToLoad();
-                        } else if (receiverConfigurationPanel.getModel().isLogFileReceiverConfig()) {
-                            try {
-                                URL fileURL = receiverConfigurationPanel.getModel().getLogFileURL();
-                                if (fileURL != null) {
-                                    VFSLogFilePatternReceiver fileReceiver = new VFSLogFilePatternReceiver();
-                                    fileReceiver.setName(fileURL.getFile());
-                                    fileReceiver.setAutoReconnect(true);
-                                    fileReceiver.setContainer(LogUI.this);
-                                    fileReceiver.setAppendNonMatches(true);
-                                    fileReceiver.setFileURL(fileURL.toURI().toString());
-                                    fileReceiver.setTailing(true);
-                                    if (receiverConfigurationPanel.getModel().isPatternLayoutLogFormat()) {
-                                        fileReceiver.setLogFormat(LogFilePatternLayoutBuilder.getLogFormatFromPatternLayout(receiverConfigurationPanel.getModel().getLogFormat()));
-                                    } else {
-                                        fileReceiver.setLogFormat(receiverConfigurationPanel.getModel().getLogFormat());
-                                    }
-                                    fileReceiver.setTimestampFormat(receiverConfigurationPanel.getModel().getLogFormatTimestampFormat());
-                                    fileReceiver.setThreshold(Level.TRACE);
-
-                                    pluginRegistry.addPlugin(fileReceiver);
-                                    fileReceiver.activateOptions();
-                                    receiversPanel.updateReceiverTreeInDispatchThread();
-                                }
-                            } catch (Exception e2) {
-                                MessageCenter.getInstance().getLogger().error(
-                                    "Error creating Receiver", e2);
-                                MessageCenter.getInstance().getLogger().info(
-                                    "An error occurred creating your Receiver");
-                            }
-                        }
-                        if (configURL == null && receiverConfigurationPanel.isDontWarnMeAgain()) {
-                            //use the saved config file as the config URL if defined
-                            if (receiverConfigurationPanel.getModel().getSaveConfigFile() != null) {
-                                try {
-                                    configURL = receiverConfigurationPanel.getModel().getSaveConfigFile().toURI().toURL();
-                                } catch (MalformedURLException e1) {
-                                    e1.printStackTrace();
-                                }
-                            } else {
-                                //no saved config defined but don't warn me is checked - use default config
-                                configURL = receiverConfigurationPanel.getModel().getDefaultConfigFileURL();
-                            }
-                        }
-                        if (configURL != null) {
-                            MessageCenter.getInstance().getLogger().debug(
-                                "Initialiazing Log4j with " + configURL.toExternalForm());
-                            final URL finalURL = configURL;
-                            new Thread(
-                                () -> {
-                                    if (receiverConfigurationPanel.isDontWarnMeAgain()) {
-                                        applicationPreferenceModel.setConfigurationURL(finalURL.toExternalForm());
-                                    } else {
-                                        try {
-                                            if (new File(finalURL.toURI()).exists()) {
-                                                loadConfigurationUsingPluginClassLoader(finalURL);
-                                            }
-                                        } catch (URISyntaxException e12) {
-                                            //ignore
-                                        }
-                                    }
-
-                                    receiversPanel.updateReceiverTreeInDispatchThread();
-                                }).start();
-                        }
-                        File saveConfigFile = receiverConfigurationPanel.getModel().getSaveConfigFile();
-                        if (saveConfigFile != null) {
-                            ReceiversHelper.getInstance().saveReceiverConfiguration(saveConfigFile);
-                        }
-                    });
-
-                receiverConfigurationPanel.setDialog(dialog);
-                dialog.getContentPane().add(receiverConfigurationPanel);
-
-                dialog.pack();
-
-                Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-                dialog.setLocation(
-                    (screenSize.width / 2) - (dialog.getWidth() / 2),
-                    (screenSize.height / 2) - (dialog.getHeight() / 2));
-
-                dialog.setVisible(true);
-            });
+//        SwingUtilities.invokeLater(
+//            () -> {
+//                final JDialog dialog = new JDialog(LogUI.this, true);
+//                dialog.setTitle("Load events into Chainsaw");
+//                dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+//
+//                dialog.setResizable(false);
+//
+//                receiverConfigurationPanel.setCompletionActionListener(
+//                    e -> {
+//                        dialog.setVisible(false);
+//
+//                        if (receiverConfigurationPanel.getModel().isCancelled()) {
+//                            return;
+//                        }
+//                        applicationPreferenceModel.setShowNoReceiverWarning(!receiverConfigurationPanel.isDontWarnMeAgain());
+//                        //remove existing plugins
+//                        List<Plugin> plugins = pluginRegistry.getPlugins();
+//                        for (Object plugin1 : plugins) {
+//                            Plugin plugin = (Plugin) plugin1;
+//                            //don't stop ZeroConfPlugin if it is registered
+//                            if (!plugin.getName().toLowerCase(Locale.ENGLISH).contains("zeroconf")) {
+//                                pluginRegistry.stopPlugin(plugin.getName());
+//                            }
+//                        }
+//                        URL configURL = null;
+//
+//                        if (receiverConfigurationPanel.getModel().isNetworkReceiverMode()) {
+//                            int port = receiverConfigurationPanel.getModel().getNetworkReceiverPort();
+//
+//                            try {
+//                                Class<? extends Receiver> receiverClass = receiverConfigurationPanel.getModel().getNetworkReceiverClass();
+//                                Receiver networkReceiver = receiverClass.newInstance();
+//                                networkReceiver.setName(receiverClass.getSimpleName() + "-" + port);
+//
+//                                Method portMethod =
+//                                    networkReceiver.getClass().getMethod(
+//                                        "setPort", int.class);
+//                                portMethod.invoke(
+//                                    networkReceiver, port);
+//
+//                                networkReceiver.setThreshold(Level.TRACE);
+//
+//                                pluginRegistry.addPlugin(networkReceiver);
+//                                networkReceiver.activateOptions();
+//                                receiversPanel.updateReceiverTreeInDispatchThread();
+//                            } catch (Exception e3) {
+//                                logger.error(
+//                                    "Error creating Receiver", e3);
+//                                statusBar.setMessage(
+//                                    "An error occurred creating your Receiver");
+//                            }
+//                        } else if (receiverConfigurationPanel.getModel().isLog4jConfig()) {
+//                            File log4jConfigFile = receiverConfigurationPanel.getModel().getLog4jConfigFile();
+//                            if (log4jConfigFile != null) {
+//                                try {
+//                                    Map<String, Map<String, String>> entries = LogFilePatternLayoutBuilder.getAppenderConfiguration(log4jConfigFile);
+//                                    for (Object o : entries.entrySet()) {
+//                                        try {
+//                                            Map.Entry entry = (Map.Entry) o;
+//                                            String name = (String) entry.getKey();
+//                                            Map values = (Map) entry.getValue();
+//                                            //values: conversion, file
+//                                            String conversionPattern = values.get("conversion").toString();
+//                                            File file = new File(values.get("file").toString());
+//                                            URL fileURL = file.toURI().toURL();
+//                                            String timestampFormat = LogFilePatternLayoutBuilder.getTimeStampFormat(conversionPattern);
+//                                            String receiverPattern = LogFilePatternLayoutBuilder.getLogFormatFromPatternLayout(conversionPattern);
+//                                            VFSLogFilePatternReceiver fileReceiver = new VFSLogFilePatternReceiver();
+//                                            fileReceiver.setName(name);
+//                                            fileReceiver.setAutoReconnect(true);
+//                                            fileReceiver.setContainer(LogUI.this);
+//                                            fileReceiver.setAppendNonMatches(true);
+//                                            fileReceiver.setFileURL(fileURL.toURI().toString());
+//                                            fileReceiver.setTailing(true);
+//                                            fileReceiver.setLogFormat(receiverPattern);
+//                                            fileReceiver.setTimestampFormat(timestampFormat);
+////                                            fileReceiver.setThreshold(Level.TRACE);
+////                                            pluginRegistry.addPlugin(fileReceiver);
+//                                            fileReceiver.activateOptions();
+//                                            receiversPanel.updateReceiverTreeInDispatchThread();
+//                                        } catch (URISyntaxException e1) {
+//                                            e1.printStackTrace();
+//                                        }
+//                                    }
+//                                } catch (IOException e1) {
+//                                    e1.printStackTrace();
+//                                }
+//                            }
+//                        } else if (receiverConfigurationPanel.getModel().isLoadConfig()) {
+//                            configURL = receiverConfigurationPanel.getModel().getConfigToLoad();
+//                        } else if (receiverConfigurationPanel.getModel().isLogFileReceiverConfig()) {
+//                            try {
+//                                URL fileURL = receiverConfigurationPanel.getModel().getLogFileURL();
+//                                if (fileURL != null) {
+//                                    VFSLogFilePatternReceiver fileReceiver = new VFSLogFilePatternReceiver();
+//                                    fileReceiver.setName(fileURL.getFile());
+//                                    fileReceiver.setAutoReconnect(true);
+//                                    fileReceiver.setContainer(LogUI.this);
+//                                    fileReceiver.setAppendNonMatches(true);
+//                                    fileReceiver.setFileURL(fileURL.toURI().toString());
+//                                    fileReceiver.setTailing(true);
+//                                    if (receiverConfigurationPanel.getModel().isPatternLayoutLogFormat()) {
+//                                        fileReceiver.setLogFormat(LogFilePatternLayoutBuilder.getLogFormatFromPatternLayout(receiverConfigurationPanel.getModel().getLogFormat()));
+//                                    } else {
+//                                        fileReceiver.setLogFormat(receiverConfigurationPanel.getModel().getLogFormat());
+//                                    }
+//                                    fileReceiver.setTimestampFormat(receiverConfigurationPanel.getModel().getLogFormatTimestampFormat());
+////                                    fileReceiver.setThreshold(Level.TRACE);
+////
+////                                    pluginRegistry.addPlugin(fileReceiver);
+//                                    fileReceiver.activateOptions();
+//                                    receiversPanel.updateReceiverTreeInDispatchThread();
+//                                }
+//                            } catch (Exception e2) {
+//                                logger.error(
+//                                    "Error creating Receiver", e2);
+//                                statusBar.setMessage(
+//                                    "An error occurred creating your Receiver");
+//                            }
+//                        }
+//                        if (configURL == null && receiverConfigurationPanel.isDontWarnMeAgain()) {
+//                            //use the saved config file as the config URL if defined
+//                            if (receiverConfigurationPanel.getModel().getSaveConfigFile() != null) {
+//                                try {
+//                                    configURL = receiverConfigurationPanel.getModel().getSaveConfigFile().toURI().toURL();
+//                                } catch (MalformedURLException e1) {
+//                                    e1.printStackTrace();
+//                                }
+//                            } else {
+//                                //no saved config defined but don't warn me is checked - use default config
+//                                configURL = receiverConfigurationPanel.getModel().getDefaultConfigFileURL();
+//                            }
+//                        }
+//                        if (configURL != null) {
+////                            MessageCenter.getInstance().getLogger().debug(
+////                                "Initialiazing Log4j with " + configURL.toExternalForm());
+//                            final URL finalURL = configURL;
+//                            new Thread(
+//                                () -> {
+//                                    if (receiverConfigurationPanel.isDontWarnMeAgain()) {
+//                                        applicationPreferenceModel.setConfigurationURL(finalURL.toExternalForm());
+//                                    } else {
+//                                        try {
+//                                            if (new File(finalURL.toURI()).exists()) {
+//                                                loadConfigurationUsingPluginClassLoader(finalURL);
+//                                            }
+//                                        } catch (URISyntaxException e12) {
+//                                            //ignore
+//                                        }
+//                                    }
+//
+//                                    receiversPanel.updateReceiverTreeInDispatchThread();
+//                                }).start();
+//                        }
+//                        File saveConfigFile = receiverConfigurationPanel.getModel().getSaveConfigFile();
+//                        if (saveConfigFile != null) {
+//                            saveReceiversToFile(saveConfigFile);
+//                        }
+//                    });
+//
+//                receiverConfigurationPanel.setDialog(dialog);
+//                dialog.getContentPane().add(receiverConfigurationPanel);
+//
+//                dialog.pack();
+//
+//                Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+//                dialog.setLocation(
+//                    (screenSize.width / 2) - (dialog.getWidth() / 2),
+//                    (screenSize.height / 2) - (dialog.getHeight() / 2));
+//
+//                dialog.setVisible(true);
+//            });
     }
 
     /**
@@ -1560,12 +1394,13 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                     int progress = 1;
                     final int delay = 25;
 
-                    handler.close();
                     panel.setProgress(progress++);
 
                     Thread.sleep(delay);
 
-                    pluginRegistry.stopAllPlugins();
+                    for( ChainsawReceiver rx : m_receivers ){
+                        rx.shutdown();
+                    }
                     panel.setProgress(progress++);
 
                     Thread.sleep(delay);
@@ -1623,7 +1458,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
      * actionPerformed(...) method.
      */
     private void performShutdownAction() {
-        MessageCenter.getInstance().getLogger().debug(
+        logger.debug(
             "Calling the shutdown Action. Goodbye!");
 
         shutdownAction.actionPerformed(
@@ -1649,7 +1484,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
      * @param visible
      */
     private void setStatusBarVisible(final boolean visible) {
-        MessageCenter.getInstance().getLogger().debug(
+        logger.debug(
             "Setting StatusBar to " + visible);
         SwingUtilities.invokeLater(
             () -> statusBar.setVisible(visible));
@@ -1822,23 +1657,26 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     }
 
     private void buildLogPanel(
-        boolean customExpression, final String ident, final List<LoggingEvent> events)
+        boolean customExpression, final String ident, final List<ChainsawLoggingEvent> events, final ChainsawReceiver rx)
         throws IllegalArgumentException {
-        final LogPanel thisPanel = new LogPanel(getStatusBar(), ident, cyclicBufferSize, allColorizers, applicationPreferenceModel);
+        final LogPanel thisPanel = new LogPanel(getStatusBar(), ident, cyclicBufferSize, allColorizers, applicationPreferenceModel, statusBar);
 
         getSettingsManager().addSettingsListener(thisPanel);
         getSettingsManager().configure(thisPanel);
 
+        if( !customExpression && rx != null ){
+            thisPanel.setReceiver(rx);
+        }
 
         /**
          * Now add the panel as a batch listener so it can handle it's own
          * batchs
          */
         if (customExpression) {
-            handler.addCustomEventBatchListener(ident, thisPanel);
+//            handler.addCustomEventBatchListener(ident, thisPanel);
         } else {
             identifierPanels.add(thisPanel);
-            handler.addEventBatchListener(thisPanel);
+//            handler.addEventBatchListener(thisPanel);
         }
 
         TabIconHandler iconHandler = new TabIconHandler(ident);
@@ -1885,21 +1723,20 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                 getTabbedPane().addANewTab(
                     ident, thisPanel, new ImageIcon(ChainsawIcons.ANIM_RADIO_TOWER));
                 thisPanel.layoutComponents();
-                thisPanel.receiveEventBatch(ident, events);
+//                thisPanel.receiveEventBatch(ident, events);
                 if (!getTabbedPane().tabSetting.isChainsawLog()) {
                     displayPanel("chainsaw-log", false);
                 }
             });
 
         String msg = "added tab " + ident;
-        MessageCenter.getInstance().getLogger().debug(msg);
+        logger.debug(msg);
     }
-
 
     public void createCustomExpressionLogPanel(String ident) {
         //collect events matching the rule from all of the tabs
         try {
-            List<LoggingEvent> list = new ArrayList<>();
+            List<ChainsawLoggingEvent> list = new ArrayList<>();
             Rule rule = ExpressionRule.getRule(ident);
 
             for (Object identifierPanel : identifierPanels) {
@@ -1911,133 +1748,11 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                 }
             }
 
-            buildLogPanel(true, ident, list);
+            buildLogPanel(true, ident, list, null);
         } catch (IllegalArgumentException iae) {
-            MessageCenter.getInstance().getLogger().info(
+            statusBar.setMessage(
                 "Unable to add tab using expression: " + ident + ", reason: "
                     + iae.getMessage());
-        }
-    }
-
-    /**
-     * Loads the log4j configuration file specified by the url, using
-     * the PluginClassLoader instance as a TCCL, but only replacing it temporarily, with the original
-     * TCCL being restored in a finally block to ensure consitency.
-     *
-     * @param url
-     */
-    private void loadConfigurationUsingPluginClassLoader(final URL url) {
-        ClassLoader classLoader = PluginClassLoaderFactory.getInstance().getClassLoader();
-        ClassLoader previousTCCL = Thread.currentThread().getContextClassLoader();
-
-        if (url != null) {
-            try {
-                // we temporarily swap the TCCL so that plugins can find resources
-                Thread.currentThread().setContextClassLoader(classLoader);
-                try {
-                    DOMConfigurator.configure(url);
-                } catch (Exception e) {
-                    logger.warn("Unable to load configuration URL: " + url, e);
-                }
-            } finally {
-                // now switch it back...
-                Thread.currentThread().setContextClassLoader(previousTCCL);
-            }
-        }
-        ensureChainsawAppenderHandlerAdded();
-    }
-
-    private static void loadLookAndFeelUsingPluginClassLoader(String lookAndFeelClassName) {
-        ClassLoader classLoader = PluginClassLoaderFactory.getInstance().getClassLoader();
-        ClassLoader previousTCCL = Thread.currentThread().getContextClassLoader();
-        try {
-            // we temporarily swap the TCCL so that plugins can find resources
-            Thread.currentThread().setContextClassLoader(classLoader);
-            UIManager.setLookAndFeel(lookAndFeelClassName);
-            UIManager.getLookAndFeelDefaults().put("ClassLoader", classLoader);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            // now switch it back...
-            Thread.currentThread().setContextClassLoader(previousTCCL);
-        }
-    }
-
-    /**
-     * Makes sure that the LoggerRepository has the ChainsawAppenderHandler
-     * added to the root logger so Chainsaw can receive all the events.
-     */
-    private void ensureChainsawAppenderHandlerAdded() {
-        if (!LogManager.getLoggerRepository().getRootLogger().isAttached(handler)) {
-            LogManager.getLoggerRepository().getRootLogger().addAppender(handler);
-        }
-    }
-
-    /**
-     * This class handles the recption of the Event batches and creates new
-     * LogPanels if the identifier is not in use otherwise it ignores the event
-     * batch.
-     *
-     * @author Paul Smith
-     * &lt;psmith@apache.org&gt;
-     */
-    private class NewTabEventBatchReceiver implements EventBatchListener {
-        /**
-         * DOCUMENT ME!
-         *
-         * @param ident
-         * @param events
-         */
-        public void receiveEventBatch(
-            final String ident, final List<LoggingEvent> events) {
-            if (events.size() == 0) {
-                return;
-            }
-
-            if (!isGUIFullyInitialized) {
-                synchronized (initializationLock) {
-                    while (!isGUIFullyInitialized) {
-                        System.out.println(
-                            "Wanting to add a row, but GUI not initialized, waiting...");
-
-                        /**
-                         * Lets wait 1 seconds and recheck.
-                         */
-                        try {
-                            initializationLock.wait(1000);
-                            logger.debug("waiting for initialization to complete");
-                        } catch (InterruptedException e) {
-                        }
-                    }
-                    logger.debug("out of system initialization wait loop");
-                }
-            }
-
-            if (!getPanelMap().containsKey(ident)) {
-                logger.debug("panel " + ident + " does not exist - creating");
-                try {
-                    buildLogPanel(false, ident, events);
-                } catch (IllegalArgumentException iae) {
-                    logger.error("error creating log panel", iae);
-                    //should not happen - not a custom expression panel
-                }
-            }
-        }
-
-        /*
-         * (non-Javadoc)
-         *
-         * @see org.apache.log4j.chainsaw.EventBatchListener#getInterestedIdentifier()
-         */
-
-        /**
-         * DOCUMENT ME!
-         *
-         * @return DOCUMENT ME!
-         */
-        public String getInterestedIdentifier() {
-            // we are interested in all batches so we can detect new identifiers
-            return null;
         }
     }
 
@@ -2079,7 +1794,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                         }
 
                         try {
-                            Thread.sleep(handler.getQueueInterval() + 1000);
+                            Thread.sleep(1000);
                         } catch (InterruptedException ie) {
                         }
                     }
@@ -2101,6 +1816,87 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                 getTabbedPane().indexOfTab(ident) > -1 && getTabbedPane().indexOfTab(ident) == getTabbedPane().getSelectedIndex()) {
                 getTabbedPane().setIconAt(getTabbedPane().indexOfTab(ident), SELECTED);
             }
+        }
+    }
+    
+    public void addReceiver(ChainsawReceiver rx){
+        m_receivers.add(rx);
+        List<ChainsawLoggingEvent> list = new ArrayList<>();
+        buildLogPanel(false, rx.getName(), list, rx);
+        
+        for(ReceiverEventListener listen : m_receiverListeners){
+            listen.receiverAdded(rx);
+        }
+    }
+    
+    public void removeReceiver(ChainsawReceiver rx){
+        if( !m_receivers.remove(rx) ){
+            return;
+        }
+        
+        for(ReceiverEventListener listen : m_receiverListeners){
+            listen.receiverRemoved(rx);
+        }
+    }
+    
+    public void addReceiverEventListener(ReceiverEventListener listener){
+        m_receiverListeners.add(listener);
+    }
+    
+    public void removeReceiverEventListener(ReceiverEventListener listener){
+        m_receiverListeners.remove(listener);
+    }
+    
+    public List<ChainsawReceiver> getAllReceivers(){
+        return m_receivers;
+    }
+
+    public void saveReceiversToFile(File file){
+        try {
+            //we programmatically register the ZeroConf plugin in the plugin registry
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document document = builder.newDocument();
+            Element rootElement = document.createElementNS("http://jakarta.apache.org/log4j/", "configuration");
+            rootElement.setPrefix("log4j");
+            rootElement.setAttribute("xmlns:log4j", "http://jakarta.apache.org/log4j/");
+            rootElement.setAttribute("debug", "true");
+
+            for (ChainsawReceiver receiver : m_receivers) {
+                Element pluginElement = document.createElement("plugin");
+                pluginElement.setAttribute("name", receiver.getName());
+                pluginElement.setAttribute("class", receiver.getClass().getName());
+
+                BeanInfo beanInfo = Introspector.getBeanInfo(receiver.getClass());
+                List<PropertyDescriptor> list = new ArrayList<>(Arrays.asList(beanInfo.getPropertyDescriptors()));
+
+                for (PropertyDescriptor desc : list) {
+                    Object o = desc.getReadMethod().invoke(receiver);
+                    if (o != null) {
+                        Element paramElement = document.createElement("param");
+                        paramElement.setAttribute("name", desc.getName());
+                        paramElement.setAttribute("value", o.toString());
+                        pluginElement.appendChild(paramElement);
+                    }
+                }
+
+                rootElement.appendChild(pluginElement);
+
+            }
+
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+            DOMSource source = new DOMSource(rootElement);
+            FileOutputStream stream = new FileOutputStream(file);
+            StreamResult result = new StreamResult(stream);
+            transformer.transform(source, result);
+            stream.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

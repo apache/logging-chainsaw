@@ -31,6 +31,9 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,7 +61,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     private boolean toolTipsVisible;
     private String dateFormatTZ;
     private boolean useRelativeTimesToFixedTime = false;
-    private long relativeTimestampBase;
+    private ZonedDateTime relativeTimestampBase;
 
     private static int borderWidth = ChainsawConstants.TABLE_BORDER_WIDTH;
 
@@ -165,7 +168,9 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         long delta = 0;
         if (row > 0) {
             LoggingEventWrapper previous = eventContainer.getRow(row - 1);
-            delta = Math.min(ChainsawConstants.MILLIS_DELTA_RENDERING_HEIGHT_MAX, Math.max(0, (long) ((loggingEventWrapper.getLoggingEvent().getTimeStamp() - previous.getLoggingEvent().getTimeStamp()) * ChainsawConstants.MILLIS_DELTA_RENDERING_FACTOR)));
+            long millisBetween = ChronoUnit.MILLIS.between( loggingEventWrapper.getLoggingEvent().m_timestamp, previous.getLoggingEvent().m_timestamp );
+            delta = Math.min(ChainsawConstants.MILLIS_DELTA_RENDERING_HEIGHT_MAX, 
+                    Math.max(0, (long) ((millisBetween) * ChainsawConstants.MILLIS_DELTA_RENDERING_FACTOR)));
         }
 
         Map matches = loggingEventWrapper.getSearchMatches();
@@ -540,19 +545,20 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
      * @return formatted object
      */
     private Object formatField(Object field, LoggingEventWrapper loggingEventWrapper) {
-        if (!(field instanceof Date)) {
+        if (!(field instanceof ZonedDateTime)) {
             return (field == null ? "" : field);
         }
 
         //handle date field
         if (useRelativeTimesToFixedTime) {
-            return "" + (((Date) field).getTime() - relativeTimestampBase);
+            ZonedDateTime dt = (ZonedDateTime)field;
+            return "" + ChronoUnit.MILLIS.between(dt, relativeTimestampBase);
         }
         if (useRelativeTimesToPrevious) {
             return loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
         }
 
-        return dateFormatInUse.format((Date) field);
+        return ((ZonedDateTime)field).format(DateTimeFormatter.ISO_DATE);
     }
 
     /**
@@ -584,10 +590,14 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         }
     }
 
-    public void setUseRelativeTimes(long timeStamp) {
+    public void setUseRelativeTimes(ZonedDateTime timeStamp) {
         useRelativeTimesToFixedTime = true;
         useRelativeTimesToPrevious = false;
-        relativeTimestampBase = timeStamp;
+        if( timeStamp != null ){
+            relativeTimestampBase = timeStamp;
+        }else{
+            relativeTimestampBase = ZonedDateTime.now();
+        }
     }
 
     public void setUseRelativeTimesToPreviousRow() {

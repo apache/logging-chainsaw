@@ -21,7 +21,6 @@ import org.apache.log4j.chainsaw.filter.FilterModel;
 import org.apache.log4j.chainsaw.help.HelpManager;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.chainsaw.osx.OSXIntegration;
-import org.apache.log4j.chainsaw.receivers.ReceiversHelper;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -507,8 +506,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
             Action.SHORT_DESCRIPTION, "Starts the tutorial process");
         helpMenu.add(startTutorial);
 
-        List knownReceivers =
-            ReceiversHelper.getInstance().getKnownReceiverClasses();
+        List knownReceivers = new ArrayList();
         JMenu receiverHelp = new JMenu("Receiver JavaDoc");
 
         for (Object knownReceiver : knownReceivers) {

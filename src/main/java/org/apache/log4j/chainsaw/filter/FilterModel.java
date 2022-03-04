@@ -17,8 +17,9 @@
 
 package org.apache.log4j.chainsaw.filter;
 
-import org.apache.log4j.spi.LocationInfo;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.log4j.chainsaw.logevents.LocationInfo;
+
 
 /**
  * This class is used as a Model for Filtering, and retains the unique entries that
@@ -31,19 +32,19 @@ public class FilterModel {
     private EventTypeEntryContainer eventContainer =
         new EventTypeEntryContainer();
 
-    public void processNewLoggingEvent(LoggingEvent event) {
+    public void processNewLoggingEvent(ChainsawLoggingEvent event) {
 
-        eventContainer.addLevel(event.getLevel());
-        eventContainer.addLogger(event.getLoggerName());
-        eventContainer.addThread(event.getThreadName());
-        eventContainer.addNDC(event.getNDC());
+        eventContainer.addLevel(event.m_level);
+        eventContainer.addLogger(event.m_logger);
+        eventContainer.addThread(event.m_threadName);
+        eventContainer.addNDC(event.m_ndc);
         eventContainer.addProperties(event.getProperties());
 
-        if (event.locationInformationExists()) {
-            LocationInfo info = event.getLocationInformation();
-            eventContainer.addClass(info.getClassName());
-            eventContainer.addMethod(info.getMethodName());
-            eventContainer.addFileName(info.getFileName());
+        LocationInfo info = event.m_locationInfo;
+        if (info != null) {
+            eventContainer.addClass(info.className);
+            eventContainer.addMethod(info.methodName);
+            eventContainer.addFileName(info.fileName);
         }
     }
 

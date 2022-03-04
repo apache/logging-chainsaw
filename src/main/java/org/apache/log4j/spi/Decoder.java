@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
 import java.util.Vector;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
 
 /**
@@ -37,7 +38,7 @@ public interface Decoder {
      * @param document document to decode.
      * @return list of LoggingEvent instances.
      */
-    Vector<LoggingEvent> decodeEvents(String document);
+    Vector<ChainsawLoggingEvent> decodeEvents(String document);
 
     /**
      * Decode event from string.
@@ -45,7 +46,7 @@ public interface Decoder {
      * @param event string representation of event
      * @return event
      */
-    LoggingEvent decode(String event);
+    ChainsawLoggingEvent decode(String event);
 
     /**
      * Decode event from document retreived from URL.
@@ -54,7 +55,7 @@ public interface Decoder {
      * @return list of LoggingEvent instances.
      * @throws IOException if IO error resolving document.
      */
-    Vector<LoggingEvent> decode(URL url) throws IOException;
+    Vector<ChainsawLoggingEvent> decode(URL url) throws IOException;
 
     /**
      * Sets additional properties.
