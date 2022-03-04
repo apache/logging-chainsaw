@@ -49,6 +49,10 @@
 	  <item name="JavaDoc" href="/apidocs/index.html"/>
    </menu>
 
+  <menu name="Manual">
+    <item name="Configuration Library" href="/configuration-library.html"/>
+  </menu>
+
 	<menu name="Community">
 		<item name="Mailing Lists" href="/mail-lists.html"/>
 		<item name="Issue Tracking" href="/issue-tracking.html"/>
@@ -72,4 +76,9 @@
 	</menu>
 	
   </body>
+  <skin>
+    <groupId>org.apache.maven.skins</groupId>
+    <artifactId>maven-fluido-skin</artifactId>
+    <version>1.8</version>
+  </skin>
 </project>

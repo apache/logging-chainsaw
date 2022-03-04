@@ -16,8 +16,6 @@ Quick Tour of Apache Chainsaw&#x2122; features
 
 	Heres just a brief run down of some of the features of Chainsaw v2:
                                                 
-       * <<View remote events>> - Remote events are "received" by Chainsaw using Log4j 1.3's new Receiver concept.
-
        * <<Saved Preferences>> - You can fully customize each Tab the way you want it, and it will restore it's state the next time.
 
        * <<Responsive>> - When events are screaming in, you don't want the GUI to meltdown.  You can control how responsive the GUI is and determine the frequency of updates.
@@ -31,3 +29,46 @@ Quick Tour of Apache Chainsaw&#x2122; features
        * <<Cyclic>> - A tab view can support a Cyclic-based model, which constrains it's view to the last X events, ensuring you don't hog memory.  This is great for monitoring live applications.
 
        * <<Built-in documentation and tutorial>> - HTML-based documentation included in the package.
+
+Quick Start
+
+  When Chainsaw first starts up, it will look something like this:
+
+[images/chainsaw-overview.png] Overview
+
+  There's a fair amount of complexity with the GUI, but we'll go over it one apsect at a time.
+
+  The first thing we want to do is to open up our 'Receivers' panel so that we can
+  get log events from a source.  To do this, click the radar dish icon on our
+  toolbar to open up the receivers panel.  Chainsaw should now look something
+  like this
+
+[images/chainsaw-with-receivers.png] Chainsaw with Receivers
+
+  Now let's connect an application to Chainsaw in order to view its log events.  There are multiple
+  ways to connect an application to Chainsaw, but for this illustration we will
+  connect an application that uses Log4j2 to Chainsaw.  Whithin Chainsaw, the
+  Receivers are configured to receive log events fom a source.
+
+  Using the configuration from our configuration library for a TCP connection,
+  we need to make a reciever that will receive the log events.  This new reciever
+  should be made by clicking the 'new reciever' button on the receivers pane.
+  In this case, since we want to get JSON data, we will select the 'New JsonReceiver'
+  option.
+
+[images/chainsaw-new-receiver.png] New Receiver
+
+  We can now configure the receiver with its options.  For now, let's call it
+  'Log4j2-JSON' so that we know where this data is coming from.
+
+[images/chainsaw-configure-json.png] Configure JSON receiver
+
+  Once we create the new recevier, we can now see that we have both a new tab
+  and a new recevier defined in our receivers panel:
+
+[images/chainsaw-with-receiver.png] Chainsaw with Receiver
+
+  Running an application that logs JSON data now lets us to see the log
+  message that come through
+
+[images/chainsaw-with-events.png] Chainsaw with events
