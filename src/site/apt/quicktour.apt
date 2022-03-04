@@ -24,7 +24,7 @@ Quick Tour of Apache Chainsaw&#x2122; features
 
        * <<Coloring>> - You can specify your own rules to color each event row depending on the attributes of a LoggingEvent to help you locate important events.
 
-       * <<Dynamic and powerful filtering>> - Helps you locate stuff. There's support for quick-and-dirty filtering, right through to advanced expression-based filtering (e.g.  "LOGGER == 'com.mycompany' &amp;&amp; LEVEL == ERROR" ).
+       * <<Dynamic and powerful filtering>> - Helps you locate stuff. There's support for quick-and-dirty filtering, right through to advanced expression-based filtering (e.g.  "LOGGER == 'com.mycompany' && LEVEL == ERROR" ).
 
        * <<Cyclic>> - A tab view can support a Cyclic-based model, which constrains it's view to the last X events, ensuring you don't hog memory.  This is great for monitoring live applications.
 
@@ -72,3 +72,6 @@ Quick Start
   message that come through
 
 [images/chainsaw-with-events.png] Chainsaw with events
+
+  Now that we have events in Chainsaw, we can now investigate events and view
+  more information about them.
