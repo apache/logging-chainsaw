@@ -65,8 +65,8 @@ jobs:
         shell: bash
         run: find target -name \*.dmg
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: abi-compatibility-report
-          path: target/Apache\ Chainsaw.dmg
+          path: target/*.dmg
 
