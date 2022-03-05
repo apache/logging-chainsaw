@@ -57,5 +57,5 @@ jobs:
         timeout-minutes: 60
         shell: bash
         run: |
-          mvn -Pdevelopment site:site \
+          mvn -Pdevelopment site:site
           mvn -Pdevelopment install
