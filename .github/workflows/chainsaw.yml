@@ -67,6 +67,5 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: abi-compatibility-report
           path: target/*.dmg
 
