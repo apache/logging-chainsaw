@@ -67,5 +67,6 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
+          name: chainsaw.dmg
           path: target/*.dmg
 
