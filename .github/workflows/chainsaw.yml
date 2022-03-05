@@ -59,3 +59,14 @@ jobs:
         run: |
           mvn -Pdevelopment site:site
           mvn -Pdevelopment install
+
+      - name: archive dmg
+        timeout-minutes: 60
+        shell: bash
+        run: find target -name \*.dmg
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: abi-compatibility-report
+          path: target/Apache\ Chainsaw.dmg
+
