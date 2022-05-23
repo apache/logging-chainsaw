@@ -61,6 +61,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.log4j.chainsaw.zeroconf.ZeroConfPlugin;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -113,6 +114,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     private static String configurationURLAppArg;
     private List<ChainsawReceiver> m_receivers = new ArrayList<>();
     private List<ReceiverEventListener> m_receiverListeners = new ArrayList<>();
+    private ZeroConfPlugin m_zeroConf = new ZeroConfPlugin();
 
     private static org.apache.logging.log4j.Logger logger = org.apache.logging.log4j.LogManager.getLogger();
 
@@ -1727,6 +1729,10 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                 if (!getTabbedPane().tabSetting.isChainsawLog()) {
                     displayPanel("chainsaw-log", false);
                 }
+
+                getTabbedPane().addANewTab(ChainsawTabbedPane.ZEROCONF,
+                        m_zeroConf,
+                        new ImageIcon(ChainsawIcons.ANIM_NET_CONNECT));
             });
 
         String msg = "added tab " + ident;
