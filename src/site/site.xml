@@ -24,8 +24,8 @@
   </bannerLeft>
   <bannerRight>
     <name>Apache log4j</name>
-    <src>images/logo.jpg</src>
-    <href>http://logging.apache.org/log4j</href>
+    <src>images/logo.png</src>
+    <href>https://logging.apache.org/log4j/2.x/</href>
   </bannerRight>
   <body>
     <breadcrumbs>
@@ -48,6 +48,10 @@
 	  <item name="Roadmap" href="/roadmap.html"/>
 	  <item name="JavaDoc" href="/apidocs/index.html"/>
    </menu>
+
+  <menu name="Manual">
+    <item name="Configuration Library" href="/configuration-library.html"/>
+  </menu>
 
 	<menu name="Community">
 		<item name="Mailing Lists" href="/mail-lists.html"/>
@@ -72,4 +76,9 @@
 	</menu>
 	
   </body>
+  <skin>
+    <groupId>org.apache.maven.skins</groupId>
+    <artifactId>maven-fluido-skin</artifactId>
+    <version>1.8</version>
+  </skin>
 </project>
