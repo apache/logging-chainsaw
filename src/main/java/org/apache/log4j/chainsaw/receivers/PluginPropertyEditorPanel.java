@@ -87,7 +87,8 @@ public class PluginPropertyEditorPanel extends JPanel {
      * @return Returns the plugin.
      */
     public final ChainsawReceiver getPlugin() {
-
+        propertyTable.getColumnModel().getColumn(1)
+            .getCellEditor().stopCellEditing();
         return m_receiver;
     }
 
