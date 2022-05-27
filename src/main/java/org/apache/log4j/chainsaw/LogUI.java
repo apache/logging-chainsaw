@@ -1701,7 +1701,8 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                 if (logPanel.isDocked()) {
                     getPanelMap().put(logPanel.getIdentifier(), logPanel);
                     getTabbedPane().addANewTab(
-                        logPanel.getIdentifier(), logPanel, null);
+                        logPanel.getIdentifier(), logPanel, null,
+                            true);
                     getTabbedPane().setSelectedTab(getTabbedPane().indexOfTab(logPanel.getIdentifier()));
                 } else {
                     getTabbedPane().remove(logPanel);
@@ -1723,16 +1724,16 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         SwingUtilities.invokeLater(
             () -> {
                 getTabbedPane().addANewTab(
-                    ident, thisPanel, new ImageIcon(ChainsawIcons.ANIM_RADIO_TOWER));
+                    ident,
+                        thisPanel,
+                        new ImageIcon(ChainsawIcons.ANIM_RADIO_TOWER),
+                        false);
                 thisPanel.layoutComponents();
-//                thisPanel.receiveEventBatch(ident, events);
-                if (!getTabbedPane().tabSetting.isChainsawLog()) {
-                    displayPanel("chainsaw-log", false);
-                }
 
                 getTabbedPane().addANewTab(ChainsawTabbedPane.ZEROCONF,
                         m_zeroConf,
-                        new ImageIcon(ChainsawIcons.ANIM_NET_CONNECT));
+                        new ImageIcon(ChainsawIcons.ANIM_NET_CONNECT),
+                        false);
             });
 
         String msg = "added tab " + ident;

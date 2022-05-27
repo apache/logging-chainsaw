@@ -89,11 +89,11 @@ class ChainsawTabbedPane extends JTabbedPane implements SettingsListener {
      * @param name
      * @param component
      */
-    public void addANewTab(String name, JComponent component, Icon icon) {
+    public void addANewTab(String name, JComponent component, Icon icon, boolean switchToTab) {
         super.insertTab(name, icon, component, null, getTabCount());
 
         super.fireStateChanged();
-        if (!"chainsaw-log".equals(name)) {
+        if (!"chainsaw-log".equals(name) && switchToTab) {
             EventQueue.invokeLater(() -> setSelectedTab(getTabCount() - 1));
         }
     }
