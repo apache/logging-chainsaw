@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.EventListener;
 import java.util.List;
 
+// MRU appears to stand for 'most recently used'
 public class MRUFileList {
 
     private static MRUFileList log4jList = new MRUFileList();
