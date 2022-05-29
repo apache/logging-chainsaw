@@ -180,7 +180,6 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
     private EventTimeDeltaMatchThumbnail eventTimeDeltaMatchThumbnail;
     private boolean isDetailPanelVisible;
     private ChainsawReceiver m_receiver;
-    private ChainsawStatusBar m_statusBar;
 
     /**
      * Creates a new LogPanel object.  If a LogPanel with this identifier has
@@ -189,10 +188,11 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
      * @param statusBar  shared status bar, provided by main application
      * @param identifier used to load and save settings
      */
-    public LogPanel(final ChainsawStatusBar statusBar, final String identifier, int cyclicBufferSize,
-                    Map<String, RuleColorizer> allColorizers, final ApplicationPreferenceModel applicationPreferenceModel,
-                    ChainsawStatusBar sb) {
-        m_statusBar = sb;
+    public LogPanel(final ChainsawStatusBar statusBar, 
+            final String identifier,
+            int cyclicBufferSize,
+                    Map<String, RuleColorizer> allColorizers,
+                    final ApplicationPreferenceModel applicationPreferenceModel) {
         this.identifier = identifier;
         this.statusBar = statusBar;
         this.applicationPreferenceModel = applicationPreferenceModel;
@@ -634,7 +634,7 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
                         }
 
                         if (msg != null && wasWarning) {
-                            m_statusBar.setMessage(msg);
+                            statusBar.setMessage(msg);
                         }
                     }
                 }
@@ -3040,7 +3040,7 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
         m_receiver = rx;
         m_receiver.addPropertyChangeListener(((pce) -> {
             if( pce.getPropertyName().equals( "name" ) ){
-                //this.identifier = pce.getNewValue();
+//                this.identifier = pce.getNewValue();
             }
         }));
         m_receiver.addChainsawEventBatchListener(this);

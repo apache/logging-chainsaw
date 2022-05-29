@@ -1661,7 +1661,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     private void buildLogPanel(
         boolean customExpression, final String ident, final List<ChainsawLoggingEvent> events, final ChainsawReceiver rx)
         throws IllegalArgumentException {
-        final LogPanel thisPanel = new LogPanel(getStatusBar(), ident, cyclicBufferSize, allColorizers, applicationPreferenceModel, statusBar);
+        final LogPanel thisPanel = new LogPanel(getStatusBar(), ident, cyclicBufferSize, allColorizers, applicationPreferenceModel);
 
         getSettingsManager().addSettingsListener(thisPanel);
         getSettingsManager().configure(thisPanel);
@@ -1732,7 +1732,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
                 getTabbedPane().addANewTab(ChainsawTabbedPane.ZEROCONF,
                         m_zeroConf,
-                        new ImageIcon(ChainsawIcons.ANIM_NET_CONNECT),
+                        null,
                         false);
             });
 
