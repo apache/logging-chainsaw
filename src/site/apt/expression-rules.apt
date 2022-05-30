@@ -1,0 +1,118 @@
+~~ Licensed to the Apache Software Foundation (ASF) under one or more
+~~ contributor license agreements.  See the NOTICE file distributed with
+~~ this work for additional information regarding copyright ownership.
+~~ The ASF licenses this file to You under the Apache License, Version 2.0
+~~ (the "License"); you may not use this file except in compliance with
+~~ the License.  You may obtain a copy of the License at
+~~
+~~      http://www.apache.org/licenses/LICENSE-2.0
+~~
+~~ Unless required by applicable law or agreed to in writing, software
+~~ distributed under the License is distributed on an "AS IS" BASIS,
+~~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+~~ See the License for the specific language governing permissions and
+~~ limitations under the License.
+
+Expression Rules
+
+  In order to select specified messages, Chainsaw allows you to define an
+  expression rule that will match zero or more messages.  These expressions
+  can be used to search for messages, or to colorize messages.
+
+Basic Operators
+
+  The basic operators are similar to normal programming operators.  They are:
+
+*---*---*
+|| Operator || Meaning
+*---*---*
+| ! | Not
+*---*---*
+| != | Not Equal
+*---*---*
+| == | Equal
+*---*---*
+| \~= | CASE-INSENSITIVE equals operator
+*---*---*
+| \|\| | OR
+*---*---*
+| && | And
+*---*---*
+| like | REGEXP operator
+*---*---*
+| exists | Not NULL
+*---*---*
+| \< | Less Than
+*---*---*
+| \<= | Less Than or equal
+*---*---*
+| \> | Greater Than
+*---*---*
+| \>= | Greater Than or equal
+*---*---*
+
+Grouping Expressions
+
+  As with mathematical expressions, ordering/grouping can be enforced by
+  using parentheses around the parts to group.
+
+Fields to Match
+
+  Expressions that are made can match on specific fields of a message.  The
+  fields that can be matched are as follows:
+
+*---*---*
+|| Field | Meaning
+*---*---*
+| LOGGER | The logger that produced this log message
+*---*---*
+| LEVEL | The severity of the log message
+*---*---*
+| CLASS | The class that this log message is from
+*---*---*
+| FILE | The file that this log message was logged in
+*---*---*
+| METHOD | The method that produced this log message
+*---*---*
+| MSG | The log message
+*---*---*
+| NDC | The Nested Diagnostic Context of this message
+*---*---*
+| EXCEPTION | The exception in the log message
+*---*---*
+| TIMESTAMP | When the log message was created
+*---*---*
+| THREAD | The thread that produced this log message
+*---*---*
+
+Examples
+
+  Capture messages at DEBUG level
+
++--
+LEVEL==DEBUG
++--
+
+  Capture message at DEBUG and TRACE levels(trace is less than DEBUG)
+
++--
+LEVEL<=DEBUG
++--
+
+  Capture DEBUG and TRACE messages for the logger named 'com'
+
++--
+LEVEL<=DEBUG && LOGGER==com
++--
+
+  Capture messages that have the string 'specific' in the message
+
++--
+MSG like .*specific.*
++--
+
+  Capture messages that are at INFO or above, or (messages that start with 'Start' or loggers named 'test').
+
++--
+level >= INFO || ( msg like 'Start.*' || logger == 'test' )
++--

@@ -51,6 +51,8 @@
 
   <menu name="Manual">
     <item name="Configuration Library" href="/configuration-library.html"/>
+    <item name="Colorizing Output" href="/colorizing-output.html" />
+    <item name="Expression Rules" href="/expression-rules.html" />
   </menu>
 
 	<menu name="Community">

@@ -1,0 +1,50 @@
+~~ Licensed to the Apache Software Foundation (ASF) under one or more
+~~ contributor license agreements.  See the NOTICE file distributed with
+~~ this work for additional information regarding copyright ownership.
+~~ The ASF licenses this file to You under the Apache License, Version 2.0
+~~ (the "License"); you may not use this file except in compliance with
+~~ the License.  You may obtain a copy of the License at
+~~
+~~      http://www.apache.org/licenses/LICENSE-2.0
+~~
+~~ Unless required by applicable law or agreed to in writing, software
+~~ distributed under the License is distributed on an "AS IS" BASIS,
+~~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+~~ See the License for the specific language governing permissions and
+~~ limitations under the License.
+
+Colorizing Output
+
+  Within Chainsaw, it is possible to colorize different log lines depending
+  on a rule.  This lets you easily find certian log events in a visual manner.
+  By default there are three rules: Messages that are at an ERROR or FATAL
+  level, or that have an exception associated with them, are colored red.
+  Warning messages are colored yellow, and messages that have a marker set are
+  colored green.
+
+  To modify the colors used, go to a tab and either right-click in the table
+  of log messages and click 'Color Settings...'
+
+[images/color-menu-click.png] Right-click to bring up context menu
+
+  Alternatively, you can click on the 'Current Tab' menu item and access the 
+  color settings that way.
+
+[images/color-menu-bar.png] Using the 'Current Tab' menu
+
+  Once open, the color selection menu will look like this:
+
+[images/color-selection-menu.png] Color Selection Menu
+
+  From this menu, you can perform operations such as:
+
+  * Adding/removing rules
+
+  * Re-ordering rules
+
+  * Changing the color of a rule.  Both background and foregrond colors can be set.
+
+
+  Rules are defined using a text-base expression that can match many different
+  aspects of messages.  See the documentation on {{{./expression-rules.html}expression rules}}
+  for more information.
