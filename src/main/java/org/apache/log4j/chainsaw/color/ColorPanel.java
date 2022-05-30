@@ -439,7 +439,8 @@ public class ColorPanel extends JPanel {
 
             //only update rules if there were no errors
             Map map = new HashMap();
-            map.put(ruleSet, rulesTableModel.rules());
+            List<ColorRule> newRules = new ArrayList<>(rulesTableModel.rules());
+            map.put(ruleSet, newRules);
             applyingColorizer.setRules(map);
 
         } else {
@@ -903,6 +904,7 @@ public class ColorPanel extends JPanel {
             Map map = colorizer.getRules();
             for (Object o1 : map.entrySet()) {
                 Map.Entry entry = (Map.Entry) o1;
+                logger.debug( "entry: {}", o1 );
                 //update ruleset list
                 if (entry.getKey().equals(currentRuleSet)) {
                     m_data.addAll( (List<ColorRule>)entry.getValue() );
