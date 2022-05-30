@@ -232,20 +232,21 @@ public final class LoggingEventFieldResolver {
       return event.m_threadName;
     } else if (upperField.startsWith(PROP_FIELD)) {
       //note: need to use actual fieldname since case matters
-//      Object propValue = event.getMDC(fieldName.substring(5));
-//      if (propValue == null) {
-//          //case-specific match didn't work, try case insensitive match
-//          String lowerPropKey = fieldName.substring(5).toLowerCase();
-//          Set entrySet = event.getProperties().entrySet();
-//          for (Iterator iter = entrySet.iterator();iter.hasNext();) {
-//              Map.Entry thisEntry = (Map.Entry) iter.next();
-//              if (thisEntry.getKey().toString().equalsIgnoreCase(lowerPropKey)) {
-//                  propValue = thisEntry.getValue();
-//              }
-//          }
-//      }
-//      return ((propValue == null) ? EMPTY_STRING : propValue.toString());
-        return "";
+        String realFieldName = fieldName.substring(5);
+        String property = event.getProperty(realFieldName);
+        if( property != null && property.length() >= 1 ){
+            return property;
+        }
+
+        // We did not get the property in a case-sensitive manner - check for
+        // case-insensitive
+        for( Map.Entry<String,String> entry : event.getProperties().entrySet() ){
+            if( entry.getKey().equalsIgnoreCase( realFieldName ) ){
+                return entry.getValue();
+            }
+        }
+        
+        return EMPTY_STRING;
     } else {
         org.apache.log4j.chainsaw.logevents.LocationInfo info = event.m_locationInfo;
         if (CLASS_FIELD.equals(upperField)) {
