@@ -44,6 +44,7 @@ Colorizing Output
 
   * Changing the color of a rule.  Both background and foregrond colors can be set.
 
+  []
 
   Rules are defined using a text-base expression that can match many different
   aspects of messages.  See the documentation on {{{./expression-rules.html}expression rules}}

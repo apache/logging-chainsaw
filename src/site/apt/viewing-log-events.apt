@@ -1,0 +1,102 @@
+~~ Licensed to the Apache Software Foundation (ASF) under one or more
+~~ contributor license agreements.  See the NOTICE file distributed with
+~~ this work for additional information regarding copyright ownership.
+~~ The ASF licenses this file to You under the Apache License, Version 2.0
+~~ (the "License"); you may not use this file except in compliance with
+~~ the License.  You may obtain a copy of the License at
+~~
+~~      http://www.apache.org/licenses/LICENSE-2.0
+~~
+~~ Unless required by applicable law or agreed to in writing, software
+~~ distributed under the License is distributed on an "AS IS" BASIS,
+~~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+~~ See the License for the specific language governing permissions and
+~~ limitations under the License.
+
+Viewing Log Events
+
+  When viewing a lot of information, the main viewing screen looks as follows:
+
+[images/chainsaw-log-panel.png]
+
+  There are three main parts of the screen that we will go over now.
+
+Logger Pane
+
+  On the left side of the screen, we have the logger pane:
+
+[images/logger-pane.png]
+
+  This pane displays all of the loggers that we have seen messages from.
+  The loggers that have been seen can be interacted with.  For example, right-clicking
+  on a logger brings up a context menu that will allow you to do different operations,
+  such as:
+
+  * Focusing/ignoring a specified logger
+
+  * Adding a color rule for a logger
+
+  * Adding information to the 'find' field
+
+  []
+
+Log Messages
+
+  In the center of the screen we have the main log viewing area. 
+
+[images/log-pane.png]
+
+  This contains all of the log messages that we have seen from this receiver.
+  Each log event is a separate row in this table, and each field in the log event
+  corresponds to a column.
+
+  Right-clicking in this area brings up a context menu.  From this context menu,
+  you may perform several actions.  You can perform several actions on the data,
+  some of which overlap with the logger pane.  Note that these actions are not
+  based off of the entire log message, but rather what column you have clicked on.
+  For example, making a color rule when you right-click on the LOGGER column will
+  create a rule based off of the currently selected logger name.  If you instead
+  click on the LEVEL column, the rule will be based off of the curren level.
+
+  Some of the actions that you can perform on the table are:
+
+  * Add value under cursor to 'Refine Focus' field
+
+  * Add value under cursor to 'Find' field
+
+  * Change how the relative times are displayed
+
+  * Define a color rule 
+
+  * Copy an entry to the clipboard(column or log event)
+
+  * Show/hide different panes
+
+  * Undock into a new window
+
+  * Best-fit the column for the given data
+
+  []
+
+  At the top of the pane are two text boxes that are used for searching/filtering.
+  The one on the left, 'Refine Focus', lets you focus on different parts of the
+  information.  For example, you can refine focus on a logger by using an {{{./expression-rules.html}expression rule}}.
+  This allows you to quickly filter messages based off of their attributes.
+  When using the 'Refine Focus' box, log messages that do not match are automatically
+  hidden so as to not clutter the screen.
+
+  The 'Find' field on the other hand is a traditional search bar.  It will
+  search through the messages for interesting data without hiding log events
+  that don't match.  An expression rule can also be defined here to search
+  for information.
+
+Detail Pane
+
+  At the very bottom of the screen, we have the detail pane:
+
+[images/details-pane.png]
+
+  This pane shows information about the currently selected log message.
+  The exact details shown in this pane can be customized by right-clicking
+  and bringing up a context menu.
+
