@@ -3530,6 +3530,7 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
         Set<CellEditorListener> cellEditorListeners = new HashSet<>();
         private LoggingEventWrapper currentLoggingEventWrapper;
         private final Object mutex = new Object();
+        int currentRowHeight = 0;
 
         public Object getCellEditorValue() {
             return textField.getText();
@@ -3566,6 +3567,7 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
             for (Object aCellEditorListenersCopy : cellEditorListenersCopy) {
                 ((CellEditorListener) aCellEditorListenersCopy).editingStopped(event);
             }
+            currentTable.setRowHeight(currentRowHeight);
             currentLoggingEventWrapper = null;
             currentTable = null;
 
@@ -3582,6 +3584,7 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
             for (Object aCellEditorListenersCopy : cellEditorListenersCopy) {
                 ((CellEditorListener) aCellEditorListenersCopy).editingCanceled(event);
             }
+            currentTable.setRowHeight(currentRowHeight);
             currentLoggingEventWrapper = null;
             currentTable = null;
         }
@@ -3607,6 +3610,8 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
             } else {
                 textField.setText("");
             }
+            currentRowHeight = table.getRowHeight( row );
+            table.setRowHeight( row, textField.getPreferredSize().height );
             return textField;
         }
     }
