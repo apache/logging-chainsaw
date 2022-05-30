@@ -100,3 +100,11 @@ Detail Pane
   The exact details shown in this pane can be customized by right-clicking
   and bringing up a context menu.
 
+
+Markers
+
+  Each log event may be associated with a marker.  By default, all markers are not
+  set.  You may add a marker by double-clicking on a log event.  The default name of
+  the marker will be 'set,' however you can change the name of the marker by
+  clicking on the marker column and editing the marker name.  Double-clicking on
+  an event that already has a marker set will clear the marker.
