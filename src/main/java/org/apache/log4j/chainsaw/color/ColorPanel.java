@@ -36,6 +36,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
@@ -601,21 +602,7 @@ public class ColorPanel extends JPanel {
         newButton.addActionListener(
             new AbstractAction() {
                 public void actionPerformed(ActionEvent evt) {
-                    int currentRow = rulesTable.getSelectedRow();
-                    Vector<java.io.Serializable> v = new Vector<>();
-                    v.add("");
-                    v.add(Color.white);
-                    v.add(Color.black);
-
-//                    if (currentRow < 0) {
-//                        rulesTableModel.addRow(v);
-//                        currentRow = rulesTable.getRowCount() - 1;
-//                    } else {
-//                        rulesTableModel.insertRow(currentRow, v);
-//                    }
-//
-//                    rulesTable.getSelectionModel().setSelectionInterval(
-//                        currentRow, currentRow);
+                    rulesTableModel.addNewRule();
                 }
             });
 
@@ -629,18 +616,7 @@ public class ColorPanel extends JPanel {
             new AbstractAction() {
                 public void actionPerformed(ActionEvent evt) {
                     int index = rulesTable.getSelectionModel().getMaxSelectionIndex();
-
-//                    if ((index > -1) && (index < rulesTable.getRowCount())) {
-//                        rulesTableModel.deleteRuleAtIndex(index);
-//
-//                        if (index > 0) {
-//                            index = index - 1;
-//                        }
-//
-//                        if (rulesTableModel.getRowCount() > 0) {
-//                            rulesTable.getSelectionModel().setSelectionInterval(index, index);
-//                        }
-//                    }
+                    rulesTableModel.deleteRuleAtIndex(index);
                 }
             });
 
@@ -880,6 +856,14 @@ public class ColorPanel extends JPanel {
             m_data.clear();
             fireTableDataChanged();
         }
+
+        void addNewRule(){
+            Rule expressionRule = ExpressionRule.getRule("msg=='sample'");
+            ColorRule newRule =
+                    new ColorRule("msg=='sample'", expressionRule, Color.WHITE, Color.BLACK);
+            m_data.add(newRule);
+            fireTableRowsInserted(m_data.size() - 1, m_data.size() - 1);
+        }
         
         void deleteRuleAtIndex(int i){
             m_data.remove(i);
@@ -896,7 +880,7 @@ public class ColorPanel extends JPanel {
         void moveRowAtIndexUp(int row){
             if( row <= m_data.size() && row > 0 ){
                 Collections.swap(m_data, row, row - 1);
-                fireTableRowsUpdated(row, row - 1);
+                fireTableRowsUpdated(row - 1, row );
             }
         }
 
@@ -914,6 +898,9 @@ public class ColorPanel extends JPanel {
 
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+            if( rowIndex >= m_data.size() ){
+                return;
+            }
             String expression = m_data.get(rowIndex).getExpression();
             Rule rule = m_data.get(rowIndex).getRule();
             Color backgroundColor = m_data.get(rowIndex).getBackgroundColor();
@@ -922,6 +909,7 @@ public class ColorPanel extends JPanel {
             switch( columnIndex ){
                 case 0:
                     expression = aValue.toString();
+                    rule = ExpressionRule.getRule(expression);
                     break;
                 case 1:
                     backgroundColor = (Color)aValue;
@@ -998,6 +986,15 @@ public class ColorPanel extends JPanel {
                 isSelected, row, column);
             table.setRowHeight( row, c.getPreferredSize().height );
             return c;
+        }
+
+        @Override
+        public boolean isCellEditable(EventObject e){
+            if (e instanceof MouseEvent) {
+                MouseEvent me = (MouseEvent) e;
+                return me.getClickCount() >= 2;
+            }
+            return false;
         }
 
     }
