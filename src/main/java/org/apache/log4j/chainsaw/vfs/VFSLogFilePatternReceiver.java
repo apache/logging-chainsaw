@@ -16,10 +16,6 @@
 
 package org.apache.log4j.chainsaw.vfs;
 
-import org.apache.commons.vfs.*;
-import org.apache.commons.vfs.provider.URLFileName;
-import org.apache.commons.vfs.provider.sftp.SftpFileSystemConfigBuilder;
-import org.apache.commons.vfs.util.RandomAccessMode;
 import org.apache.log4j.chainsaw.receivers.VisualReceiver;
 import org.apache.log4j.varia.LogFilePatternReceiver;
 
@@ -27,6 +23,15 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.util.zip.GZIPInputStream;
+import org.apache.commons.vfs2.FileObject;
+import org.apache.commons.vfs2.FileSystemException;
+import org.apache.commons.vfs2.FileSystemManager;
+import org.apache.commons.vfs2.FileSystemOptions;
+import org.apache.commons.vfs2.RandomAccessContent;
+import org.apache.commons.vfs2.VFS;
+import org.apache.commons.vfs2.provider.URLFileName;
+import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
+import org.apache.commons.vfs2.util.RandomAccessMode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
