@@ -41,6 +41,10 @@ public class LogPanelPreferenceModelTest extends TestCase {
         model.setToolTips(!model.isToolTips());
         
         XStream stream = new XStream(new DomDriver());
+        stream.allowTypes(new Class[]{
+            LogPanelPreferenceModel.class
+        });
+
         String xml = stream.toXML(model);
 //        System.out.println(xml);
         
