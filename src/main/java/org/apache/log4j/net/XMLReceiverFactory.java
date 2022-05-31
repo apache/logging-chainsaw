@@ -45,4 +45,13 @@ public class XMLReceiverFactory implements ChainsawReceiverFactory{
         return "XMLSocketReceiver";
     }
 
+    @Override
+    public String getReceiverDocumentation() {
+        return "<html>The XML recevier has the following parameters:<br/>" +
+                "<ul>" +
+                "<li>port - the port to listen on for incoming data via TCP</li>"+
+                "</ul>"+
+                "Note that this receiver listens for only log4j1 style XML events"+
+                "</html>";
+    }
 }

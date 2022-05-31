@@ -48,5 +48,12 @@ public class JsonReceiverFactory implements ChainsawReceiverFactory {
     public String getReceiverName() {
         return "Json Receiver";
     }
+
+    @Override
+    public String getReceiverDocumentation() {
+        return "JSON Recevier\n" +
+                "The JSON recevier receives events in an ECS Log Event format.\n" +
+                "This receiver listens on the specified port for incoming data.";
+    }
     
 }

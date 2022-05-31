@@ -42,4 +42,11 @@ public interface ChainsawReceiverFactory {
      * @return 
      */
     public String getReceiverName();
+
+    /**
+     * Documentation string in HTML format that will be displayed to the user.
+     * 
+     * @return
+     */
+    public String getReceiverDocumentation();
 }

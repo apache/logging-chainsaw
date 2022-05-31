@@ -45,4 +45,15 @@ public class UDPReceiverFactory implements ChainsawReceiverFactory{
     public String getReceiverName() {
         return "UDPReceiver";
     }
+
+    @Override
+    public String getReceiverDocumentation() {
+        return "<html>The UDP recevier has the following parameters:<br/>" +
+                "<ul>" +
+                "<li>port - the port to listen on for incoming data on all interfaces</li>"+
+                "<li>encoding - the encoding of the data(e.g. UTF-8)</li>"+
+                "<li>decoder - the specific decoder to use to decode the data.  Only XML decoding is built-in</li>"+
+                "</ul>"+
+                "</html>";
+    }
 }

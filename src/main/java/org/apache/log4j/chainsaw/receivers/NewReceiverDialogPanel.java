@@ -51,33 +51,7 @@ public class NewReceiverDialogPanel extends JPanel {
 
     private NewReceiverDialogPanel() {
         setupComponents();
-        setupListeners();
-    }
-
-    /**
-     *
-     */
-    private void setupListeners() {
-
-        /**
-         * We listen for the plugin change, and modify the editor panes
-         * url to be the Help resource for that class
-         */
-        pluginEditorPanel.addPropertyChangeListener("plugin",
-            evt -> {
-
-//                Plugin plugin = (Plugin) evt.getNewValue();
-//                URL url = HelpManager.getInstance().getHelpForClass(
-//                    plugin.getClass());
-//
-//                try {
-//                    javaDocPane.setPage(url);
-//                } catch (IOException e) {
-//                    logger.error(
-//                        "Failed to load the Help resource for " +
-//                            plugin.getClass(), e);
-//                }
-            });
+        javaDocPane.setContentType("text/html");
     }
 
     /**
@@ -130,6 +104,8 @@ public class NewReceiverDialogPanel extends JPanel {
         NewReceiverDialogPanel panel = new NewReceiverDialogPanel();
 
         panel.pluginEditorPanel.setReceiverAndProperties(recv, recvFact.getPropertyDescriptors());
+
+        panel.javaDocPane.setText(recvFact.getReceiverDocumentation());
 
         return panel;
     }
