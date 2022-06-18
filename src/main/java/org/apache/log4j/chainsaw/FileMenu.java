@@ -110,15 +110,15 @@ class FileMenu extends JMenu {
 
         JMenuItem menuItemExit = new JMenuItem(exitAction);
 
-        add(loadChainsawConfig);
-        add(loadLog4JFile);
-        add(loadUtilLoggingFile);
-        addSeparator();
-        add(remoteLog4JFile);
-        add(remoteUtilLoggingFile);
-        addSeparator();
-        add(saveFile);
-        addSeparator();
+//        add(loadChainsawConfig);
+//        add(loadLog4JFile);
+//        add(loadUtilLoggingFile);
+//        addSeparator();
+//        add(remoteLog4JFile);
+//        add(remoteUtilLoggingFile);
+//        addSeparator();
+//        add(saveFile);
+//        addSeparator();
 
         final JMenu mrulog4j = new JMenu("MRU...");
 
