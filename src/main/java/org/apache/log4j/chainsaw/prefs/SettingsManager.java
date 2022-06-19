@@ -20,7 +20,18 @@ import javax.swing.event.EventListenerList;
 import java.io.*;
 import java.net.URLEncoder;
 import java.util.EventListener;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+import org.apache.commons.configuration2.AbstractConfiguration;
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.builder.BasicConfigurationBuilder;
+import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.builder.fluent.Parameters;
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -33,35 +44,42 @@ import java.util.Properties;
 public final class SettingsManager {
     private static final SettingsManager instance = new SettingsManager();
     private static final String GLOBAL_SETTINGS_FILE_NAME = "chainsaw.settings.properties";
-    private static final String HEADER = "Chainsaws Settings Files";
-    private EventListenerList listenerList = new EventListenerList();
-    private Properties defaultProperties = new Properties();
+    private static final Logger logger = LogManager.getLogger();
+
+    private PropertiesConfiguration m_configuration;
+    private FileBasedConfigurationBuilder<PropertiesConfiguration> m_builder;
+    private Map<String,FileBasedConfigurationBuilder<PropertiesConfiguration>> m_tabSettings;
 
     /**
      * Initialises the SettingsManager by loading the default Properties from
      * a resource
      */
     private SettingsManager() {
-        //	load the default properties as a Resource
-        InputStream is = null;
+        m_tabSettings = new HashMap<>();
+        Parameters params = new Parameters();
+        File f = new File(getSettingsDirectory(), GLOBAL_SETTINGS_FILE_NAME);
 
-        try {
-            is = this.getClass().getClassLoader()
-                .getResource("org/apache/log4j/chainsaw/prefs/default.properties")
-                .openStream();
-            defaultProperties.load(is);
+        File settingsDir = getSettingsDirectory();
 
-            //      defaultProperties.list(System.out);
-            is.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (Exception e) {
-                }
-            }
+        if (!settingsDir.exists()) {
+            settingsDir.mkdir();
+        }
+
+        m_builder =
+            new FileBasedConfigurationBuilder<PropertiesConfiguration>(
+                PropertiesConfiguration.class)
+                .configure(params.fileBased()
+                        .setListDelimiterHandler(
+                            new DefaultListDelimiterHandler(','))
+                        .setFile(f)
+                );
+
+
+        try{
+            PropertiesConfiguration config = m_builder.getConfiguration();
+            m_configuration = config;
+        }catch( ConfigurationException ex ){
+            logger.error( "Can't load properties??" );
         }
     }
 
@@ -74,277 +92,59 @@ public final class SettingsManager {
         return instance;
     }
 
-    /**
-     * Registers the listener with the manager
-     *
-     * @param listener
-     */
-    public void addSettingsListener(SettingsListener listener) {
-        listenerList.add(SettingsListener.class, listener);
+    public AbstractConfiguration getGlobalConfiguration(){
+        return m_configuration;
     }
 
-    /**
-     * Requests that the settings be loaded, all listeners will be notified of
-     * this call, and configure themselves according to the values found in the
-     * loaded settings
-     */
-    public void loadSettings() {
-        /*
-         * Ok, note we ensure we have a .chainsaw directory in the users
-         * home folder, and create a chainsaw.settings.properties file..
-         */
-        File settingsDir = getSettingsDirectory();
+    public AbstractConfiguration getSettingsForReceiverTab(String identifier){
 
-        if (!settingsDir.exists()) {
-            settingsDir.mkdir();
+        PropertiesConfiguration configuration = null;
+
+        if( m_tabSettings.containsKey( identifier ) ){
+            try{
+                return m_tabSettings.get( identifier ).getConfiguration();
+            }catch( ConfigurationException ex ){}
         }
 
-        loadGlobalSettings();
-        loadProfileableSettings();
-    }
+        // Either we don't contain the key, or we got an exception.  Regardless,
+        // create a new configuration that we can use
+        Parameters params = new Parameters();
+        File f = new File(getSettingsDirectory(), identifier + "-receiver.properties");
+        FileBasedConfigurationBuilder<PropertiesConfiguration> builder =
+                new FileBasedConfigurationBuilder<PropertiesConfiguration>(
+                PropertiesConfiguration.class)
+                .configure(params.fileBased()
+                        .setListDelimiterHandler(
+                            new DefaultListDelimiterHandler(','))
+                        .setFile(f)
+                );
 
-    /**
-     *
-     */
-    private void loadProfileableSettings() {
-        EventListener[] listeners = listenerList.getListeners(SettingsListener.class);
+        m_tabSettings.put( identifier, builder );
 
-        for (EventListener listener : listeners) {
-            SettingsListener settingsListener = (SettingsListener) listener;
-
-            if (settingsListener instanceof Profileable) {
-                Profileable p = (Profileable) settingsListener;
-                loadProfileble(p);
-            }
-        }
-    }
-
-    private void loadProfileble(Profileable p) {
-        LoadSettingsEvent event = createProfilebleEvent(p);
-        p.loadSettings(event);
-    }
-
-    private LoadSettingsEvent createProfilebleEvent(Profileable p) {
-        Properties loadedProperties = new Properties();
-        loadedProperties.putAll(getDefaultSettings());
-        loadedProperties.putAll(loadProperties(p));
-
-
-        LoadSettingsEvent event = new LoadSettingsEvent(this, loadedProperties);
-
-        return event;
-    }
-
-    /**
-     * @param p
-     * @return
-     */
-    private Properties loadProperties(Profileable p) {
-        Properties properties = new Properties(defaultProperties);
-        InputStream is = null;
-
-        File f = new File(getSettingsDirectory(),
-            URLEncoder.encode(p.getNamespace() + ".properties"));
-
-        if (!f.exists()) {
-            f = new File(getSettingsDirectory(),
-                p.getNamespace() + ".properties");
-        }
-
-        if (f.exists()) {
-            try {
-                is = new BufferedInputStream(new FileInputStream(f));
-
-                Properties toLoad = new Properties();
-                toLoad.load(is);
-                properties.putAll(toLoad);
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
-            } finally {
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                }
-            }
-        }
-
-        return properties;
-    }
-
-    private void loadGlobalSettings() {
-        EventListener[] listeners = listenerList.getListeners(SettingsListener.class);
-        LoadSettingsEvent event = null;
-
-        for (EventListener listener : listeners) {
-            SettingsListener settingsListener = (SettingsListener) listener;
-
-            if (event == null) {
-                Properties loadedProperties = loadGlobalProperties();
-
-                //        loadedProperties.list(System.out);
-                event = new LoadSettingsEvent(this, loadedProperties);
-            }
-
-            settingsListener.loadSettings(event);
-        }
-    }
-
-    /**
-     * Creates a SaveSettingsEvent and calls all the SettingsListeners
-     * to populate the properties with configuration information
-     */
-    public void saveSettings() {
-        /*
-         * Ok, note we ensure we have a .chainsaw directory in the users
-         * home folder, and create a chainsaw.settings.properties file..
-         */
-        File settingsDir = getSettingsDirectory();
-
-        if (!settingsDir.exists()) {
-            settingsDir.mkdir();
-        }
-
-        saveGlobalSettings(settingsDir);
-        saveProfileableSetting(settingsDir);
-    }
-
-    /**
-     * Looks up all the Profileable's that have been registered
-     * and creates a new event for each of them, and ensures that they
-     * are saved within a separate external store
-     *
-     * @param settingsDir
-     */
-    private void saveProfileableSetting(File settingsDir) {
-        EventListener[] listeners = listenerList.getListeners(SettingsListener.class);
-        SaveSettingsEvent event;
-
-        for (EventListener listener : listeners) {
-            SettingsListener settingsListener = (SettingsListener) listener;
-
-            if (settingsListener instanceof Profileable) {
-                Profileable profileable = (Profileable) settingsListener;
-                event = new SaveSettingsEvent(this, getSettingsDirectory());
-
-                profileable.saveSettings(event);
-
-                OutputStream os = null;
-
-                try {
-                    os = new BufferedOutputStream(new FileOutputStream(
-                        new File(settingsDir,
-                            URLEncoder.encode(profileable.getNamespace()) + ".properties")));
-                    event.getProperties().store(os, HEADER);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    if (os != null) {
-                        try {
-                            os.close();
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void saveGlobalSettings(File settingsDir) {
-        EventListener[] listeners = listenerList.getListeners(SettingsListener.class);
-        SaveSettingsEvent event = null;
-
-        for (EventListener listener : listeners) {
-            SettingsListener settingsListener = (SettingsListener) listener;
-
-            if (!(settingsListener instanceof Profileable)) {
-                if (event == null) {
-                    event = new SaveSettingsEvent(this, getSettingsDirectory());
-                }
-
-                settingsListener.saveSettings(event);
-            }
-        }
-
-        OutputStream os = null;
-
-        try {
-            os = new BufferedOutputStream(new FileOutputStream(
-                new File(settingsDir, GLOBAL_SETTINGS_FILE_NAME)));
-            event.getProperties().store(os, HEADER);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-            }
-        }
+        try{
+            return builder.getConfiguration();
+        }catch( ConfigurationException ex ){}
+        
+        return null;
     }
 
     public File getSettingsDirectory() {
         return new File(System.getProperty("user.home"), ".chainsaw");
     }
 
-    public void configure(SettingsListener listener) {
-        if (listener instanceof Profileable) {
-            loadProfileble((Profileable) listener);
-        } else {
-            Properties loadedProperties = loadGlobalProperties();
-            LoadSettingsEvent event = new LoadSettingsEvent(this,
-                loadedProperties);
-            listener.loadSettings(event);
+    public void saveAllSettings(){
+        try{
+            m_builder.save();
+        }catch( ConfigurationException ex ){
+            logger.error( "Unable to save global settings: {}", ex );
         }
-    }
 
-    /**
-     * Returns the current Properties settings for this user
-     * by merging the default Properties with the ones we find in their directory.
-     *
-     * @return
-     */
-    private Properties loadGlobalProperties() {
-        Properties properties = new Properties(defaultProperties);
-        InputStream is = null;
-
-        File f = new File(getSettingsDirectory(), GLOBAL_SETTINGS_FILE_NAME);
-
-        if (f.exists()) {
-            try {
-                is = new BufferedInputStream(new FileInputStream(f));
-
-                Properties toLoad = new Properties();
-                toLoad.load(is);
-                properties.putAll(toLoad);
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
-            } finally {
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                }
+        for( String key : m_tabSettings.keySet() ){
+            try{
+                m_tabSettings.get(key).save();
+            }catch( ConfigurationException ex ){
+                logger.error( "Unable to save settings for {}", key );
             }
         }
-
-        return properties;
-    }
-
-    /**
-     * Returns the loaded default settings, which can be used by
-     * other classes within this package.
-     *
-     * @return Properties defaults
-     */
-    public Properties getDefaultSettings() {
-        return defaultProperties;
     }
 }

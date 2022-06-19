@@ -30,6 +30,7 @@ import java.io.*;
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.List;
+import org.apache.commons.configuration2.AbstractConfiguration;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
 
@@ -236,12 +237,19 @@ public class RuleColorizer implements Colorizer {
     }
 
     /**
-     * Load panel color settings if they exist - otherwise, load default color settings
+     * Load panel color settings if they exist from the given configuration - otherwise, load default color settings
      */
-    public void loadColorSettings(String name) {
-        if (!doLoadColorSettings(name)) {
-            doLoadColorSettings(ChainsawConstants.DEFAULT_COLOR_RULE_NAME);
-        }
+    public void loadColorSettings(String name){}
+    
+    public void loadColorSettings(AbstractConfiguration configuration) {
+        // When we save/load the rule, we really need to load a map of rules
+        // There's no real good way to do this, so we will do this the somewhat Qt-ish
+        // way and have a key that first tells us how many entries we need to read,
+        // and read the entries based off of their number
+//        configuration.getInt( "colors.", 0)
+//        if (!doLoadColorSettings(name)) {
+//            doLoadColorSettings(ChainsawConstants.DEFAULT_COLOR_RULE_NAME);
+//        }
     }
 
     private boolean doLoadColorSettings(String name) {

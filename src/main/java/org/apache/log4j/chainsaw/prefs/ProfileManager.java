@@ -30,9 +30,9 @@ public class ProfileManager {
     }
 
     public void configure(Profileable p) {
-        Properties props = new Properties(SettingsManager.getInstance().getDefaultSettings());
-        LoadSettingsEvent event = new LoadSettingsEvent(this, props);
-        p.loadSettings(event);
+//        Properties props = new Properties(SettingsManager.getInstance().getDefaultSettings());
+//        LoadSettingsEvent event = new LoadSettingsEvent(this, props);
+//        p.loadSettings(event);
     }
 
     public void configure(Profileable p, String profileName) {

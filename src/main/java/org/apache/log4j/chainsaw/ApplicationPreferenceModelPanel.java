@@ -349,7 +349,7 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
         private void initComponents() {
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-            configurationURL = new JComboBox<>(new DefaultComboBoxModel<>(committedPreferenceModel.getConfigurationURLs()));
+            configurationURL = new JComboBox(); //new JComboBox<>(new DefaultComboBoxModel<>(committedPreferenceModel.getConfigurationURLs()));
             configurationURL.setEditable(true);
             configurationURL.setPrototypeDisplayValue("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
             configurationURL.setPreferredSize(new Dimension(375, 13));
@@ -447,8 +447,8 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
                     return true;
                 }
             });
-            String configToDisplay = committedPreferenceModel.getBypassConfigurationURL() != null ? committedPreferenceModel.getBypassConfigurationURL() : committedPreferenceModel.getConfigurationURL();
-            configurationURL.setSelectedItem(configToDisplay);
+//            String configToDisplay = committedPreferenceModel.getBypassConfigurationURL() != null ? committedPreferenceModel.getBypassConfigurationURL() : committedPreferenceModel.getConfigurationURL();
+//            configurationURL.setSelectedItem(configToDisplay);
         }
 
         public void browseForConfiguration() {

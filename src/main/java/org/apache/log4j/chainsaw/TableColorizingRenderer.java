@@ -39,6 +39,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
+import org.apache.commons.configuration2.AbstractConfiguration;
+import org.apache.log4j.chainsaw.prefs.SettingsManager;
 
 
 /**
@@ -402,14 +404,15 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         Color background;
         Color foreground;
         Rule loggerRule = colorizer.getLoggerRule();
+        AbstractConfiguration configuration = SettingsManager.getInstance().getGlobalConfiguration();
         //use logger colors in table instead of event colors if event passes logger rule
         if (loggerRule != null && loggerRule.evaluate(loggingEventWrapper.getLoggingEvent(), null)) {
-            background = applicationPreferenceModel.getSearchBackgroundColor();
-            foreground = applicationPreferenceModel.getSearchForegroundColor();
+            background = configuration.get(Color.class, "searchBackgroundColor", ChainsawConstants.FIND_LOGGER_BACKGROUND);
+            foreground = configuration.get(Color.class, "searchForegroundColor", ChainsawConstants.FIND_LOGGER_FOREGROUND);
         } else {
-            if (colorizeSearch && !applicationPreferenceModel.isBypassSearchColors()) {
-                background = loggingEventWrapper.isSearchMatch() ? applicationPreferenceModel.getSearchBackgroundColor() : loggingEventWrapper.getBackground();
-                foreground = loggingEventWrapper.isSearchMatch() ? applicationPreferenceModel.getSearchForegroundColor() : loggingEventWrapper.getForeground();
+            if (colorizeSearch && !configuration.getBoolean("bypassSearchColors", false)) {
+                background = loggingEventWrapper.isSearchMatch() ? configuration.get(Color.class, "searchBackgroundColor", ChainsawConstants.FIND_LOGGER_BACKGROUND) : loggingEventWrapper.getBackground();
+                foreground = loggingEventWrapper.isSearchMatch() ? configuration.get(Color.class, "searchForegroundColor", ChainsawConstants.FIND_LOGGER_FOREGROUND) : loggingEventWrapper.getForeground();
             } else {
                 background = loggingEventWrapper.getBackground();
                 foreground = loggingEventWrapper.getForeground();
@@ -420,8 +423,8 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
          * Colourize background based on row striping if the event still has default foreground and background color
          */
         if (background.equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND) && foreground.equals(ChainsawConstants.COLOR_DEFAULT_FOREGROUND) && (row % 2) != 0) {
-            background = applicationPreferenceModel.getAlternatingColorBackgroundColor();
-            foreground = applicationPreferenceModel.getAlternatingColorForegroundColor();
+            background = configuration.get(Color.class, "alternatingColorBackground", ChainsawConstants.COLOR_ODD_ROW_BACKGROUND);
+            foreground = configuration.get(Color.class, "alternatingColorForeground", ChainsawConstants.COLOR_ODD_ROW_FOREGROUND);
         }
 
         component.setBackground(background);

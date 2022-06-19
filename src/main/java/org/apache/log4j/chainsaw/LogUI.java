@@ -60,6 +60,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import org.apache.commons.configuration2.AbstractConfiguration;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.zeroconf.ZeroConfPlugin;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -82,7 +83,7 @@ import org.w3c.dom.Element;
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  * @author Paul Smith  &lt;psmith@apache.org&gt;
  */
-public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
+public class LogUI extends JFrame {
     private static final String MAIN_WINDOW_HEIGHT = "main.window.height";
     private static final String MAIN_WINDOW_WIDTH = "main.window.width";
     private static final String MAIN_WINDOW_Y = "main.window.y";
@@ -206,26 +207,20 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
         }
 
-        final ApplicationPreferenceModel model = new ApplicationPreferenceModel();
-
-        SettingsManager.getInstance().configure(new ApplicationPreferenceModelSaver(model));
-        //if a configuration URL param was provided, set the configuration URL field to null
-        if (configurationURLAppArg != null) {
-            model.setBypassConfigurationURL(configurationURLAppArg);
-        }
+        AbstractConfiguration configuration = SettingsManager.getInstance().getGlobalConfiguration();
 
         EventQueue.invokeLater(() -> {
-            String lookAndFeelClassName = model.getLookAndFeelClassName();
+            String lookAndFeelClassName = configuration.getString("lookAndFeelClassName");
             if (lookAndFeelClassName == null || lookAndFeelClassName.trim().equals("")) {
                 String osName = System.getProperty("os.name");
                 if (osName.toLowerCase(Locale.ENGLISH).startsWith("mac")) {
                     //no need to assign look and feel
                 } else if (osName.toLowerCase(Locale.ENGLISH).startsWith("windows")) {
                     lookAndFeelClassName = "com.sun.java.swing.plaf.windows.WindowsLookAndFeel";
-                    model.setLookAndFeelClassName(lookAndFeelClassName);
+                    configuration.setProperty("lookAndFeelClassName",lookAndFeelClassName);
                 } else if (osName.toLowerCase(Locale.ENGLISH).startsWith("linux")) {
                     lookAndFeelClassName = "com.sun.java.swing.plaf.gtk.GTKLookAndFeel";
-                    model.setLookAndFeelClassName(lookAndFeelClassName);
+                    configuration.setProperty("lookAndFeelClassName",lookAndFeelClassName);
                 }
             }
 
@@ -238,7 +233,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                 }catch(Exception ex){}
             }
-            createChainsawGUI(model, null);
+            createChainsawGUI(null);
         });
     }
 
@@ -250,10 +245,10 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
      * @param model
      * @param newShutdownAction DOCUMENT ME!
      */
-    public static void createChainsawGUI(
-        ApplicationPreferenceModel model, Action newShutdownAction) {
+    public static void createChainsawGUI(Action newShutdownAction) {
+        AbstractConfiguration config = SettingsManager.getInstance().getGlobalConfiguration();
 
-        if (model.isOkToRemoveSecurityManager()) {
+        if (config.getBoolean("okToRemoveSecurityManager", false)) {
 //            statusBar.setMessage("User has authorised removal of Java Security Manager via preferences");
             System.setSecurityManager(null);
             // this SHOULD set the Policy/Permission stuff for any
@@ -273,12 +268,11 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         }
 
         final LogUI logUI = new LogUI();
-        logUI.applicationPreferenceModel = model;
 
-        if (model.isShowSplash()) {
+        if (config.getBoolean("slowSplash", true)) {
             showSplash(logUI);
         }
-        logUI.cyclicBufferSize = model.getCyclicBufferSize();
+        logUI.cyclicBufferSize = config.getInt("cyclicBufferSize", 50000);
 
         final LoggerContext ctx = (LoggerContext) org.apache.logging.log4j.LogManager.getContext(false);
         logUI.chainsawAppender = ctx.getConfiguration().getAppender("chainsaw");
@@ -297,46 +291,46 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
             logger.error("Uncaught exception in thread " + t, e);
         });
 
-        String config = configurationURLAppArg;
-        if (config != null) {
-            logger.info("Command-line configuration arg provided (overriding auto-configuration URL) - using: " + config);
-        } else {
-            config = model.getConfigurationURL();
-        }
+//        String config = configurationURLAppArg;
+//        if (config != null) {
+//            logger.info("Command-line configuration arg provided (overriding auto-configuration URL) - using: " + config);
+//        } else {
+//            config = model.getConfigurationURL();
+//        }
 
-        if (config != null && (!config.trim().equals(""))) {
-            config = config.trim();
-            try {
-                URL configURL = new URL(config);
-                logger.info("Using '" + config + "' for auto-configuration");
-//                logUI.loadConfigurationUsingPluginClassLoader(configURL);
-            } catch (MalformedURLException e) {
-                logger.error("Initial configuration - failed to convert config string to url", e);
-            } catch (IOException e) {
-                logger.error("Unable to access auto-configuration URL: " + config);
-            }
-        }
+//        if (config != null && (!config.trim().equals(""))) {
+//            config = config.trim();
+//            try {
+//                URL configURL = new URL(config);
+//                logger.info("Using '" + config + "' for auto-configuration");
+////                logUI.loadConfigurationUsingPluginClassLoader(configURL);
+//            } catch (MalformedURLException e) {
+//                logger.error("Initial configuration - failed to convert config string to url", e);
+//            } catch (IOException e) {
+//                logger.error("Unable to access auto-configuration URL: " + config);
+//            }
+//        }
 
         //register a listener to load the configuration when it changes (avoid having to restart Chainsaw when applying a new configuration)
         //this doesn't remove receivers from receivers panel, it just triggers DOMConfigurator.configure.
-        model.addPropertyChangeListener("configurationURL", evt -> {
-            String newConfiguration = evt.getNewValue().toString();
-            if (newConfiguration != null && !(newConfiguration.trim().equals(""))) {
-                newConfiguration = newConfiguration.trim();
-                try {
-                    logger.info("loading updated configuration: " + newConfiguration);
-                    URL newConfigurationURL = new URL(newConfiguration);
-                    File file = new File(newConfigurationURL.toURI());
-                    if (file.exists()) {
-//                        logUI.loadConfigurationUsingPluginClassLoader(newConfigurationURL);
-                    } else {
-                        logger.info("Updated configuration but file does not exist");
-                    }
-                } catch (MalformedURLException | URISyntaxException e) {
-                    logger.error("Updated configuration - failed to convert config string to URL", e);
-                }
-            }
-        });
+//        model.addPropertyChangeListener("configurationURL", evt -> {
+//            String newConfiguration = evt.getNewValue().toString();
+//            if (newConfiguration != null && !(newConfiguration.trim().equals(""))) {
+//                newConfiguration = newConfiguration.trim();
+//                try {
+//                    logger.info("loading updated configuration: " + newConfiguration);
+//                    URL newConfigurationURL = new URL(newConfiguration);
+//                    File file = new File(newConfigurationURL.toURI());
+//                    if (file.exists()) {
+////                        logUI.loadConfigurationUsingPluginClassLoader(newConfigurationURL);
+//                    } else {
+//                        logger.info("Updated configuration but file does not exist");
+//                    }
+//                } catch (MalformedURLException | URISyntaxException e) {
+//                    logger.error("Updated configuration - failed to convert config string to URL", e);
+//                }
+//            }
+//        });
 
         EventQueue.invokeLater(logUI::activateViewer);
         EventQueue.invokeLater(logUI::buildChainsawLogPanel);
@@ -356,41 +350,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
     }
 
     /**
-     * Allow Chainsaw v2 to be ran in-process (configured as a ChainsawAppender)
-     * NOTE: Closing Chainsaw will NOT stop the application generating the events.
-     *
-     * @param appender
-     */
-    public void activateViewer(ChainsawAppender appender) {
-
-        if (OSXIntegration.IS_OSX) {
-            System.setProperty("apple.laf.useScreenMenuBar", "true");
-        }
-
-        final ApplicationPreferenceModel model = new ApplicationPreferenceModel();
-        SettingsManager.getInstance().configure(new ApplicationPreferenceModelSaver(model));
-
-        cyclicBufferSize = model.getCyclicBufferSize();
-
-        setShutdownAction(
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                }
-            });
-
-        applicationPreferenceModel = new ApplicationPreferenceModel();
-
-        SettingsManager.getInstance().configure(new ApplicationPreferenceModelSaver(model));
-
-        EventQueue.invokeLater(() -> {
-//            loadLookAndFeelUsingPluginClassLoader(model.getLookAndFeelClassName());
-            createChainsawGUI(model, null);
-            getApplicationPreferenceModel().apply(model);
-            activateViewer();
-        });
-    }
-
-    /**
      * Initialises the menu's and toolbars, but does not actually create any of
      * the main panel components.
      */
@@ -405,8 +364,8 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         setJMenuBar(getToolBarAndMenus().getMenubar());
 
         setTabbedPane(new ChainsawTabbedPane());
-        getSettingsManager().addSettingsListener(getTabbedPane());
-        getSettingsManager().configure(getTabbedPane());
+//        getSettingsManager().addSettingsListener(getTabbedPane());
+//        getSettingsManager().configure(getTabbedPane());
 
         /**
          * This adds Drag & Drop capability to Chainsaw
@@ -458,10 +417,10 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
     private void setupReceiverPanel() {
         receiversPanel = new ReceiversPanel(this, statusBar);
-        receiversPanel.addPropertyChangeListener(
-            "visible",
-            evt -> getApplicationPreferenceModel().setReceivers(
-                (Boolean) evt.getNewValue()));
+//        receiversPanel.addPropertyChangeListener(
+//            "visible",
+//            evt -> getApplicationPreferenceModel().setReceivers(
+//                (Boolean) evt.getNewValue()));
     }
 
     /**
@@ -529,11 +488,12 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
      *
      * @param event DOCUMENT ME!
      */
-    public void loadSettings(LoadSettingsEvent event) {
+    private void loadSettings() {
+        AbstractConfiguration config = SettingsManager.getInstance().getGlobalConfiguration();
         setLocation(
-            event.asInt(LogUI.MAIN_WINDOW_X), event.asInt(LogUI.MAIN_WINDOW_Y));
-        int width = event.asInt(LogUI.MAIN_WINDOW_WIDTH);
-        int height = event.asInt(LogUI.MAIN_WINDOW_HEIGHT);
+            config.getInt(LogUI.MAIN_WINDOW_X, 0), config.getInt(LogUI.MAIN_WINDOW_Y, 0));
+        int width = config.getInt(LogUI.MAIN_WINDOW_WIDTH, -1);
+        int height = config.getInt(LogUI.MAIN_WINDOW_HEIGHT, -1);
         if (width == -1 && height == -1) {
             width = Toolkit.getDefaultToolkit().getScreenSize().width;
             height = Toolkit.getDefaultToolkit().getScreenSize().height;
@@ -547,27 +507,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         RuleColorizer colorizer = new RuleColorizer();
         colorizer.loadColorSettings(ChainsawConstants.DEFAULT_COLOR_RULE_NAME);
         allColorizers.put(ChainsawConstants.DEFAULT_COLOR_RULE_NAME, colorizer);
-        if (event.getSetting("SavedConfig.logFormat") != null) {
-            receiverConfigurationPanel.getModel().setLogFormat(event.getSetting("SavedConfig.logFormat"));
-        }
-    }
-
-    /**
-     * Ensures the location/size of the main window is stored with the settings
-     *
-     * @param event DOCUMENT ME!
-     */
-    public void saveSettings(SaveSettingsEvent event) {
-        event.saveSetting(LogUI.MAIN_WINDOW_X, (int) getLocation().getX());
-        event.saveSetting(LogUI.MAIN_WINDOW_Y, (int) getLocation().getY());
-
-        event.saveSetting(LogUI.MAIN_WINDOW_WIDTH, getWidth());
-        event.saveSetting(LogUI.MAIN_WINDOW_HEIGHT, getHeight());
-        RuleColorizer colorizer = allColorizers.get(ChainsawConstants.DEFAULT_COLOR_RULE_NAME);
-        colorizer.saveColorSettings(ChainsawConstants.DEFAULT_COLOR_RULE_NAME);
-        if (receiverConfigurationPanel.getModel().getLogFormat() != null) {
-            event.saveSetting("SavedConfig.logFormat", receiverConfigurationPanel.getModel().getLogFormat());
-        }
     }
 
     public void buildChainsawLogPanel(){
@@ -582,6 +521,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
      */
     public void activateViewer() {
         initGUI();
+        loadSettings();
 
         initPrefModelListeners();
 
@@ -822,22 +762,22 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 //                statusBar.setDataRate(dataRate);
 //            });
 
-        getSettingsManager().addSettingsListener(this);
-        getSettingsManager().addSettingsListener(MRUFileListPreferenceSaver.getInstance());
-        getSettingsManager().addSettingsListener(receiversPanel);
-        try {
-            //if an uncaught exception is thrown, allow the UI to continue to load
-            getSettingsManager().loadSettings();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        getSettingsManager().addSettingsListener(this);
+//        getSettingsManager().addSettingsListener(MRUFileListPreferenceSaver.getInstance());
+//        getSettingsManager().addSettingsListener(receiversPanel);
+//        try {
+//            //if an uncaught exception is thrown, allow the UI to continue to load
+//            getSettingsManager().loadSettings();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
         //app preferences have already been loaded (and configuration url possibly set to blank if being overridden)
         //but we need a listener so the settings will be saved on exit (added after loadsettings was called)
-        getSettingsManager().addSettingsListener(new ApplicationPreferenceModelSaver(applicationPreferenceModel));
+//        getSettingsManager().addSettingsListener(new ApplicationPreferenceModelSaver(applicationPreferenceModel));
 
         setVisible(true);
 
-        if (applicationPreferenceModel.isReceivers()) {
+        if (sm.getGlobalConfiguration().getBoolean("showReceivers", false)) {
             showReceiverPanel();
         } else {
             hideReceiverPanel();
@@ -852,7 +792,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 
         if (
             noReceiversDefined
-                && applicationPreferenceModel.isShowNoReceiverWarning()) {
+                && sm.getGlobalConfiguration().getBoolean("showNoReceiverWarning", true)) {
             SwingHelper.invokeOnEDT(this::showReceiverConfigurationPanel);
         }
 
@@ -995,10 +935,10 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
          * hide those tabs out of currently loaded tabs..
          */
 
-        if (!getTabbedPane().tabSetting.isWelcome()) {
+        if (!sm.getGlobalConfiguration().getBoolean("displayWelcomeTab", true)) {
             displayPanel(ChainsawTabbedPane.WELCOME_TAB, false);
         }
-        if (!getTabbedPane().tabSetting.isZeroconf()) {
+        if (!sm.getGlobalConfiguration().getBoolean("displayZeroconfTab", true)) {
             displayPanel(ChainsawTabbedPane.ZEROCONF, false);
         }
         tbms.stateChange();
@@ -1039,13 +979,13 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 //            evt -> handler.setIdentifierExpression(evt.getNewValue().toString()));
 //        handler.setIdentifierExpression(applicationPreferenceModel.getIdentifierExpression());
 
-
-        applicationPreferenceModel.addPropertyChangeListener(
-            "toolTipDisplayMillis",
-            evt -> ToolTipManager.sharedInstance().setDismissDelay(
-                (Integer) evt.getNewValue()));
+        int tooltipDisplayMillis = sm.getGlobalConfiguration().getInt("tooltipDisplayMillis", 4000);
+//        applicationPreferenceModel.addPropertyChangeListener(
+//            "toolTipDisplayMillis",
+//            evt -> ToolTipManager.sharedInstance().setDismissDelay(
+//                (Integer) evt.getNewValue()));
         ToolTipManager.sharedInstance().setDismissDelay(
-            applicationPreferenceModel.getToolTipDisplayMillis());
+            tooltipDisplayMillis);
 
 //        applicationPreferenceModel.addPropertyChangeListener(
 //            "responsiveness",
@@ -1055,57 +995,58 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
 //            });
 //        handler.setQueueInterval((applicationPreferenceModel.getResponsiveness() * 1000) - 750);
 
-        applicationPreferenceModel.addPropertyChangeListener(
-            "tabPlacement",
-            evt -> SwingUtilities.invokeLater(
-                () -> {
-                    int placement = (Integer) evt.getNewValue();
-
-                    switch (placement) {
-                        case SwingConstants.TOP:
-                        case SwingConstants.BOTTOM:
-                            tabbedPane.setTabPlacement(placement);
-
-                            break;
-
-                        default:
-                            break;
-                    }
-                }));
-
-        applicationPreferenceModel.addPropertyChangeListener(
-            "statusBar",
-            evt -> {
-                boolean value = (Boolean) evt.getNewValue();
-                setStatusBarVisible(value);
-            });
-        setStatusBarVisible(applicationPreferenceModel.isStatusBar());
-
-        applicationPreferenceModel.addPropertyChangeListener(
-            "receivers",
-            evt -> {
-                boolean value = (Boolean) evt.getNewValue();
-
-                if (value) {
-                    showReceiverPanel();
-                } else {
-                    hideReceiverPanel();
-                }
-            });
-//    if (applicationPreferenceModel.isReceivers()) {
-//      showReceiverPanel();
-//    } else {
-//      hideReceiverPanel();
-//    }
-
-
-        applicationPreferenceModel.addPropertyChangeListener(
-            "toolbar",
-            evt -> {
-                boolean value = (Boolean) evt.getNewValue();
-                toolbar.setVisible(value);
-            });
-        toolbar.setVisible(applicationPreferenceModel.isToolbar());
+//        applicationPreferenceModel.addPropertyChangeListener(
+//            "tabPlacement",
+//            evt -> SwingUtilities.invokeLater(
+//                () -> {
+//                    int placement = (Integer) evt.getNewValue();
+//
+//                    switch (placement) {
+//                        case SwingConstants.TOP:
+//                        case SwingConstants.BOTTOM:
+//                            tabbedPane.setTabPlacement(placement);
+//
+//                            break;
+//
+//                        default:
+//                            break;
+//                    }
+//                }));
+//
+//        applicationPreferenceModel.addPropertyChangeListener(
+//            "statusBar",
+//            evt -> {
+//                boolean value = (Boolean) evt.getNewValue();
+//                setStatusBarVisible(value);
+//            });
+//        setStatusBarVisible(applicationPreferenceModel.isStatusBar());
+//
+//        applicationPreferenceModel.addPropertyChangeListener(
+//            "receivers",
+//            evt -> {
+//                boolean value = (Boolean) evt.getNewValue();
+//
+//                if (value) {
+//                    showReceiverPanel();
+//                } else {
+//                    hideReceiverPanel();
+//                }
+//            });
+////    if (applicationPreferenceModel.isReceivers()) {
+////      showReceiverPanel();
+////    } else {
+////      hideReceiverPanel();
+////    }
+//
+//
+//        applicationPreferenceModel.addPropertyChangeListener(
+//            "toolbar",
+//            evt -> {
+//                boolean value = (Boolean) evt.getNewValue();
+//                toolbar.setVisible(value);
+//            });
+        boolean showToolbar = sm.getGlobalConfiguration().getBoolean("toolbar", true);
+        toolbar.setVisible(showToolbar);
 
     }
 
@@ -1292,7 +1233,7 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
      * Exits the application, ensuring Settings are saved.
      */
     public boolean exit() {
-        getSettingsManager().saveSettings();
+        getSettingsManager().saveAllSettings();
 
         return shutdown();
     }
@@ -1662,9 +1603,6 @@ public class LogUI extends JFrame implements ChainsawViewer, SettingsListener {
         boolean customExpression, final String ident, final List<ChainsawLoggingEvent> events, final ChainsawReceiver rx)
         throws IllegalArgumentException {
         final LogPanel thisPanel = new LogPanel(getStatusBar(), ident, cyclicBufferSize, allColorizers, applicationPreferenceModel);
-
-        getSettingsManager().addSettingsListener(thisPanel);
-        getSettingsManager().configure(thisPanel);
 
         if( !customExpression && rx != null ){
             thisPanel.setReceiver(rx);

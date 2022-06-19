@@ -528,27 +528,27 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
                 menuItemToggleDetails.setSelected(value);
             });
 
-        applicationPreferenceModel.addPropertyChangeListener("searchColor", new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (table != null) {
-                    table.repaint();
-                }
-                if (searchTable != null) {
-                    searchTable.repaint();
-                }
-            }
-        });
-
-        applicationPreferenceModel.addPropertyChangeListener("alternatingColor", new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (table != null) {
-                    table.repaint();
-                }
-                if (searchTable != null) {
-                    searchTable.repaint();
-                }
-            }
-        });
+//        applicationPreferenceModel.addPropertyChangeListener("searchColor", new PropertyChangeListener() {
+//            public void propertyChange(PropertyChangeEvent evt) {
+//                if (table != null) {
+//                    table.repaint();
+//                }
+//                if (searchTable != null) {
+//                    searchTable.repaint();
+//                }
+//            }
+//        });
+//
+//        applicationPreferenceModel.addPropertyChangeListener("alternatingColor", new PropertyChangeListener() {
+//            public void propertyChange(PropertyChangeEvent evt) {
+//                if (table != null) {
+//                    table.repaint();
+//                }
+//                if (searchTable != null) {
+//                    searchTable.repaint();
+//                }
+//            }
+//        });
 
         /*
          *End of preferenceModel listeners
@@ -2133,7 +2133,7 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
         }
 
         //no need to URL encode the identifier
-        colorizer.saveColorSettings(identifier);
+//        colorizer.saveColorSettings(identifier);
     }
 
     private XStream buildXStreamForLogPanelPreference() {

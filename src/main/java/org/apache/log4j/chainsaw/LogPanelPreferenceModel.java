@@ -43,7 +43,7 @@ public class LogPanelPreferenceModel implements Serializable {
     static {
         Collection list = new ArrayList();
 
-        Properties properties = SettingsManager.getInstance().getDefaultSettings();
+        Properties properties = new Properties(); //SettingsManager.getInstance().getDefaultSettings();
 
         for (Map.Entry<Object, Object> objectObjectEntry : properties.entrySet()) {
             Map.Entry<Object, Object> entry = objectObjectEntry;

@@ -42,6 +42,8 @@ import java.util.List;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
+import org.apache.commons.configuration2.AbstractConfiguration;
+import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -90,6 +92,8 @@ public class ColorPanel extends JPanel {
                       final Map<String, RuleColorizer> allLogPanelColorizers, final ApplicationPreferenceModel applicationPreferenceModel) {
         super(new BorderLayout());
 
+        AbstractConfiguration configuration = SettingsManager.getInstance().getGlobalConfiguration();
+
         this.currentLogPanelColorizer = currentLogPanelColorizer;
         this.colorizer = currentLogPanelColorizer;
         this.filterModel = filterModel;
@@ -132,15 +136,15 @@ public class ColorPanel extends JPanel {
         //searchtable contains only a single-entry vector containing a two-item vector (foreground, background)
         searchDataVector = new Vector<>();
         searchDataVectorEntry = new Vector<>();
-        searchDataVectorEntry.add(applicationPreferenceModel.getSearchBackgroundColor());
-        searchDataVectorEntry.add(applicationPreferenceModel.getSearchForegroundColor());
+        searchDataVectorEntry.add(configuration.get(Color.class, "searchBackgroundColor", ChainsawConstants.FIND_LOGGER_BACKGROUND));
+        searchDataVectorEntry.add(configuration.get(Color.class, "searchForegroundColor", ChainsawConstants.FIND_LOGGER_FOREGROUND));
         searchDataVector.add(searchDataVectorEntry);
         searchTableModel.setDataVector(searchDataVector, searchColumns);
 
         alternatingColorDataVector = new Vector<>();
         alternatingColorDataVectorEntry = new Vector<>();
-        alternatingColorDataVectorEntry.add(applicationPreferenceModel.getAlternatingColorBackgroundColor());
-        alternatingColorDataVectorEntry.add(applicationPreferenceModel.getAlternatingColorForegroundColor());
+        alternatingColorDataVectorEntry.add(configuration.get(Color.class, "alternatingColorBackground", ChainsawConstants.COLOR_ODD_ROW_BACKGROUND));
+        alternatingColorDataVectorEntry.add(configuration.get(Color.class, "alternatingColorForeground", ChainsawConstants.COLOR_ODD_ROW_FOREGROUND));
         alternatingColorDataVector.add(alternatingColorDataVectorEntry);
         alternatingColorTableModel.setDataVector(alternatingColorDataVector, alternatingColorColumns);
 
@@ -189,7 +193,7 @@ public class ColorPanel extends JPanel {
         southPanel.add(Box.createVerticalStrut(5));
         JPanel searchAndAlternatingColorPanel = buildSearchAndAlternatingColorPanel();
         JPanel bypassSearchColorsPanel = buildBypassSearchColorsPanel();
-        bypassSearchColorsCheckBox.setSelected(applicationPreferenceModel.isBypassSearchColors());
+        bypassSearchColorsCheckBox.setSelected(configuration.getBoolean("bypassSearchColors", false));
 
         JPanel globalLabelPanel = new JPanel();
         globalLabelPanel.setLayout(new BoxLayout(globalLabelPanel, BoxLayout.X_AXIS));
@@ -267,11 +271,13 @@ public class ColorPanel extends JPanel {
                 logPanelColorizersModel.addElement(entry.getKey());
             }
         }
+
+        AbstractConfiguration configuration = SettingsManager.getInstance().getGlobalConfiguration();
         //update search and alternating colors, since they may have changed from another color panel
-        searchDataVectorEntry.set(0, applicationPreferenceModel.getSearchBackgroundColor());
-        searchDataVectorEntry.set(1, applicationPreferenceModel.getSearchForegroundColor());
-        alternatingColorDataVectorEntry.set(0, applicationPreferenceModel.getAlternatingColorBackgroundColor());
-        alternatingColorDataVectorEntry.set(1, applicationPreferenceModel.getAlternatingColorForegroundColor());
+        searchDataVectorEntry.set(0, configuration.get(Color.class, "searchBackgroundColor", ChainsawConstants.FIND_LOGGER_BACKGROUND));
+        searchDataVectorEntry.set(1, configuration.get(Color.class, "searchForegroundColor", ChainsawConstants.FIND_LOGGER_FOREGROUND));
+        alternatingColorDataVectorEntry.set(0, configuration.get(Color.class, "alternatingColorBackground", ChainsawConstants.COLOR_ODD_ROW_BACKGROUND));
+        alternatingColorDataVectorEntry.set(1, configuration.get(Color.class, "alternatingColorForeground", ChainsawConstants.COLOR_ODD_ROW_FOREGROUND));
     }
 
     public JPanel buildBypassSearchColorsPanel() {
