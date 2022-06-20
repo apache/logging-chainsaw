@@ -42,9 +42,9 @@ import org.apache.logging.log4j.Logger;
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 public final class SettingsManager {
+    private static final Logger logger = LogManager.getLogger();
     private static final SettingsManager instance = new SettingsManager();
     private static final String GLOBAL_SETTINGS_FILE_NAME = "chainsaw.settings.properties";
-    private static final Logger logger = LogManager.getLogger();
 
     private PropertiesConfiguration m_configuration;
     private FileBasedConfigurationBuilder<PropertiesConfiguration> m_builder;
@@ -78,8 +78,19 @@ public final class SettingsManager {
         try{
             PropertiesConfiguration config = m_builder.getConfiguration();
             m_configuration = config;
+            return;
         }catch( ConfigurationException ex ){
-            logger.error( "Can't load properties??" );
+        }
+
+        // If we get here, it is likely that we have not opened the file.
+        // Force a save to create the file
+        try{
+            m_builder.save();
+            PropertiesConfiguration config = m_builder.getConfiguration();
+            m_configuration = config;
+            return;
+        }catch( ConfigurationException ex ){
+            ex.printStackTrace();
         }
     }
 

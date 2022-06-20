@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.apache.commons.configuration2.AbstractConfiguration;
+import org.apache.commons.configuration2.event.ConfigurationEvent;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 
 
@@ -67,6 +68,8 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     private final Collection lookAndFeelMenus = new ArrayList();
     private final JCheckBoxMenuItem toggleShowReceiversCheck =
         new JCheckBoxMenuItem();
+    private final JCheckBoxMenuItem toggleShowToolbarCheck =
+            new JCheckBoxMenuItem();
     private final JCheckBoxMenuItem toggleLogTreeMenuItem =
         new JCheckBoxMenuItem();
     private final JCheckBoxMenuItem toggleScrollToBottomMenuItem =
@@ -132,20 +135,22 @@ class ChainsawToolBarAndMenus implements ChangeListener {
                 toggleLogTreeAction, toggleScrollToBottomAction, changeModelAction,
             };
 
-//        logui.getApplicationPreferenceModel().addPropertyChangeListener(
-//            "statusBar",
-//            evt -> {
-//                boolean value = (Boolean) evt.getNewValue();
-//                toggleStatusBarCheck.setSelected(value);
-//            });
-//
-//        logui.getApplicationPreferenceModel().addPropertyChangeListener(
-//            "receivers",
-//            evt -> {
-//                boolean value = (Boolean) evt.getNewValue();
-//                showReceiversButton.setSelected(value);
-//                toggleShowReceiversCheck.setSelected(value);
-//            });
+            SettingsManager.getInstance().getGlobalConfiguration().addEventListener(ConfigurationEvent.SET_PROPERTY,
+            evt -> {
+                if( evt.getPropertyName().equals( "statusBar" ) ){
+                    boolean value = (Boolean) evt.getPropertyValue();
+                    toggleStatusBarCheck.setSelected(value);
+                }
+            });
+
+            SettingsManager.getInstance().getGlobalConfiguration().addEventListener(ConfigurationEvent.SET_PROPERTY,
+            evt -> {
+                if( evt.getPropertyName().equals( "showReceivers" ) ){
+                    boolean value = (Boolean) evt.getPropertyValue();
+                    showReceiversButton.setSelected(value);
+                    toggleShowReceiversCheck.setSelected(value);
+                }
+            });
     }
 
     /**
@@ -389,16 +394,8 @@ class ChainsawToolBarAndMenus implements ChangeListener {
 
         AbstractConfiguration configuration = SettingsManager.getInstance().getGlobalConfiguration();
 
-        final JCheckBoxMenuItem showToolbarCheck =
-            new JCheckBoxMenuItem(toggleToolbarAction);
-        showToolbarCheck.setSelected(configuration.getBoolean("toolbar", true));
-
-//        logui.getApplicationPreferenceModel().addPropertyChangeListener(
-//            "toolbar",
-//            evt -> {
-//                boolean value = (Boolean) evt.getNewValue();
-//                showToolbarCheck.setSelected(value);
-//            });
+        toggleShowToolbarCheck.setAction(toggleToolbarAction);
+        toggleShowToolbarCheck.setSelected(configuration.getBoolean("toolbar", true));
 
         menuShowWelcome.setAction(toggleWelcomeVisibleAction);
 
@@ -439,8 +436,9 @@ class ChainsawToolBarAndMenus implements ChangeListener {
         final Action toggleStatusBarAction =
             new AbstractAction("Show Status bar") {
                 public void actionPerformed(ActionEvent arg0) {
-//                    logui.getApplicationPreferenceModel().setStatusBar(
-//                        toggleStatusBarCheck.isSelected());
+                    boolean isSelected = toggleStatusBarCheck.isSelected();
+                    SettingsManager.getInstance().getGlobalConfiguration()
+                            .setProperty("statusBar", isSelected);
                 }
             };
 
@@ -478,7 +476,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
         activeTabMenu.add(toggleScrollToBottomMenuItem);
         activeTabMenu.add(menuItemUseRightMouse);
 
-        viewMenu.add(showToolbarCheck);
+        viewMenu.add(toggleShowToolbarCheck);
         viewMenu.add(toggleStatusBarCheck);
         viewMenu.add(toggleShowReceiversCheck);
         viewMenu.add(menuShowWelcome);
@@ -624,8 +622,12 @@ class ChainsawToolBarAndMenus implements ChangeListener {
         final Action action =
             new AbstractAction("Show Receivers") {
                 public void actionPerformed(ActionEvent arg0) {
-//                    logui.getApplicationPreferenceModel().setReceivers(
-//                        !logui.getApplicationPreferenceModel().isReceivers());
+                    // Since this action can be triggered from either a button
+                    // or a check box, get the current value and invert it.
+                    boolean currentValue = SettingsManager.getInstance().getGlobalConfiguration()
+                            .getBoolean("showReceivers", false);
+                    SettingsManager.getInstance().getGlobalConfiguration()
+                            .setProperty("showReceivers", !currentValue);
                 }
             };
 
@@ -672,8 +674,9 @@ class ChainsawToolBarAndMenus implements ChangeListener {
         final Action action =
             new AbstractAction("Show Toolbar") {
                 public void actionPerformed(ActionEvent e) {
-//                    logui.getApplicationPreferenceModel().setToolbar(
-//                        !logui.getApplicationPreferenceModel().isToolbar());
+                    boolean isSelected = toggleShowToolbarCheck.isSelected();
+                    SettingsManager.getInstance().getGlobalConfiguration()
+                            .setProperty("toolbar", isSelected);
                 }
             };
 

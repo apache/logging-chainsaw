@@ -243,9 +243,10 @@ public class RuleColorizer implements Colorizer {
     
     public void loadColorSettings(AbstractConfiguration configuration) {
         // When we save/load the rule, we really need to load a map of rules
-        // There's no real good way to do this, so we will do this the somewhat Qt-ish
-        // way and have a key that first tells us how many entries we need to read,
-        // and read the entries based off of their number
+        // There's no real good way to do this, so we will do this the somewhat
+        // dumb way and just load up to 32 color rules, since that seems like
+        // a good number
+//        configuration.get
 //        configuration.getInt( "colors.", 0)
 //        if (!doLoadColorSettings(name)) {
 //            doLoadColorSettings(ChainsawConstants.DEFAULT_COLOR_RULE_NAME);

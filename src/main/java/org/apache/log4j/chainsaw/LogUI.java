@@ -61,6 +61,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.configuration2.AbstractConfiguration;
+import org.apache.commons.configuration2.event.ConfigurationEvent;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.zeroconf.ZeroConfPlugin;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -523,8 +524,6 @@ public class LogUI extends JFrame {
         initGUI();
         loadSettings();
 
-        initPrefModelListeners();
-
         if (m_receivers.size() == 0) {
             noReceiversDefined = true;
         }
@@ -754,6 +753,9 @@ public class LogUI extends JFrame {
 
         final PopupListener tabPopupListener = new PopupListener(tabPopup);
         getTabbedPane().addMouseListener(tabPopupListener);
+
+
+        initPrefModelListeners();
 
 //        this.handler.addPropertyChangeListener(
 //            "dataRate",
@@ -1013,13 +1015,34 @@ public class LogUI extends JFrame {
 //                    }
 //                }));
 //
-//        applicationPreferenceModel.addPropertyChangeListener(
-//            "statusBar",
-//            evt -> {
-//                boolean value = (Boolean) evt.getNewValue();
-//                setStatusBarVisible(value);
-//            });
-//        setStatusBarVisible(applicationPreferenceModel.isStatusBar());
+        sm.getGlobalConfiguration().addEventListener(ConfigurationEvent.SET_PROPERTY,
+            evt -> {
+                if( evt.getPropertyName().equals( "statusBar" ) ){
+                    boolean value = (Boolean) evt.getPropertyValue();
+                    statusBar.setVisible(value);
+                }
+            });
+        boolean showStatusBar = sm.getGlobalConfiguration().getBoolean("statusBar", true);
+        setStatusBarVisible(showStatusBar);
+
+        sm.getGlobalConfiguration().addEventListener(ConfigurationEvent.SET_PROPERTY,
+            evt -> {
+                if( evt.getPropertyName().equals( "showReceivers" ) ){
+                    boolean value = (Boolean) evt.getPropertyValue();
+                    if( value ){
+                        showReceiverPanel();
+                    }else{
+                        hideReceiverPanel();
+                    }
+                }
+            });
+        boolean showReceivers = sm.getGlobalConfiguration().getBoolean("showReceivers", false);
+        setStatusBarVisible(showStatusBar);
+        if( showReceivers ){
+            showReceiverPanel();
+        }else{
+            hideReceiverPanel();
+        }
 //
 //        applicationPreferenceModel.addPropertyChangeListener(
 //            "receivers",
@@ -1039,12 +1062,13 @@ public class LogUI extends JFrame {
 ////    }
 //
 //
-//        applicationPreferenceModel.addPropertyChangeListener(
-//            "toolbar",
-//            evt -> {
-//                boolean value = (Boolean) evt.getNewValue();
-//                toolbar.setVisible(value);
-//            });
+        sm.getGlobalConfiguration().addEventListener(ConfigurationEvent.SET_PROPERTY,
+            evt -> {
+                if( evt.getPropertyName().equals( "toolbar" ) ){
+                    boolean value = (Boolean) evt.getPropertyValue();
+                    toolbar.setVisible(value);
+                }
+            });
         boolean showToolbar = sm.getGlobalConfiguration().getBoolean("toolbar", true);
         toolbar.setVisible(showToolbar);
 
@@ -1310,7 +1334,8 @@ public class LogUI extends JFrame {
      * Shutsdown by ensuring the Appender gets a chance to close.
      */
     public boolean shutdown() {
-        if (getApplicationPreferenceModel().isConfirmExit()) {
+        boolean confirmExit = sm.getGlobalConfiguration().getBoolean("confirmExit", true);
+        if (confirmExit) {
             if (
                 JOptionPane.showConfirmDialog(
                     LogUI.this, "Are you sure you want to exit Chainsaw?",

@@ -34,6 +34,8 @@ import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Locale;
+import org.apache.commons.configuration2.AbstractConfiguration;
+import org.apache.log4j.chainsaw.prefs.SettingsManager;
 
 
 /**
@@ -170,19 +172,21 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
          *
          */
         private void setupListeners() {
+            final AbstractConfiguration config = SettingsManager.getInstance().getGlobalConfiguration();
+
             topPlacement.addActionListener(
                 e -> uncommittedPreferenceModel.setTabPlacement(SwingConstants.TOP));
             bottomPlacement.addActionListener(
                 e -> uncommittedPreferenceModel.setTabPlacement(SwingConstants.BOTTOM));
 
             statusBar.addActionListener(
-                e -> uncommittedPreferenceModel.setStatusBar(statusBar.isSelected()));
+                e -> config.setProperty("statusBar",statusBar.isSelected()));
 
             toolBar.addActionListener(
-                e -> uncommittedPreferenceModel.setToolbar(toolBar.isSelected()));
+                e -> config.setProperty("toolbar",toolBar.isSelected()));
 
             receivers.addActionListener(
-                e -> uncommittedPreferenceModel.setReceivers(receivers.isSelected()));
+                e -> config.setProperty("showReceivers",receivers.isSelected()));
 
             uncommittedPreferenceModel.addPropertyChangeListener(
                 "tabPlacement",
