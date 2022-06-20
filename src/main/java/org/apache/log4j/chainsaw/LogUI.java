@@ -398,7 +398,7 @@ public class LogUI extends JFrame {
 
         });
 
-        applicationPreferenceModelPanel = new ApplicationPreferenceModelPanel(applicationPreferenceModel);
+        applicationPreferenceModelPanel = new ApplicationPreferenceModelPanel();
 
         applicationPreferenceModelPanel.setOkCancelActionListener(
             e -> preferencesFrame.setVisible(false));

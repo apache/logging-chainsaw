@@ -44,72 +44,30 @@ import org.apache.log4j.chainsaw.prefs.SettingsManager;
  * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
-    private ApplicationPreferenceModel committedPreferenceModel;
-    private ApplicationPreferenceModel uncommittedPreferenceModel =
-        new ApplicationPreferenceModel();
+    private static final Logger logger = LogManager.getLogger();
+    
     private JTextField identifierExpression;
     private JTextField toolTipDisplayMillis;
     private JTextField cyclicBufferSize;
     private JComboBox<String> configurationURL;
-    private final Logger logger;
     private GeneralAllPrefPanel generalAllPrefPanel;
 
-    ApplicationPreferenceModelPanel(ApplicationPreferenceModel model) {
-        this.committedPreferenceModel = model;
-        logger = LogManager.getLogger(ApplicationPreferenceModelPanel.class);
+    ApplicationPreferenceModelPanel() {
         initComponents();
         getOkButton().addActionListener(
             e -> {
-                uncommittedPreferenceModel.setConfigurationURL((String) configurationURL.getSelectedItem());
-                uncommittedPreferenceModel.setIdentifierExpression(
-                    identifierExpression.getText());
-                try {
-                    int millis = Integer.parseInt(toolTipDisplayMillis.getText());
-                    if (millis >= 0) {
-                        uncommittedPreferenceModel.setToolTipDisplayMillis(millis);
-                    }
-                } catch (NumberFormatException nfe) {
-                }
-                try {
-                    int bufferSize = Integer.parseInt(cyclicBufferSize.getText());
-                    if (bufferSize >= 0) {
-                        uncommittedPreferenceModel.setCyclicBufferSize(bufferSize);
-                    }
-                } catch (NumberFormatException nfe) {
-                }
-                committedPreferenceModel.apply(uncommittedPreferenceModel);
+                SettingsManager.getInstance().saveGlobalSettings();
                 hidePanel();
             });
 
         getCancelButton().addActionListener(
             e -> {
-                uncommittedPreferenceModel.apply(committedPreferenceModel);
                 hidePanel();
             });
     }
 
+    public void updateModel(){
 
-    public static void main(String[] args) {
-        JFrame f = new JFrame("App Preferences Panel Test Bed");
-        ApplicationPreferenceModel model = new ApplicationPreferenceModel();
-        ApplicationPreferenceModelPanel panel =
-            new ApplicationPreferenceModelPanel(model);
-        f.getContentPane().add(panel);
-
-        model.addPropertyChangeListener(System.out::println);
-        panel.setOkCancelActionListener(
-            e -> System.exit(1));
-
-        f.setSize(640, 480);
-        f.setVisible(true);
-    }
-
-    /**
-     * Ensures this panels DISPLAYED model is in sync with
-     * the model initially passed to the constructor.
-     */
-    public void updateModel() {
-        this.uncommittedPreferenceModel.apply(committedPreferenceModel);
     }
 
     /* (non-Javadoc)
@@ -165,7 +123,7 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
 
             setupComponents();
             setupListeners();
-            setupInitialValues();
+            updateModel();
         }
 
         /**
@@ -175,9 +133,9 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
             final AbstractConfiguration config = SettingsManager.getInstance().getGlobalConfiguration();
 
             topPlacement.addActionListener(
-                e -> uncommittedPreferenceModel.setTabPlacement(SwingConstants.TOP));
+                e -> config.setProperty("tabPlacement", SwingConstants.TOP));
             bottomPlacement.addActionListener(
-                e -> uncommittedPreferenceModel.setTabPlacement(SwingConstants.BOTTOM));
+                e -> config.setProperty("tabPlacement", SwingConstants.BOTTOM));
 
             statusBar.addActionListener(
                 e -> config.setProperty("statusBar",statusBar.isSelected()));
@@ -188,45 +146,45 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
             receivers.addActionListener(
                 e -> config.setProperty("showReceivers",receivers.isSelected()));
 
-            uncommittedPreferenceModel.addPropertyChangeListener(
-                "tabPlacement",
-                evt -> {
-                    int value = (Integer) evt.getNewValue();
-
-                    configureTabPlacement(value);
-                });
-
-            uncommittedPreferenceModel.addPropertyChangeListener(
-                "statusBar",
-                evt -> statusBar.setSelected(
-                    (Boolean) evt.getNewValue()));
-
-            uncommittedPreferenceModel.addPropertyChangeListener(
-                "toolbar",
-                evt -> toolBar.setSelected((Boolean) evt.getNewValue()));
-
-            uncommittedPreferenceModel.addPropertyChangeListener(
-                "receivers",
-                evt -> receivers.setSelected(
-                    (Boolean) evt.getNewValue()));
-
-            uncommittedPreferenceModel.addPropertyChangeListener(
-                "lookAndFeelClassName",
-                evt -> {
-                    String lf = evt.getNewValue().toString();
-
-                    Enumeration enumeration = lookAndFeelGroup.getElements();
-
-                    while (enumeration.hasMoreElements()) {
-                        JRadioButton button = (JRadioButton) enumeration.nextElement();
-
-                        if (button.getName() != null && button.getName().equals(lf)) {
-                            button.setSelected(true);
-
-                            break;
-                        }
-                    }
-                });
+//            uncommittedPreferenceModel.addPropertyChangeListener(
+//                "tabPlacement",
+//                evt -> {
+//                    int value = (Integer) evt.getNewValue();
+//
+//                    configureTabPlacement(value);
+//                });
+//
+//            uncommittedPreferenceModel.addPropertyChangeListener(
+//                "statusBar",
+//                evt -> statusBar.setSelected(
+//                    (Boolean) evt.getNewValue()));
+//
+//            uncommittedPreferenceModel.addPropertyChangeListener(
+//                "toolbar",
+//                evt -> toolBar.setSelected((Boolean) evt.getNewValue()));
+//
+//            uncommittedPreferenceModel.addPropertyChangeListener(
+//                "receivers",
+//                evt -> receivers.setSelected(
+//                    (Boolean) evt.getNewValue()));
+//
+//            uncommittedPreferenceModel.addPropertyChangeListener(
+//                "lookAndFeelClassName",
+//                evt -> {
+//                    String lf = evt.getNewValue().toString();
+//
+//                    Enumeration enumeration = lookAndFeelGroup.getElements();
+//
+//                    while (enumeration.hasMoreElements()) {
+//                        JRadioButton button = (JRadioButton) enumeration.nextElement();
+//
+//                        if (button.getName() != null && button.getName().equals(lf)) {
+//                            button.setSelected(true);
+//
+//                            break;
+//                        }
+//                    }
+//                });
         }
 
         /**
@@ -265,12 +223,13 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
             JPanel lfPanel = new JPanel();
             lfPanel.setLayout(new BoxLayout(lfPanel, BoxLayout.Y_AXIS));
             lfPanel.setBorder(BorderFactory.createTitledBorder(" Look & Feel "));
+            final AbstractConfiguration configuration = SettingsManager.getInstance().getGlobalConfiguration();
 
             for (final UIManager.LookAndFeelInfo lfInfo : lookAndFeels) {
                 final JRadioButton lfItem = new JRadioButton(" " + lfInfo.getName() + " ");
                 lfItem.setName(lfInfo.getClassName());
                 lfItem.addActionListener(
-                    e -> uncommittedPreferenceModel.setLookAndFeelClassName(
+                    e -> configuration.setProperty("lookAndFeelClassName",
                         lfInfo.getClassName()));
                 lookAndFeelGroup.add(lfItem);
                 lfPanel.add(lfItem);
@@ -281,7 +240,7 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
                     Class.forName("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
                 final JRadioButton lfIGTK = new JRadioButton(" GTK+ 2.0 ");
                 lfIGTK.addActionListener(
-                    e -> uncommittedPreferenceModel.setLookAndFeelClassName(
+                    e -> configuration.setProperty("lookAndFeelClassName",
                         gtkLF.getName()));
                 lookAndFeelGroup.add(lfIGTK);
                 lfPanel.add(lfIGTK);
@@ -314,15 +273,17 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
             }
         }
 
-        private void setupInitialValues() {
-            statusBar.setSelected(uncommittedPreferenceModel.isStatusBar());
-            receivers.setSelected(uncommittedPreferenceModel.isReceivers());
-            toolBar.setSelected(uncommittedPreferenceModel.isToolbar());
-            configureTabPlacement(uncommittedPreferenceModel.getTabPlacement());
+        public void updateModel(){
+            AbstractConfiguration config = SettingsManager.getInstance().getGlobalConfiguration();
+
+            statusBar.setSelected(config.getBoolean("statusBar"));
+            receivers.setSelected(config.getBoolean("showReceivers"));
+            toolBar.setSelected(config.getBoolean("toolbar"));
+            configureTabPlacement(config.getInt("tabPlacement"));
             Enumeration e = lookAndFeelGroup.getElements();
             while (e.hasMoreElements()) {
                 JRadioButton radioButton = (JRadioButton) e.nextElement();
-                if (radioButton.getText().equals(uncommittedPreferenceModel.getLookAndFeelClassName())) {
+                if (radioButton.getText().equals(config.getString("lookAndFeelClassName"))) {
                     radioButton.setSelected(true);
                     break;
                 }
@@ -427,7 +388,7 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
             p6.add(configURLPanel);
 
             JButton browseButton = new JButton(" Open File... ");
-            browseButton.addActionListener(e -> browseForConfiguration());
+//            browseButton.addActionListener(e -> browseForConfiguration());
             Box browsePanel = new Box(BoxLayout.X_AXIS);
             browsePanel.add(Box.createHorizontalGlue());
             browsePanel.add(browseButton);
@@ -455,35 +416,35 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
 //            configurationURL.setSelectedItem(configToDisplay);
         }
 
-        public void browseForConfiguration() {
-            String defaultPath = ".";
-            if (configurationURL.getItemCount() > 0) {
-                Object selectedItem = configurationURL.getSelectedItem();
-                if (selectedItem != null) {
-                    File currentConfigurationPath = new File(selectedItem.toString()).getParentFile();
-                    if (currentConfigurationPath != null) {
-                        defaultPath = currentConfigurationPath.getPath();
-                        //FileDialog will not navigate to this location unless we remove the prefixing protocol and slash
-                        //at least on winxp
-                        if (defaultPath.toLowerCase(Locale.ENGLISH).startsWith("file:\\")) {
-                            defaultPath = defaultPath.substring("file:\\".length());
-                        }
-                    }
-                }
-            }
-            File selectedFile = SwingHelper.promptForFile(this, defaultPath, "Select a Chainsaw configuration file", true);
-            if (selectedFile != null) {
-                try {
-                    String newConfigurationFile = selectedFile.toURI().toURL().toExternalForm();
-                    if (!committedPreferenceModel.getConfigurationURLs().contains(newConfigurationFile)) {
-                        configurationURL.addItem(newConfigurationFile);
-                    }
-                    configurationURL.setSelectedItem(newConfigurationFile);
-                } catch (MalformedURLException e1) {
-                    e1.printStackTrace();
-                }
-            }
-        }
+//        public void browseForConfiguration() {
+//            String defaultPath = ".";
+//            if (configurationURL.getItemCount() > 0) {
+//                Object selectedItem = configurationURL.getSelectedItem();
+//                if (selectedItem != null) {
+//                    File currentConfigurationPath = new File(selectedItem.toString()).getParentFile();
+//                    if (currentConfigurationPath != null) {
+//                        defaultPath = currentConfigurationPath.getPath();
+//                        //FileDialog will not navigate to this location unless we remove the prefixing protocol and slash
+//                        //at least on winxp
+//                        if (defaultPath.toLowerCase(Locale.ENGLISH).startsWith("file:\\")) {
+//                            defaultPath = defaultPath.substring("file:\\".length());
+//                        }
+//                    }
+//                }
+//            }
+//            File selectedFile = SwingHelper.promptForFile(this, defaultPath, "Select a Chainsaw configuration file", true);
+//            if (selectedFile != null) {
+//                try {
+//                    String newConfigurationFile = selectedFile.toURI().toURL().toExternalForm();
+//                    if (!committedPreferenceModel.getConfigurationURLs().contains(newConfigurationFile)) {
+//                        configurationURL.addItem(newConfigurationFile);
+//                    }
+//                    configurationURL.setSelectedItem(newConfigurationFile);
+//                } catch (MalformedURLException e1) {
+//                    e1.printStackTrace();
+//                }
+//            }
+//        }
 
         private void initSliderComponent() {
             responsiveSlider.setToolTipText(
@@ -500,107 +461,107 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
         }
 
         private void setupListeners() {
-            uncommittedPreferenceModel.addPropertyChangeListener(
-                "showNoReceiverWarning",
-                evt -> showNoReceiverWarning.setSelected(
-                    (Boolean) evt.getNewValue()));
-
-            uncommittedPreferenceModel.addPropertyChangeListener("showSplash", evt -> {
-                boolean value = (Boolean) evt.getNewValue();
-                showSplash.setSelected(value);
-            });
-
-            uncommittedPreferenceModel.addPropertyChangeListener("okToRemoveSecurityManager", evt -> {
-                boolean newValue = (Boolean) evt.getNewValue();
-                if (newValue) {
-                    okToRemoveSecurityManager.setSelected(newValue);
-                } else {
-                    okToRemoveSecurityManager.setSelected(false);
-                }
-
-            });
-
-
-            uncommittedPreferenceModel.addPropertyChangeListener(
-                "identifierExpression",
-                evt -> identifierExpression.setText(evt.getNewValue().toString()));
-
-            uncommittedPreferenceModel.addPropertyChangeListener(
-                "responsiveness",
-                evt -> {
-                    int value = (Integer) evt.getNewValue();
-
-                    if (value >= 1000) {
-                        int newValue = (value - 750) / 1000;
-                        logger.debug(
-                            "Adjusting old Responsiveness value from " + value + " to "
-                                + newValue);
-                        value = newValue;
-                    }
-
-                    responsiveSlider.setValue(value);
-                });
-
-            uncommittedPreferenceModel.addPropertyChangeListener(
-                "toolTipDisplayMillis",
-                evt -> toolTipDisplayMillis.setText(evt.getNewValue().toString()));
-
-            uncommittedPreferenceModel.addPropertyChangeListener(
-                "cyclicBufferSize",
-                evt -> cyclicBufferSize.setText(evt.getNewValue().toString()));
-
-            showNoReceiverWarning.addActionListener(
-                e -> uncommittedPreferenceModel.setShowNoReceiverWarning(
-                    showNoReceiverWarning.isSelected()));
-
-            showSplash.addActionListener(e -> uncommittedPreferenceModel.setShowSplash(showSplash.isSelected()));
-
-            okToRemoveSecurityManager.addActionListener(e -> {
-
-                if (okToRemoveSecurityManager.isSelected() && JOptionPane.showConfirmDialog(okToRemoveSecurityManager, "By ticking this option, you are authorizing Chainsaw to remove Java's Security Manager.\n\n" +
-                    "This is required under Java Web Start so that it can access Jars/classes locally.  Without this, Receivers like JMSReceiver + DBReceiver that require" +
-                    " specific driver jars will NOT be able to be run.  \n\n" +
-                    "By ticking this, you are saying that this is ok.", "Please Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                    uncommittedPreferenceModel.setOkToRemoveSecurityManager(true);
-                } else {
-                    uncommittedPreferenceModel.setOkToRemoveSecurityManager(false);
-                }
-
-            });
-
-
-            responsiveSlider.getModel().addChangeListener(
-                e -> {
-                    if (responsiveSlider.getValueIsAdjusting()) {
-                        /**
-                         * We'll wait until it stops.
-                         */
-                    } else {
-                        int value = responsiveSlider.getValue();
-
-                        if (value == 0) {
-                            value = 1;
-                        }
-
-                        logger.debug("Adjust responsiveness to " + value);
-                        uncommittedPreferenceModel.setResponsiveness(value);
-                    }
-                });
-
-            uncommittedPreferenceModel.addPropertyChangeListener(
-                "confirmExit",
-                evt -> {
-                    boolean value = (Boolean) evt.getNewValue();
-                    confirmExit.setSelected(value);
-                });
-
-            uncommittedPreferenceModel.addPropertyChangeListener("configurationURL", evt -> {
-                String value = evt.getNewValue().toString();
-                configurationURL.setSelectedItem(value);
-            });
-            confirmExit.addActionListener(
-                e -> uncommittedPreferenceModel.setConfirmExit(
-                    confirmExit.isSelected()));
+//            uncommittedPreferenceModel.addPropertyChangeListener(
+//                "showNoReceiverWarning",
+//                evt -> showNoReceiverWarning.setSelected(
+//                    (Boolean) evt.getNewValue()));
+//
+//            uncommittedPreferenceModel.addPropertyChangeListener("showSplash", evt -> {
+//                boolean value = (Boolean) evt.getNewValue();
+//                showSplash.setSelected(value);
+//            });
+//
+//            uncommittedPreferenceModel.addPropertyChangeListener("okToRemoveSecurityManager", evt -> {
+//                boolean newValue = (Boolean) evt.getNewValue();
+//                if (newValue) {
+//                    okToRemoveSecurityManager.setSelected(newValue);
+//                } else {
+//                    okToRemoveSecurityManager.setSelected(false);
+//                }
+//
+//            });
+//
+//
+//            uncommittedPreferenceModel.addPropertyChangeListener(
+//                "identifierExpression",
+//                evt -> identifierExpression.setText(evt.getNewValue().toString()));
+//
+//            uncommittedPreferenceModel.addPropertyChangeListener(
+//                "responsiveness",
+//                evt -> {
+//                    int value = (Integer) evt.getNewValue();
+//
+//                    if (value >= 1000) {
+//                        int newValue = (value - 750) / 1000;
+//                        logger.debug(
+//                            "Adjusting old Responsiveness value from " + value + " to "
+//                                + newValue);
+//                        value = newValue;
+//                    }
+//
+//                    responsiveSlider.setValue(value);
+//                });
+//
+//            uncommittedPreferenceModel.addPropertyChangeListener(
+//                "toolTipDisplayMillis",
+//                evt -> toolTipDisplayMillis.setText(evt.getNewValue().toString()));
+//
+//            uncommittedPreferenceModel.addPropertyChangeListener(
+//                "cyclicBufferSize",
+//                evt -> cyclicBufferSize.setText(evt.getNewValue().toString()));
+//
+//            showNoReceiverWarning.addActionListener(
+//                e -> uncommittedPreferenceModel.setShowNoReceiverWarning(
+//                    showNoReceiverWarning.isSelected()));
+//
+//            showSplash.addActionListener(e -> uncommittedPreferenceModel.setShowSplash(showSplash.isSelected()));
+//
+//            okToRemoveSecurityManager.addActionListener(e -> {
+//
+//                if (okToRemoveSecurityManager.isSelected() && JOptionPane.showConfirmDialog(okToRemoveSecurityManager, "By ticking this option, you are authorizing Chainsaw to remove Java's Security Manager.\n\n" +
+//                    "This is required under Java Web Start so that it can access Jars/classes locally.  Without this, Receivers like JMSReceiver + DBReceiver that require" +
+//                    " specific driver jars will NOT be able to be run.  \n\n" +
+//                    "By ticking this, you are saying that this is ok.", "Please Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+//                    uncommittedPreferenceModel.setOkToRemoveSecurityManager(true);
+//                } else {
+//                    uncommittedPreferenceModel.setOkToRemoveSecurityManager(false);
+//                }
+//
+//            });
+//
+//
+//            responsiveSlider.getModel().addChangeListener(
+//                e -> {
+//                    if (responsiveSlider.getValueIsAdjusting()) {
+//                        /**
+//                         * We'll wait until it stops.
+//                         */
+//                    } else {
+//                        int value = responsiveSlider.getValue();
+//
+//                        if (value == 0) {
+//                            value = 1;
+//                        }
+//
+//                        logger.debug("Adjust responsiveness to " + value);
+//                        uncommittedPreferenceModel.setResponsiveness(value);
+//                    }
+//                });
+//
+//            uncommittedPreferenceModel.addPropertyChangeListener(
+//                "confirmExit",
+//                evt -> {
+//                    boolean value = (Boolean) evt.getNewValue();
+//                    confirmExit.setSelected(value);
+//                });
+//
+//            uncommittedPreferenceModel.addPropertyChangeListener("configurationURL", evt -> {
+//                String value = evt.getNewValue().toString();
+//                configurationURL.setSelectedItem(value);
+//            });
+//            confirmExit.addActionListener(
+//                e -> uncommittedPreferenceModel.setConfirmExit(
+//                    confirmExit.isSelected()));
         }
 
         private void setupInitialValues() {
@@ -610,19 +571,19 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
             sliderLabelMap.put(4, new JLabel(" Slow "));
 
             //
-            showNoReceiverWarning.setSelected(
-                uncommittedPreferenceModel.isShowNoReceiverWarning());
-            identifierExpression.setText(
-                uncommittedPreferenceModel.getIdentifierExpression());
-
-            confirmExit.setSelected(uncommittedPreferenceModel.isConfirmExit());
-            okToRemoveSecurityManager.setSelected(uncommittedPreferenceModel.isOkToRemoveSecurityManager());
-            showNoReceiverWarning.setSelected(uncommittedPreferenceModel.isShowNoReceiverWarning());
-            showSplash.setSelected(uncommittedPreferenceModel.isShowSplash());
-            identifierExpression.setText(uncommittedPreferenceModel.getIdentifierExpression());
-            toolTipDisplayMillis.setText(uncommittedPreferenceModel.getToolTipDisplayMillis() + "");
-            cyclicBufferSize.setText(uncommittedPreferenceModel.getCyclicBufferSize() + "");
-            configurationURL.setSelectedItem(uncommittedPreferenceModel.getConfigurationURL());
+//            showNoReceiverWarning.setSelected(
+//                uncommittedPreferenceModel.isShowNoReceiverWarning());
+//            identifierExpression.setText(
+//                uncommittedPreferenceModel.getIdentifierExpression());
+//
+//            confirmExit.setSelected(uncommittedPreferenceModel.isConfirmExit());
+//            okToRemoveSecurityManager.setSelected(uncommittedPreferenceModel.isOkToRemoveSecurityManager());
+//            showNoReceiverWarning.setSelected(uncommittedPreferenceModel.isShowNoReceiverWarning());
+//            showSplash.setSelected(uncommittedPreferenceModel.isShowSplash());
+//            identifierExpression.setText(uncommittedPreferenceModel.getIdentifierExpression());
+//            toolTipDisplayMillis.setText(uncommittedPreferenceModel.getToolTipDisplayMillis() + "");
+//            cyclicBufferSize.setText(uncommittedPreferenceModel.getCyclicBufferSize() + "");
+//            configurationURL.setSelectedItem(uncommittedPreferenceModel.getConfigurationURL());
         }
     }
 }

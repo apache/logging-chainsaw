@@ -18,6 +18,7 @@ package org.apache.log4j.chainsaw.prefs;
 
 import javax.swing.event.EventListenerList;
 import java.io.*;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.EventListener;
 import java.util.HashMap;
@@ -65,33 +66,34 @@ public final class SettingsManager {
             settingsDir.mkdir();
         }
 
+        URL defaultPrefs = this.getClass().getClassLoader()
+                .getResource("org/apache/log4j/chainsaw/prefs/default.properties");
+
         m_builder =
             new FileBasedConfigurationBuilder<PropertiesConfiguration>(
                 PropertiesConfiguration.class)
                 .configure(params.fileBased()
-                        .setListDelimiterHandler(
-                            new DefaultListDelimiterHandler(','))
-                        .setFile(f)
+                        .setURL(defaultPrefs)
                 );
-
 
         try{
             PropertiesConfiguration config = m_builder.getConfiguration();
             m_configuration = config;
+            m_builder.getFileHandler().setFile(f);
             return;
         }catch( ConfigurationException ex ){
         }
 
         // If we get here, it is likely that we have not opened the file.
         // Force a save to create the file
-        try{
-            m_builder.save();
-            PropertiesConfiguration config = m_builder.getConfiguration();
-            m_configuration = config;
-            return;
-        }catch( ConfigurationException ex ){
-            ex.printStackTrace();
-        }
+//        try{
+//            m_builder.save();
+//            PropertiesConfiguration config = m_builder.getConfiguration();
+//            m_configuration = config;
+//            return;
+//        }catch( ConfigurationException ex ){
+//            ex.printStackTrace();
+//        }
     }
 
     /**
@@ -141,6 +143,14 @@ public final class SettingsManager {
 
     public File getSettingsDirectory() {
         return new File(System.getProperty("user.home"), ".chainsaw");
+    }
+
+    public void saveGlobalSettings(){
+        try{
+            m_builder.save();
+        }catch( ConfigurationException ex ){
+            logger.error( "Unable to save global settings: {}", ex );
+        }
     }
 
     public void saveAllSettings(){
