@@ -41,10 +41,10 @@ import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 public class RuleColorizer implements Colorizer {
-    private Map rules;
+    private Map<String,List<ColorRule>> rules;
     private final PropertyChangeSupport colorChangeSupport =
         new PropertyChangeSupport(this);
-    private Map defaultRules = new HashMap();
+    private Map<String,List<ColorRule>> defaultRules = new HashMap<>();
     private String currentRuleSet = ChainsawConstants.DEFAULT_COLOR_RULE_NAME;
     private Rule findRule;
     private Rule loggerRule;
@@ -60,7 +60,7 @@ public class RuleColorizer implements Colorizer {
     private final String DEFAULT_MARKER_EXPRESSION = "prop.marker exists";
 
     public RuleColorizer() {
-        List rulesList = new ArrayList();
+        List<ColorRule> rulesList = new ArrayList<>();
 
         String expression = DEFAULT_FATAL_ERROR_EXCEPTION_EXPRESSION;
         rulesList.add(
@@ -101,26 +101,25 @@ public class RuleColorizer implements Colorizer {
         return loggerRule;
     }
 
-    public void setRules(Map rules) {
+    public void setRules(Map<String,List<ColorRule>> rules) {
         this.rules = rules;
         colorChangeSupport.firePropertyChange("colorrule", false, true);
     }
 
-    public Map getRules() {
+    public Map<String,List<ColorRule>> getRules() {
         return rules;
     }
 
-    public List getCurrentRules() {
-        return (List) rules.get(currentRuleSet);
+    public List<ColorRule> getCurrentRules() {
+        return rules.get(currentRuleSet);
     }
 
-    public void addRules(Map newRules) {
+    public void addRules(Map<String,List<ColorRule>> newRules) {
 
-        for (Object o : newRules.entrySet()) {
-            Map.Entry entry = (Map.Entry) o;
+        for (Map.Entry<String,List<ColorRule>> entry : newRules.entrySet()) {
 
             if (rules.containsKey(entry.getKey())) {
-                ((List) rules.get(entry.getKey())).addAll((List) entry.getValue());
+                rules.get(entry.getKey()).addAll( entry.getValue() );
             } else {
                 rules.put(entry.getKey(), entry.getValue());
             }
@@ -131,9 +130,9 @@ public class RuleColorizer implements Colorizer {
 
     public void addRule(String ruleSetName, ColorRule rule) {
         if (rules.containsKey(ruleSetName)) {
-            ((List) rules.get(ruleSetName)).add(rule);
+            rules.get(ruleSetName).add(rule);
         } else {
-            List list = new ArrayList();
+            List<ColorRule> list = new ArrayList<>();
             list.add(rule);
             rules.put(ruleSetName, list);
         }
@@ -143,10 +142,10 @@ public class RuleColorizer implements Colorizer {
 
     public void removeRule(String ruleSetName, String expression) {
         if (rules.containsKey(ruleSetName)) {
-            List list = (List) rules.get(ruleSetName);
+            List<ColorRule> list = rules.get(ruleSetName);
 
             for (int i = 0; i < list.size(); i++) {
-                ColorRule rule = (ColorRule) list.get(i);
+                ColorRule rule = list.get(i);
 
                 if (rule.getExpression().equals(expression)) {
                     list.remove(rule);
@@ -163,10 +162,9 @@ public class RuleColorizer implements Colorizer {
 
     public Color getBackgroundColor(ChainsawLoggingEvent event) {
         if (rules.containsKey(currentRuleSet)) {
-            List list = (List) rules.get(currentRuleSet);
+            List<ColorRule> list = rules.get(currentRuleSet);
 
-            for (Object aList : list) {
-                ColorRule rule = (ColorRule) aList;
+            for (ColorRule rule : list) {
 
                 if ((rule.getBackgroundColor() != null) && (rule.evaluate(event, null))) {
                     return rule.getBackgroundColor();
@@ -179,10 +177,9 @@ public class RuleColorizer implements Colorizer {
 
     public Color getForegroundColor(ChainsawLoggingEvent event) {
         if (rules.containsKey(currentRuleSet)) {
-            List list = (List) rules.get(currentRuleSet);
+            List<ColorRule> list = rules.get(currentRuleSet);
 
-            for (Object aList : list) {
-                ColorRule rule = (ColorRule) aList;
+            for (ColorRule rule : list) {
 
                 if ((rule.getForegroundColor() != null) && (rule.evaluate(event, null))) {
                     return rule.getForegroundColor();
@@ -246,11 +243,29 @@ public class RuleColorizer implements Colorizer {
         // There's no real good way to do this, so we will do this the somewhat
         // dumb way and just load up to 32 color rules, since that seems like
         // a good number
-//        configuration.get
-//        configuration.getInt( "colors.", 0)
-//        if (!doLoadColorSettings(name)) {
-//            doLoadColorSettings(ChainsawConstants.DEFAULT_COLOR_RULE_NAME);
+        // This needs to be done for each rule set, so we first need to get a
+        // list of the rule sets
+        String[] ruleSets = configuration.getStringArray( "color.rulesets" );
+        if( ruleSets.length == 0 ){
+            // Default rule set is already defined
+            return;
+        }
+
+        /*
+        ColorRule(final String expression,
+                   final Rule rule,
+                   final Color backgroundColor,
+                   final Color foregroundColor)
+        */
+//        Map<String,List<ColorRule>> rules = new HashMap<>();
+//        for( String ruleSet : ruleSets ){
+//            String[] rulesForRuleSet = configuration.getStringArray( "color.rules." + ruleSet );
+//            for( String individualRule : rulesForRuleSet ){
+//
+//            }
 //        }
+//
+//        setRules(rules);
     }
 
     private boolean doLoadColorSettings(String name) {

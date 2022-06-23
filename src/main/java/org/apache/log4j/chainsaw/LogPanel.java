@@ -59,6 +59,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
+import org.apache.commons.configuration2.AbstractConfiguration;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.logevents.Level;
 import org.apache.log4j.spi.LoggingEventFieldResolver;
@@ -115,7 +116,7 @@ import org.apache.logging.log4j.Logger;
  * @see org.apache.log4j.rule.ExpressionRule
  * @see org.apache.log4j.spi.LoggingEventFieldResolver
  */
-public class LogPanel extends DockablePanel implements Profileable, ChainsawEventBatchListener {
+public class LogPanel extends DockablePanel implements ChainsawEventBatchListener {
     private static final DateFormat TIMESTAMP_DATE_FORMAT = new SimpleDateFormat(Constants.TIMESTAMP_RULE_FORMAT);
     private static final double DEFAULT_DETAIL_SPLIT_LOCATION = 0.71d;
     private static final double DEFAULT_LOG_TREE_SPLIT_LOCATION = 0.2d;
@@ -1761,6 +1762,8 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
         final PopupListener searchTablePopupListener = new PopupListener(searchPopup);
         searchPane.addMouseListener(searchTablePopupListener);
         searchTable.addMouseListener(searchTablePopupListener);
+
+        loadSettings();
     }
 
     private String getValueOf(int row, int column) {
@@ -1945,128 +1948,169 @@ public class LogPanel extends DockablePanel implements Profileable, ChainsawEven
     /**
      * Load settings from the panel preference model
      *
-     * @param event
-     * @see LogPanelPreferenceModel
      */
-    public void loadSettings(LoadSettingsEvent event) {
+    private void loadSettings() {
+        logger.info( "Loading settings for panel with identifier {}", identifier );
 
-        File xmlFile = null;
-        try {
-            xmlFile = new File(SettingsManager.getInstance().getSettingsDirectory(), URLEncoder.encode(identifier, "UTF-8") + ".xml");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+        AbstractConfiguration config = SettingsManager.getInstance().getSettingsForReceiverTab(identifier);
+        Iterator<String> iter = config.getKeys();
+        while( iter.hasNext() ){
+            logger.debug( "Key: {}", iter.next() );
         }
 
-        if (xmlFile.exists()) {
-            XStream stream = buildXStreamForLogPanelPreference();
-            ObjectInputStream in = null;
-            try {
-                logger.info("configuration for panel exists: " + xmlFile + " - " + identifier + ", loading");
-                FileReader r = new FileReader(xmlFile);
-                in = stream.createObjectInputStream(r);
-                LogPanelPreferenceModel storedPrefs = (LogPanelPreferenceModel) in.readObject();
-                lowerPanelDividerLocation = in.readInt();
-                int treeDividerLocation = in.readInt();
-                String conversionPattern = in.readObject().toString();
-                //this version number is checked to identify whether there is a Vector comming next
-                int versionNumber = 0;
-                try {
-                    versionNumber = in.readInt();
-                } catch (EOFException eof) {
-                }
-
-                Vector savedVector;
-                //read the vector only if the version number is greater than 0. higher version numbers can be
-                //used in the future to save more data structures
-                if (versionNumber > 0) {
-                    savedVector = (Vector) in.readObject();
-                    for (Object item : savedVector) {
-                        //insert each row at index zero (so last row in vector will be row zero)
-                        filterCombo.insertItemAt(item, 0);
-                        findCombo.insertItemAt(item, 0);
-                    }
-                    if (versionNumber > 1) {
-                        //update prefModel columns to include defaults
-                        int index = 0;
-                        String columnOrder = event.getSetting(TABLE_COLUMN_ORDER);
-                        StringTokenizer tok = new StringTokenizer(columnOrder, ",");
-                        while (tok.hasMoreElements()) {
-                            String element = tok.nextElement().toString().trim().toUpperCase();
-                            TableColumn column = new TableColumn(index++);
-                            column.setHeaderValue(element);
-                            preferenceModel.addColumn(column);
-                        }
-
-                        TableColumnModel columnModel = table.getColumnModel();
-                        //remove previous columns
-                        while (columnModel.getColumnCount() > 0) {
-                            columnModel.removeColumn(columnModel.getColumn(0));
-                        }
-                        //add visible column order columns
-                        for (Object o1 : preferenceModel.getVisibleColumnOrder()) {
-                            TableColumn col = (TableColumn) o1;
-                            columnModel.addColumn(col);
-                        }
-
-                        TableColumnModel searchColumnModel = searchTable.getColumnModel();
-                        //remove previous columns
-                        while (searchColumnModel.getColumnCount() > 0) {
-                            searchColumnModel.removeColumn(searchColumnModel.getColumn(0));
-                        }
-                        //add visible column order columns
-                        for (Object o : preferenceModel.getVisibleColumnOrder()) {
-                            TableColumn col = (TableColumn) o;
-                            searchColumnModel.addColumn(col);
-                        }
-
-                        preferenceModel.apply(storedPrefs);
-                    } else {
-                        loadDefaultColumnSettings(event);
-                    }
-                    //ensure tablemodel cyclic flag is updated
-                    //may be panel configs that don't have these values
-                    tableModel.setCyclic(preferenceModel.isCyclic());
-                    searchModel.setCyclic(preferenceModel.isCyclic());
-                    lowerPanel.setDividerLocation(lowerPanelDividerLocation);
-                    nameTreeAndMainPanelSplit.setDividerLocation(treeDividerLocation);
-                    detailLayout.setConversionPattern(conversionPattern);
-                    undockedFrame.setLocation(0, 0);
-                    undockedFrame.setSize(new Dimension(1024, 768));
-                } else {
-                    loadDefaultColumnSettings(event);
-                }
-            } catch (Exception e) {
-                logger.info("unable to load configuration for panel: " + xmlFile + " - " + identifier + " - using default settings", e);
-                loadDefaultColumnSettings(event);
-                // TODO need to log this..
-            } finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (IOException ioe) {
-                    }
-                }
-            }
-        } else {
-            //not setting lower panel divider location here - will do that after the UI is visible
-            loadDefaultColumnSettings(event);
+        lowerPanelDividerLocation = config.getInt( "logpanel.lowerPanelDividerLocation" );
+        int treeDividerLocation = config.getInt( "logpanel.treeDividerLocation" );
+        String conversionPattern = config.getString( "logpanel.conversionPattern", DefaultLayoutFactory.getDefaultPatternLayout() );
+        String[] savedComboSettings = config.getStringArray("logpanel.savedComboSettings" );
+        for( String comboSetting : savedComboSettings ){
+            filterCombo.insertItemAt(comboSetting, 0);
+            findCombo.insertItemAt(comboSetting, 0);
         }
-        //ensure tablemodel cyclic flag is updated
-        tableModel.setCyclic(preferenceModel.isCyclic());
-        searchModel.setCyclic(preferenceModel.isCyclic());
-        logTreePanel.ignore(preferenceModel.getHiddenLoggers());
-        logTreePanel.setHiddenExpression(preferenceModel.getHiddenExpression());
-        logTreePanel.setAlwaysDisplayExpression(preferenceModel.getAlwaysDisplayExpression());
-        if (preferenceModel.getClearTableExpression() != null) {
+
+        String[] columnsOrder = config.getStringArray( "table.columns.order" );
+        Integer[] columnWidths = (Integer[])config.getArray(Integer.class, "table.columns.widths" );
+        TableColumnModel columnModel = table.getColumnModel();
+        for( int index = 0; index < columnsOrder.length; index++ ){
+            logger.debug( "Loading column {}", columnsOrder[index] );
+            TableColumn column = new TableColumn(index);
+            column.setHeaderValue(columnsOrder[index]);
+            preferenceModel.addColumn(column);
+        }
+
+        boolean isCyclic = config.getBoolean( "logpanel.cyclic" );
+        tableModel.setCyclic( isCyclic );
+        searchModel.setCyclic( isCyclic );
+        lowerPanel.setDividerLocation(config.getInt( "logpanel.lowerPanelDividerLocation" ));
+        nameTreeAndMainPanelSplit.setDividerLocation(config.getInt( "logpanel.treeDividerLocation" ));
+        detailLayout.setConversionPattern(conversionPattern);
+        undockedFrame.setLocation(0, 0);
+        undockedFrame.setSize(new Dimension(1024, 768));
+
+        logTreePanel.ignore(Arrays.asList(config.getStringArray("logpanel.hiddenLoggers")));
+        logTreePanel.setHiddenExpression(config.getString("logpanel.hiddenExpression"));
+        logTreePanel.setAlwaysDisplayExpression(config.getString("logpanel.alwaysDisplayExpression"));
+        String clearTableExpression = config.getString("logpanel.clearTableExpression", null);
+        if (clearTableExpression != null && clearTableExpression.length() > 1) {
             try {
-                clearTableExpressionRule = ExpressionRule.getRule(preferenceModel.getClearTableExpression());
+                clearTableExpressionRule = ExpressionRule.getRule(clearTableExpression);
             } catch (Exception e) {
                 clearTableExpressionRule = null;
             }
         }
 
-        //attempt to load color settings - no need to URL encode the identifier
-        colorizer.loadColorSettings(identifier);
+        colorizer.loadColorSettings(config);
+
+
+//        if (xmlFile.exists()) {
+//            XStream stream = buildXStreamForLogPanelPreference();
+//            ObjectInputStream in = null;
+//            try {
+//                logger.info("configuration for panel exists: " + xmlFile + " - " + identifier + ", loading");
+//                FileReader r = new FileReader(xmlFile);
+//                in = stream.createObjectInputStream(r);
+//                LogPanelPreferenceModel storedPrefs = (LogPanelPreferenceModel) in.readObject();
+//                lowerPanelDividerLocation = in.readInt();
+//                int treeDividerLocation = in.readInt();
+//                String conversionPattern = in.readObject().toString();
+//                //this version number is checked to identify whether there is a Vector comming next
+//                int versionNumber = 0;
+//                try {
+//                    versionNumber = in.readInt();
+//                } catch (EOFException eof) {
+//                }
+//
+//                Vector savedVector;
+//                //read the vector only if the version number is greater than 0. higher version numbers can be
+//                //used in the future to save more data structures
+//                if (versionNumber > 0) {
+//                    savedVector = (Vector) in.readObject();
+//                    for (Object item : savedVector) {
+//                        //insert each row at index zero (so last row in vector will be row zero)
+//                        filterCombo.insertItemAt(item, 0);
+//                        findCombo.insertItemAt(item, 0);
+//                    }
+//                    if (versionNumber > 1) {
+//                        //update prefModel columns to include defaults
+//                        int index = 0;
+//                        String columnOrder = event.getSetting(TABLE_COLUMN_ORDER);
+//                        StringTokenizer tok = new StringTokenizer(columnOrder, ",");
+//                        while (tok.hasMoreElements()) {
+//                            String element = tok.nextElement().toString().trim().toUpperCase();
+//                            TableColumn column = new TableColumn(index++);
+//                            column.setHeaderValue(element);
+//                            preferenceModel.addColumn(column);
+//                        }
+//
+//                        TableColumnModel columnModel = table.getColumnModel();
+//                        //remove previous columns
+//                        while (columnModel.getColumnCount() > 0) {
+//                            columnModel.removeColumn(columnModel.getColumn(0));
+//                        }
+//                        //add visible column order columns
+//                        for (Object o1 : preferenceModel.getVisibleColumnOrder()) {
+//                            TableColumn col = (TableColumn) o1;
+//                            columnModel.addColumn(col);
+//                        }
+//
+//                        TableColumnModel searchColumnModel = searchTable.getColumnModel();
+//                        //remove previous columns
+//                        while (searchColumnModel.getColumnCount() > 0) {
+//                            searchColumnModel.removeColumn(searchColumnModel.getColumn(0));
+//                        }
+//                        //add visible column order columns
+//                        for (Object o : preferenceModel.getVisibleColumnOrder()) {
+//                            TableColumn col = (TableColumn) o;
+//                            searchColumnModel.addColumn(col);
+//                        }
+//
+//                        preferenceModel.apply(storedPrefs);
+//                    } else {
+//                        loadDefaultColumnSettings(event);
+//                    }
+//                    //ensure tablemodel cyclic flag is updated
+//                    //may be panel configs that don't have these values
+//                    tableModel.setCyclic(preferenceModel.isCyclic());
+//                    searchModel.setCyclic(preferenceModel.isCyclic());
+//                    lowerPanel.setDividerLocation(lowerPanelDividerLocation);
+//                    nameTreeAndMainPanelSplit.setDividerLocation(treeDividerLocation);
+//                    detailLayout.setConversionPattern(conversionPattern);
+//                    undockedFrame.setLocation(0, 0);
+//                    undockedFrame.setSize(new Dimension(1024, 768));
+//                } else {
+//                    loadDefaultColumnSettings(event);
+//                }
+//            } catch (Exception e) {
+//                logger.info("unable to load configuration for panel: " + xmlFile + " - " + identifier + " - using default settings", e);
+//                loadDefaultColumnSettings(event);
+//                // TODO need to log this..
+//            } finally {
+//                if (in != null) {
+//                    try {
+//                        in.close();
+//                    } catch (IOException ioe) {
+//                    }
+//                }
+//            }
+//        } else {
+//            //not setting lower panel divider location here - will do that after the UI is visible
+//            loadDefaultColumnSettings(event);
+//        }
+//        //ensure tablemodel cyclic flag is updated
+//        tableModel.setCyclic(preferenceModel.isCyclic());
+//        searchModel.setCyclic(preferenceModel.isCyclic());
+//        logTreePanel.ignore(preferenceModel.getHiddenLoggers());
+//        logTreePanel.setHiddenExpression(preferenceModel.getHiddenExpression());
+//        logTreePanel.setAlwaysDisplayExpression(preferenceModel.getAlwaysDisplayExpression());
+//        if (preferenceModel.getClearTableExpression() != null) {
+//            try {
+//                clearTableExpressionRule = ExpressionRule.getRule(preferenceModel.getClearTableExpression());
+//            } catch (Exception e) {
+//                clearTableExpressionRule = null;
+//            }
+//        }
+//
+//        //attempt to load color settings - no need to URL encode the identifier
+//        colorizer.loadColorSettings(identifier);
     }
 
     /**

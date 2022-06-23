@@ -25,12 +25,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.commons.configuration2.AbstractConfiguration;
+import org.apache.commons.configuration2.CombinedConfiguration;
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.builder.BasicConfigurationBuilder;
 import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.builder.fluent.FileBasedBuilderParameters;
 import org.apache.commons.configuration2.builder.fluent.Parameters;
 import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
 import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.tree.OverrideCombiner;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -47,9 +50,14 @@ public final class SettingsManager {
     private static final SettingsManager instance = new SettingsManager();
     private static final String GLOBAL_SETTINGS_FILE_NAME = "chainsaw.settings.properties";
 
+    private class TabSettingsData{
+        FileBasedConfigurationBuilder<PropertiesConfiguration> file;
+        CombinedConfiguration combined;
+    }
+
     private PropertiesConfiguration m_configuration;
     private FileBasedConfigurationBuilder<PropertiesConfiguration> m_builder;
-    private Map<String,FileBasedConfigurationBuilder<PropertiesConfiguration>> m_tabSettings;
+    private Map<String,TabSettingsData> m_tabSettings;
 
     /**
      * Initialises the SettingsManager by loading the default Properties from
@@ -74,6 +82,7 @@ public final class SettingsManager {
                 PropertiesConfiguration.class)
                 .configure(params.fileBased()
                         .setURL(defaultPrefs)
+                        .setListDelimiterHandler(new DefaultListDelimiterHandler(','))
                 );
 
         try{
@@ -110,32 +119,49 @@ public final class SettingsManager {
     }
 
     public AbstractConfiguration getSettingsForReceiverTab(String identifier){
+        if( m_tabSettings.containsKey( identifier ) ){
+            return m_tabSettings.get( identifier ).combined;
+        }
+
+        // Override combiner: nodes in the first structure take precedence over the second
+        CombinedConfiguration combinedConfig = new CombinedConfiguration(new OverrideCombiner());
 
         PropertiesConfiguration configuration = null;
 
-        if( m_tabSettings.containsKey( identifier ) ){
-            try{
-                return m_tabSettings.get( identifier ).getConfiguration();
-            }catch( ConfigurationException ex ){}
-        }
-
         // Either we don't contain the key, or we got an exception.  Regardless,
         // create a new configuration that we can use
-        Parameters params = new Parameters();
+        FileBasedBuilderParameters params = new Parameters().fileBased();
         File f = new File(getSettingsDirectory(), identifier + "-receiver.properties");
+        if( !f.exists() ){
+            URL defaultPrefs = this.getClass().getClassLoader()
+                .getResource("org/apache/log4j/chainsaw/prefs/logpanel.properties");
+            params.setURL(defaultPrefs);
+        }else{
+            params.setFile( f );
+        }
+
         FileBasedConfigurationBuilder<PropertiesConfiguration> builder =
                 new FileBasedConfigurationBuilder<PropertiesConfiguration>(
                 PropertiesConfiguration.class)
-                .configure(params.fileBased()
-                        .setListDelimiterHandler(
-                            new DefaultListDelimiterHandler(','))
-                        .setFile(f)
+                .configure(params
+                        .setListDelimiterHandler(new DefaultListDelimiterHandler(','))
                 );
 
-        m_tabSettings.put( identifier, builder );
+        TabSettingsData data = new TabSettingsData();
+        data.file = builder;
 
         try{
-            return builder.getConfiguration();
+            AbstractConfiguration config = builder.getConfiguration();
+
+            builder.getFileHandler().setFile(f);
+
+            combinedConfig.addConfiguration(config);
+            combinedConfig.addConfiguration(getGlobalConfiguration());
+
+            data.combined = combinedConfig;
+            m_tabSettings.put( identifier, data );
+
+            return combinedConfig;
         }catch( ConfigurationException ex ){}
         
         return null;
@@ -162,7 +188,7 @@ public final class SettingsManager {
 
         for( String key : m_tabSettings.keySet() ){
             try{
-                m_tabSettings.get(key).save();
+                m_tabSettings.get(key).file.save();
             }catch( ConfigurationException ex ){
                 logger.error( "Unable to save settings for {}", key );
             }
