@@ -1975,6 +1975,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             TableColumn column = new TableColumn(index);
             column.setHeaderValue(columnsOrder[index]);
             preferenceModel.addColumn(column);
+            preferenceModel.setColumnVisible(columnsOrder[index], true);
         }
 
         boolean isCyclic = config.getBoolean( "logpanel.cyclic" );
