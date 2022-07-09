@@ -60,6 +60,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 import org.apache.commons.configuration2.AbstractConfiguration;
+import org.apache.commons.configuration2.event.ConfigurationEvent;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.logevents.Level;
 import org.apache.log4j.spi.LoggingEventFieldResolver;
@@ -181,6 +182,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
     private EventTimeDeltaMatchThumbnail eventTimeDeltaMatchThumbnail;
     private boolean isDetailPanelVisible;
     private ChainsawReceiver m_receiver;
+    private AbstractConfiguration m_configuration;
 
     /**
      * Creates a new LogPanel object.  If a LogPanel with this identifier has
@@ -199,6 +201,8 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         this.applicationPreferenceModel = applicationPreferenceModel;
         this.logPanelPreferencesPanel = new LogPanelPreferencePanel(preferenceModel, applicationPreferenceModel);
         logger.debug("creating logpanel for {}", identifier);
+
+        m_configuration = SettingsManager.getInstance().getSettingsForReceiverTab(identifier);
 
         setLayout(new BorderLayout());
 
@@ -279,12 +283,13 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         undockedFrame.setSize(new Dimension(1024, 768));
         undockedFrame.pack();
 
-        preferenceModel.addPropertyChangeListener(
-            "scrollToBottom",
+        m_configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
             evt -> {
-                boolean value = (Boolean) evt.getNewValue();
-                if (value) {
-                    scrollToBottom();
+                if( evt.getPropertyName().equals( "scrollToBottom" ) ){
+                    boolean value = (Boolean) evt.getPropertyValue();
+                    if (value) {
+                        scrollToBottom();
+                    }
                 }
             });
         /*
@@ -300,14 +305,14 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             new JRadioButtonMenuItem(
                 new AbstractAction("Use ISO8601Format") {
                     public void actionPerformed(ActionEvent e) {
-                        preferenceModel.setDateFormatPattern("ISO8601");
+//                        preferenceModel.setDateFormatPattern("ISO8601");
                     }
                 });
         final JRadioButtonMenuItem simpleTimeButton =
             new JRadioButtonMenuItem(
                 new AbstractAction("Use simple time") {
                     public void actionPerformed(ActionEvent e) {
-                        preferenceModel.setDateFormatPattern("HH:mm:ss");
+//                        preferenceModel.setDateFormatPattern("HH:mm:ss");
                     }
                 });
 
@@ -321,102 +326,130 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         final JCheckBoxMenuItem menuItemLoggerTree =
             new JCheckBoxMenuItem("Show Logger Tree");
         menuItemLoggerTree.addActionListener(
-            e -> preferenceModel.setLogTreePanelVisible(
-                menuItemLoggerTree.isSelected()));
+            e -> { m_configuration.setProperty("logpanel.logTreePanelVisible", 
+                    menuItemLoggerTree.isSelected());});
         menuItemLoggerTree.setIcon(new ImageIcon(ChainsawIcons.WINDOW_ICON));
 
         final JCheckBoxMenuItem menuItemToggleDetails =
             new JCheckBoxMenuItem("Show Detail Pane");
         menuItemToggleDetails.addActionListener(
-            e -> preferenceModel.setDetailPaneVisible(
-                menuItemToggleDetails.isSelected()));
+            e -> { m_configuration.setProperty("logpanel.detailColumnVisible",
+                menuItemToggleDetails.isSelected());});
 
         menuItemToggleDetails.setIcon(new ImageIcon(ChainsawIcons.INFO));
 
         /*
          * add preferencemodel listeners
          */
-        preferenceModel.addPropertyChangeListener("levelIcons",
-            new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    boolean useIcons = (Boolean) evt.getNewValue();
-                    renderer.setLevelUseIcons(useIcons);
-                    table.tableChanged(new TableModelEvent(tableModel));
-                    searchRenderer.setLevelUseIcons(useIcons);
-                    searchTable.tableChanged(new TableModelEvent(searchModel));
-                }
-            });
+//        preferenceModel.addPropertyChangeListener("levelIcons",
+//            new PropertyChangeListener() {
+//                public void propertyChange(PropertyChangeEvent evt) {
+//                    boolean useIcons = (Boolean) evt.getNewValue();
+//                    renderer.setLevelUseIcons(useIcons);
+//                    table.tableChanged(new TableModelEvent(tableModel));
+//                    searchRenderer.setLevelUseIcons(useIcons);
+//                    searchTable.tableChanged(new TableModelEvent(searchModel));
+//                }
+//            });
 
         /*
          * add preferencemodel listeners
          */
-        preferenceModel.addPropertyChangeListener("wrapMessage",
-            new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    boolean wrap = (Boolean) evt.getNewValue();
-                    renderer.setWrapMessage(wrap);
-                    table.tableChanged(new TableModelEvent(tableModel));
-                    searchRenderer.setWrapMessage(wrap);
-                    searchTable.tableChanged(new TableModelEvent(searchModel));
-                }
-            });
-
-        preferenceModel.addPropertyChangeListener("searchResultsVisible",
-            evt -> {
-                boolean displaySearchResultsInDetailsIfAvailable = (Boolean) evt.getNewValue();
-                if (displaySearchResultsInDetailsIfAvailable) {
-                    showSearchResults();
-                } else {
-                    hideSearchResults();
-                }
-            });
-
-        preferenceModel.addPropertyChangeListener("highlightSearchMatchText",
-            new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    boolean highlightText = (Boolean) evt.getNewValue();
-                    renderer.setHighlightSearchMatchText(highlightText);
-                    table.tableChanged(new TableModelEvent(tableModel));
-                    searchRenderer.setHighlightSearchMatchText(highlightText);
-                    searchTable.tableChanged(new TableModelEvent(searchModel));
-                }
-            });
-
-        preferenceModel.addPropertyChangeListener(
-            "detailPaneVisible",
-            evt -> {
-                boolean detailPaneVisible = (Boolean) evt.getNewValue();
-
-                if (detailPaneVisible) {
-                    showDetailPane();
-                } else {
-                    //don't hide the detail pane if search results are being displayed
-                    if (!searchResultsDisplayed) {
-                        hideDetailPane();
+        m_configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
+            new org.apache.commons.configuration2.event.EventListener<ConfigurationEvent>(){
+                @Override
+                public void onEvent(ConfigurationEvent evt) {
+                    if( evt.getPropertyName().equals( "logpanel.wrapMessage" ) ){
+                        boolean wrap = (Boolean) evt.getPropertyValue();
+                        renderer.setWrapMessage(wrap);
+                        table.tableChanged(new TableModelEvent(tableModel));
+                        searchRenderer.setWrapMessage(wrap);
+                        searchTable.tableChanged(new TableModelEvent(searchModel));
                     }
                 }
-            });
 
-        preferenceModel.addPropertyChangeListener(
-            "logTreePanelVisible",
-            evt -> {
-                boolean newValue = (Boolean) evt.getNewValue();
+            } );
 
-                if (newValue) {
-                    showLogTreePanel();
-                } else {
-                    hideLogTreePanel();
+        m_configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
+            new org.apache.commons.configuration2.event.EventListener<ConfigurationEvent>(){
+                @Override
+                public void onEvent(ConfigurationEvent evt) {
+                    if( evt.getPropertyName().equals( "logpanel.searchResultsVisible" ) ){
+                        boolean displaySearchResultsInDetailsIfAvailable = (Boolean) evt.getPropertyValue();
+                        if (displaySearchResultsInDetailsIfAvailable) {
+                            showSearchResults();
+                        } else {
+                            hideSearchResults();
+                        }
+                    }
                 }
-            });
 
-        preferenceModel.addPropertyChangeListener("toolTips",
-            new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    boolean toolTips = (Boolean) evt.getNewValue();
-                    renderer.setToolTipsVisible(toolTips);
-                    searchRenderer.setToolTipsVisible(toolTips);
+            } );
+
+        m_configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
+            new org.apache.commons.configuration2.event.EventListener<ConfigurationEvent>(){
+                @Override
+                public void onEvent(ConfigurationEvent evt) {
+                    if( evt.getPropertyName().equals( "logpanel.highlightSearchMatchText" ) ){
+                        boolean highlightText = (Boolean) evt.getPropertyValue();
+                        renderer.setHighlightSearchMatchText(highlightText);
+                        table.tableChanged(new TableModelEvent(tableModel));
+                        searchRenderer.setHighlightSearchMatchText(highlightText);
+                        searchTable.tableChanged(new TableModelEvent(searchModel));
+                    }
                 }
-            });
+
+            } );
+
+        m_configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
+            new org.apache.commons.configuration2.event.EventListener<ConfigurationEvent>(){
+                @Override
+                public void onEvent(ConfigurationEvent evt) {
+                    if( evt.getPropertyName().equals( "logpanel.detailPaneVisible" ) ){
+                        boolean detailPaneVisible = (Boolean) evt.getPropertyValue();
+                        if (detailPaneVisible) {
+                            showDetailPane();
+                        } else {
+                            //don't hide the detail pane if search results are being displayed
+                            if (!searchResultsDisplayed) {
+                                hideDetailPane();
+                            }
+                        }
+                    }
+                }
+
+            } );
+
+        m_configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
+            new org.apache.commons.configuration2.event.EventListener<ConfigurationEvent>(){
+                @Override
+                public void onEvent(ConfigurationEvent evt) {
+                    if( evt.getPropertyName().equals( "logpanel.logTreePanelVisible" ) ){
+                        boolean newValue = (Boolean) evt.getPropertyValue();
+                        if (newValue) {
+                            showLogTreePanel();
+                        } else {
+                            hideLogTreePanel();
+                        }
+                    }
+                }
+
+            } );
+
+        m_configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
+            new org.apache.commons.configuration2.event.EventListener<ConfigurationEvent>(){
+                @Override
+                public void onEvent(ConfigurationEvent evt) {
+                    if( evt.getPropertyName().equals( "logpanel.toolTips" ) ){
+                        boolean toolTips = (Boolean) evt.getPropertyValue();
+                        renderer.setToolTipsVisible(toolTips);
+                        searchRenderer.setToolTipsVisible(toolTips);
+                        searchToggleToolTips.setSelected(toolTips);
+                        mainToggleToolTips.setSelected(toolTips);
+                    }
+                }
+
+            } );
 
         preferenceModel.addPropertyChangeListener("visibleColumns",
             new PropertyChangeListener() {
@@ -483,50 +516,51 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         preferenceModel.addPropertyChangeListener("dateFormatPattern", datePrefsChangeListener);
         preferenceModel.addPropertyChangeListener("dateFormatTimeZone", datePrefsChangeListener);
 
-        preferenceModel.addPropertyChangeListener("clearTableExpression", evt -> {
-            LogPanelPreferenceModel model = (LogPanelPreferenceModel) evt.getSource();
-            String expression = model.getClearTableExpression();
-            try {
-                clearTableExpressionRule = ExpressionRule.getRule(expression);
-                logger.info("clearTableExpressionRule set to: " + expression);
-            } catch (Exception e) {
-                logger.info("clearTableExpressionRule invalid - ignoring: " + expression);
-                clearTableExpressionRule = null;
-            }
-        });
-
-        preferenceModel.addPropertyChangeListener("loggerPrecision",
-            new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
+        m_configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
+            evt -> {
+                if( evt.getPropertyName().equals( "logpanel.clearTableExpression" ) ){
                     LogPanelPreferenceModel model = (LogPanelPreferenceModel) evt.getSource();
-
-                    renderer.setLoggerPrecision(model.getLoggerPrecision());
-                    table.tableChanged(new TableModelEvent(tableModel));
-
-                    searchRenderer.setLoggerPrecision(model.getLoggerPrecision());
-                    searchTable.tableChanged(new TableModelEvent(searchModel));
+                    String expression = model.getClearTableExpression();
+                    try {
+                        clearTableExpressionRule = ExpressionRule.getRule(expression);
+                        logger.info("clearTableExpressionRule set to: " + expression);
+                    } catch (Exception e) {
+                        logger.info("clearTableExpressionRule invalid - ignoring: " + expression);
+                        clearTableExpressionRule = null;
+                    }
                 }
             });
 
-        preferenceModel.addPropertyChangeListener("toolTips",
-            evt -> {
-                boolean value = (Boolean) evt.getNewValue();
-                searchToggleToolTips.setSelected(value);
-                mainToggleToolTips.setSelected(value);
+        m_configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
+            new org.apache.commons.configuration2.event.EventListener<ConfigurationEvent>(){
+                @Override
+                public void onEvent(ConfigurationEvent evt) {
+                    if( evt.getPropertyName().equals( "logpanel.loggerPrecision" ) ){
+                        LogPanelPreferenceModel model = (LogPanelPreferenceModel) evt.getSource();
+
+                        renderer.setLoggerPrecision(model.getLoggerPrecision());
+                        table.tableChanged(new TableModelEvent(tableModel));
+
+                        searchRenderer.setLoggerPrecision(model.getLoggerPrecision());
+                        searchTable.tableChanged(new TableModelEvent(searchModel));
+                    }
+                }
             });
 
-        preferenceModel.addPropertyChangeListener(
-            "logTreePanelVisible",
+        m_configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
             evt -> {
-                boolean value = (Boolean) evt.getNewValue();
-                menuItemLoggerTree.setSelected(value);
+                if( evt.getPropertyName().equals("logpanel.logTreePanelVisible") ){
+                    boolean value = (Boolean) evt.getPropertyValue();
+                    menuItemLoggerTree.setSelected(value);
+                }
             });
 
-        preferenceModel.addPropertyChangeListener(
-            "detailPaneVisible",
+        m_configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
             evt -> {
-                boolean value = (Boolean) evt.getNewValue();
-                menuItemToggleDetails.setSelected(value);
+                if( evt.getPropertyName().equals("logpanel.detailPaneVisible") ){
+                    boolean value = (Boolean) evt.getPropertyValue();
+                    menuItemToggleDetails.setSelected(value);
+                }
             });
 
 //        applicationPreferenceModel.addPropertyChangeListener("searchColor", new PropertyChangeListener() {
@@ -1952,7 +1986,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
     private void loadSettings() {
         logger.info( "Loading settings for panel with identifier {}", identifier );
 
-        AbstractConfiguration config = SettingsManager.getInstance().getSettingsForReceiverTab(identifier);
+        AbstractConfiguration config = m_configuration;
         Iterator<String> iter = config.getKeys();
         while( iter.hasNext() ){
             logger.debug( "Key: {}", iter.next() );
@@ -1969,14 +2003,44 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
 
         String[] columnsOrder = config.getStringArray( "table.columns.order" );
         Integer[] columnWidths = (Integer[])config.getArray(Integer.class, "table.columns.widths" );
-        TableColumnModel columnModel = table.getColumnModel();
+        List<TableColumn> columns = new ArrayList<>();
         for( int index = 0; index < columnsOrder.length; index++ ){
-            logger.debug( "Loading column {}", columnsOrder[index] );
-            TableColumn column = new TableColumn(index);
-            column.setHeaderValue(columnsOrder[index]);
-            preferenceModel.addColumn(column);
-            preferenceModel.setColumnVisible(columnsOrder[index], true);
+            int columnIndex = 0;
+            for( String s : ChainsawColumns.getColumnsNames() ){
+                if( s.equals( columnsOrder[index] ) ){
+                    logger.debug( "Loading column {}.  Index of data: {}", columnsOrder[index], columnIndex );
+                    TableColumn column = new TableColumn(columnIndex);
+                    column.setHeaderValue(columnsOrder[index]);
+                    column.setPreferredWidth(columnWidths[index]);
+                    columns.add(column);
+                    break;
+                }
+                columnIndex++;
+            }
+  
+//            preferenceModel.addColumn(column);
+//            preferenceModel.setColumnVisible(columnsOrder[index], true);
         }
+        TableColumnModel columnModel = table.getColumnModel();
+        //remove previous columns
+        while (columnModel.getColumnCount() > 0) {
+            columnModel.removeColumn(columnModel.getColumn(0));
+        }
+        //add columns in order
+        for (TableColumn col : columns) {
+            columnModel.addColumn(col);
+        }
+
+//        TableColumnModel searchColumnModel = searchTable.getColumnModel();
+//        //remove previous columns
+//        while (searchColumnModel.getColumnCount() > 0) {
+//            searchColumnModel.removeColumn(searchColumnModel.getColumn(0));
+//        }
+//        //add visible column order columns
+//        for (Object o : preferenceModel.getVisibleColumnOrder()) {
+//            TableColumn col = (TableColumn) o;
+//            searchColumnModel.addColumn(col);
+//        }
 
         boolean isCyclic = config.getBoolean( "logpanel.cyclic" );
         tableModel.setCyclic( isCyclic );
@@ -2236,8 +2300,10 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
      * Toggle panel preference for logger tree visibility on or off
      */
     void toggleLogTreeVisible() {
-        preferenceModel.setLogTreePanelVisible(
-            !preferenceModel.isLogTreePanelVisible());
+        AbstractConfiguration config = SettingsManager.getInstance().getSettingsForReceiverTab(identifier);
+
+        boolean visible = config.getBoolean("logpanel.logTreePanelVisible");
+        config.setProperty("logpanel.logTreePanelVisible", !visible);
     }
 
     /**
@@ -2246,7 +2312,9 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
      * @return logger tree visibility flag
      */
     boolean isLogTreeVisible() {
-        return preferenceModel.isLogTreePanelVisible();
+        AbstractConfiguration config = SettingsManager.getInstance().getSettingsForReceiverTab(identifier);
+
+        return config.getBoolean("logpanel.logTreePanelVisible");
     }
 
     /**
@@ -3570,7 +3638,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
     }
 
     private class MarkerCellEditor implements TableCellEditor {
-        JTable currentTable;
+        JTable currentTableMarkerCell;
         JTextField textField = new JTextField();
         Set<CellEditorListener> cellEditorListeners = new HashSet<>();
         private LoggingEventWrapper currentLoggingEventWrapper;
@@ -3603,7 +3671,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
                 searchModel.fireRowUpdated(index, true);
             }
 
-            ChangeEvent event = new ChangeEvent(currentTable);
+            ChangeEvent event = new ChangeEvent(currentTableMarkerCell);
             Set<CellEditorListener> cellEditorListenersCopy;
             synchronized (mutex) {
                 cellEditorListenersCopy = new HashSet<>(cellEditorListeners);
@@ -3612,9 +3680,9 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             for (Object aCellEditorListenersCopy : cellEditorListenersCopy) {
                 ((CellEditorListener) aCellEditorListenersCopy).editingStopped(event);
             }
-            currentTable.setRowHeight(currentRowHeight);
+            currentTableMarkerCell.setRowHeight(currentRowHeight);
             currentLoggingEventWrapper = null;
-            currentTable = null;
+            currentTableMarkerCell = null;
 
             return true;
         }
@@ -3625,13 +3693,13 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
                 cellEditorListenersCopy = new HashSet<>(cellEditorListeners);
             }
 
-            ChangeEvent event = new ChangeEvent(currentTable);
+            ChangeEvent event = new ChangeEvent(currentTableMarkerCell);
             for (Object aCellEditorListenersCopy : cellEditorListenersCopy) {
                 ((CellEditorListener) aCellEditorListenersCopy).editingCanceled(event);
             }
-            currentTable.setRowHeight(currentRowHeight);
+            currentTableMarkerCell.setRowHeight(currentRowHeight);
             currentLoggingEventWrapper = null;
-            currentTable = null;
+            currentTableMarkerCell = null;
         }
 
         public void addCellEditorListener(CellEditorListener l) {
@@ -3647,7 +3715,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         }
 
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            currentTable = table;
+            currentTableMarkerCell = table;
             currentLoggingEventWrapper = ((EventContainer) table.getModel()).getRow(row);
             if (currentLoggingEventWrapper != null) {
                 textField.setText(currentLoggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE));
@@ -3733,7 +3801,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
                     int widthToUse = Math.max(2, (int) (delta * widthMaxMillisDeltaRenderRatio));
                     eventHeight = Math.min(maxEventHeight, eventHeight + 3);
 //                            eventHeight = maxEventHeight;
-                    drawEvent(applicationPreferenceModel.getDeltaColor(), (verticalLocation - eventHeight + 1), eventHeight, g, startX, widthToUse);
+//                    drawEvent(applicationPreferenceModel.getDeltaColor(), (verticalLocation - eventHeight + 1), eventHeight, g, startX, widthToUse);
                     //                System.out.println("painting error - rownum: " + wrapper.rowNum + ", location: " + verticalLocation + ", height: " + eventHeight + ", component height: " + componentHeight + ", row count: " + rowCount);
                 }
             }

@@ -52,14 +52,13 @@ import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 class ChainsawCyclicBufferTableModel extends AbstractTableModel
     implements EventContainer, PropertyChangeListener {
 
-    private static final int DEFAULT_CAPACITY = 5000;
     //cyclic field used internally in this class, but not exposed via the eventcontainer
     private boolean cyclic = true;
-    private int cyclicBufferSize;
+    private final int cyclicBufferSize;
     //original list of LoggingEventWrapper instances
-    List unfilteredList;
+    private List unfilteredList;
     //filtered list of LoggingEventWrapper instances
-    List filteredList;
+    private List filteredList;
     private boolean currentSortAscending;
     private int currentSortColumn;
     private final EventListenerList eventListenerList = new EventListenerList();
@@ -74,7 +73,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
 
     //because we may be using a cyclic buffer, if an ID is not provided in the property,
     //use and increment this row counter as the ID for each received row
-    int uniqueRow;
+    private int uniqueRow;
     private final Set uniquePropertyKeys = new HashSet();
     private Rule ruleMediator;
     private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
@@ -94,6 +93,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     /* (non-Javadoc)
      * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
      */
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getSource() instanceof Rule) {
             if (evt.getSource() == ruleMediator && evt.getPropertyName().equals("findRule")) {
@@ -107,6 +107,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         }
     }
 
+    @Override
     public List<LoggingEventWrapper> getMatchingEvents(Rule rule) {
         List<LoggingEventWrapper> list = new ArrayList<>();
         List unfilteredCopy;
@@ -125,6 +126,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         return list;
     }
 
+    @Override
     public void reFilter() {
         final int previousSize;
         final int newSize;
@@ -187,6 +189,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         });
     }
 
+    @Override
     public int locate(Rule rule, int startLocation, boolean searchForward) {
         List filteredListCopy;
         synchronized (mutex) {
@@ -224,6 +227,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     /**
      * @param l
      */
+    @Override
     public void removeLoggerNameListener(LoggerNameListener l) {
         loggerNameModelDelegate.removeLoggerNameListener(l);
     }
@@ -232,16 +236,19 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
      * @param loggerName
      * @return
      */
+    @Override
     public boolean addLoggerName(String loggerName) {
         return loggerNameModelDelegate.addLoggerName(loggerName);
     }
 
+    @Override
     public String toString() {
         return "ChainsawCyclicBufferTableModel{" +
             "name='" + tableModelName + '\'' +
             '}';
     }
 
+    @Override
     public void reset() {
         loggerNameModelDelegate.reset();
     }
@@ -249,6 +256,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     /**
      * @param l
      */
+    @Override
     public void addLoggerNameListener(LoggerNameListener l) {
         loggerNameModelDelegate.addLoggerNameListener(l);
     }
@@ -256,18 +264,22 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     /**
      * @return
      */
+    @Override
     public Collection getLoggerNames() {
         return loggerNameModelDelegate.getLoggerNames();
     }
 
+    @Override
     public void addEventCountListener(EventCountListener listener) {
         eventListenerList.add(EventCountListener.class, listener);
     }
 
+    @Override
     public boolean isSortable(int col) {
         return true;
     }
 
+    @Override
     public void notifyCountListeners() {
         EventCountListener[] listeners = eventListenerList.getListeners(EventCountListener.class);
 
@@ -290,6 +302,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
      * <p>
      * In any case, the model ensures the Filtered list is made up to date in a separate thread.
      */
+    @Override
     public void setRuleMediator(RuleMediator ruleMediator) {
         if (this.ruleMediator != null) {
             this.ruleMediator.removePropertyChangeListener(this);
@@ -306,6 +319,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     /* (non-Javadoc)
      * @see org.apache.log4j.chainsaw.EventContainer#sort()
      */
+    @Override
     public void sort() {
         boolean sort;
         final int filteredListSize;
@@ -331,10 +345,12 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         }
     }
 
+    @Override
     public boolean isSortEnabled() {
         return sortEnabled;
     }
 
+    @Override
     public void sortColumn(int col, boolean ascending) {
         logger.debug("request to sort col=" + col);
         currentSortAscending = ascending;
@@ -346,6 +362,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     /* (non-Javadoc)
      * @see org.apache.log4j.chainsaw.EventContainer#clear()
      */
+    @Override
     public void clearModel() {
         reachedCapacity = false;
 
@@ -361,13 +378,14 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         loggerNameModelDelegate.reset();
     }
 
+    @Override
     public List getAllEvents() {
         synchronized (mutex) {
             return new ArrayList(unfilteredList);
         }
     }
 
-
+    @Override
     public List getFilteredEvents() {
 
         synchronized (mutex) {
@@ -375,12 +393,14 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         }
     }
 
+    @Override
     public int getRowIndex(LoggingEventWrapper loggingEventWrapper) {
         synchronized (mutex) {
             return filteredList.indexOf(loggingEventWrapper);
         }
     }
 
+    @Override
     public void removePropertyFromEvents(String propName) {
         //first remove the event from any displayed events, so we can fire row updated event
         List filteredListCopy;
@@ -403,6 +423,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         }
     }
 
+    @Override
     public int updateEventsWithFindRule(Rule findRule) {
         int count = 0;
         List unfilteredListCopy;
@@ -420,6 +441,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         return count;
     }
 
+    @Override
     public int findColoredRow(int startLocation, boolean searchForward) {
         List filteredListCopy;
         synchronized (mutex) {
@@ -462,6 +484,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         return -1;
     }
 
+    @Override
     public int getSearchMatchCount() {
         int searchMatchCount = 0;
         synchronized (mutex) {
@@ -475,14 +498,17 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         return searchMatchCount;
     }
 
+    @Override
     public int getColumnCount() {
         return columnNames.size();
     }
 
+    @Override
     public String getColumnName(int column) {
         return columnNames.get(column);
     }
 
+    @Override
     public LoggingEventWrapper getRow(int row) {
         synchronized (mutex) {
             if (row < filteredList.size() && row > -1) {
@@ -493,12 +519,14 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         return null;
     }
 
+    @Override
     public int getRowCount() {
         synchronized (mutex) {
             return filteredList.size();
         }
     }
 
+    @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         ChainsawLoggingEvent event = null;
 
@@ -586,6 +614,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         return "";
     }
 
+    @Override
     public boolean isAddRow(LoggingEventWrapper loggingEventWrapper) {
         Object id = loggingEventWrapper.getLoggingEvent().getProperty(Constants.LOG4J_ID_KEY);
 
@@ -672,6 +701,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         }
     }
 
+    @Override
     public void fireTableEvent(final int begin, final int end, final int count) {
         SwingHelper.invokeOnEDT(() -> {
             if (cyclic) {
@@ -695,6 +725,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         });
     }
 
+    @Override
     public void fireRowUpdated(int row, boolean checkForNewColumns) {
         LoggingEventWrapper loggingEventWrapper = getRow(row);
         if (loggingEventWrapper != null) {
@@ -727,6 +758,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     /**
      * @return
      */
+    @Override
     public int getMaxSize() {
         return cyclicBufferSize;
     }
@@ -734,6 +766,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     /* (non-Javadoc)
      * @see org.apache.log4j.chainsaw.EventContainer#addNewKeyListener(org.apache.log4j.chainsaw.NewKeyListener)
      */
+    @Override
     public void addNewKeyListener(NewKeyListener l) {
         eventListenerList.add(NewKeyListener.class, l);
     }
@@ -741,6 +774,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     /* (non-Javadoc)
      * @see org.apache.log4j.chainsaw.EventContainer#removeNewKeyListener(org.apache.log4j.chainsaw.NewKeyListener)
      */
+    @Override
     public void removeNewKeyListener(NewKeyListener l) {
         eventListenerList.remove(NewKeyListener.class, l);
     }
@@ -748,6 +782,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     /* (non-Javadoc)
      * @see javax.swing.table.TableModel#isCellEditable(int, int)
      */
+    @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         if (getColumnName(columnIndex).equalsIgnoreCase(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE)) {
             return true;
@@ -760,6 +795,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     /* (non-Javadoc)
      * @see org.apache.log4j.chainsaw.EventContainer#setCyclic(boolean)
      */
+    @Override
     public void setCyclic(final boolean cyclic) {
         if (this.cyclic == cyclic) {
             return;
@@ -773,6 +809,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     /* (non-Javadoc)
      * @see org.apache.log4j.chainsaw.EventContainer#addPropertyChangeListener(java.beans.PropertyChangeListener)
      */
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
         propertySupport.addPropertyChangeListener(l);
     }
@@ -780,6 +817,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     /* (non-Javadoc)
      * @see org.apache.log4j.chainsaw.EventContainer#addPropertyChangeListener(java.lang.String, java.beans.PropertyChangeListener)
      */
+    @Override
     public void addPropertyChangeListener(
         String propertyName, PropertyChangeListener l) {
         propertySupport.addPropertyChangeListener(propertyName, l);
@@ -788,6 +826,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
     /* (non-Javadoc)
      * @see org.apache.log4j.chainsaw.EventContainer#size()
      */
+    @Override
     public int size() {
         synchronized (mutex) {
             return unfilteredList.size();
@@ -798,6 +837,7 @@ class ChainsawCyclicBufferTableModel extends AbstractTableModel
         /* (non-Javadoc)
          * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
          */
+        @Override
         public void propertyChange(PropertyChangeEvent arg0) {
             Thread thread =
                 new Thread(
