@@ -37,6 +37,16 @@ signature are links to the originals on the main distribution server.
 |https://www.apache.org/dist/logging/chainsaw/{ChainsawReleaseVersion}/apache-chainsaw-{ChainsawReleaseVersion}-bin.zip.sha512[apache-chainsaw-{ChainsawReleaseVersion}-bin.zip.sha512]
 |https://www.apache.org/dist/logging/chainsaw/{ChainsawReleaseVersion}/apache-chainsaw-{ChainsawReleaseVersion}-bin.zip.asc[apache-chainsaw-{ChainsawReleaseVersion}-bin.zip.asc]
 
+|Apache Log4j 2 standalone (tar.gz)
+|https://www.apache.org/dyn/closer.lua/logging/chainsaw/{ChainsawReleaseVersion}/apache-chainsaw-{ChainsawReleaseVersion}-standalone.tar.gz[apache-chainsaw-{ChainsawReleaseVersion}-standalone.tar.gz]
+|https://www.apache.org/dist/logging/chainsaw/{ChainsawReleaseVersion}/apache-chainsaw-{ChainsawReleaseVersion}-standalone.tar.gz.sha512[apache-chainsaw-{ChainsawReleaseVersion}-standalone.tar.gz.sha512]
+|https://www.apache.org/dist/logging/chainsaw/{ChainsawReleaseVersion}/apache-chainsaw-{ChainsawReleaseVersion}-standalone.tar.gz.asc[apache-chainsaw-{ChainsawReleaseVersion}-standalone.tar.gz.asc]
+
+|Apache Log4j 2 standalone (zip)
+|https://www.apache.org/dyn/closer.lua/logging/chainsaw/{ChainsawReleaseVersion}/apache-chainsaw-{ChainsawReleaseVersion}-standalone.zip[apache-chainsaw-{ChainsawReleaseVersion}-standalone.zip]
+|https://www.apache.org/dist/logging/chainsaw/{ChainsawReleaseVersion}/apache-chainsaw-{ChainsawReleaseVersion}-standalone.zip.sha512[apache-chainsaw-{ChainsawReleaseVersion}-standalone.zip.sha512]
+|https://www.apache.org/dist/logging/chainsaw/{ChainsawReleaseVersion}/apache-chainsaw-{ChainsawReleaseVersion}-standalone.zip.asc[apache-chainsaw-{ChainsawReleaseVersion}-standalone.zip.asc]
+
 |Apache Log4j 2 source (tar.gz)
 |https://www.apache.org/dyn/closer.lua/logging/chainsaw/{ChainsawReleaseVersion}/apache-chainsaw-{ChainsawReleaseVersion}-src.tar.gz[apache-chainsaw-{ChainsawReleaseVersion}-src.tar.gz]
 |https://www.apache.org/dist/logging/chainsaw/{ChainsawReleaseVersion}/apache-chainsaw-{ChainsawReleaseVersion}-src.tar.gz.sha512[apache-chainsaw-{ChainsawReleaseVersion}-src.tar.gz.sha512]
