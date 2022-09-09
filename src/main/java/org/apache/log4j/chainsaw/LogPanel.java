@@ -143,7 +143,8 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
     private ApplicationPreferenceModel applicationPreferenceModel;
     private final LogPanelPreferencePanel logPanelPreferencesPanel;
     private final FilterModel filterModel = new FilterModel();
-    private final RuleColorizer colorizer = new RuleColorizer();
+    private RuleColorizer colorizer;
+    private final RuleColorizer m_globalColorizer;
     private final RuleMediator tableRuleMediator = new RuleMediator(false);
     private final RuleMediator searchRuleMediator = new RuleMediator(true);
     private final EventDetailLayout detailLayout = new EventDetailLayout();
@@ -183,6 +184,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
     private boolean isDetailPanelVisible;
     private ChainsawReceiver m_receiver;
     private AbstractConfiguration m_configuration;
+    private Map<String, RuleColorizer> m_allColorizers;
 
     /**
      * Creates a new LogPanel object.  If a LogPanel with this identifier has
@@ -195,14 +197,18 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             final String identifier,
             int cyclicBufferSize,
                     Map<String, RuleColorizer> allColorizers,
-                    final ApplicationPreferenceModel applicationPreferenceModel) {
+                    final ApplicationPreferenceModel applicationPreferenceModel,
+                    RuleColorizer globalRuleColorizer) {
         this.identifier = identifier;
         this.statusBar = statusBar;
         this.applicationPreferenceModel = applicationPreferenceModel;
         this.logPanelPreferencesPanel = new LogPanelPreferencePanel(preferenceModel, applicationPreferenceModel);
+        this.colorizer = globalRuleColorizer;
+        this.m_globalColorizer = globalRuleColorizer;
+        this.m_allColorizers = allColorizers;
         logger.debug("creating logpanel for {}", identifier);
 
-        m_configuration = SettingsManager.getInstance().getSettingsForReceiverTab(identifier);
+        m_configuration = SettingsManager.getInstance().getCombinedSettingsForRecevierTab(identifier);
 
         setLayout(new BorderLayout());
 
@@ -709,7 +715,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             ((ImageIcon) ChainsawIcons.ICON_PREFERENCES).getImage());
 
         allColorizers.put(identifier, colorizer);
-        colorPanel = new ColorPanel(colorizer, filterModel, allColorizers, applicationPreferenceModel);
+        colorPanel = new ColorPanel(m_globalColorizer, filterModel, allColorizers, this);
 
         colorFrame.getContentPane().add(colorPanel);
 
@@ -1499,7 +1505,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
                                 Color c = JColorChooser.showDialog(getRootPane(), "Choose a color", Color.red);
                                 if (c != null) {
                                     String expression = columnNameKeywordMap.get(colName).toString() + " " + operator + " '" + value + "'";
-                                    colorizer.addRule(ChainsawConstants.DEFAULT_COLOR_RULE_NAME, new ColorRule(expression,
+                                    colorizer.addRule(new ColorRule(expression,
                                         ExpressionRule.getRule(expression), c, ChainsawConstants.COLOR_DEFAULT_FOREGROUND));
                                 }
                             }
@@ -2063,7 +2069,15 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             }
         }
 
-        colorizer.loadColorSettings(config);
+        AbstractConfiguration configuration = SettingsManager.getInstance().getSettingsForReceiverTab(identifier);
+
+        if( configuration.getBoolean( "color.rules.default", true ) ){
+            colorizer = m_globalColorizer;
+        }else{
+            setRuleColorizer(new RuleColorizer());
+            colorizer.setConfiguration(configuration);
+            colorizer.loadColorSettings();
+        }
 
 
 //        if (xmlFile.exists()) {
@@ -2249,6 +2263,29 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         XStream stream = new XStream(new DomDriver());
         stream.registerConverter(new TableColumnConverter());
         return stream;
+    }
+
+    public void setRuleColorizer(RuleColorizer newRuleColor){
+        if( newRuleColor == colorizer ){
+            return;
+        }
+        
+        if( colorizer == m_globalColorizer ){
+            // Current colorizer is the global one, so set our new colorizer
+            colorizer = newRuleColor;
+            AbstractConfiguration configuration = SettingsManager.getInstance().getSettingsForReceiverTab(identifier);
+
+            colorizer.setConfiguration(configuration);
+            colorizer.setUseDefaultSettings(false);
+            m_allColorizers.put( identifier, colorizer );
+        }else{
+            m_allColorizers.remove( identifier );
+            colorizer = newRuleColor;
+        }
+    }
+
+    public RuleColorizer getCurrentRuleColorizer(){
+        return colorizer;
     }
 
     /**

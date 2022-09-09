@@ -447,6 +447,7 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
             sliderLabelMap.put(3, new JLabel(" Medium "));
             sliderLabelMap.put(4, new JLabel(" Slow "));
 
+
             confirmExit.setSelected(m_globalConfiguration.getBoolean("confirmExit", Boolean.TRUE));
             showSplash.setSelected(m_globalConfiguration.getBoolean("showSplash", Boolean.TRUE));
             toolTipDisplayMillis.setText(m_globalConfiguration.getInt( "toolTipDisplayMillis", 1000 ) + "");

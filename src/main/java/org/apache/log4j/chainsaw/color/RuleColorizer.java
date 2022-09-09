@@ -31,7 +31,10 @@ import java.net.URLEncoder;
 import java.util.*;
 import java.util.List;
 import org.apache.commons.configuration2.AbstractConfiguration;
+import org.apache.commons.configuration2.DataConfiguration;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -41,25 +44,28 @@ import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 public class RuleColorizer implements Colorizer {
-    private Map<String,List<ColorRule>> rules;
+    private static final Logger logger = LogManager.getLogger();
+    
+    private List<ColorRule> rules;
     private final PropertyChangeSupport colorChangeSupport =
         new PropertyChangeSupport(this);
-    private Map<String,List<ColorRule>> defaultRules = new HashMap<>();
-    private String currentRuleSet = ChainsawConstants.DEFAULT_COLOR_RULE_NAME;
+    private List<ColorRule> defaultRules = new ArrayList<>();
     private Rule findRule;
     private Rule loggerRule;
+    private AbstractConfiguration m_configuration;
+    private boolean m_isGlobal;
 
     private static final String COLORS_EXTENSION = ".colors";
 
-    private final Color WARN_DEFAULT_COLOR = new Color(255, 255, 153);
-    private final Color FATAL_OR_ERROR_DEFAULT_COLOR = new Color(255, 153, 153);
-    private final Color MARKER_DEFAULT_COLOR = new Color(153, 255, 153);
+    private static final Color WARN_DEFAULT_COLOR = new Color(255, 255, 153);
+    private static final Color FATAL_OR_ERROR_DEFAULT_COLOR = new Color(255, 153, 153);
+    private static final Color MARKER_DEFAULT_COLOR = new Color(153, 255, 153);
 
-    private final String DEFAULT_WARN_EXPRESSION = "level == WARN";
-    private final String DEFAULT_FATAL_ERROR_EXCEPTION_EXPRESSION = "level == FATAL || level == ERROR || exception exists";
-    private final String DEFAULT_MARKER_EXPRESSION = "prop.marker exists";
+    private static final String DEFAULT_WARN_EXPRESSION = "level == WARN";
+    private static final String DEFAULT_FATAL_ERROR_EXCEPTION_EXPRESSION = "level == FATAL || level == ERROR || exception exists";
+    private static final String DEFAULT_MARKER_EXPRESSION = "prop.marker exists";
 
-    public RuleColorizer() {
+    public static List<ColorRule> defaultRules(){
         List<ColorRule> rulesList = new ArrayList<>();
 
         String expression = DEFAULT_FATAL_ERROR_EXCEPTION_EXPRESSION;
@@ -79,8 +85,17 @@ public class RuleColorizer implements Colorizer {
                 expression, ExpressionRule.getRule(expression), MARKER_DEFAULT_COLOR,
                 Color.black));
 
-        defaultRules.put(currentRuleSet, rulesList);
-        setRules(defaultRules);
+        return rulesList;
+    }
+
+    public RuleColorizer() {
+        this.rules = defaultRules();
+        m_isGlobal = false;
+    }
+
+    public RuleColorizer(boolean isGlobal){
+        this.rules = defaultRules();
+        m_isGlobal = isGlobal;
     }
 
     public void setLoggerRule(Rule loggerRule) {
@@ -101,74 +116,43 @@ public class RuleColorizer implements Colorizer {
         return loggerRule;
     }
 
-    public void setRules(Map<String,List<ColorRule>> rules) {
-        this.rules = rules;
+    public void setRules(List<ColorRule> rules) {
+        this.rules.clear();
+        this.rules.addAll(rules);
         colorChangeSupport.firePropertyChange("colorrule", false, true);
+
+        saveColorSettings();
     }
 
-    public Map<String,List<ColorRule>> getRules() {
+    public List<ColorRule> getRules() {
         return rules;
     }
 
-    public List<ColorRule> getCurrentRules() {
-        return rules.get(currentRuleSet);
-    }
-
-    public void addRules(Map<String,List<ColorRule>> newRules) {
-
-        for (Map.Entry<String,List<ColorRule>> entry : newRules.entrySet()) {
-
-            if (rules.containsKey(entry.getKey())) {
-                rules.get(entry.getKey()).addAll( entry.getValue() );
-            } else {
-                rules.put(entry.getKey(), entry.getValue());
-            }
-        }
+    public void addRules(List<ColorRule> newRules) {
+        rules.addAll( newRules );
 
         colorChangeSupport.firePropertyChange("colorrule", false, true);
+
+        saveColorSettings();
     }
 
-    public void addRule(String ruleSetName, ColorRule rule) {
-        if (rules.containsKey(ruleSetName)) {
-            rules.get(ruleSetName).add(rule);
-        } else {
-            List<ColorRule> list = new ArrayList<>();
-            list.add(rule);
-            rules.put(ruleSetName, list);
-        }
+    public void addRule(ColorRule rule) {
+        rules.add(rule);
 
         colorChangeSupport.firePropertyChange("colorrule", false, true);
+
+        saveColorSettings();
     }
 
-    public void removeRule(String ruleSetName, String expression) {
-        if (rules.containsKey(ruleSetName)) {
-            List<ColorRule> list = rules.get(ruleSetName);
-
-            for (int i = 0; i < list.size(); i++) {
-                ColorRule rule = list.get(i);
-
-                if (rule.getExpression().equals(expression)) {
-                    list.remove(rule);
-
-                    return;
-                }
-            }
-        }
-    }
-
-    public void setCurrentRuleSet(String ruleSetName) {
-        currentRuleSet = ruleSetName;
+    public void removeRule(String expression) {
+        rules.removeIf( x -> x.getExpression().equals( expression ) );
     }
 
     public Color getBackgroundColor(ChainsawLoggingEvent event) {
-        if (rules.containsKey(currentRuleSet)) {
-            List<ColorRule> list = rules.get(currentRuleSet);
+        for (ColorRule rule : rules) {
 
-            for (ColorRule rule : list) {
-
-                if ((rule.getBackgroundColor() != null) && (rule.evaluate(event, null))) {
-                    return rule.getBackgroundColor();
-                }
+            if ((rule.getBackgroundColor() != null) && (rule.evaluate(event, null))) {
+                return rule.getBackgroundColor();
             }
         }
 
@@ -176,14 +160,10 @@ public class RuleColorizer implements Colorizer {
     }
 
     public Color getForegroundColor(ChainsawLoggingEvent event) {
-        if (rules.containsKey(currentRuleSet)) {
-            List<ColorRule> list = rules.get(currentRuleSet);
+        for (ColorRule rule : rules) {
 
-            for (ColorRule rule : list) {
-
-                if ((rule.getForegroundColor() != null) && (rule.evaluate(event, null))) {
-                    return rule.getForegroundColor();
-                }
+            if ((rule.getForegroundColor() != null) && (rule.evaluate(event, null))) {
+                return rule.getForegroundColor();
             }
         }
 
@@ -207,65 +187,94 @@ public class RuleColorizer implements Colorizer {
         colorChangeSupport.addPropertyChangeListener(propertyName, listener);
     }
 
-
-    /**
-     * Save panel color settings
-     */
-    public void saveColorSettings(String name) {
-        ObjectOutputStream o = null;
-        try {
-            File f = new File(SettingsManager.getInstance().getSettingsDirectory(), URLEncoder.encode(name + COLORS_EXTENSION));
-
-            o = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(f)));
-
-            o.writeObject(getRules());
-            o.flush();
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        } finally {
-            try {
-                if (o != null) {
-                    o.close();
-                }
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
-            }
-        }
+    public void setConfiguration(AbstractConfiguration configuration){
+        m_configuration = configuration;
     }
 
-    /**
-     * Load panel color settings if they exist from the given configuration - otherwise, load default color settings
-     */
-    public void loadColorSettings(String name){}
+    public void setUseDefaultSettings(boolean useDefaultSettings){
+        if( m_configuration == SettingsManager.getInstance().getGlobalConfiguration() ){
+            return;
+        }
+
+        m_configuration.setProperty( "color.rules.default", useDefaultSettings );
+    }
+
+    public static String colorToRGBString( Color c ){
+        return String.format( "#%02x%02x%02x",
+                c.getRed(),
+                c.getGreen(),
+                c.getBlue());
+    }
+
+    private void saveColorSettings(){
+        if( m_configuration == null ){
+            return;
+        }
+
+        DataConfiguration data = new DataConfiguration(m_configuration);
+
+        if( !m_isGlobal && m_configuration.getBoolean( "color.rules.default", true ) ){
+            // No need to save, using the default rules
+            return;
+        }
+
+        for( int x = 0; x < 32; x++ ){
+            String baseConfigKey = "color.rules(" + x + ")";
+
+            if( rules.size() <= x ){
+                break;
+            }
+            
+            ColorRule rule = rules.get(x);
+            
+            logger.debug( "Saving rule {}.  Expression: {}", x, rule.getExpression() );
+
+            m_configuration.setProperty( baseConfigKey + ".expression", rule.getExpression() );
+            String bgColorString = colorToRGBString(rule.getBackgroundColor());
+            String fgColorString = colorToRGBString(rule.getForegroundColor());
+            data.setProperty( baseConfigKey + ".backgroundColor", bgColorString );
+            data.setProperty( baseConfigKey + ".foregroundColor", fgColorString );
+        }
+
+        logger.debug( "all keys for {}:", m_configuration );
+        java.util.Iterator<String> s = m_configuration.getKeys();
+        while( s.hasNext() ){
+            logger.debug( "found key: {}", s.next() );
+        }
+    }
     
-    public void loadColorSettings(AbstractConfiguration configuration) {
+    public void loadColorSettings() {
         // When we save/load the rule, we really need to load a map of rules
         // There's no real good way to do this, so we will do this the somewhat
         // dumb way and just load up to 32 color rules, since that seems like
         // a good number
-        // This needs to be done for each rule set, so we first need to get a
-        // list of the rule sets
-        String[] ruleSets = configuration.getStringArray( "color.rulesets" );
-        if( ruleSets.length == 0 ){
-            // Default rule set is already defined
-            return;
+        List<ColorRule> newRules = new ArrayList<>();
+        AbstractConfiguration configuration = m_configuration;
+        
+        DataConfiguration data = new DataConfiguration(configuration);
+
+        for( int x = 0; x < 32; x++ ){
+            String baseConfigKey = "color.rules(" + x + ")";
+            String expression;
+            Color backgroundColor;
+            Color foregroundColor;
+
+            expression = configuration.getString( baseConfigKey + ".expression" );
+            backgroundColor = data.getColor( baseConfigKey + ".backgroundColor" );
+            foregroundColor = data.getColor( baseConfigKey + ".foregroundColor" );
+
+            if( expression == null ||
+                    backgroundColor == null ||
+                    foregroundColor == null ){
+                continue;
+            }
+
+            Rule simpleRule = ExpressionRule.getRule(expression);
+            ColorRule rule = new ColorRule( expression, simpleRule, backgroundColor, foregroundColor );
+            newRules.add( rule );
         }
 
-        /*
-        ColorRule(final String expression,
-                   final Rule rule,
-                   final Color backgroundColor,
-                   final Color foregroundColor)
-        */
-//        Map<String,List<ColorRule>> rules = new HashMap<>();
-//        for( String ruleSet : ruleSets ){
-//            String[] rulesForRuleSet = configuration.getStringArray( "color.rules." + ruleSet );
-//            for( String individualRule : rulesForRuleSet ){
-//
-//            }
-//        }
-//
-//        setRules(rules);
+        setRules(newRules);
     }
 
     private boolean doLoadColorSettings(String name) {
@@ -280,7 +289,7 @@ public class RuleColorizer implements Colorizer {
                     new BufferedInputStream(new FileInputStream(f)));
 
                 Map map = (Map) s.readObject();
-                setRules(map);
+//                setRules(map);
             } catch (EOFException eof) { //end of file - ignore..
             } catch (IOException ioe) {
                 ioe.printStackTrace();
@@ -301,8 +310,8 @@ public class RuleColorizer implements Colorizer {
         return f.exists();
     }
 
-    public Vector getDefaultColors() {
-        Vector vec = new Vector();
+    public static List<Color> getDefaultColors() {
+        List<Color> vec = new ArrayList<>();
 
         vec.add(Color.white);
         vec.add(Color.black);

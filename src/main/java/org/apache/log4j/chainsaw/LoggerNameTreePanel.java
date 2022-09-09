@@ -870,7 +870,7 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener {
                 Color c = JColorChooser.showDialog(getRootPane(), "Choose a color", Color.red);
                 if (c != null) {
                     String expression = "logger like '^" + selectedLogger + ".*'";
-                    colorizer.addRule(ChainsawConstants.DEFAULT_COLOR_RULE_NAME, new ColorRule(expression,
+                    colorizer.addRule(new ColorRule(expression,
                         ExpressionRule.getRule(expression), c, ChainsawConstants.COLOR_DEFAULT_FOREGROUND));
                 }
             }

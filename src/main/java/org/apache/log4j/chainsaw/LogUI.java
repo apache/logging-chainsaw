@@ -145,6 +145,7 @@ public class LogUI extends JFrame {
 
     //map of tab names to rulecolorizers
     private Map<String, RuleColorizer> allColorizers = new HashMap<>();
+    private RuleColorizer globalRuleColorizer = new RuleColorizer(true);
     private ReceiverConfigurationPanel receiverConfigurationPanel = new ReceiverConfigurationPanel();
 
     /**
@@ -154,6 +155,9 @@ public class LogUI extends JFrame {
     public LogUI() {
         super("Chainsaw");
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+
+        globalRuleColorizer.setConfiguration(SettingsManager.getInstance().getGlobalConfiguration());
+        globalRuleColorizer.loadColorSettings();
 
         if (ChainsawIcons.WINDOW_ICON != null) {
             setIconImage(new ImageIcon(ChainsawIcons.WINDOW_ICON).getImage());
@@ -248,6 +252,7 @@ public class LogUI extends JFrame {
      */
     public static void createChainsawGUI(Action newShutdownAction) {
         AbstractConfiguration config = SettingsManager.getInstance().getGlobalConfiguration();
+
 
         if (config.getBoolean("okToRemoveSecurityManager", false)) {
 //            statusBar.setMessage("User has authorised removal of Java Security Manager via preferences");
@@ -506,7 +511,6 @@ public class LogUI extends JFrame {
 
         getToolBarAndMenus().stateChange();
         RuleColorizer colorizer = new RuleColorizer();
-        colorizer.loadColorSettings(ChainsawConstants.DEFAULT_COLOR_RULE_NAME);
         allColorizers.put(ChainsawConstants.DEFAULT_COLOR_RULE_NAME, colorizer);
     }
 
@@ -1627,7 +1631,7 @@ public class LogUI extends JFrame {
     private void buildLogPanel(
         boolean customExpression, final String ident, final List<ChainsawLoggingEvent> events, final ChainsawReceiver rx)
         throws IllegalArgumentException {
-        final LogPanel thisPanel = new LogPanel(getStatusBar(), ident, cyclicBufferSize, allColorizers, applicationPreferenceModel);
+        final LogPanel thisPanel = new LogPanel(getStatusBar(), ident, cyclicBufferSize, allColorizers, applicationPreferenceModel, globalRuleColorizer);
 
         if( !customExpression && rx != null ){
             thisPanel.setReceiver(rx);

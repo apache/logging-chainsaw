@@ -43,6 +43,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
 import org.apache.commons.configuration2.AbstractConfiguration;
+import org.apache.log4j.chainsaw.LogPanel;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -61,7 +62,7 @@ public class ColorPanel extends JPanel {
     private static final String DEFAULT_STATUS = "<html>Double click a rule field to edit the rule</html>";
     private final String currentRuleSet = "Default";
 
-    private RuleColorizer colorizer;
+//    private RuleColorizer colorizer;
     private JPanel rulesPanel;
     private FilterModel filterModel;
     private RulesTableModel rulesTableModel;
@@ -73,34 +74,38 @@ public class ColorPanel extends JPanel {
     private final String noTab = "None";
     private DefaultComboBoxModel logPanelColorizersModel;
     private Map<String, RuleColorizer> allLogPanelColorizers;
-    private RuleColorizer currentLogPanelColorizer;
+//    private RuleColorizer currentLogPanelColorizer;
     private JTable searchTable;
     private DefaultTableModel searchTableModel;
     private Vector<String> searchColumns;
     private Vector<Vector<Color>> searchDataVector;
     private Vector<Color> searchDataVectorEntry;
+    private RuleColorizer m_globalColorizer;
 
     private JTable alternatingColorTable;
     private DefaultTableModel alternatingColorTableModel;
     private Vector<String> alternatingColorColumns;
     private Vector<Vector<Color>> alternatingColorDataVector;
     private Vector<Color> alternatingColorDataVectorEntry;
-    private ApplicationPreferenceModel applicationPreferenceModel;
     private JCheckBox bypassSearchColorsCheckBox;
+    private JCheckBox m_globalRulesCheckbox;
+    private LogPanel m_parentLogPanel;
+    private JLabel m_rulesLabel;
 
-    public ColorPanel(final RuleColorizer currentLogPanelColorizer, final FilterModel filterModel,
-                      final Map<String, RuleColorizer> allLogPanelColorizers, final ApplicationPreferenceModel applicationPreferenceModel) {
+    public ColorPanel(final RuleColorizer globalColorizer,
+                      final FilterModel filterModel,
+                      final Map<String, RuleColorizer> allLogPanelColorizers,
+                      final LogPanel parent) {
         super(new BorderLayout());
 
         AbstractConfiguration configuration = SettingsManager.getInstance().getGlobalConfiguration();
 
-        this.currentLogPanelColorizer = currentLogPanelColorizer;
-        this.colorizer = currentLogPanelColorizer;
         this.filterModel = filterModel;
         this.allLogPanelColorizers = allLogPanelColorizers;
-        this.applicationPreferenceModel = applicationPreferenceModel;
+        this.m_globalColorizer = globalColorizer;
+        this.m_parentLogPanel = parent;
 
-        currentLogPanelColorizer.addPropertyChangeListener(
+        m_parentLogPanel.getCurrentRuleColorizer().addPropertyChangeListener(
             "colorrule",
             evt -> updateColors());
 
@@ -234,8 +239,13 @@ public class ColorPanel extends JPanel {
                 Object selectedItem = loadPanelColorizersComboBox.getSelectedItem();
                 if (selectedItem != null) {
                     RuleColorizer sourceColorizer = allLogPanelColorizers.get(selectedItem.toString());
-                    colorizer.setRules(sourceColorizer.getRules());
+                    RuleColorizer newColorizer = new RuleColorizer();
+                    newColorizer.setRules(sourceColorizer.getRules());
+                    parent.setRuleColorizer(newColorizer);
                     updateColors();
+                    m_parentLogPanel.getCurrentRuleColorizer().addPropertyChangeListener(
+                        "colorrule",
+                        evt -> updateColors());
                 }
             }
         };
@@ -265,6 +275,7 @@ public class ColorPanel extends JPanel {
         if (logPanelColorizersModel.getIndexOf(noTab) == -1) {
             logPanelColorizersModel.addElement(noTab);
         }
+        RuleColorizer currentLogPanelColorizer = m_parentLogPanel.getCurrentRuleColorizer();
         for (Object o : allLogPanelColorizers.entrySet()) {
             Map.Entry entry = (Map.Entry) o;
             if (!entry.getValue().equals(currentLogPanelColorizer) && (logPanelColorizersModel.getIndexOf(entry.getKey()) == -1)) {
@@ -319,7 +330,7 @@ public class ColorPanel extends JPanel {
 
     public void updateColors() {
         rulesTableModel.clear();
-        rulesTableModel.addDefaultRules();
+        rulesTableModel.addColorRules();
         rulesTableModel.fireTableDataChanged();
     }
 
@@ -329,8 +340,8 @@ public class ColorPanel extends JPanel {
         rulesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         rulesTable.setColumnSelectionAllowed(false);
 
-        Vector backgroundColors = colorizer.getDefaultColors();
-        Vector foregroundColors = colorizer.getDefaultColors();
+        Vector backgroundColors = new Vector(RuleColorizer.getDefaultColors());
+        Vector foregroundColors = new Vector(RuleColorizer.getDefaultColors());
         backgroundColors.add("Browse...");
         foregroundColors.add("Browse...");
 
@@ -367,8 +378,8 @@ public class ColorPanel extends JPanel {
         thisTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         thisTable.setColumnSelectionAllowed(false);
 
-        Vector backgroundColors = colorizer.getDefaultColors();
-        Vector foregroundColors = colorizer.getDefaultColors();
+        Vector backgroundColors = new Vector(RuleColorizer.getDefaultColors());
+        Vector foregroundColors = new Vector(RuleColorizer.getDefaultColors());
         backgroundColors.add("Browse...");
         foregroundColors.add("Browse...");
 
@@ -445,10 +456,7 @@ public class ColorPanel extends JPanel {
             statusBar.setText(DEFAULT_STATUS);
 
             //only update rules if there were no errors
-            Map map = new HashMap();
-            List<ColorRule> newRules = new ArrayList<>(rulesTableModel.rules());
-            map.put(ruleSet, newRules);
-            applyingColorizer.setRules(map);
+            applyingColorizer.setRules(rulesTableModel.rules());
 
         } else {
             statusBar.setText("Errors - see expression tooltip (color filters won't be active until errors are resolved)");
@@ -462,24 +470,24 @@ public class ColorPanel extends JPanel {
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
         panel.add(Box.createHorizontalGlue());
 
-        JButton saveAsDefaultButton = new JButton(" Save as default ");
-
-        saveAsDefaultButton.addActionListener(
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent evt) {
-                    RuleColorizer defaultColorizer = allLogPanelColorizers.get(ChainsawConstants.DEFAULT_COLOR_RULE_NAME);
-                    applyRules(currentRuleSet, defaultColorizer);
-                }
-            });
-
-        panel.add(saveAsDefaultButton);
+//        JButton saveAsDefaultButton = new JButton(" Save as default ");
+//
+//        saveAsDefaultButton.addActionListener(
+//            new AbstractAction() {
+//                public void actionPerformed(ActionEvent evt) {
+//                    RuleColorizer defaultColorizer = allLogPanelColorizers.get(ChainsawConstants.DEFAULT_COLOR_RULE_NAME);
+//                    applyRules(currentRuleSet, defaultColorizer);
+//                }
+//            });
+//
+//        panel.add(saveAsDefaultButton);
 
         JButton applyButton = new JButton(" Apply ");
 
         applyButton.addActionListener(
             new AbstractAction() {
                 public void actionPerformed(ActionEvent evt) {
-                    applyRules(currentRuleSet, colorizer);
+                    applyRules(currentRuleSet, m_parentLogPanel.getCurrentRuleColorizer());
                     saveSearchColors();
                     saveAlternatingColors();
                     saveBypassFlag();
@@ -505,19 +513,20 @@ public class ColorPanel extends JPanel {
 
     private void saveSearchColors() {
         Vector thisVector = (Vector) searchTableModel.getDataVector().get(0);
-        applicationPreferenceModel.setSearchBackgroundColor((Color) thisVector.get(0));
-        applicationPreferenceModel.setSearchForegroundColor((Color) thisVector.get(1));
+        AbstractConfiguration globalConfig = SettingsManager.getInstance().getGlobalConfiguration();
+        globalConfig.setProperty("searchBackgroundColor", RuleColorizer.colorToRGBString((Color) thisVector.get(0)));
+        globalConfig.setProperty("searchForegroundColor", RuleColorizer.colorToRGBString((Color) thisVector.get(1)));
     }
 
     private void saveAlternatingColors() {
         Vector thisVector = (Vector) alternatingColorTableModel.getDataVector().get(0);
-        applicationPreferenceModel.setAlternatingBackgroundColor((Color) thisVector.get(0));
+//        applicationPreferenceModel.setAlternatingBackgroundColor((Color) thisVector.get(0));
         Color alternatingColorForegroundColor = (Color) thisVector.get(1);
-        applicationPreferenceModel.setAlternatingForegroundColor(alternatingColorForegroundColor);
+//        applicationPreferenceModel.setAlternatingForegroundColor(alternatingColorForegroundColor);
     }
 
     private void saveBypassFlag() {
-        applicationPreferenceModel.setBypassSearchColors(bypassSearchColorsCheckBox.isSelected());
+//        applicationPreferenceModel.setBypassSearchColors(bypassSearchColorsCheckBox.isSelected());
     }
 
     JPanel buildUpDownPanel() {
@@ -596,9 +605,34 @@ public class ColorPanel extends JPanel {
 
         panel.add(Box.createVerticalStrut(10));
 
-        JLabel rulesLabel = new JLabel("Rules:");
+        m_rulesLabel = new JLabel("Rules:");
+        m_globalRulesCheckbox = new JCheckBox("Use global rules");
 
-        panel.add(rulesLabel);
+        if( m_globalColorizer == m_parentLogPanel.getCurrentRuleColorizer() ){
+            m_globalRulesCheckbox.setSelected(true);
+            m_rulesLabel.setText("Global rules:");
+        }
+
+        m_globalRulesCheckbox.addActionListener(
+                new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent ae) {
+                        if( m_globalRulesCheckbox.isSelected() ){
+                            m_parentLogPanel.setRuleColorizer( m_globalColorizer );
+                            m_rulesLabel.setText( "Global rules:" );
+                        }else{
+                            m_parentLogPanel.setRuleColorizer(new RuleColorizer());
+                            m_rulesLabel.setText("Rules:");
+                        }
+                        updateColors();
+                        m_parentLogPanel.getCurrentRuleColorizer().addPropertyChangeListener(
+                            "colorrule",
+                            evt -> updateColors());
+                    }
+                });
+
+        panel.add(m_globalRulesCheckbox);
+        panel.add(m_rulesLabel);
 
         JPanel buttonPanel = new JPanel(new GridLayout(0, 2));
         buttonPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -851,7 +885,7 @@ public class ColorPanel extends JPanel {
 
         RulesTableModel(){
             m_data = new ArrayList<>();
-            addDefaultRules();
+            addColorRules();
         }
 
         List<ColorRule> rules(){
@@ -890,16 +924,8 @@ public class ColorPanel extends JPanel {
             }
         }
 
-        void addDefaultRules(){
-            Map map = colorizer.getRules();
-            for (Object o1 : map.entrySet()) {
-                Map.Entry entry = (Map.Entry) o1;
-                logger.debug( "entry: {}", o1 );
-                //update ruleset list
-                if (entry.getKey().equals(currentRuleSet)) {
-                    m_data.addAll( (List<ColorRule>)entry.getValue() );
-                }
-            }
+        void addColorRules(){
+            m_data.addAll( m_parentLogPanel.getCurrentRuleColorizer().getRules() );
         }
 
         @Override
