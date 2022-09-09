@@ -34,6 +34,8 @@ import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
@@ -289,6 +291,23 @@ public class ColorPanel extends JPanel {
         searchDataVectorEntry.set(1, configuration.get(Color.class, "searchForegroundColor", ChainsawConstants.FIND_LOGGER_FOREGROUND));
         alternatingColorDataVectorEntry.set(0, configuration.get(Color.class, "alternatingColorBackground", ChainsawConstants.COLOR_ODD_ROW_BACKGROUND));
         alternatingColorDataVectorEntry.set(1, configuration.get(Color.class, "alternatingColorForeground", ChainsawConstants.COLOR_ODD_ROW_FOREGROUND));
+    }
+
+    public void componentChanged(){
+        logger.debug( "Color panel changed. Current colorizer: {} Global colorizer: {}",
+                m_parentLogPanel.getCurrentRuleColorizer(),
+                m_globalColorizer);
+
+        if( m_globalColorizer == m_parentLogPanel.getCurrentRuleColorizer() ){
+            m_globalRulesCheckbox.setSelected(true);
+            m_rulesLabel.setText("Global rules:");
+        }else{
+            m_globalRulesCheckbox.setSelected(false);
+            m_rulesLabel.setText("Rules:");
+        }
+
+        loadLogPanelColorizers();
+        updateColors();
     }
 
     public JPanel buildBypassSearchColorsPanel() {
@@ -619,12 +638,10 @@ public class ColorPanel extends JPanel {
                     public void actionPerformed(ActionEvent ae) {
                         if( m_globalRulesCheckbox.isSelected() ){
                             m_parentLogPanel.setRuleColorizer( m_globalColorizer );
-                            m_rulesLabel.setText( "Global rules:" );
                         }else{
                             m_parentLogPanel.setRuleColorizer(new RuleColorizer());
-                            m_rulesLabel.setText("Rules:");
                         }
-                        updateColors();
+                        componentChanged();
                         m_parentLogPanel.getCurrentRuleColorizer().addPropertyChangeListener(
                             "colorrule",
                             evt -> updateColors());

@@ -2277,10 +2277,13 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
 
             colorizer.setConfiguration(configuration);
             colorizer.setUseDefaultSettings(false);
+            colorizer.loadColorSettings();
             m_allColorizers.put( identifier, colorizer );
+            m_configuration.setProperty( "color.rules.default", false );
         }else{
             m_allColorizers.remove( identifier );
             colorizer = newRuleColor;
+            m_configuration.setProperty( "color.rules.default", true );
         }
     }
 
@@ -2307,7 +2310,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
      * Display the color rule frame
      */
     void showColorPreferences() {
-        colorPanel.loadLogPanelColorizers();
+        colorPanel.componentChanged();
         colorFrame.pack();
         centerAndSetVisible(colorFrame);
     }

@@ -343,4 +343,18 @@ public class RuleColorizer implements Colorizer {
         return vec;
     }
 
+    @Override
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        sb.append( String.format( "RuleColorizer - %d rules", rules.size() ) );
+        for( ColorRule rule : rules ){
+            sb.append( System.lineSeparator() );
+            sb.append( "  " );
+            sb.append( rule.getRule().toString() );
+        }
+        sb.append( System.lineSeparator() );
+
+        return sb.toString();
+    }
+
 }
