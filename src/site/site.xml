@@ -23,23 +23,16 @@
     <href>http://logging.apache.org/</href>
   </bannerLeft>
   <bannerRight>
-    <name>Apache log4j</name>
+    <name>Apache Chainsaw</name>
     <src>images/logo.png</src>
-    <href>https://logging.apache.org/log4j/2.x/</href>
+    <href>https://logging.apache.org/chainsaw/</href>
   </bannerRight>
   <body>
     <breadcrumbs>
       <item name="Apache" href="http://www.apache.org/" />
 	  <item name="Logging Services" href="http://logging.apache.org/" />
-	  <item name="Chainsaw" href="http://logging.apache.org:80/chainsaw/" />
+	  <item name="Chainsaw" href="https://logging.apache.org/chainsaw/" />
     </breadcrumbs>
-
-	<menu name="Get Chainsaw">
-	   <item name="Download" href="/download.html"/>
-	   <item name="Changes" href="/changes-report.html"/>
-	   <item name="License" href="https://www.apache.org/licenses/LICENSE-2.0"/>
-	   <item name="Important Distribution Notes" href="/distributionnotes.html" />
-	</menu>
 
     <menu name="About Chainsaw">
       <item name="Introduction" href="/index.html"/>
@@ -48,6 +41,14 @@
 	  <item name="Roadmap" href="/roadmap.html"/>
 	  <item name="JavaDoc" href="/apidocs/index.html"/>
    </menu>
+
+	<menu name="Get Chainsaw">
+	   <item name="Download" href="/download.html"/>
+	   <item name="Changes" href="/changes-report.html"/>
+	   <item name="License" href="https://www.apache.org/licenses/LICENSE-2.0"/>
+	   <item name="Important Distribution Notes" href="/distributionnotes.html" />
+	</menu>
+
 
   <menu name="Manual">
     <item name="Viewing Log Events" href="/viewing-log-events.html"/>
