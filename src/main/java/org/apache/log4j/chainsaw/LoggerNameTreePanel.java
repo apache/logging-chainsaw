@@ -36,6 +36,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.util.List;
+import org.apache.commons.configuration2.AbstractConfiguration;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
 
@@ -77,7 +78,7 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener {
     private final Set hiddenSet = new HashSet();
     private final Action hideAction;
     private final Action hideSubLoggersAction;
-    private final LogPanelPreferenceModel preferenceModel;
+    private final AbstractConfiguration m_panelConfig;
 
     private final JList ignoreList = new JList();
     private final JEditorPane ignoreExpressionEntryField = new JEditorPane();
@@ -117,10 +118,14 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener {
      *
      * @param logTreeModel
      */
-    LoggerNameTreePanel(LogPanelLoggerTreeModel logTreeModel, LogPanelPreferenceModel preferenceModel, LogPanel logPanel, RuleColorizer colorizer, FilterModel filterModel) {
+    LoggerNameTreePanel(LogPanelLoggerTreeModel logTreeModel, 
+            AbstractConfiguration panelConfiguration,
+            LogPanel logPanel,
+            RuleColorizer colorizer,
+            FilterModel filterModel) {
         super();
         this.logTreeModel = logTreeModel;
-        this.preferenceModel = preferenceModel;
+        m_panelConfig = panelConfiguration;
         this.logPanel = logPanel;
         this.colorizer = colorizer;
 
@@ -679,7 +684,7 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener {
     private Action createCloseAction() {
         Action action = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                preferenceModel.setLogTreePanelVisible(false);
+                m_panelConfig.setProperty("logpanel.logTreePanelVisible", false);
             }
         };
 

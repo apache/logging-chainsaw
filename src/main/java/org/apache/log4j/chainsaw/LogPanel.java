@@ -181,7 +181,6 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
     private boolean searchResultsDisplayed;
     private ColorizedEventAndSearchMatchThumbnail colorizedEventAndSearchMatchThumbnail;
     private EventTimeDeltaMatchThumbnail eventTimeDeltaMatchThumbnail;
-    private boolean isDetailPanelVisible;
     private ChainsawReceiver m_receiver;
     private AbstractConfiguration m_configuration;
     private Map<String, RuleColorizer> m_allColorizers;
@@ -209,6 +208,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         logger.debug("creating logpanel for {}", identifier);
 
         m_configuration = SettingsManager.getInstance().getCombinedSettingsForRecevierTab(identifier);
+        AbstractConfiguration tabConfig = SettingsManager.getInstance().getSettingsForReceiverTab(identifier);
 
         setLayout(new BorderLayout());
 
@@ -289,7 +289,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         undockedFrame.setSize(new Dimension(1024, 768));
         undockedFrame.pack();
 
-        m_configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
+        tabConfig.addEventListener(ConfigurationEvent.SET_PROPERTY,
             evt -> {
                 if( evt.getPropertyName().equals( "scrollToBottom" ) ){
                     boolean value = (Boolean) evt.getPropertyValue();
@@ -407,11 +407,11 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
 
             } );
 
-        m_configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
+        tabConfig.addEventListener(ConfigurationEvent.SET_PROPERTY,
             new org.apache.commons.configuration2.event.EventListener<ConfigurationEvent>(){
                 @Override
                 public void onEvent(ConfigurationEvent evt) {
-                    if( evt.getPropertyName().equals( "logpanel.detailPaneVisible" ) ){
+                    if( evt.getPropertyName().equals( "logpanel.detailColumnVisible" ) ){
                         boolean detailPaneVisible = (Boolean) evt.getPropertyValue();
                         if (detailPaneVisible) {
                             showDetailPane();
@@ -426,7 +426,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
 
             } );
 
-        m_configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
+        tabConfig.addEventListener(ConfigurationEvent.SET_PROPERTY,
             new org.apache.commons.configuration2.event.EventListener<ConfigurationEvent>(){
                 @Override
                 public void onEvent(ConfigurationEvent evt) {
@@ -561,9 +561,9 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
                 }
             });
 
-        m_configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
+        tabConfig.addEventListener(ConfigurationEvent.SET_PROPERTY,
             evt -> {
-                if( evt.getPropertyName().equals("logpanel.detailPaneVisible") ){
+                if( evt.getPropertyName().equals("logpanel.detailColumnVisible") ){
                     boolean value = (Boolean) evt.getPropertyValue();
                     menuItemToggleDetails.setSelected(value);
                 }
@@ -686,7 +686,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
          *
          */
         LogPanelLoggerTreeModel logTreeModel = new LogPanelLoggerTreeModel();
-        logTreePanel = new LoggerNameTreePanel(logTreeModel, preferenceModel, this, colorizer, filterModel);
+        logTreePanel = new LoggerNameTreePanel(logTreeModel, tabConfig, this, colorizer, filterModel);
         logTreePanel.getLoggerVisibilityRule().addPropertyChangeListener(evt -> {
             if (evt.getPropertyName().equals("searchExpression")) {
                 findCombo.setSelectedItem(evt.getNewValue().toString());
@@ -1297,7 +1297,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         Action closeDetailAction =
             new AbstractAction(null, LineIconFactory.createCloseIcon()) {
                 public void actionPerformed(ActionEvent arg0) {
-                    preferenceModel.setDetailPaneVisible(false);
+                    tabConfig.setProperty("logpanel.detailColumnVisible", false);
                 }
             };
 
@@ -2226,13 +2226,13 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             FileWriter w = new FileWriter(xmlFile);
             s = stream.createObjectOutputStream(w);
             s.writeObject(preferenceModel);
-            if (isDetailPanelVisible) {
-                //use current size
-                s.writeInt(lowerPanel.getDividerLocation());
-            } else {
-                //use size when last hidden
-                s.writeInt(lowerPanelDividerLocation);
-            }
+//            if (isDetailPanelVisible) {
+//                //use current size
+//                s.writeInt(lowerPanel.getDividerLocation());
+//            } else {
+//                //use size when last hidden
+//                s.writeInt(lowerPanelDividerLocation);
+//            }
             s.writeInt(nameTreeAndMainPanelSplit.getDividerLocation());
             s.writeObject(detailLayout.getConversionPattern());
             //this is a version number written to the file to identify that there is a Vector serialized after this
@@ -2319,8 +2319,10 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
      * Toggle panel preference for detail visibility on or off
      */
     void toggleDetailVisible() {
-        preferenceModel.setDetailPaneVisible(
-            !preferenceModel.isDetailPaneVisible());
+        AbstractConfiguration config = SettingsManager.getInstance().getSettingsForReceiverTab(identifier);
+
+        boolean visible = config.getBoolean("logpanel.detailColumnVisible");
+        config.setProperty("logpanel.detailColumnVisible", !visible);
     }
 
     /**
@@ -2329,7 +2331,10 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
      * @return detail visibility flag
      */
     boolean isDetailVisible() {
-        return preferenceModel.isDetailPaneVisible();
+        AbstractConfiguration config = SettingsManager.getInstance().getSettingsForReceiverTab(identifier);
+
+        boolean visible = config.getBoolean("logpanel.detailColumnVisible");
+        return visible;
     }
 
     boolean isSearchResultsVisible() {
@@ -2608,19 +2613,16 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
      * Display the detail pane, using the last known divider location
      */
     private void showDetailPane() {
-        if (!isDetailPanelVisible) {
-            lowerPanel.setDividerSize(dividerSize);
-            if (lowerPanelDividerLocation == 0) {
-                lowerPanel.setDividerLocation(DEFAULT_DETAIL_SPLIT_LOCATION);
-                lowerPanelDividerLocation = lowerPanel.getDividerLocation();
-            } else {
-                lowerPanel.setDividerLocation(lowerPanelDividerLocation);
-            }
-            detailPanel.setVisible(true);
-            detailPanel.repaint();
-            lowerPanel.repaint();
-            isDetailPanelVisible = true;
+        lowerPanel.setDividerSize(dividerSize);
+        if (lowerPanelDividerLocation == 0) {
+            lowerPanel.setDividerLocation(DEFAULT_DETAIL_SPLIT_LOCATION);
+            lowerPanelDividerLocation = lowerPanel.getDividerLocation();
+        } else {
+            lowerPanel.setDividerLocation(lowerPanelDividerLocation);
         }
+        detailPanel.setVisible(true);
+        detailPanel.repaint();
+        lowerPanel.repaint();
     }
 
     /**
@@ -2628,13 +2630,11 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
      */
     private void hideDetailPane() {
         //may be called not currently visible on initial setup to ensure panel is not visible..only update divider location if hiding when currently visible
-        if (isDetailPanelVisible) {
+//        if (isDetailPanelVisible) {
             lowerPanelDividerLocation = lowerPanel.getDividerLocation();
-        }
+//        }
         lowerPanel.setDividerSize(0);
         detailPanel.setVisible(false);
-        lowerPanel.repaint();
-        isDetailPanelVisible = false;
     }
 
     /**

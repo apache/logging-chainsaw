@@ -123,7 +123,7 @@ public final class SettingsManager {
         return m_configuration;
     }
 
-    public AbstractConfiguration getCombinedSettingsForRecevierTab(String identifier){
+    public CombinedConfiguration getCombinedSettingsForRecevierTab(String identifier){
         // Override combiner: nodes in the first structure take precedence over the second
         CombinedConfiguration combinedConfig = new CombinedConfiguration(new OverrideCombiner());
 
