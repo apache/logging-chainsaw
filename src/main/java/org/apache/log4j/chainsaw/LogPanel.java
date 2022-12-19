@@ -696,6 +696,20 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
                 findNext();
             }
         });
+        logTreePanel.addComponentListener(new ComponentListener() {
+            @Override
+            public void componentResized(ComponentEvent ce) {
+                Dimension dim = ce.getComponent().getSize();
+                tabConfig.setProperty("logpanel.treeDividerLocation", dim.width);
+            }
+
+            @Override
+            public void componentMoved(ComponentEvent ce) {}
+            @Override
+            public void componentShown(ComponentEvent ce) {}
+            @Override
+            public void componentHidden(ComponentEvent ce) {}
+        });
 
         tableModel.addLoggerNameListener(logTreeModel);
         tableModel.addLoggerNameListener(logTreePanel);
