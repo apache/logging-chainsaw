@@ -421,6 +421,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
                                 hideDetailPane();
                             }
                         }
+                        firePropertyChange("detailColumnVisible", !detailPaneVisible, detailPaneVisible);
                     }
                 }
 
@@ -437,6 +438,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
                         } else {
                             hideLogTreePanel();
                         }
+                        firePropertyChange("logTreePanelVisible", !newValue, newValue);
                     }
                 }
 
@@ -553,7 +555,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
                 }
             });
 
-        m_configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
+        tabConfig.addEventListener(ConfigurationEvent.SET_PROPERTY,
             evt -> {
                 if( evt.getPropertyName().equals("logpanel.logTreePanelVisible") ){
                     boolean value = (Boolean) evt.getPropertyValue();
@@ -566,6 +568,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
                 if( evt.getPropertyName().equals("logpanel.detailColumnVisible") ){
                     boolean value = (Boolean) evt.getPropertyValue();
                     menuItemToggleDetails.setSelected(value);
+
                 }
             });
 
