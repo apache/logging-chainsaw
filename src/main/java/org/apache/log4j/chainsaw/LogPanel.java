@@ -201,7 +201,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         this.identifier = identifier;
         this.statusBar = statusBar;
         this.applicationPreferenceModel = applicationPreferenceModel;
-        this.logPanelPreferencesPanel = new LogPanelPreferencePanel(preferenceModel, applicationPreferenceModel);
+        this.logPanelPreferencesPanel = new LogPanelPreferencePanel(identifier);
         this.colorizer = globalRuleColorizer;
         this.m_globalColorizer = globalRuleColorizer;
         this.m_allColorizers = allColorizers;
