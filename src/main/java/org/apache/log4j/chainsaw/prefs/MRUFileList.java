@@ -16,8 +16,6 @@
  */
 package org.apache.log4j.chainsaw.prefs;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -96,18 +94,4 @@ public class MRUFileList {
     public static MRUFileList log4jMRU() {
         return log4jList;
     }
-
-    public static void loadLog4jMRUListFromXML(String xml) {
-        XStream xstream = new XStream(new DomDriver());
-        log4jList = (MRUFileList) xstream.fromXML(xml);
-        fireChangeEvent();
-    }
-
-    public static void loadLog4jMRUListFromReader(Reader reader) {
-        XStream xstream = new XStream(new DomDriver());
-        log4jList = (MRUFileList) xstream.fromXML(reader);
-        fireChangeEvent();
-
-    }
-    // TODO Auto-generated method stub
 }

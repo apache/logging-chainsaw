@@ -21,8 +21,6 @@
  */
 package org.apache.log4j.chainsaw;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
 import org.apache.log4j.chainsaw.prefs.LoadSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SettingsListener;
@@ -127,35 +125,35 @@ class ChainsawTabbedPane extends JTabbedPane implements SettingsListener {
      */
 
     public void saveSettings(SaveSettingsEvent event) {
-        File file = new File(SettingsManager.getInstance().getSettingsDirectory(), "tab-settings.xml");
-        XStream stream = new XStream(new DomDriver());
-        try {
-            FileWriter writer = new FileWriter(file);
-            int count = super.getTabCount();
-            String title;
-            SavableTabSetting setting = new SavableTabSetting();
-            for (int i = 0; i < count; i++) {
-                title = super.getTitleAt(i);
-                switch (title) {
-                    case WELCOME_TAB:
-                        setting.setWelcome(true);
-                        break;
-                    case "chainsaw-log":
-                        setting.setChainsawLog(true);
-                        break;
-                    case ZEROCONF:
-                        setting.setZeroconf(true);
-                        break;
-                }
-            }
-
-            stream.toXML(setting, writer);
-            writer.close();
-
-        } catch (Exception e) {
-            file.delete();
-            e.printStackTrace();
-        }
+//        File file = new File(SettingsManager.getInstance().getSettingsDirectory(), "tab-settings.xml");
+//        XStream stream = new XStream(new DomDriver());
+//        try {
+//            FileWriter writer = new FileWriter(file);
+//            int count = super.getTabCount();
+//            String title;
+//            SavableTabSetting setting = new SavableTabSetting();
+//            for (int i = 0; i < count; i++) {
+//                title = super.getTitleAt(i);
+//                switch (title) {
+//                    case WELCOME_TAB:
+//                        setting.setWelcome(true);
+//                        break;
+//                    case "chainsaw-log":
+//                        setting.setChainsawLog(true);
+//                        break;
+//                    case ZEROCONF:
+//                        setting.setZeroconf(true);
+//                        break;
+//                }
+//            }
+//
+//            stream.toXML(setting, writer);
+//            writer.close();
+//
+//        } catch (Exception e) {
+//            file.delete();
+//            e.printStackTrace();
+//        }
     }
 
     /**
@@ -165,22 +163,22 @@ class ChainsawTabbedPane extends JTabbedPane implements SettingsListener {
      */
 
     public void loadSettings(LoadSettingsEvent event) {
-        File file = new File(SettingsManager.getInstance().getSettingsDirectory(), "tab-settings.xml");
-        XStream stream = new XStream(new DomDriver());
-        try {
-            if (file.exists()) {
-                FileReader reader = new FileReader(file);
-                tabSetting = (SavableTabSetting) stream.fromXML(reader);
-                reader.close();
-            } else {
-                tabSetting = new SavableTabSetting();
-                tabSetting.setWelcome(true);
-                tabSetting.setChainsawLog(true);
-                tabSetting.setZeroconf(true);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            file.delete();
-        }
+//        File file = new File(SettingsManager.getInstance().getSettingsDirectory(), "tab-settings.xml");
+//        XStream stream = new XStream(new DomDriver());
+//        try {
+//            if (file.exists()) {
+//                FileReader reader = new FileReader(file);
+//                tabSetting = (SavableTabSetting) stream.fromXML(reader);
+//                reader.close();
+//            } else {
+//                tabSetting = new SavableTabSetting();
+//                tabSetting.setWelcome(true);
+//                tabSetting.setChainsawLog(true);
+//                tabSetting.setZeroconf(true);
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            file.delete();
+//        }
     }
 }

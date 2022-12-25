@@ -17,8 +17,6 @@
 
 package org.apache.log4j.chainsaw;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
 import org.apache.log4j.chainsaw.color.ColorPanel;
 import org.apache.log4j.chainsaw.color.RuleColorizer;
 import org.apache.log4j.chainsaw.filter.FilterModel;
@@ -30,9 +28,7 @@ import org.apache.log4j.chainsaw.layout.EventDetailLayout;
 import org.apache.log4j.chainsaw.layout.LayoutEditorPane;
 import org.apache.log4j.chainsaw.prefs.LoadSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.Profileable;
-import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
-import org.apache.log4j.chainsaw.xstream.TableColumnConverter;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.rule.ColorRule;
 import org.apache.log4j.rule.ExpressionRule;
@@ -2207,79 +2203,6 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
 //
 //        //attempt to load color settings - no need to URL encode the identifier
 //        colorizer.loadColorSettings(identifier);
-    }
-
-    /**
-     * Save preferences to the panel preference model
-     *
-     * @param event
-     * @see LogPanelPreferenceModel
-     */
-    public void saveSettings(SaveSettingsEvent event) {
-        File xmlFile;
-        try {
-            xmlFile = new File(SettingsManager.getInstance().getSettingsDirectory(), URLEncoder.encode(identifier, "UTF-8") + ".xml");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            //unable to save..just return
-            return;
-        }
-
-        preferenceModel.setHiddenLoggers(new HashSet(logTreePanel.getHiddenSet()));
-        preferenceModel.setHiddenExpression(logTreePanel.getHiddenExpression());
-        preferenceModel.setAlwaysDisplayExpression(logTreePanel.getAlwaysDisplayExpression());
-        List visibleOrder = new ArrayList();
-        Enumeration<TableColumn> cols = table.getColumnModel().getColumns();
-        while (cols.hasMoreElements()) {
-            TableColumn c = cols.nextElement();
-            visibleOrder.add(c);
-        }
-        preferenceModel.setVisibleColumnOrder(visibleOrder);
-        //search table will use same columns as main table
-
-        XStream stream = buildXStreamForLogPanelPreference();
-        ObjectOutputStream s = null;
-        try {
-            FileWriter w = new FileWriter(xmlFile);
-            s = stream.createObjectOutputStream(w);
-            s.writeObject(preferenceModel);
-//            if (isDetailPanelVisible) {
-//                //use current size
-//                s.writeInt(lowerPanel.getDividerLocation());
-//            } else {
-//                //use size when last hidden
-//                s.writeInt(lowerPanelDividerLocation);
-//            }
-            s.writeInt(nameTreeAndMainPanelSplit.getDividerLocation());
-            s.writeObject(detailLayout.getConversionPattern());
-            //this is a version number written to the file to identify that there is a Vector serialized after this
-            s.writeInt(LOG_PANEL_SERIALIZATION_VERSION_NUMBER);
-            //don't write filterexpressionvector, write the combobox's model's backing vector
-            Vector combinedVector = new Vector();
-            combinedVector.addAll(filterCombo.getModelData());
-            combinedVector.addAll(findCombo.getModelData());
-            //duplicates will be removed when loaded..
-            s.writeObject(combinedVector);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            // TODO need to log this..
-        } finally {
-            if (s != null) {
-                try {
-                    s.close();
-                } catch (IOException ioe) {
-                }
-            }
-        }
-
-        //no need to URL encode the identifier
-//        colorizer.saveColorSettings(identifier);
-    }
-
-    private XStream buildXStreamForLogPanelPreference() {
-        XStream stream = new XStream(new DomDriver());
-        stream.registerConverter(new TableColumnConverter());
-        return stream;
     }
 
     public void setRuleColorizer(RuleColorizer newRuleColor){

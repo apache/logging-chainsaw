@@ -16,8 +16,6 @@
  */
 package org.apache.log4j.chainsaw.zeroconf;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.log4j.chainsaw.ChainsawConstants;
@@ -111,13 +109,13 @@ public class ZeroConfPlugin extends DockablePanel {
     }
 
     private void save() {
-        File fileLocation = getPreferenceFileLocation();
-        XStream stream = new XStream(new DomDriver());
-        try {
-            stream.toXML(preferenceModel, new FileWriter(fileLocation));
-        } catch (Exception e) {
-            LOG.error("Failed to save ZeroConfPlugin configuration file", e);
-        }
+//        File fileLocation = getPreferenceFileLocation();
+//        XStream stream = new XStream(new DomDriver());
+//        try {
+//            stream.toXML(preferenceModel, new FileWriter(fileLocation));
+//        } catch (Exception e) {
+//            LOG.error("Failed to save ZeroConfPlugin configuration file", e);
+//        }
     }
 
     private File getPreferenceFileLocation() {
@@ -164,18 +162,18 @@ public class ZeroConfPlugin extends DockablePanel {
 //            }
 //        });
 
-        File fileLocation = getPreferenceFileLocation();
-        XStream stream = new XStream(new DomDriver());
-        if (fileLocation.exists()) {
-            try {
-                this.preferenceModel = (ZeroConfPreferenceModel) stream
-                    .fromXML(new FileReader(fileLocation));
-            } catch (Exception e) {
-                LOG.error("Failed to load ZeroConfPlugin configuration file", e);
-            }
-        } else {
-            this.preferenceModel = new ZeroConfPreferenceModel();
-        }
+//        File fileLocation = getPreferenceFileLocation();
+//        XStream stream = new XStream(new DomDriver());
+//        if (fileLocation.exists()) {
+//            try {
+//                this.preferenceModel = (ZeroConfPreferenceModel) stream
+//                    .fromXML(new FileReader(fileLocation));
+//            } catch (Exception e) {
+//                LOG.error("Failed to load ZeroConfPlugin configuration file", e);
+//            }
+//        } else {
+//            this.preferenceModel = new ZeroConfPreferenceModel();
+//        }
         discoveredDevices.setZeroConfPreferenceModel(preferenceModel);
 //        discoveredDevices.setZeroConfPluginParent(this);
     }
