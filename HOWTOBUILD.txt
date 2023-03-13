@@ -26,7 +26,7 @@ http://maven.apache.org
 * cd to Chainsaw project checkout directory
 
 	mvn site:site
-	mvn install
+	mvn install -P packaging
 
 This will automatically build and assemble the Chainsaw distribution which includes a .sh & .bat shell script to run Chainsaw.  You can then run Chainsaw as follows:
 
