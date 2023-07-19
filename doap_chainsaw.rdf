@@ -29,7 +29,7 @@
     <homepage rdf:resource="http://logging.apache.org/log4j/docs/chainsaw.html" />
     <asfext:pmc rdf:resource="http://logging.apache.org" />
     <shortdesc>Apache Chainsaw is a GUI log viewer.</shortdesc>
-    <bug-database rdf:resource="http://issues.apache.org/bugzilla" />
+    <bug-database rdf:resource="https://github.com/apache/logging-chainsaw/issues" />
     <mailing-list rdf:resource="http://logging.apache.org/site/mailing-lists.html" />
     <download-page rdf:resource="http://logging.apache.org/site/binindex.cgi" />
     <programming-language>Java</programming-language>
