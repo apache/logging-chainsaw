@@ -34,8 +34,8 @@
   <packaging>jar</packaging>
 
   <issueManagement>
-    <system>JIRA</system>
-    <url>https://issues.apache.org/jira/browse/CHAINSAW</url>
+    <system>GitHub</system>
+    <url>https://github.com/apache/logging-chainsaw/issues</url>
   </issueManagement>
 
   <mailingLists>
