@@ -42,13 +42,13 @@ import java.net.URL;
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 class FileMenu extends JMenu {
-    private Action loadConfigAction;
-    private Action exitAction;
-    private Action loadLog4JAction;
-    private Action loadUtilLoggingAction;
-    private Action remoteLog4JAction;
-    private Action remoteUtilLoggingAction;
-    private Action saveAction;
+    private final Action loadConfigAction;
+    private final Action exitAction;
+    private final Action loadLog4JAction;
+    private final Action loadUtilLoggingAction;
+    private final Action remoteLog4JAction;
+    private final Action remoteUtilLoggingAction;
+    private final Action saveAction;
 
     public FileMenu(final LogUI logUI) {
         super("File");
