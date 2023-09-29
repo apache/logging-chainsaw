@@ -22,6 +22,8 @@
 package org.apache.log4j.chainsaw;
 
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
 import java.awt.*;
@@ -35,6 +37,8 @@ import java.util.Set;
  * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 class ChainsawSplash extends JWindow {
+    private static final Logger logger = LogManager.getLogger();
+
     ChainsawSplash(Frame owner) {
         super(owner);
 
@@ -58,15 +62,13 @@ class ChainsawSplash extends JWindow {
         for (String preferredFontName : preferredFontNames) {
             if (availableFontNames.contains(preferredFontName)) {
                 textFont = new Font(preferredFontName, Font.PLAIN, 12);
-
-                System.out.println("Using font=" + textFont.getName());
-
+                logger.debug("Using font={}", textFont.getName());
                 break;
             }
         }
 
         if (textFont == null) {
-            System.out.println("Using basic font");
+            logger.debug("Using basic font");
             textFont = text.getFont();
         }
 

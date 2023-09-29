@@ -273,14 +273,14 @@ public class LogUI extends JFrame {
         }
 
         final LogUI logUI = new LogUI();
+        final LoggerContext ctx = (LoggerContext) org.apache.logging.log4j.LogManager.getContext(false);
+        logUI.chainsawAppender = ctx.getConfiguration().getAppender("chainsaw");
 
         if (config.getBoolean("slowSplash", true)) {
             showSplash(logUI);
         }
         logUI.cyclicBufferSize = config.getInt("cyclicBufferSize", 50000);
 
-        final LoggerContext ctx = (LoggerContext) org.apache.logging.log4j.LogManager.getContext(false);
-        logUI.chainsawAppender = ctx.getConfiguration().getAppender("chainsaw");
 
         /**
          * TODO until we work out how JoranConfigurator might be able to have
