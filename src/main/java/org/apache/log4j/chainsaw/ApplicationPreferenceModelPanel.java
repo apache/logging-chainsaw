@@ -382,9 +382,7 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
                         int value = (Integer) evt.getPropertyValue();
                         if (value >= 1000) {
                             int newValue = (value - 750) / 1000;
-                            logger.debug(
-                                "Adjusting old Responsiveness value from " + value + " to "
-                                    + newValue);
+                            logger.debug("Adjusting old Responsiveness value from {} to {}", value, newValue);
                             value = newValue;
                         }
 
@@ -428,7 +426,7 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
                             value = 1;
                         }
 
-                        logger.debug("Adjust responsiveness to " + value);
+                        logger.debug("Adjust responsiveness to {}", value);
                         m_globalConfiguration.setProperty("responsiveness", value);
                     }
                 });
