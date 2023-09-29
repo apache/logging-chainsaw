@@ -48,8 +48,7 @@ class ChainsawSplash extends JWindow {
 
         JLabel text = new JLabel("Chainsaw v2", SwingConstants.CENTER);
         Font textFont = null;
-        String[] preferredFontNames =
-            new String[]{"Arial", "Helvetica", "SansSerif"};
+        String[] preferredFontNames = new String[]{"Arial", "Helvetica", "SansSerif"};
 
         Set<String> availableFontNames = new HashSet<>();
         Font[] allFonts =
