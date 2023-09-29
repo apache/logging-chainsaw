@@ -722,11 +722,11 @@ public class LogUI extends JFrame {
         Action showHiddenTabsAction =
             new AbstractAction("Show All Hidden") {
                 public void actionPerformed(ActionEvent e) {
-                    for (Object o : getPanels().entrySet()) {
-                        Map.Entry entry = (Map.Entry) o;
-                        Boolean docked = (Boolean) entry.getValue();
-                        if (docked) {
-                            String identifier = (String) entry.getKey();
+
+                    for (Map.Entry<String, Boolean> entry : getPanels().entrySet()) {
+                        Boolean docked = entry.getValue();
+                        if (Boolean.TRUE.equals(docked)) {
+                            String identifier = entry.getKey();
                             int count = getTabbedPane().getTabCount();
                             boolean found = false;
 
@@ -735,7 +735,6 @@ public class LogUI extends JFrame {
 
                                 if (name.equals(identifier)) {
                                     found = true;
-
                                     break;
                                 }
                             }
@@ -1302,19 +1301,17 @@ public class LogUI extends JFrame {
         aboutBox.setVisible(true);
     }
 
-    Map getPanels() {
-        Map m = new HashMap();
+    Map<String, Boolean> getPanels() {
+        Map<String, Boolean> result = new HashMap<>();
         Set<Map.Entry<String, Component>> panelSet = getPanelMap().entrySet();
 
-        for (Object aPanelSet : panelSet) {
-            Map.Entry entry = (Map.Entry) aPanelSet;
-            Object o = entry.getValue();
-            boolean valueToSend;
-            valueToSend = !(o instanceof LogPanel) || ((DockablePanel) entry.getValue()).isDocked();
-            m.put(entry.getKey(), valueToSend);
+        for (Map.Entry<String, Component> panel : panelSet) {
+            Component component = panel.getValue();
+            boolean value = !(component instanceof LogPanel) || ((DockablePanel) panel.getValue()).isDocked();
+            result.put(panel.getKey(), value);
         }
 
-        return m;
+        return result;
     }
 
     void displayPanel(String panelName, boolean display) {
