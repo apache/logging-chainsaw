@@ -130,13 +130,6 @@ public class LogUI extends JFrame {
 
     private static org.apache.logging.log4j.Logger logger = org.apache.logging.log4j.LogManager.getLogger();
 
-    /**
-     * Set to true, if and only if the GUI has completed it's full
-     * initialization. Any logging events that come in must wait until this is
-     * true, and if it is false, should wait on the initializationLock object
-     * until notified.
-     */
-    private boolean isGUIFullyInitialized = false;
     private final Object initializationLock = new Object();
 
     /**
@@ -798,7 +791,6 @@ public class LogUI extends JFrame {
         removeSplash();
 
         synchronized (initializationLock) {
-            isGUIFullyInitialized = true;
             initializationLock.notifyAll();
         }
 
