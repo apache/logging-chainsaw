@@ -124,7 +124,6 @@ public class LogUI extends JFrame {
     private final List<LogPanel> identifierPanels = new ArrayList<>();
     private int dividerSize;
     private int cyclicBufferSize;
-    private static String configurationURLAppArg;
     private List<ChainsawReceiver> m_receivers = new ArrayList<>();
     private List<ReceiverEventListener> m_receiverListeners = new ArrayList<>();
     private ZeroConfPlugin m_zeroConf = new ZeroConfPlugin();
@@ -215,10 +214,6 @@ public class LogUI extends JFrame {
      * @param args
      */
     public static void main(String[] args) {
-        if (args.length > 0) {
-            configurationURLAppArg = args[0];
-        }
-
         if (OSXIntegration.IS_OSX) {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
         }
