@@ -365,9 +365,6 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
             responsiveSlider.setPaintTrack(true);
 
             responsiveSlider.setBorder(BorderFactory.createTitledBorder(" Responsiveness "));
-
-            //            responsiveSlider.setAlignmentY(0);
-            //            responsiveSlider.setAlignmentX(0);
         }
 
         private void setupListeners() {
