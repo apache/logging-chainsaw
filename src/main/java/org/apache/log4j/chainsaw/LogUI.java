@@ -175,13 +175,13 @@ public class LogUI extends JFrame {
         }
     }
 
-    private static final void showSplash(Frame owner) {
+    private static void showSplash(Frame owner) {
         splash = new ChainsawSplash(owner);
         SwingHelper.centerOnScreen(splash);
         splash.setVisible(true);
     }
 
-    private static final void removeSplash() {
+    private static void removeSplash() {
         if (splash != null) {
             splash.setVisible(false);
             splash.dispose();
