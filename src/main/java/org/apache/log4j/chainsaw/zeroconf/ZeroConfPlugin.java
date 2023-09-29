@@ -16,16 +16,18 @@
  */
 package org.apache.log4j.chainsaw.zeroconf;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.log4j.chainsaw.ChainsawConstants;
-import org.apache.log4j.chainsaw.LogFilePatternLayoutBuilder;
+import org.apache.log4j.chainsaw.ChainsawReceiver;
+import org.apache.log4j.chainsaw.DockablePanel;
 import org.apache.log4j.chainsaw.SmallButton;
 import org.apache.log4j.chainsaw.help.HelpManager;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
-import org.apache.log4j.chainsaw.vfs.VFSLogFilePatternReceiver;
-import org.apache.log4j.net.*;
+import org.apache.log4j.net.MulticastReceiver;
+import org.apache.log4j.net.UDPReceiver;
+import org.apache.log4j.net.XMLSocketReceiver;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceEvent;
@@ -37,12 +39,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
-import org.apache.log4j.chainsaw.ChainsawReceiver;
-import org.apache.log4j.chainsaw.DockablePanel;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * This plugin is designed to detect specific Zeroconf zones (Rendevouz/Bonjour,
