@@ -61,10 +61,7 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
                 hidePanel();
             });
 
-        getCancelButton().addActionListener(
-            e -> {
-                hidePanel();
-            });
+        getCancelButton().addActionListener(e -> hidePanel());
     }
 
     public void updateModel(){
