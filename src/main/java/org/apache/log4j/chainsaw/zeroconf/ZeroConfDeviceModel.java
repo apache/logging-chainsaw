@@ -21,17 +21,12 @@ import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class ZeroConfDeviceModel extends AbstractTableModel implements ServiceListener {
 
     private List<ServiceInfo> deviceList = new ArrayList<>();
     private ZeroConfPreferenceModel zeroConfPreferenceModel;
-//    private transient ZeroConfPlugin plugin;
-
-    public ZeroConfDeviceModel() {
-    }
 
     public int getRowCount() {
         return deviceList.size();
@@ -69,16 +64,12 @@ public class ZeroConfDeviceModel extends AbstractTableModel implements ServiceLi
         return info.getName();
     }
 
+    @Override
     public void serviceAdded(ServiceEvent event) {
     }
 
     public void serviceRemoved(ServiceEvent event) {
-        for (Iterator<ServiceInfo> iter = deviceList.iterator(); iter.hasNext(); ) {
-            ServiceInfo info = iter.next();
-            if (info.getName().equals(event.getName())) {
-                iter.remove();
-            }
-        }
+        deviceList.removeIf(info -> info.getName().equals(event.getName()));
         fireTableDataChanged();
     }
 
@@ -92,6 +83,7 @@ public class ZeroConfDeviceModel extends AbstractTableModel implements ServiceLi
         this.zeroConfPreferenceModel = zeroConfPreferenceModel;
     }
 
+    @Override
     public String getColumnName(int column) {
         switch (column) {
             case 0:
@@ -107,26 +99,28 @@ public class ZeroConfDeviceModel extends AbstractTableModel implements ServiceLi
         }
     }
 
+    @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         return columnIndex == 2;
     }
 
-    public Class getColumnClass(int columnIndex) {
-        switch (columnIndex) {
-            case 2:
-                return Boolean.class;
-            default:
-                return super.getColumnClass(columnIndex);
+    @Override
+    public Class<?> getColumnClass(int columnIndex) {
+        if (columnIndex == 2) {
+            return Boolean.class;
         }
+        return super.getColumnClass(columnIndex);
     }
 
-    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-        if (columnIndex != 2 || !(aValue instanceof Boolean)) {
+    @Override
+    public void setValueAt(Object value, int rowIndex, int columnIndex) {
+        if (columnIndex != 2 || !(value instanceof Boolean)) {
             return;
         }
-        boolean autoConnect = (Boolean) aValue;
-        Object device = this.deviceList.get(rowIndex);
-        String autoConnectHandle = getAutoConnectHandle((ServiceInfo) device);
+
+        boolean autoConnect = (Boolean) value;
+        ServiceInfo device = this.deviceList.get(rowIndex);
+        String autoConnectHandle = getAutoConnectHandle(device);
         if (autoConnect) {
             zeroConfPreferenceModel.getAutoConnectDevices().add(autoConnectHandle);
         } else {
@@ -134,10 +128,4 @@ public class ZeroConfDeviceModel extends AbstractTableModel implements ServiceLi
         }
         fireTableDataChanged();
     }
-
-//    void setZeroConfPluginParent(ZeroConfPlugin parent) {
-//        this.plugin = parent;
-//    }
-
-
 }

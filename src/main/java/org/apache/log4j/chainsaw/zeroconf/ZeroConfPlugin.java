@@ -60,16 +60,16 @@ public class ZeroConfPlugin extends DockablePanel {
 
     private static final Logger LOG = LogManager.getLogger();
 
-    private ZeroConfDeviceModel discoveredDevices = new ZeroConfDeviceModel();
+    private final ZeroConfDeviceModel discoveredDevices = new ZeroConfDeviceModel();
 
-    private JTable deviceTable = new JTable(discoveredDevices);
+    private final JTable deviceTable = new JTable(discoveredDevices);
 
     private final JScrollPane scrollPane = new JScrollPane(deviceTable);
 
     private ZeroConfPreferenceModel preferenceModel;
 
-    private JMenu connectToMenu = new JMenu("Connect to");
-    private JMenuItem helpItem = new JMenuItem(new AbstractAction("Learn more about ZeroConf...",
+    private final JMenu connectToMenu = new JMenu("Connect to");
+    private final JMenuItem helpItem = new JMenuItem(new AbstractAction("Learn more about ZeroConf...",
         ChainsawIcons.ICON_HELP) {
 
         public void actionPerformed(ActionEvent e) {
@@ -78,7 +78,7 @@ public class ZeroConfPlugin extends DockablePanel {
         }
     });
 
-    private JMenuItem nothingToConnectTo = new JMenuItem("No devices discovered");
+    private final JMenuItem nothingToConnectTo = new JMenuItem("No devices discovered");
     private static final String MULTICAST_APPENDER_SERVICE_NAME = "_log4j_xml_mcast_appender.local.";
     private static final String UDP_APPENDER_SERVICE_NAME = "_log4j_xml_udp_appender.local.";
     private static final String XML_SOCKET_APPENDER_SERVICE_NAME = "_log4j_xml_tcpconnect_appender.local.";
@@ -105,17 +105,6 @@ public class ZeroConfPlugin extends DockablePanel {
                 LOG.error("Unable to close JMDNS", e);
             }
         }
-        save();
-    }
-
-    private void save() {
-//        File fileLocation = getPreferenceFileLocation();
-//        XStream stream = new XStream(new DomDriver());
-//        try {
-//            stream.toXML(preferenceModel, new FileWriter(fileLocation));
-//        } catch (Exception e) {
-//            LOG.error("Failed to save ZeroConfPlugin configuration file", e);
-//        }
     }
 
     private File getPreferenceFileLocation() {
@@ -129,7 +118,6 @@ public class ZeroConfPlugin extends DockablePanel {
         registerServiceListenersForAppenders();
 
         deviceTable.addMouseListener(new ConnectorMouseListener());
-
 
         JToolBar toolbar = new JToolBar();
         SmallButton helpButton = new SmallButton(helpItem.getAction());
@@ -245,7 +233,7 @@ public class ZeroConfPlugin extends DockablePanel {
                 menuBar.add(item, i - 1);
             }
         }
-        LOG.warn("menu '" + item.getText() + "' was NOT added because the 'Help' menu could not be located");
+        LOG.warn("menu '{}' was NOT added because the 'Help' menu could not be located", item.getText());
     }
 
     /**
@@ -291,7 +279,7 @@ public class ZeroConfPlugin extends DockablePanel {
 //         if the device name is one of the autoconnect devices, then connect immediately
         if (preferenceModel != null && preferenceModel.getAutoConnectDevices() != null && preferenceModel.getAutoConnectDevices().contains(name)) {
             new Thread(() -> {
-                LOG.info("Auto-connecting to " + name);
+                LOG.info("Auto-connecting to {}", name);
                 connectTo(info);
             }).start();
         }
@@ -322,30 +310,30 @@ public class ZeroConfPlugin extends DockablePanel {
     private class ZeroConfServiceListener implements ServiceListener {
 
         public void serviceAdded(final ServiceEvent event) {
-            LOG.info("Service Added: " + event);
-            /**
+            LOG.info("Service Added: {}", event);
+
+            /*
              * it's not very clear whether we should do the resolving in a
              * background thread or not.. All it says is to NOT do it in the AWT
              * thread, so I'm thinking it probably should be a background thread
              */
             Runnable runnable = () -> ZeroConfPlugin.this.jmDNS.requestServiceInfo(event
                 .getType(), event.getName());
-            Thread thread = new Thread(runnable,
-                "ChainsawZeroConfRequestResolutionThread");
+
+            Thread thread = new Thread(runnable, "ChainsawZeroConfRequestResolutionThread");
             thread.setPriority(Thread.MIN_PRIORITY);
             thread.start();
         }
 
         public void serviceRemoved(ServiceEvent event) {
-            LOG.info("Service Removed: " + event);
+            LOG.info("Service Removed: {}", event);
             deviceRemoved(event.getName());
         }
 
         public void serviceResolved(ServiceEvent event) {
-            LOG.info("Service Resolved: " + event);
+            LOG.info("Service Resolved: {}", event);
             deviceDiscovered(event.getInfo());
         }
-
     }
 
 
@@ -355,6 +343,7 @@ public class ZeroConfPlugin extends DockablePanel {
      */
     private class ConnectorMouseListener extends MouseAdapter {
 
+        @Override
         public void mouseClicked(MouseEvent e) {
             if (e.getClickCount() == 2) {
                 int row = deviceTable.rowAtPoint(e.getPoint());
@@ -371,6 +360,7 @@ public class ZeroConfPlugin extends DockablePanel {
             }
         }
 
+        @Override
         public void mousePressed(MouseEvent e) {
             /**
              * This methodh handles when the user clicks the
@@ -431,7 +421,7 @@ public class ZeroConfPlugin extends DockablePanel {
      * @param info
      */
     private void connectTo(ServiceInfo info) {
-        LOG.info("Connection request for " + info);
+        LOG.info("Connection request for {}", info);
         //Chainsaw can construct receivers from discovered appenders
         ChainsawReceiver receiver = getReceiver(info);
         //if null, unable to resolve the service name..no-op
@@ -462,7 +452,6 @@ public class ZeroConfPlugin extends DockablePanel {
     private ChainsawReceiver getReceiver(ServiceInfo info) {
         String zone = info.getType();
         int port = info.getPort();
-        String hostAddress = info.getHostAddress();
         String name = info.getName();
         String decoderClass = info.getPropertyString("decoder");
 
@@ -528,7 +517,7 @@ public class ZeroConfPlugin extends DockablePanel {
         }
 
         //not recognized
-        LOG.debug("Unable to find receiver for appender with service name: " + zone);
+        LOG.debug("Unable to find receiver for appender with service name: {}", zone);
         return null;
     }
 
@@ -540,9 +529,9 @@ public class ZeroConfPlugin extends DockablePanel {
      */
     private JMenuItem locateMatchingMenuItem(String name) {
         Component[] menuComponents = connectToMenu.getMenuComponents();
-        for (Component c : menuComponents) {
-            if (!(c instanceof JPopupMenu.Separator)) {
-                JMenuItem item = (JMenuItem) c;
+        for (Component component : menuComponents) {
+            if (!(component instanceof JPopupMenu.Separator)) {
+                JMenuItem item = (JMenuItem) component;
                 if (item.getText().compareToIgnoreCase(name) == 0) {
                     return item;
                 }
