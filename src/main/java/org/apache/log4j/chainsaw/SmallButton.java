@@ -25,7 +25,6 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
-
 /**
  * A better button class that has nice roll over effects.
  * <p>
@@ -38,16 +37,16 @@ import java.awt.event.MouseListener;
  * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 public class SmallButton extends JButton implements MouseListener {
-    protected Border m_inactive = new EmptyBorder(3, 3, 3, 3);
-    protected Border m_border = m_inactive;
-    protected Border m_lowered = new SoftBevelBorder(BevelBorder.LOWERED);
-    protected Border m_raised = new SoftBevelBorder(BevelBorder.RAISED);
-    protected Insets m_ins = new Insets(4, 4, 4, 4);
+    protected Border inactiveBorder = new EmptyBorder(3, 3, 3, 3);
+    protected Border currentBorder = inactiveBorder;
+    protected Border loweredBorder = new SoftBevelBorder(BevelBorder.LOWERED);
+    protected Border raisedBorder = new SoftBevelBorder(BevelBorder.RAISED);
+    protected Insets insets = new Insets(4, 4, 4, 4);
 
     public SmallButton() {
         super();
-        setBorder(m_inactive);
-        setMargin(m_ins);
+        setBorder(inactiveBorder);
+        setMargin(insets);
         setRequestFocusEnabled(false);
         addMouseListener(this);
     }
@@ -56,88 +55,82 @@ public class SmallButton extends JButton implements MouseListener {
         this();
         setAction(act);
         setRequestFocusEnabled(false);
-
-        //      addActionListener(act);
         addMouseListener(this);
     }
 
     /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
+     * {@inheritDoc}
+     * Set to 0.5
      */
+    @Override
     public float getAlignmentY() {
         return 0.5f;
     }
 
     /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
+     * {@inheritDoc}
      */
+    @Override
     public Border getBorder() {
-        return m_border;
+        return currentBorder;
     }
 
     /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
+     * {@inheritDoc}
      */
+    @Override
     public Insets getInsets() {
-        return m_ins;
+        return insets;
     }
 
     /**
-     * DOCUMENT ME!
+     * {@inheritDoc}
      *
-     * @param e DOCUMENT ME!
+     * This component currently ignores click-events and leaves
+     * it's implementation to sub-components. Usually, the constructor
+     * is called with an action.
      */
+    @Override
     public void mouseClicked(MouseEvent e) {
     }
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param e DOCUMENT ME!
+     * {@inheritDoc}
      */
+    @Override
     public void mouseEntered(MouseEvent e) {
         if (isEnabled()) {
-            m_border = m_raised;
-            setBorder(m_raised);
+            currentBorder = raisedBorder;
+            setBorder(raisedBorder);
         }
     }
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param e DOCUMENT ME!
+     * {@inheritDoc}
      */
+    @Override
     public void mouseExited(MouseEvent e) {
-        m_border = m_inactive;
-        setBorder(m_inactive);
+        currentBorder = inactiveBorder;
+        setBorder(inactiveBorder);
     }
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param e DOCUMENT ME!
+     * {@inheritDoc}
      */
+    @Override
     public void mousePressed(MouseEvent e) {
-
         if (isEnabled()) {
-            m_border = m_lowered;
-            setBorder(m_lowered);
+            currentBorder = loweredBorder;
+            setBorder(loweredBorder);
         }
     }
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param e DOCUMENT ME!
+     * {@inheritDoc}
      */
+    @Override
     public void mouseReleased(MouseEvent e) {
-        m_border = m_inactive;
-        setBorder(m_inactive);
+        currentBorder = inactiveBorder;
+        setBorder(inactiveBorder);
     }
 }
