@@ -112,9 +112,9 @@
   </licenses>
 
   <scm>
-    <connection>scm:git:https://git-wip-us.apache.org/repos/asf/logging-chainsaw.git</connection>
-    <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/logging-chainsaw.git</developerConnection>
-    <url>https://git-wip-us.apache.org/repos/asf?p=logging-chainsaw.git</url>
+    <connection>scm:git:https://github.com/apache/logging-chainsaw.git</connection>
+    <developerConnection>scm:git:https://github.com/apache/logging-chainsaw.git</developerConnection>
+    <url>https://github.com/apache/logging-chainsaw</url>
   </scm>
 
   <properties>
