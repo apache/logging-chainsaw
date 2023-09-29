@@ -40,8 +40,8 @@ public class ExpressionRuleContext extends KeyAdapter {
     FilterModel filterModel;
     JScrollPane scrollPane = new JScrollPane(list);
     final JTextComponent textComponent;
-    private DefaultListModel fieldModel = new DefaultListModel();
-    private DefaultListModel operatorModel = new DefaultListModel();
+    private DefaultListModel<String> fieldModel = new DefaultListModel<>();
+    private DefaultListModel<String> operatorModel = new DefaultListModel();
 
     public ExpressionRuleContext(
         final FilterModel filterModel, final JTextComponent textComponent) {
@@ -81,6 +81,7 @@ public class ExpressionRuleContext extends KeyAdapter {
 
         list.addKeyListener(
             new KeyAdapter() {
+                @Override
                 public void keyPressed(KeyEvent e) {
                     if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                         String value = list.getSelectedValue().toString();
@@ -97,6 +98,7 @@ public class ExpressionRuleContext extends KeyAdapter {
 
         list.addMouseListener(
             new MouseAdapter() {
+                @Override
                 public void mouseClicked(MouseEvent e) {
                     if (e.getClickCount() == 2) {
                         String value = list.getSelectedValue().toString();
