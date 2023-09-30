@@ -339,7 +339,6 @@ public class LogUI extends JFrame {
                 logger.debug("Loading files: {}", fileList);
                 for (Object aFileList : fileList) {
                     File file = (File) aFileList;
-                    final Decoder decoder = new XMLDecoder();
                     try {
                         getStatusBar().setMessage("Loading " + file.getAbsolutePath() + "...");
                     } catch (Exception e) {

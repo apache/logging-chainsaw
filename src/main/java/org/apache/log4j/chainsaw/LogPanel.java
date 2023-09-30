@@ -126,9 +126,9 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
     private final DockablePanel externalPanel;
     private final Action dockingAction;
     private final JToolBar undockedToolbar;
-    private final JSortTable table;
-    private final TableColorizingRenderer renderer;
-    private final EventContainer tableModel;
+    private JSortTable table = null;
+    private TableColorizingRenderer renderer = null;
+    private EventContainer tableModel = null;
     private final JEditorPane detail;
     private final JSplitPane lowerPanel;
     private final DetailPaneUpdater detailPaneUpdater;
@@ -165,7 +165,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
     private Rule clearTableExpressionRule;
     private int lowerPanelDividerLocation;
     private EventContainer searchModel;
-    private final JSortTable searchTable;
+    private JSortTable searchTable = null;
     private TableColorizingRenderer searchRenderer;
     private ToggleToolTips mainToggleToolTips;
     private ToggleToolTips searchToggleToolTips;
