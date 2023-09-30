@@ -292,8 +292,7 @@ public class LogUI extends JFrame {
         //configuration initialized here
 
         Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
-            e.printStackTrace();
-            logger.error("Uncaught exception in thread " + t, e);
+            logger.error("Uncaught exception in thread {}", t.getName(), e);
         });
 
 //        String config = configurationURLAppArg;
