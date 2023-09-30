@@ -22,8 +22,12 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.SoftBevelBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.net.URL;
 
 /**
  * A better button class that has nice roll over effects.
@@ -132,5 +136,80 @@ public class SmallButton extends JButton implements MouseListener {
     public void mouseReleased(MouseEvent e) {
         currentBorder = inactiveBorder;
         setBorder(inactiveBorder);
+    }
+
+    static class Builder {
+        Runnable action;
+        String name;
+
+        boolean enabled = true;
+        Icon icon;
+        URL iconUrl;
+        String shortDescription;
+
+        // Action.Accelerator
+        KeyEvent keyEvent;
+        InputEvent inputEvent;
+
+        Builder action(Runnable action) {
+            this.action = action;
+            return this;
+        }
+        Builder name(String name) {
+            this.name = name;
+            return this;
+        }
+        Builder enabled() {
+            this.enabled = true;
+            return this;
+        }
+        Builder disabled() {
+            this.enabled = false;
+            return this;
+        }
+        Builder icon(Icon icon) {
+            this.icon = icon;
+            return this;
+        }
+        Builder iconUrl(URL iconUrl) {
+            this.iconUrl = iconUrl;
+            return this;
+        }
+        Builder shortDescription(String shortDescription) {
+            this.shortDescription = shortDescription;
+            return this;
+        }
+        Builder accelerator(KeyEvent keyEvent, InputEvent inputEvent) {
+            this.keyEvent = keyEvent;
+            this.inputEvent = inputEvent;
+            return this;
+        }
+        SmallButton build() {
+            SmallButton button = new SmallButton();
+            if (action == null) {
+                throw new NullPointerException("Action must not be null for SmallButton");
+            }
+            button.setAction(new AbstractAction(name, icon) {
+                public void actionPerformed(ActionEvent e) {
+                    action.run();
+                }
+            });
+
+            if (icon != null) {
+                button.setIcon(icon);
+            } else  if (iconUrl != null) {
+                button.setIcon(new ImageIcon(iconUrl));
+            }
+            if (shortDescription != null) {
+                button.getAction().putValue(Action.SHORT_DESCRIPTION, shortDescription);
+            }
+            button.setEnabled(enabled);
+            if (keyEvent != null && inputEvent != null) {
+                button.getAction().putValue(
+                    Action.ACCELERATOR_KEY,
+                    KeyStroke.getKeyStroke(keyEvent.getKeyCode(), inputEvent.getModifiers()));
+            }
+            return button;
+        }
     }
 }

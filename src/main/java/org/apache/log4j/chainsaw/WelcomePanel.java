@@ -22,7 +22,6 @@ import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Stack;
@@ -94,45 +93,44 @@ public class WelcomePanel extends JPanel {
     }
 
     private class URLToolbar extends JToolBar {
-        private final Action previousAction =
-            new AbstractAction(null, new ImageIcon(ChainsawIcons.ICON_BACK)) {
-                public void actionPerformed(ActionEvent e) {
+        JButton previousButton;
+
+        private URLToolbar() {
+            setFloatable(false);
+            updateToolbar();
+
+
+            JButton home = new SmallButton.Builder()
+                .iconUrl(ChainsawIcons.ICON_HOME)
+                .action(() -> {
+                    setURL(ChainsawConstants.WELCOME_URL);
+                    urlStack.clear();
+                })
+                .shortDescription("Home").build();
+
+            add(home);
+
+            addSeparator();
+
+            previousButton = new SmallButton.Builder()
+                .iconUrl(ChainsawIcons.ICON_BACK)
+                .shortDescription("Back")
+                .disabled()
+                .action(() -> {
                     if (urlStack.isEmpty()) {
                         return;
                     }
 
                     setURL(urlStack.pop());
-                }
-            };
+                }).build();
 
-        private final Action homeAction =
-            new AbstractAction(null, new ImageIcon(ChainsawIcons.ICON_HOME)) {
-                public void actionPerformed(ActionEvent e) {
-                    setURL(ChainsawConstants.WELCOME_URL);
-                    urlStack.clear();
-                }
-            };
-
-        private URLToolbar() {
-            setFloatable(false);
-            updateToolbar();
-            previousAction.putValue(Action.SHORT_DESCRIPTION, "Back");
-            homeAction.putValue(Action.SHORT_DESCRIPTION, "Home");
-
-            JButton home = new SmallButton(homeAction);
-            add(home);
-
-            addSeparator();
-
-            JButton previous = new SmallButton(previousAction);
-            previous.setEnabled(false);
-            add(previous);
+            add(previousButton);
 
             addSeparator();
         }
 
         void updateToolbar() {
-            previousAction.setEnabled(!urlStack.isEmpty());
+            previousButton.setEnabled(!urlStack.isEmpty());
         }
     }
 

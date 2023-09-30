@@ -32,8 +32,6 @@ import org.apache.log4j.chainsaw.receivers.ReceiversPanel;
 import org.apache.log4j.chainsaw.zeroconf.ZeroConfPlugin;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
-import org.apache.log4j.spi.Decoder;
-import org.apache.log4j.xml.XMLDecoder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -390,28 +388,22 @@ public class LogUI extends JFrame {
         JToolBar tb = welcomePanel.getToolbar();
 
 
-        tb.add(
-            new SmallButton(
-                new AbstractAction("Tutorial", new ImageIcon(ChainsawIcons.HELP)) {
-                    public void actionPerformed(ActionEvent e) {
-                        setupTutorial();
-                    }
-                }));
+        JButton help = new SmallButton.Builder().iconUrl(ChainsawIcons.HELP)
+            .action(this::setupTutorial).shortDescription("Tutorial").build();
+
+        tb.add(help);
+
         tb.addSeparator();
 
-        final Action exampleConfigAction =
-            new AbstractAction("View example Receiver configuration") {
-                public void actionPerformed(ActionEvent e) {
-                    HelpManager.getInstance().setHelpURL(
-                        ChainsawConstants.EXAMPLE_CONFIG_URL);
-                }
-            };
+        JButton exampleButton = new SmallButton.Builder().iconUrl(ChainsawIcons.HELP)
+            .action(
+                ()-> HelpManager.getInstance().setHelpURL(ChainsawConstants.EXAMPLE_CONFIG_URL)
+            )
+            .name("View example Receiver configuration")
+            .shortDescription("Displays an example Log4j configuration file with several Receivers defined.")
+            .build();
 
-        exampleConfigAction.putValue(
-            Action.SHORT_DESCRIPTION,
-            "Displays an example Log4j configuration file with several Receivers defined.");
 
-        JButton exampleButton = new SmallButton(exampleConfigAction);
         tb.add(exampleButton);
 
         tb.add(Box.createHorizontalGlue());
