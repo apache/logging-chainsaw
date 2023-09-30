@@ -417,18 +417,6 @@ public class ColorPanel extends JPanel {
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
         panel.add(Box.createHorizontalGlue());
 
-//        JButton saveAsDefaultButton = new JButton(" Save as default ");
-//
-//        saveAsDefaultButton.addActionListener(
-//            new AbstractAction() {
-//                public void actionPerformed(ActionEvent evt) {
-//                    RuleColorizer defaultColorizer = allLogPanelColorizers.get(ChainsawConstants.DEFAULT_COLOR_RULE_NAME);
-//                    applyRules(currentRuleSet, defaultColorizer);
-//                }
-//            });
-//
-//        panel.add(saveAsDefaultButton);
-
         JButton applyButton = new JButton(" Apply ");
 
         applyButton.addActionListener(
