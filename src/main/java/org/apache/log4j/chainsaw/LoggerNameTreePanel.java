@@ -245,27 +245,10 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener {
         ignoreSummaryPanel.setLayout(new BoxLayout(ignoreSummaryPanel, BoxLayout.X_AXIS));
         ignoreSummaryPanel.add(ignoreSummary);
 
-        Action showIgnoreDialogAction = new AbstractAction("...") {
-            public void actionPerformed(ActionEvent e) {
-                LogPanel.centerAndSetVisible(ignoreDialog);
-            }
-        };
-
-        Action showIgnoreExpressionDialogAction = new AbstractAction("...") {
-            public void actionPerformed(ActionEvent e) {
-                LogPanel.centerAndSetVisible(ignoreExpressionDialog);
-            }
-        };
-
-
-        Action showAlwaysDisplayExpressionDialogAction = new AbstractAction("...") {
-            public void actionPerformed(ActionEvent e) {
-                LogPanel.centerAndSetVisible(alwaysDisplayExpressionDialog);
-            }
-        };
-
-        showIgnoreDialogAction.putValue(Action.SHORT_DESCRIPTION, "Click to view and manage your hidden/ignored loggers");
-        JButton btnShowIgnoreDialog = new SmallButton(showIgnoreDialogAction);
+        JButton btnShowIgnoreDialog = new SmallButton.Builder()
+            .name("...")
+            .shortDescription("Click to view and manage your hidden/ignored loggers")
+            .action(() -> LogPanel.centerAndSetVisible(ignoreDialog)).build();
 
         ignoreSummaryPanel.add(btnShowIgnoreDialog);
         ignorePanel.add(ignoreSummaryPanel);
@@ -273,8 +256,11 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener {
         JPanel ignoreExpressionPanel = new JPanel();
         ignoreExpressionPanel.setLayout(new BoxLayout(ignoreExpressionPanel, BoxLayout.X_AXIS));
         ignoreExpressionPanel.add(ignoreExpressionSummary);
-        showIgnoreExpressionDialogAction.putValue(Action.SHORT_DESCRIPTION, "Click to view and manage your hidden/ignored expression");
-        JButton btnShowIgnoreExpressionDialog = new SmallButton(showIgnoreExpressionDialogAction);
+
+        JButton btnShowIgnoreExpressionDialog = new SmallButton.Builder()
+            .name("...")
+            .shortDescription("Click to view and manage your hidden/ignored expression")
+            .action(() ->  LogPanel.centerAndSetVisible(ignoreExpressionDialog)).build();
         ignoreExpressionPanel.add(btnShowIgnoreExpressionDialog);
 
         ignorePanel.add(ignoreExpressionPanel);
@@ -282,8 +268,13 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener {
         JPanel alwaysDisplayExpressionPanel = new JPanel();
         alwaysDisplayExpressionPanel.setLayout(new BoxLayout(alwaysDisplayExpressionPanel, BoxLayout.X_AXIS));
         alwaysDisplayExpressionPanel.add(alwaysDisplayExpressionSummary);
-        showAlwaysDisplayExpressionDialogAction.putValue(Action.SHORT_DESCRIPTION, "Click to view and manage your always-displayed expression");
-        JButton btnShowAlwaysDisplayExpressionDialog = new SmallButton(showAlwaysDisplayExpressionDialogAction);
+
+        JButton btnShowAlwaysDisplayExpressionDialog =
+            new SmallButton.Builder()
+            .name("...")
+            .shortDescription("Click to view and manage your always-displayed expression")
+            .action(() -> LogPanel.centerAndSetVisible(alwaysDisplayExpressionDialog)).build();
+            ;
         alwaysDisplayExpressionPanel.add(btnShowAlwaysDisplayExpressionDialog);
 
         ignorePanel.add(alwaysDisplayExpressionPanel);
