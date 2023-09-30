@@ -60,7 +60,6 @@ public class ColorPanel extends JPanel {
     private static final String LABEL_DOUBLE_CLICK_TO_EDIT = "Double click to edit";
     private static final String LABEL_BROWSE = "Browse...";
     private static final String DEFAULT_STATUS = "<html>Double click a rule field to edit the rule</html>";
-    private static final String CURRENT_RULE_SET = "Default";
 
     private static final Logger logger = LogManager.getLogger();
 
@@ -403,14 +402,13 @@ public class ColorPanel extends JPanel {
         }
     }
 
-    void applyRules(String ruleSet, RuleColorizer applyingColorizer) {
+    void applyRules(RuleColorizer applyingColorizer) {
         rulesTable.getColumnModel().getColumn(0).getCellEditor().stopCellEditing();
 
         ((ExpressionTableCellRenderer) rulesTable.getColumnModel().getColumn(0).getCellRenderer())
             .setToolTipText(LABEL_DOUBLE_CLICK_TO_EDIT);
         statusBar.setText(DEFAULT_STATUS);
 
-        //only update rules if there were no errors
         applyingColorizer.setRules(rulesTableModel.rules());
     }
 
@@ -436,7 +434,7 @@ public class ColorPanel extends JPanel {
         applyButton.addActionListener(
             new AbstractAction() {
                 public void actionPerformed(ActionEvent evt) {
-                    applyRules(CURRENT_RULE_SET, parentLogPanel.getCurrentRuleColorizer());
+                    applyRules(parentLogPanel.getCurrentRuleColorizer());
                     saveSearchColors();
                     saveAlternatingColors();
                     saveBypassFlag();
