@@ -77,7 +77,6 @@ public class ColorPanel extends JPanel {
     private final Vector<Color> searchDataVectorEntry;
     private final RuleColorizer globalColorizer;
     private final JTable alternatingColorTable;
-    private final DefaultTableModel alternatingColorTableModel;
     private final Vector<Color> alternatingColorDataVectorEntry;
     private JCheckBox bypassSearchColorsCheckBox;
     private JCheckBox globalRulesCheckbox;
@@ -112,7 +111,7 @@ public class ColorPanel extends JPanel {
         searchTable.setRowHeight(ChainsawConstants.DEFAULT_ROW_HEIGHT);
         searchTable.setPreferredScrollableViewportSize(new Dimension(30, 30));
 
-        alternatingColorTableModel = new DefaultTableModel();
+        DefaultTableModel alternatingColorTableModel = new DefaultTableModel();
         alternatingColorTable = new JTable(alternatingColorTableModel);
         alternatingColorTable.setRowHeight(ChainsawConstants.DEFAULT_ROW_HEIGHT);
         alternatingColorTable.setPreferredScrollableViewportSize(new Dimension(30, 30));
