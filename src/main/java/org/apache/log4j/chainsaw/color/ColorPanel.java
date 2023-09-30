@@ -406,51 +406,12 @@ public class ColorPanel extends JPanel {
     void applyRules(String ruleSet, RuleColorizer applyingColorizer) {
         rulesTable.getColumnModel().getColumn(0).getCellEditor().stopCellEditing();
 
-//        List list = new ArrayList();
-//        Vector vector = rulesTableModel.getDataVector();
-        StringBuilder result = new StringBuilder();
-//
-//        for (int i = 0; i < vector.size(); i++) {
-//            Vector v = (Vector) vector.elementAt(i);
-//
-//            try {
-//                Rule expressionRule = ExpressionRule.getRule((String) v.elementAt(0));
-//                Color background = getBackground();
-//                Color foreground = getForeground();
-//
-//                if (v.elementAt(1) instanceof Color) {
-//                    background = (Color) v.elementAt(1);
-//                }
-//
-//                if (v.elementAt(2) instanceof Color) {
-//                    foreground = (Color) v.elementAt(2);
-//                }
-//
-//                ColorRule r = new ColorRule((String) v.elementAt(0), expressionRule, background, foreground);
-//                list.add(r);
-//            } catch (IllegalArgumentException iae) {
-//                if (!result.toString().equals("")) {
-//                    result.append("<br>");
-//                }
-//
-//                result.append(iae.getMessage());
-//            }
-//        }
+        ((ExpressionTableCellRenderer) rulesTable.getColumnModel().getColumn(0).getCellRenderer())
+            .setToolTipText(LABEL_DOUBLE_CLICK_TO_EDIT);
+        statusBar.setText(DEFAULT_STATUS);
 
-        //all rules are valid, they can be applied
-        if (result.toString().equals("")) {
-            ((ExpressionTableCellRenderer) rulesTable.getColumnModel().getColumn(0).getCellRenderer())
-                .setToolTipText(LABEL_DOUBLE_CLICK_TO_EDIT);
-            statusBar.setText(DEFAULT_STATUS);
-
-            //only update rules if there were no errors
-            applyingColorizer.setRules(rulesTableModel.rules());
-
-        } else {
-            statusBar.setText("Errors - see expression tooltip (color filters won't be active until errors are resolved)");
-            ((ExpressionTableCellRenderer) rulesTable.getColumnModel().getColumn(0).getCellRenderer())
-                .setToolTipText("<html>" + result.toString() + "</html>");
-        }
+        //only update rules if there were no errors
+        applyingColorizer.setRules(rulesTableModel.rules());
     }
 
     JPanel buildClosePanel() {
