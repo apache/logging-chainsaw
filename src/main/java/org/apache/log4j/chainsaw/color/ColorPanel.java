@@ -424,8 +424,6 @@ public class ColorPanel extends JPanel {
                 public void actionPerformed(ActionEvent evt) {
                     applyRules(parentLogPanel.getCurrentRuleColorizer());
                     saveSearchColors();
-                    saveAlternatingColors();
-                    saveBypassFlag();
                 }
             });
 
@@ -451,17 +449,6 @@ public class ColorPanel extends JPanel {
         AbstractConfiguration globalConfig = SettingsManager.getInstance().getGlobalConfiguration();
         globalConfig.setProperty("searchBackgroundColor", RuleColorizer.colorToRGBString((Color) thisVector.get(0)));
         globalConfig.setProperty("searchForegroundColor", RuleColorizer.colorToRGBString((Color) thisVector.get(1)));
-    }
-
-    private void saveAlternatingColors() {
-        Vector thisVector = alternatingColorTableModel.getDataVector().get(0);
-//        applicationPreferenceModel.setAlternatingBackgroundColor((Color) thisVector.get(0));
-        Color alternatingColorForegroundColor = (Color) thisVector.get(1);
-//        applicationPreferenceModel.setAlternatingForegroundColor(alternatingColorForegroundColor);
-    }
-
-    private void saveBypassFlag() {
-//        applicationPreferenceModel.setBypassSearchColors(bypassSearchColorsCheckBox.isSelected());
     }
 
     JPanel buildUpDownPanel() {
