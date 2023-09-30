@@ -341,34 +341,11 @@ public class ColorPanel extends JPanel {
     }
 
     private void configureTable() {
-        rulesTable.setToolTipText(LABEL_DOUBLE_CLICK_TO_EDIT);
-        rulesTable.setRowHeight(20);
-        rulesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        rulesTable.setColumnSelectionAllowed(false);
+        prepareTable(rulesTable, 1,2);
 
-        Vector backgroundColors = new Vector(RuleColorizer.getDefaultColors());
-        Vector foregroundColors = new Vector(RuleColorizer.getDefaultColors());
-        backgroundColors.add(LABEL_BROWSE);
-        foregroundColors.add(LABEL_BROWSE);
-
-        JComboBox background = new JComboBox(backgroundColors);
-        background.setMaximumRowCount(15);
-        background.setRenderer(new ColorListCellRenderer());
-
-        JComboBox foreground = new JComboBox(foregroundColors);
-        foreground.setMaximumRowCount(15);
-        foreground.setRenderer(new ColorListCellRenderer());
-
-        DefaultCellEditor backgroundEditor = new DefaultCellEditor(background);
-        DefaultCellEditor foregroundEditor = new DefaultCellEditor(foreground);
         JTextField textField = new JTextField();
-        textField.addKeyListener(
-            new ExpressionRuleContext(filterModel, textField));
-        rulesTable.getColumnModel().getColumn(1).setCellEditor(backgroundEditor);
-        rulesTable.getColumnModel().getColumn(2).setCellEditor(foregroundEditor);
+        textField.addKeyListener(new ExpressionRuleContext(filterModel, textField));
 
-        background.addItemListener(new ColorItemListener(background));
-        foreground.addItemListener(new ColorItemListener(foreground));
 
         rulesTable.getColumnModel().getColumn(0).setCellRenderer(
             new ExpressionTableCellRenderer());
@@ -379,36 +356,41 @@ public class ColorPanel extends JPanel {
     }
 
     private void configureSingleEntryColorTable(JTable thisTable) {
-        thisTable.setToolTipText(LABEL_DOUBLE_CLICK_TO_EDIT);
-        thisTable.setRowHeight(20);
-        thisTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        thisTable.setColumnSelectionAllowed(false);
-
-        Vector backgroundColors = new Vector(RuleColorizer.getDefaultColors());
-        Vector foregroundColors = new Vector(RuleColorizer.getDefaultColors());
-        backgroundColors.add(LABEL_BROWSE);
-        foregroundColors.add(LABEL_BROWSE);
-
-        JComboBox background = new JComboBox(backgroundColors);
-        background.setMaximumRowCount(15);
-        background.setRenderer(new ColorListCellRenderer());
-
-        JComboBox foreground = new JComboBox(foregroundColors);
-        foreground.setMaximumRowCount(15);
-        foreground.setRenderer(new ColorListCellRenderer());
-
-        DefaultCellEditor backgroundEditor = new DefaultCellEditor(background);
-        DefaultCellEditor foregroundEditor = new DefaultCellEditor(foreground);
-        thisTable.getColumnModel().getColumn(0).setCellEditor(backgroundEditor);
-        thisTable.getColumnModel().getColumn(1).setCellEditor(foregroundEditor);
-
-        background.addItemListener(new ColorItemListener(background));
-        foreground.addItemListener(new ColorItemListener(foreground));
+        prepareTable(thisTable, 0, 1);
 
         thisTable.getColumnModel().getColumn(0).setCellRenderer(
             new ColorTableCellRenderer());
         thisTable.getColumnModel().getColumn(1).setCellRenderer(
             new ColorTableCellRenderer());
+    }
+
+    private JTable prepareTable(JTable table, int backgroundEditorPosition, int foregroundEditorPosition) {
+        table.setToolTipText(LABEL_DOUBLE_CLICK_TO_EDIT);
+        table.setRowHeight(20);
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.setColumnSelectionAllowed(false);
+
+        JComboBox background = createColorJComboBox();
+        JComboBox foreground = createColorJComboBox();
+
+        DefaultCellEditor backgroundEditor = new DefaultCellEditor(background);
+        DefaultCellEditor foregroundEditor = new DefaultCellEditor(foreground);
+
+        table.getColumnModel().getColumn(backgroundEditorPosition).setCellEditor(backgroundEditor);
+        table.getColumnModel().getColumn(foregroundEditorPosition).setCellEditor(foregroundEditor);
+
+        background.addItemListener(new ColorItemListener(background));
+        foreground.addItemListener(new ColorItemListener(foreground));
+        return table;
+    }
+
+    private JComboBox createColorJComboBox() {
+        Vector colors = new Vector(RuleColorizer.getDefaultColors());
+        colors.add(LABEL_BROWSE);
+        JComboBox comboBox = new JComboBox(colors);
+        comboBox.setMaximumRowCount(15);
+        comboBox.setRenderer(new ColorListCellRenderer());
+        return comboBox;
     }
 
     public void setCloseActionListener(ActionListener listener) {
