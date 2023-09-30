@@ -34,6 +34,8 @@ import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
 import org.apache.log4j.spi.Decoder;
 import org.apache.log4j.xml.XMLDecoder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -128,7 +130,7 @@ public class LogUI extends JFrame {
     private List<ReceiverEventListener> m_receiverListeners = new ArrayList<>();
     private ZeroConfPlugin m_zeroConf = new ZeroConfPlugin();
 
-    private static org.apache.logging.log4j.Logger logger = org.apache.logging.log4j.LogManager.getLogger();
+    private static Logger logger = LogManager.getLogger();
 
     private final Object initializationLock = new Object();
 
