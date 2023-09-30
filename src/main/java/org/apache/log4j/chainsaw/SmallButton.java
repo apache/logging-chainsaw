@@ -140,16 +140,20 @@ public class SmallButton extends JButton implements MouseListener {
 
     static class Builder {
         Runnable action;
-        String name;
+        String name = "";
 
         boolean enabled = true;
         Icon icon;
         URL iconUrl;
+
+        URL smallIconUrl;
+
         String shortDescription;
 
         // Action.Accelerator
         KeyEvent keyEvent;
         InputEvent inputEvent;
+        private KeyStroke keyStroke;
 
         Builder action(Runnable action) {
             this.action = action;
@@ -175,10 +179,20 @@ public class SmallButton extends JButton implements MouseListener {
             this.iconUrl = iconUrl;
             return this;
         }
+        Builder smallIconUrl(URL smallIconUrl) {
+            this.smallIconUrl = smallIconUrl;
+            return this;
+        }
         Builder shortDescription(String shortDescription) {
             this.shortDescription = shortDescription;
             return this;
         }
+
+        Builder keyStroke(KeyStroke keyStroke) {
+            this.keyStroke = keyStroke;
+            return this;
+        }
+
         Builder accelerator(KeyEvent keyEvent, InputEvent inputEvent) {
             this.keyEvent = keyEvent;
             this.inputEvent = inputEvent;
@@ -195,10 +209,17 @@ public class SmallButton extends JButton implements MouseListener {
                 }
             });
 
+            button.setText(name);
+            if (keyStroke != null) {
+                button.getAction().putValue(Action.ACCELERATOR_KEY, keyStroke);
+            }
             if (icon != null) {
                 button.setIcon(icon);
             } else  if (iconUrl != null) {
                 button.setIcon(new ImageIcon(iconUrl));
+            }
+            if (smallIconUrl != null) {
+                button.getAction().putValue(Action.SMALL_ICON, new ImageIcon(smallIconUrl));
             }
             if (shortDescription != null) {
                 button.getAction().putValue(Action.SHORT_DESCRIPTION, shortDescription);
