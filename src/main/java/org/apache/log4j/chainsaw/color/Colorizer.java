@@ -20,7 +20,6 @@ package org.apache.log4j.chainsaw.color;
 import java.awt.Color;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
-
 /**
  * Given a LoggingEvent, can determine an appropriate
  * Color to use based on whatever this implementation
@@ -33,10 +32,10 @@ public interface Colorizer {
     /**
      * Given a LoggingEvent, returns a Color to use for background,
      * or null if this instance cannot determine one, or that
-     * the stanard color should be used.
+     * the standard color should be used.
      *
-     * @param event
-     * @return background color
+     * @param event the ChainsawLoggingEvent
+     * @return background color or null
      */
     Color getBackgroundColor(ChainsawLoggingEvent event);
 

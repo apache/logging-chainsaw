@@ -149,6 +149,10 @@ public class RuleColorizer implements Colorizer {
         rules.removeIf( x -> x.getExpression().equals( expression ) );
     }
 
+    /**
+     * {{@inheritDoc}
+     */
+    @Override
     public Color getBackgroundColor(ChainsawLoggingEvent event) {
         for (ColorRule rule : rules) {
 
@@ -160,6 +164,10 @@ public class RuleColorizer implements Colorizer {
         return null;
     }
 
+    /**
+     * {{@inheritDoc}
+     */
+    @Override
     public Color getForegroundColor(ChainsawLoggingEvent event) {
         for (ColorRule rule : rules) {
 
