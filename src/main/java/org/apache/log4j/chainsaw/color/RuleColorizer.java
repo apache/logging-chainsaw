@@ -17,24 +17,22 @@
 
 package org.apache.log4j.chainsaw.color;
 
+import org.apache.commons.configuration2.AbstractConfiguration;
+import org.apache.commons.configuration2.DataConfiguration;
 import org.apache.log4j.chainsaw.ChainsawConstants;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.rule.ColorRule;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.*;
-import java.net.URLEncoder;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.configuration2.AbstractConfiguration;
-import org.apache.commons.configuration2.DataConfiguration;
-import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -55,8 +53,6 @@ public class RuleColorizer implements Colorizer {
     private Rule loggerRule;
     private AbstractConfiguration configuration;
     private final boolean isGlobal;
-
-    private static final String COLORS_EXTENSION = ".colors";
 
     private static final Color WARN_DEFAULT_COLOR = new Color(255, 255, 153);
     private static final Color FATAL_OR_ERROR_DEFAULT_COLOR = new Color(255, 153, 153);
@@ -129,24 +125,12 @@ public class RuleColorizer implements Colorizer {
         return rules;
     }
 
-    public void addRules(List<ColorRule> newRules) {
-        rules.addAll( newRules );
-
-        colorChangeSupport.firePropertyChange(PROPERTY_CHANGED_COLORRULE, false, true);
-
-        saveColorSettings();
-    }
-
     public void addRule(ColorRule rule) {
         rules.add(rule);
 
         colorChangeSupport.firePropertyChange(PROPERTY_CHANGED_COLORRULE, false, true);
 
         saveColorSettings();
-    }
-
-    public void removeRule(String expression) {
-        rules.removeIf( x -> x.getExpression().equals( expression ) );
     }
 
     /**
