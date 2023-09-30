@@ -32,24 +32,24 @@ import java.util.Set;
  * @author Paul Smith
  */
 public class EventTypeEntryContainer {
-    private Set<String> ColumnNames = new HashSet<>();
-    private Set<String> Methods = new HashSet<>();
-    private Set<String> Classes = new HashSet<>();
-    private Set<String> NDCs = new HashSet<>();
-    private Set Levels = new HashSet();
-    private Set<String> Loggers = new HashSet<>();
-    private Set<String> Threads = new HashSet<>();
-    private Set<String> FileNames = new HashSet<>();
-    private DefaultListModel<String> columnNameListModel = new DefaultListModel<>();
-    private DefaultListModel methodListModel = new DefaultListModel();
-    private DefaultListModel classesListModel = new DefaultListModel();
-    private DefaultListModel propListModel = new DefaultListModel();
-    private DefaultListModel ndcListModel = new DefaultListModel();
-    private DefaultListModel levelListModel = new DefaultListModel();
-    private DefaultListModel loggerListModel = new DefaultListModel();
-    private DefaultListModel threadListModel = new DefaultListModel();
-    private DefaultListModel fileNameListModel = new DefaultListModel();
-    private Map modelMap = new HashMap();
+    private final Set<String> columnNames = new HashSet<>();
+    private final Set<String> methods = new HashSet<>();
+    private final Set<String> classes = new HashSet<>();
+    private final Set<String> ndcs = new HashSet<>();
+    private final Set Levels = new HashSet();
+    private final Set<String> loggers = new HashSet<>();
+    private final Set<String> threads = new HashSet<>();
+    private final Set<String> fileNames = new HashSet<>();
+    private final DefaultListModel<String> columnNameListModel = new DefaultListModel<>();
+    private final DefaultListModel methodListModel = new DefaultListModel();
+    private final DefaultListModel classesListModel = new DefaultListModel();
+    private final DefaultListModel propListModel = new DefaultListModel();
+    private final DefaultListModel ndcListModel = new DefaultListModel();
+    private final DefaultListModel levelListModel = new DefaultListModel();
+    private final DefaultListModel loggerListModel = new DefaultListModel();
+    private final DefaultListModel threadListModel = new DefaultListModel();
+    private final DefaultListModel fileNameListModel = new DefaultListModel();
+    private final Map<String, DefaultListModel> modelMap = new HashMap<>();
     private static final String LOGGER_FIELD = "LOGGER";
     private static final String LEVEL_FIELD = "LEVEL";
     private static final String CLASS_FIELD = "CLASS";
@@ -76,7 +76,8 @@ public class EventTypeEntryContainer {
 
     public ListModel getModel(String fieldName) {
         if (fieldName != null) {
-            ListModel model = (ListModel) modelMap.get(fieldName.toUpperCase());
+            DefaultListModel model = modelMap.get(fieldName.toUpperCase());
+
             if (model != null) {
                 return model;
             }
@@ -91,43 +92,43 @@ public class EventTypeEntryContainer {
     }
 
     void addLogger(String logger) {
-        if (Loggers.add(logger)) {
+        if (loggers.add(logger)) {
             loggerListModel.addElement(logger);
         }
     }
 
     void addFileName(String filename) {
-        if (FileNames.add(filename)) {
+        if (fileNames.add(filename)) {
             fileNameListModel.addElement(filename);
         }
     }
 
     void addThread(String thread) {
-        if (Threads.add(thread)) {
+        if (threads.add(thread)) {
             threadListModel.addElement(thread);
         }
     }
 
     void addNDC(String ndc) {
-        if (NDCs.add(ndc)) {
+        if (ndcs.add(ndc)) {
             ndcListModel.addElement(ndc);
         }
     }
 
     void addColumnName(String name) {
-        if (ColumnNames.add(name)) {
+        if (columnNames.add(name)) {
             columnNameListModel.addElement(name);
         }
     }
 
     void addMethod(String method) {
-        if (Methods.add(method)) {
+        if (methods.add(method)) {
             methodListModel.addElement(method);
         }
     }
 
     void addClass(String className) {
-        if (Classes.add(className)) {
+        if (classes.add(className)) {
             classesListModel.addElement(className);
         }
     }
