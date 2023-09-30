@@ -285,39 +285,6 @@ public class RuleColorizer implements Colorizer {
         setRules(newRules);
     }
 
-    private boolean doLoadColorSettings(String name) {
-        //first attempt to load encoded file
-        File f = new File(SettingsManager.getInstance().getSettingsDirectory(), URLEncoder.encode(name) + COLORS_EXTENSION);
-
-        if (f.exists()) {
-            ObjectInputStream s = null;
-
-            try {
-                s = new ObjectInputStream(
-                    new BufferedInputStream(new FileInputStream(f)));
-
-                Map map = (Map) s.readObject();
-//                setRules(map);
-            } catch (EOFException eof) { //end of file - ignore..
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
-                //unable to load file - delete it
-                f.delete();
-            } catch (ClassNotFoundException cnfe) {
-                cnfe.printStackTrace();
-            } finally {
-                if (s != null) {
-                    try {
-                        s.close();
-                    } catch (IOException ioe) {
-                        ioe.printStackTrace();
-                    }
-                }
-            }
-        }
-        return f.exists();
-    }
-
     public static List<Color> getDefaultColors() {
         List<Color> vec = new ArrayList<>();
 
