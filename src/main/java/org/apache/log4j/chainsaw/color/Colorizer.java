@@ -17,7 +17,7 @@
 
 package org.apache.log4j.chainsaw.color;
 
-import java.awt.*;
+import java.awt.Color;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
 
