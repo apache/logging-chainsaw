@@ -45,15 +45,16 @@ import org.apache.logging.log4j.Logger;
  */
 public class RuleColorizer implements Colorizer {
     private static final Logger logger = LogManager.getLogger();
-    
-    private List<ColorRule> rules;
+    public static final String PROPERTY_CHANGED_COLORRULE = "colorrule";
+
+    private final List<ColorRule> rules;
     private final PropertyChangeSupport colorChangeSupport =
         new PropertyChangeSupport(this);
-    private List<ColorRule> defaultRules = new ArrayList<>();
+
     private Rule findRule;
     private Rule loggerRule;
-    private AbstractConfiguration m_configuration;
-    private boolean m_isGlobal;
+    private AbstractConfiguration configuration;
+    private final boolean isGlobal;
 
     private static final String COLORS_EXTENSION = ".colors";
 
@@ -90,22 +91,22 @@ public class RuleColorizer implements Colorizer {
 
     public RuleColorizer() {
         this.rules = defaultRules();
-        m_isGlobal = false;
+        isGlobal = false;
     }
 
     public RuleColorizer(boolean isGlobal){
         this.rules = defaultRules();
-        m_isGlobal = isGlobal;
+        this.isGlobal = isGlobal;
     }
 
     public void setLoggerRule(Rule loggerRule) {
         this.loggerRule = loggerRule;
-        colorChangeSupport.firePropertyChange("colorrule", false, true);
+        colorChangeSupport.firePropertyChange(PROPERTY_CHANGED_COLORRULE, false, true);
     }
 
     public void setFindRule(Rule findRule) {
         this.findRule = findRule;
-        colorChangeSupport.firePropertyChange("colorrule", false, true);
+        colorChangeSupport.firePropertyChange(PROPERTY_CHANGED_COLORRULE, false, true);
     }
 
     public Rule getFindRule() {
@@ -119,7 +120,7 @@ public class RuleColorizer implements Colorizer {
     public void setRules(List<ColorRule> rules) {
         this.rules.clear();
         this.rules.addAll(rules);
-        colorChangeSupport.firePropertyChange("colorrule", false, true);
+        colorChangeSupport.firePropertyChange(PROPERTY_CHANGED_COLORRULE, false, true);
 
         saveColorSettings();
     }
@@ -131,7 +132,7 @@ public class RuleColorizer implements Colorizer {
     public void addRules(List<ColorRule> newRules) {
         rules.addAll( newRules );
 
-        colorChangeSupport.firePropertyChange("colorrule", false, true);
+        colorChangeSupport.firePropertyChange(PROPERTY_CHANGED_COLORRULE, false, true);
 
         saveColorSettings();
     }
@@ -139,7 +140,7 @@ public class RuleColorizer implements Colorizer {
     public void addRule(ColorRule rule) {
         rules.add(rule);
 
-        colorChangeSupport.firePropertyChange("colorrule", false, true);
+        colorChangeSupport.firePropertyChange(PROPERTY_CHANGED_COLORRULE, false, true);
 
         saveColorSettings();
     }
@@ -188,15 +189,15 @@ public class RuleColorizer implements Colorizer {
     }
 
     public void setConfiguration(AbstractConfiguration configuration){
-        m_configuration = configuration;
+        this.configuration = configuration;
     }
 
     public void setUseDefaultSettings(boolean useDefaultSettings){
-        if( m_configuration == SettingsManager.getInstance().getGlobalConfiguration() ){
+        if( configuration == SettingsManager.getInstance().getGlobalConfiguration() ){
             return;
         }
 
-        m_configuration.setProperty( "color.rules.default", useDefaultSettings );
+        configuration.setProperty( "color.rules.default", useDefaultSettings );
     }
 
     public static String colorToRGBString( Color c ){
@@ -207,13 +208,13 @@ public class RuleColorizer implements Colorizer {
     }
 
     private void saveColorSettings(){
-        if( m_configuration == null ){
+        if( configuration == null ){
             return;
         }
 
-        DataConfiguration data = new DataConfiguration(m_configuration);
+        DataConfiguration data = new DataConfiguration(configuration);
 
-        if( !m_isGlobal && m_configuration.getBoolean( "color.rules.default", true ) ){
+        if( !isGlobal && configuration.getBoolean( "color.rules.default", true ) ){
             // No need to save, using the default rules
             return;
         }
@@ -229,15 +230,15 @@ public class RuleColorizer implements Colorizer {
             
             logger.debug( "Saving rule {}.  Expression: {}", x, rule.getExpression() );
 
-            m_configuration.setProperty( baseConfigKey + ".expression", rule.getExpression() );
+            configuration.setProperty( baseConfigKey + ".expression", rule.getExpression() );
             String bgColorString = colorToRGBString(rule.getBackgroundColor());
             String fgColorString = colorToRGBString(rule.getForegroundColor());
             data.setProperty( baseConfigKey + ".backgroundColor", bgColorString );
             data.setProperty( baseConfigKey + ".foregroundColor", fgColorString );
         }
 
-        logger.debug( "all keys for {}:", m_configuration );
-        java.util.Iterator<String> s = m_configuration.getKeys();
+        logger.debug( "all keys for {}:", configuration);
+        java.util.Iterator<String> s = configuration.getKeys();
         while( s.hasNext() ){
             logger.debug( "found key: {}", s.next() );
         }
@@ -249,8 +250,7 @@ public class RuleColorizer implements Colorizer {
         // dumb way and just load up to 32 color rules, since that seems like
         // a good number
         List<ColorRule> newRules = new ArrayList<>();
-        AbstractConfiguration configuration = m_configuration;
-        
+
         DataConfiguration data = new DataConfiguration(configuration);
 
         for( int x = 0; x < 32; x++ ){

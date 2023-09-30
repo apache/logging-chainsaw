@@ -17,7 +17,6 @@
 
 package org.apache.log4j.chainsaw.color;
 
-import org.apache.log4j.chainsaw.ApplicationPreferenceModel;
 import org.apache.log4j.chainsaw.ChainsawConstants;
 import org.apache.log4j.chainsaw.ExpressionRuleContext;
 import org.apache.log4j.chainsaw.filter.FilterModel;
@@ -34,8 +33,6 @@ import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
@@ -43,7 +40,7 @@ import java.util.*;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableModel;
+
 import org.apache.commons.configuration2.AbstractConfiguration;
 import org.apache.log4j.chainsaw.LogPanel;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
@@ -60,39 +57,33 @@ import org.apache.logging.log4j.Logger;
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 public class ColorPanel extends JPanel {
-    private static final Logger logger = LogManager.getLogger();
+    private static final String LABEL_DOUBLE_CLICK_TO_EDIT = "Double click to edit";
+    private static final String LABEL_BROWSE = "Browse...";
     private static final String DEFAULT_STATUS = "<html>Double click a rule field to edit the rule</html>";
-    private final String currentRuleSet = "Default";
+    private static final String CURRENT_RULE_SET = "Default";
 
-//    private RuleColorizer colorizer;
-    private JPanel rulesPanel;
-    private FilterModel filterModel;
-    private RulesTableModel rulesTableModel;
-    private JScrollPane tableScrollPane;
-    private JTable rulesTable;
+    private static final Logger logger = LogManager.getLogger();
+
+    private final FilterModel filterModel;
+    private final RulesTableModel rulesTableModel;
+    private final JScrollPane tableScrollPane;
+    private final JTable rulesTable;
     private ActionListener closeListener;
-    private JLabel statusBar;
-    private Vector<String> columns;
-    private final String noTab = "None";
-    private DefaultComboBoxModel logPanelColorizersModel;
-    private Map<String, RuleColorizer> allLogPanelColorizers;
-//    private RuleColorizer currentLogPanelColorizer;
-    private JTable searchTable;
-    private DefaultTableModel searchTableModel;
-    private Vector<String> searchColumns;
-    private Vector<Vector<Color>> searchDataVector;
-    private Vector<Color> searchDataVectorEntry;
-    private RuleColorizer m_globalColorizer;
-
-    private JTable alternatingColorTable;
-    private DefaultTableModel alternatingColorTableModel;
-    private Vector<String> alternatingColorColumns;
-    private Vector<Vector<Color>> alternatingColorDataVector;
-    private Vector<Color> alternatingColorDataVectorEntry;
+    private final JLabel statusBar;
+    private static final String NO_TAB = "None";
+    private final DefaultComboBoxModel<String> logPanelColorizersModel;
+    private final Map<String, RuleColorizer> allLogPanelColorizers;
+    private final JTable searchTable;
+    private final DefaultTableModel searchTableModel;
+    private final Vector<Color> searchDataVectorEntry;
+    private final RuleColorizer globalColorizer;
+    private final JTable alternatingColorTable;
+    private final DefaultTableModel alternatingColorTableModel;
+    private final Vector<Color> alternatingColorDataVectorEntry;
     private JCheckBox bypassSearchColorsCheckBox;
-    private JCheckBox m_globalRulesCheckbox;
-    private LogPanel m_parentLogPanel;
-    private JLabel m_rulesLabel;
+    private JCheckBox globalRulesCheckbox;
+    private final LogPanel parentLogPanel;
+    private JLabel rulesLabel;
 
     public ColorPanel(final RuleColorizer globalColorizer,
                       final FilterModel filterModel,
@@ -104,10 +95,10 @@ public class ColorPanel extends JPanel {
 
         this.filterModel = filterModel;
         this.allLogPanelColorizers = allLogPanelColorizers;
-        this.m_globalColorizer = globalColorizer;
-        this.m_parentLogPanel = parent;
+        this.globalColorizer = globalColorizer;
+        this.parentLogPanel = parent;
 
-        m_parentLogPanel.getCurrentRuleColorizer().addPropertyChangeListener(
+        parentLogPanel.getCurrentRuleColorizer().addPropertyChangeListener(
             "colorrule",
             evt -> updateColors());
 
@@ -127,32 +118,28 @@ public class ColorPanel extends JPanel {
         alternatingColorTable.setRowHeight(ChainsawConstants.DEFAULT_ROW_HEIGHT);
         alternatingColorTable.setPreferredScrollableViewportSize(new Dimension(30, 30));
 
-        columns = new Vector<>();
-        columns.add("Expression");
-        columns.add("Background");
-        columns.add("Foreground");
-
-        searchColumns = new Vector<>();
+        Vector<String> searchColumns = new Vector<>();
         searchColumns.add("Background");
         searchColumns.add("Foreground");
 
-        alternatingColorColumns = new Vector<>();
-        alternatingColorColumns.add("Background");
-        alternatingColorColumns.add("Foreground");
-
         //searchtable contains only a single-entry vector containing a two-item vector (foreground, background)
-        searchDataVector = new Vector<>();
+        Vector<Vector<Color>> searchDataVector = new Vector<>();
         searchDataVectorEntry = new Vector<>();
         searchDataVectorEntry.add(configuration.get(Color.class, "searchBackgroundColor", ChainsawConstants.FIND_LOGGER_BACKGROUND));
         searchDataVectorEntry.add(configuration.get(Color.class, "searchForegroundColor", ChainsawConstants.FIND_LOGGER_FOREGROUND));
         searchDataVector.add(searchDataVectorEntry);
         searchTableModel.setDataVector(searchDataVector, searchColumns);
 
-        alternatingColorDataVector = new Vector<>();
+        Vector<Vector<Color>> alternatingColorDataVector = new Vector<>();
         alternatingColorDataVectorEntry = new Vector<>();
         alternatingColorDataVectorEntry.add(configuration.get(Color.class, "alternatingColorBackground", ChainsawConstants.COLOR_ODD_ROW_BACKGROUND));
         alternatingColorDataVectorEntry.add(configuration.get(Color.class, "alternatingColorForeground", ChainsawConstants.COLOR_ODD_ROW_FOREGROUND));
         alternatingColorDataVector.add(alternatingColorDataVectorEntry);
+
+        Vector<String> alternatingColorColumns = new Vector<>();
+        alternatingColorColumns.add("Background");
+        alternatingColorColumns.add("Foreground");
+
         alternatingColorTableModel.setDataVector(alternatingColorDataVector, alternatingColorColumns);
 
         rulesTable.setPreferredScrollableViewportSize(new Dimension(525, 200));
@@ -184,9 +171,6 @@ public class ColorPanel extends JPanel {
 
         statusBar = new JLabel(DEFAULT_STATUS);
 
-        rulesPanel = buildRulesPanel();
-        rulesPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
         JPanel rightPanel = new JPanel(new BorderLayout());
 
         JPanel rightOuterPanel = new JPanel();
@@ -217,6 +201,10 @@ public class ColorPanel extends JPanel {
         JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         statusPanel.add(statusBar);
         southPanel.add(statusPanel);
+
+        JPanel rulesPanel = buildRulesPanel();
+        rulesPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
         rightPanel.add(rulesPanel, BorderLayout.CENTER);
         rightPanel.add(southPanel, BorderLayout.SOUTH);
         rightOuterPanel.add(rightPanel);
@@ -245,7 +233,7 @@ public class ColorPanel extends JPanel {
                     newColorizer.setRules(sourceColorizer.getRules());
                     parent.setRuleColorizer(newColorizer);
                     updateColors();
-                    m_parentLogPanel.getCurrentRuleColorizer().addPropertyChangeListener(
+                    parentLogPanel.getCurrentRuleColorizer().addPropertyChangeListener(
                         "colorrule",
                         evt -> updateColors());
                 }
@@ -256,12 +244,12 @@ public class ColorPanel extends JPanel {
             Object selectedItem = loadPanelColorizersComboBox.getSelectedItem();
             if (selectedItem != null) {
                 String selectedColorizerName = selectedItem.toString();
-                copyRulesAction.setEnabled(!(noTab.equals(selectedColorizerName)));
+                copyRulesAction.setEnabled(!(NO_TAB.equals(selectedColorizerName)));
             }
         });
 
         copyRulesAction.putValue(Action.NAME, "Copy color rules");
-        copyRulesAction.setEnabled(!(noTab.equals(loadPanelColorizersComboBox.getSelectedItem())));
+        copyRulesAction.setEnabled(!(NO_TAB.equals(loadPanelColorizersComboBox.getSelectedItem())));
 
         JButton copyRulesButton = new JButton(copyRulesAction);
         topPanel.add(copyRulesButton);
@@ -274,12 +262,11 @@ public class ColorPanel extends JPanel {
     }
 
     public void loadLogPanelColorizers() {
-        if (logPanelColorizersModel.getIndexOf(noTab) == -1) {
-            logPanelColorizersModel.addElement(noTab);
+        if (logPanelColorizersModel.getIndexOf(NO_TAB) == -1) {
+            logPanelColorizersModel.addElement(NO_TAB);
         }
-        RuleColorizer currentLogPanelColorizer = m_parentLogPanel.getCurrentRuleColorizer();
-        for (Object o : allLogPanelColorizers.entrySet()) {
-            Map.Entry entry = (Map.Entry) o;
+        RuleColorizer currentLogPanelColorizer = parentLogPanel.getCurrentRuleColorizer();
+        for (Map.Entry<String, RuleColorizer> entry : allLogPanelColorizers.entrySet()) {
             if (!entry.getValue().equals(currentLogPanelColorizer) && (logPanelColorizersModel.getIndexOf(entry.getKey()) == -1)) {
                 logPanelColorizersModel.addElement(entry.getKey());
             }
@@ -295,15 +282,15 @@ public class ColorPanel extends JPanel {
 
     public void componentChanged(){
         logger.debug( "Color panel changed. Current colorizer: {} Global colorizer: {}",
-                m_parentLogPanel.getCurrentRuleColorizer(),
-                m_globalColorizer);
+                parentLogPanel.getCurrentRuleColorizer(),
+            globalColorizer);
 
-        if( m_globalColorizer == m_parentLogPanel.getCurrentRuleColorizer() ){
-            m_globalRulesCheckbox.setSelected(true);
-            m_rulesLabel.setText("Global rules:");
+        if( globalColorizer == parentLogPanel.getCurrentRuleColorizer() ){
+            globalRulesCheckbox.setSelected(true);
+            rulesLabel.setText("Global rules:");
         }else{
-            m_globalRulesCheckbox.setSelected(false);
-            m_rulesLabel.setText("Rules:");
+            globalRulesCheckbox.setSelected(false);
+            rulesLabel.setText("Rules:");
         }
 
         loadLogPanelColorizers();
@@ -354,15 +341,15 @@ public class ColorPanel extends JPanel {
     }
 
     private void configureTable() {
-        rulesTable.setToolTipText("Double click to edit");
+        rulesTable.setToolTipText(LABEL_DOUBLE_CLICK_TO_EDIT);
         rulesTable.setRowHeight(20);
         rulesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         rulesTable.setColumnSelectionAllowed(false);
 
         Vector backgroundColors = new Vector(RuleColorizer.getDefaultColors());
         Vector foregroundColors = new Vector(RuleColorizer.getDefaultColors());
-        backgroundColors.add("Browse...");
-        foregroundColors.add("Browse...");
+        backgroundColors.add(LABEL_BROWSE);
+        foregroundColors.add(LABEL_BROWSE);
 
         JComboBox background = new JComboBox(backgroundColors);
         background.setMaximumRowCount(15);
@@ -392,15 +379,15 @@ public class ColorPanel extends JPanel {
     }
 
     private void configureSingleEntryColorTable(JTable thisTable) {
-        thisTable.setToolTipText("Double click to edit");
+        thisTable.setToolTipText(LABEL_DOUBLE_CLICK_TO_EDIT);
         thisTable.setRowHeight(20);
         thisTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         thisTable.setColumnSelectionAllowed(false);
 
         Vector backgroundColors = new Vector(RuleColorizer.getDefaultColors());
         Vector foregroundColors = new Vector(RuleColorizer.getDefaultColors());
-        backgroundColors.add("Browse...");
-        foregroundColors.add("Browse...");
+        backgroundColors.add(LABEL_BROWSE);
+        foregroundColors.add(LABEL_BROWSE);
 
         JComboBox background = new JComboBox(backgroundColors);
         background.setMaximumRowCount(15);
@@ -471,7 +458,7 @@ public class ColorPanel extends JPanel {
         //all rules are valid, they can be applied
         if (result.toString().equals("")) {
             ((ExpressionTableCellRenderer) rulesTable.getColumnModel().getColumn(0).getCellRenderer())
-                .setToolTipText("Double click to edit");
+                .setToolTipText(LABEL_DOUBLE_CLICK_TO_EDIT);
             statusBar.setText(DEFAULT_STATUS);
 
             //only update rules if there were no errors
@@ -506,7 +493,7 @@ public class ColorPanel extends JPanel {
         applyButton.addActionListener(
             new AbstractAction() {
                 public void actionPerformed(ActionEvent evt) {
-                    applyRules(currentRuleSet, m_parentLogPanel.getCurrentRuleColorizer());
+                    applyRules(CURRENT_RULE_SET, parentLogPanel.getCurrentRuleColorizer());
                     saveSearchColors();
                     saveAlternatingColors();
                     saveBypassFlag();
@@ -531,14 +518,14 @@ public class ColorPanel extends JPanel {
     }
 
     private void saveSearchColors() {
-        Vector thisVector = (Vector) searchTableModel.getDataVector().get(0);
+        Vector thisVector = searchTableModel.getDataVector().get(0);
         AbstractConfiguration globalConfig = SettingsManager.getInstance().getGlobalConfiguration();
         globalConfig.setProperty("searchBackgroundColor", RuleColorizer.colorToRGBString((Color) thisVector.get(0)));
         globalConfig.setProperty("searchForegroundColor", RuleColorizer.colorToRGBString((Color) thisVector.get(1)));
     }
 
     private void saveAlternatingColors() {
-        Vector thisVector = (Vector) alternatingColorTableModel.getDataVector().get(0);
+        Vector thisVector = alternatingColorTableModel.getDataVector().get(0);
 //        applicationPreferenceModel.setAlternatingBackgroundColor((Color) thisVector.get(0));
         Color alternatingColorForegroundColor = (Color) thisVector.get(1);
 //        applicationPreferenceModel.setAlternatingForegroundColor(alternatingColorForegroundColor);
@@ -624,32 +611,32 @@ public class ColorPanel extends JPanel {
 
         panel.add(Box.createVerticalStrut(10));
 
-        m_rulesLabel = new JLabel("Rules:");
-        m_globalRulesCheckbox = new JCheckBox("Use global rules");
+        rulesLabel = new JLabel("Rules:");
+        globalRulesCheckbox = new JCheckBox("Use global rules");
 
-        if( m_globalColorizer == m_parentLogPanel.getCurrentRuleColorizer() ){
-            m_globalRulesCheckbox.setSelected(true);
-            m_rulesLabel.setText("Global rules:");
+        if( globalColorizer == parentLogPanel.getCurrentRuleColorizer() ){
+            globalRulesCheckbox.setSelected(true);
+            rulesLabel.setText("Global rules:");
         }
 
-        m_globalRulesCheckbox.addActionListener(
+        globalRulesCheckbox.addActionListener(
                 new AbstractAction() {
                     @Override
                     public void actionPerformed(ActionEvent ae) {
-                        if( m_globalRulesCheckbox.isSelected() ){
-                            m_parentLogPanel.setRuleColorizer( m_globalColorizer );
+                        if( globalRulesCheckbox.isSelected() ){
+                            parentLogPanel.setRuleColorizer(globalColorizer);
                         }else{
-                            m_parentLogPanel.setRuleColorizer(new RuleColorizer());
+                            parentLogPanel.setRuleColorizer(new RuleColorizer());
                         }
                         componentChanged();
-                        m_parentLogPanel.getCurrentRuleColorizer().addPropertyChangeListener(
+                        parentLogPanel.getCurrentRuleColorizer().addPropertyChangeListener(
                             "colorrule",
                             evt -> updateColors());
                     }
                 });
 
-        panel.add(m_globalRulesCheckbox);
-        panel.add(m_rulesLabel);
+        panel.add(globalRulesCheckbox);
+        panel.add(rulesLabel);
 
         JPanel buttonPanel = new JPanel(new GridLayout(0, 2));
         buttonPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -681,12 +668,7 @@ public class ColorPanel extends JPanel {
             e -> {
                 if (!e.getValueIsAdjusting()) {
                     int index = rulesTable.getSelectionModel().getMaxSelectionIndex();
-
-                    if (index < 0) {
-                        deleteButton.setEnabled(false);
-                    } else {
-                        deleteButton.setEnabled(true);
-                    }
+                    deleteButton.setEnabled(index >= 0);
                 }
             });
 
@@ -898,19 +880,19 @@ public class ColorPanel extends JPanel {
 
     private class RulesTableModel extends AbstractTableModel{
         
-        private List<ColorRule> m_data;
+        private final List<ColorRule> colorRules;
 
         RulesTableModel(){
-            m_data = new ArrayList<>();
+            colorRules = new ArrayList<>();
             addColorRules();
         }
 
         List<ColorRule> rules(){
-            return m_data;
+            return colorRules;
         }
 
         void clear(){
-            m_data.clear();
+            colorRules.clear();
             fireTableDataChanged();
         }
 
@@ -918,42 +900,42 @@ public class ColorPanel extends JPanel {
             Rule expressionRule = ExpressionRule.getRule("msg=='sample'");
             ColorRule newRule =
                     new ColorRule("msg=='sample'", expressionRule, Color.WHITE, Color.BLACK);
-            m_data.add(newRule);
-            fireTableRowsInserted(m_data.size() - 1, m_data.size() - 1);
+            colorRules.add(newRule);
+            fireTableRowsInserted(colorRules.size() - 1, colorRules.size() - 1);
         }
         
         void deleteRuleAtIndex(int i){
-            m_data.remove(i);
+            colorRules.remove(i);
             fireTableRowsDeleted(i, i);
         }
 
         void moveRowAtIndexDown(int row){
-            if( row <= m_data.size() - 2 && row >= 0){
-                Collections.swap(m_data, row, row + 1);
+            if( row <= colorRules.size() - 2 && row >= 0){
+                Collections.swap(colorRules, row, row + 1);
                 fireTableRowsUpdated(row, row + 1);
             }
         }
 
         void moveRowAtIndexUp(int row){
-            if( row <= m_data.size() && row > 0 ){
-                Collections.swap(m_data, row, row - 1);
+            if( row <= colorRules.size() && row > 0 ){
+                Collections.swap(colorRules, row, row - 1);
                 fireTableRowsUpdated(row - 1, row );
             }
         }
 
         void addColorRules(){
-            m_data.addAll( m_parentLogPanel.getCurrentRuleColorizer().getRules() );
+            colorRules.addAll( parentLogPanel.getCurrentRuleColorizer().getRules() );
         }
 
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            if( rowIndex >= m_data.size() ){
+            if( rowIndex >= colorRules.size() ){
                 return;
             }
-            String expression = m_data.get(rowIndex).getExpression();
-            Rule rule = m_data.get(rowIndex).getRule();
-            Color backgroundColor = m_data.get(rowIndex).getBackgroundColor();
-            Color foregroundColor = m_data.get(rowIndex).getForegroundColor();
+            String expression = colorRules.get(rowIndex).getExpression();
+            Rule rule = colorRules.get(rowIndex).getRule();
+            Color backgroundColor = colorRules.get(rowIndex).getBackgroundColor();
+            Color foregroundColor = colorRules.get(rowIndex).getForegroundColor();
 
             switch( columnIndex ){
                 case 0:
@@ -968,7 +950,7 @@ public class ColorPanel extends JPanel {
                     break;
             }
 
-            m_data.set(rowIndex, new ColorRule(expression, rule, backgroundColor, foregroundColor) );
+            colorRules.set(rowIndex, new ColorRule(expression, rule, backgroundColor, foregroundColor) );
             // Since the value has been set, resize all of the rows(if required)
             rulesTable.setRowHeight(ChainsawConstants.DEFAULT_ROW_HEIGHT);
             fireTableRowsUpdated(rowIndex, rowIndex);
@@ -976,7 +958,7 @@ public class ColorPanel extends JPanel {
 
         @Override
         public int getRowCount() {
-            return m_data.size();
+            return colorRules.size();
         }
 
         @Override
@@ -986,7 +968,7 @@ public class ColorPanel extends JPanel {
 
         @Override
         public Object getValueAt(int row, int col) {
-            ColorRule rule = m_data.get(row);
+            ColorRule rule = colorRules.get(row);
             switch( col ){
                 case 0:
                     return rule.getExpression();
@@ -999,16 +981,17 @@ public class ColorPanel extends JPanel {
         }
 
         @Override
-        public String getColumnName(int col){
-            switch( col ){
+        public String getColumnName(int col) {
+            switch (col){
                 case 0:
                     return "Expression";
                 case 1:
                     return "Background Color";
                 case 2:
                     return "Foreground Color";
+                default:
+                    return "BAD COL NAME";
             }
-            return "BAD COL NAME";
         }
 
         @Override
@@ -1020,8 +1003,7 @@ public class ColorPanel extends JPanel {
     private class RulesTableCellEditor extends AbstractCellEditor
         implements TableCellEditor{
 
-        private DefaultCellEditor defaultEditor = new DefaultCellEditor(
-            new JTextField());
+        private final DefaultCellEditor defaultEditor = new DefaultCellEditor(new JTextField());
 
         @Override
         public Object getCellEditorValue() {
@@ -1031,20 +1013,19 @@ public class ColorPanel extends JPanel {
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value,
                                                      boolean isSelected, int row, int column) {
-            Component c = defaultEditor.getTableCellEditorComponent(table, value,
+            Component component = defaultEditor.getTableCellEditorComponent(table, value,
                 isSelected, row, column);
-            table.setRowHeight( row, c.getPreferredSize().height );
-            return c;
+            table.setRowHeight( row, component.getPreferredSize().height );
+            return component;
         }
 
         @Override
-        public boolean isCellEditable(EventObject e){
-            if (e instanceof MouseEvent) {
-                MouseEvent me = (MouseEvent) e;
-                return me.getClickCount() >= 2;
+        public boolean isCellEditable(EventObject event){
+            if (event instanceof MouseEvent) {
+                MouseEvent mouseEvent = (MouseEvent) event;
+                return mouseEvent.getClickCount() >= 2;
             }
             return false;
         }
-
     }
 }
