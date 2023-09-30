@@ -17,6 +17,7 @@
 
 package org.apache.log4j.chainsaw;
 
+import org.apache.commons.configuration2.event.EventListener;
 import org.apache.log4j.chainsaw.color.ColorPanel;
 import org.apache.log4j.chainsaw.color.RuleColorizer;
 import org.apache.log4j.chainsaw.filter.FilterModel;
@@ -47,7 +48,6 @@ import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
-import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -358,7 +358,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
          * add preferencemodel listeners
          */
         m_configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
-            new org.apache.commons.configuration2.event.EventListener<ConfigurationEvent>(){
+            new EventListener<ConfigurationEvent>(){
                 @Override
                 public void onEvent(ConfigurationEvent evt) {
                     if( evt.getPropertyName().equals( "logpanel.wrapMessage" ) ){
@@ -373,7 +373,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             } );
 
         m_configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
-            new org.apache.commons.configuration2.event.EventListener<ConfigurationEvent>(){
+            new EventListener<ConfigurationEvent>(){
                 @Override
                 public void onEvent(ConfigurationEvent evt) {
                     if( evt.getPropertyName().equals( "logpanel.searchResultsVisible" ) ){
@@ -389,7 +389,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             } );
 
         m_configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
-            new org.apache.commons.configuration2.event.EventListener<ConfigurationEvent>(){
+            new EventListener<ConfigurationEvent>(){
                 @Override
                 public void onEvent(ConfigurationEvent evt) {
                     if( evt.getPropertyName().equals( "logpanel.highlightSearchMatchText" ) ){
@@ -404,7 +404,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             } );
 
         tabConfig.addEventListener(ConfigurationEvent.SET_PROPERTY,
-            new org.apache.commons.configuration2.event.EventListener<ConfigurationEvent>(){
+            new EventListener<ConfigurationEvent>(){
                 @Override
                 public void onEvent(ConfigurationEvent evt) {
                     if( evt.getPropertyName().equals( "logpanel.detailColumnVisible" ) ){
@@ -424,7 +424,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             } );
 
         tabConfig.addEventListener(ConfigurationEvent.SET_PROPERTY,
-            new org.apache.commons.configuration2.event.EventListener<ConfigurationEvent>(){
+            new EventListener<ConfigurationEvent>(){
                 @Override
                 public void onEvent(ConfigurationEvent evt) {
                     if( evt.getPropertyName().equals( "logpanel.logTreePanelVisible" ) ){
@@ -441,7 +441,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             } );
 
         m_configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
-            new org.apache.commons.configuration2.event.EventListener<ConfigurationEvent>(){
+            new EventListener<ConfigurationEvent>(){
                 @Override
                 public void onEvent(ConfigurationEvent evt) {
                     if( evt.getPropertyName().equals( "logpanel.toolTips" ) ){
@@ -536,18 +536,15 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             });
 
         m_configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
-            new org.apache.commons.configuration2.event.EventListener<ConfigurationEvent>(){
-                @Override
-                public void onEvent(ConfigurationEvent evt) {
-                    if( evt.getPropertyName().equals( "logpanel.loggerPrecision" ) ){
-                        LogPanelPreferenceModel model = (LogPanelPreferenceModel) evt.getSource();
+            evt -> {
+                if( evt.getPropertyName().equals( "logpanel.loggerPrecision" ) ){
+                    LogPanelPreferenceModel model = (LogPanelPreferenceModel) evt.getSource();
 
-                        renderer.setLoggerPrecision(model.getLoggerPrecision());
-                        table.tableChanged(new TableModelEvent(tableModel));
+                    renderer.setLoggerPrecision(model.getLoggerPrecision());
+                    table.tableChanged(new TableModelEvent(tableModel));
 
-                        searchRenderer.setLoggerPrecision(model.getLoggerPrecision());
-                        searchTable.tableChanged(new TableModelEvent(searchModel));
-                    }
+                    searchRenderer.setLoggerPrecision(model.getLoggerPrecision());
+                    searchTable.tableChanged(new TableModelEvent(searchModel));
                 }
             });
 
