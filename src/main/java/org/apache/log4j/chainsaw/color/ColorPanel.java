@@ -885,15 +885,16 @@ public class ColorPanel extends JPanel {
         @Override
         public Object getValueAt(int row, int col) {
             ColorRule rule = colorRules.get(row);
-            switch( col ){
+            switch (col){
                 case 0:
                     return rule.getExpression();
                 case 1:
                     return rule.getBackgroundColor();
                 case 2:
                     return rule.getForegroundColor();
+                default:
+                    return "foo";
             }
-            return "foo";
         }
 
         @Override
