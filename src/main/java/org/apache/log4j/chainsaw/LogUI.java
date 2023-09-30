@@ -338,7 +338,7 @@ public class LogUI extends JFrame {
             final List fileList = (List) evt.getNewValue();
 
             Thread thread = new Thread(() -> {
-                logger.debug("Loading files: " + fileList);
+                logger.debug("Loading files: {}", fileList);
                 for (Object aFileList : fileList) {
                     File file = (File) aFileList;
                     final Decoder decoder = new XMLDecoder();
@@ -770,7 +770,7 @@ public class LogUI extends JFrame {
             container.add(new JScrollPane(tutorialArea), BorderLayout.CENTER);
         } catch (Exception e) {
             logger.error("Can't load tutorial", e);
-            statusBar.setMessage("Can't load tutorail");
+            statusBar.setMessage("Can't load tutorial");
         }
 
         tutorialFrame.setIconImage(new ImageIcon(ChainsawIcons.HELP).getImage());
@@ -1409,8 +1409,7 @@ public class LogUI extends JFrame {
      * @param visible
      */
     private void setStatusBarVisible(final boolean visible) {
-        logger.debug(
-            "Setting StatusBar to " + visible);
+        logger.debug("Setting StatusBar to {}", visible);
         SwingUtilities.invokeLater(
             () -> statusBar.setVisible(visible));
     }
@@ -1629,7 +1628,7 @@ public class LogUI extends JFrame {
                 }
             });
 
-        logger.debug("adding logpanel to tabbed pane: " + ident);
+        logger.debug("adding logpanel to tabbed pane: {}", ident);
 
         //NOTE: tab addition is a very fragile process - if you modify this code,
         //verify the frames in the individual log panels initialize to their
@@ -1656,8 +1655,7 @@ public class LogUI extends JFrame {
                         false);
             });
 
-        String msg = "added tab " + ident;
-        logger.debug(msg);
+        logger.debug("added tab {}", ident);
     }
 
     public void createCustomExpressionLogPanel(String ident) {
