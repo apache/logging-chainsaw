@@ -750,11 +750,11 @@ public class ColorPanel extends JPanel {
     }
 
     class SelectedIcon implements Icon {
-        private boolean isSelected;
-        private int width = 9;
-        private int height = 18;
-        private int[] xPoints = new int[4];
-        private int[] yPoints = new int[4];
+        private final boolean isSelected;
+        private final int width = 9;
+        private final int height = 18;
+        private final int[] xPoints = new int[4];
+        private final int[] yPoints = new int[4];
 
         public SelectedIcon(boolean isSelected) {
             this.isSelected = isSelected;
