@@ -295,47 +295,6 @@ public class LogUI extends JFrame {
             logger.error("Uncaught exception in thread {}", t.getName(), e);
         });
 
-//        String config = configurationURLAppArg;
-//        if (config != null) {
-//            logger.info("Command-line configuration arg provided (overriding auto-configuration URL) - using: " + config);
-//        } else {
-//            config = model.getConfigurationURL();
-//        }
-
-//        if (config != null && (!config.trim().equals(""))) {
-//            config = config.trim();
-//            try {
-//                URL configURL = new URL(config);
-//                logger.info("Using '" + config + "' for auto-configuration");
-////                logUI.loadConfigurationUsingPluginClassLoader(configURL);
-//            } catch (MalformedURLException e) {
-//                logger.error("Initial configuration - failed to convert config string to url", e);
-//            } catch (IOException e) {
-//                logger.error("Unable to access auto-configuration URL: " + config);
-//            }
-//        }
-
-        //register a listener to load the configuration when it changes (avoid having to restart Chainsaw when applying a new configuration)
-        //this doesn't remove receivers from receivers panel, it just triggers DOMConfigurator.configure.
-//        model.addPropertyChangeListener("configurationURL", evt -> {
-//            String newConfiguration = evt.getNewValue().toString();
-//            if (newConfiguration != null && !(newConfiguration.trim().equals(""))) {
-//                newConfiguration = newConfiguration.trim();
-//                try {
-//                    logger.info("loading updated configuration: " + newConfiguration);
-//                    URL newConfigurationURL = new URL(newConfiguration);
-//                    File file = new File(newConfigurationURL.toURI());
-//                    if (file.exists()) {
-////                        logUI.loadConfigurationUsingPluginClassLoader(newConfigurationURL);
-//                    } else {
-//                        logger.info("Updated configuration but file does not exist");
-//                    }
-//                } catch (MalformedURLException | URISyntaxException e) {
-//                    logger.error("Updated configuration - failed to convert config string to URL", e);
-//                }
-//            }
-//        });
-
         EventQueue.invokeLater(logUI::activateViewer);
         EventQueue.invokeLater(logUI::buildChainsawLogPanel);
 
