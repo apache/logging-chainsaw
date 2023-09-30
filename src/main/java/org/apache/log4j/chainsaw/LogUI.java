@@ -102,6 +102,7 @@ public class LogUI extends JFrame {
     private static final String MAIN_WINDOW_WIDTH = "main.window.width";
     private static final String MAIN_WINDOW_Y = "main.window.y";
     private static final String MAIN_WINDOW_X = "main.window.x";
+    public static final String LABEL_TUTORIAL_STARTED = "TutorialStarted";
     private static ChainsawSplash splash;
     private static final double DEFAULT_MAIN_RECEIVER_SPLIT_LOCATION = 0.85d;
     private final JFrame preferencesFrame = new JFrame();
@@ -248,15 +249,12 @@ public class LogUI extends JFrame {
      * the splash screen, and using the passed shutdown action when the user
      * requests to exit the application (if null, then Chainsaw will exit the vm)
      *
-     * @param model
      * @param newShutdownAction DOCUMENT ME!
      */
     public static void createChainsawGUI(Action newShutdownAction) {
         AbstractConfiguration config = SettingsManager.getInstance().getGlobalConfiguration();
 
-
         if (config.getBoolean("okToRemoveSecurityManager", false)) {
-//            statusBar.setMessage("User has authorised removal of Java Security Manager via preferences");
             System.setSecurityManager(null);
             // this SHOULD set the Policy/Permission stuff for any
             // code loaded from our custom classloader.  
@@ -300,7 +298,7 @@ public class LogUI extends JFrame {
         EventQueue.invokeLater(logUI::activateViewer);
         EventQueue.invokeLater(logUI::buildChainsawLogPanel);
 
-        logger.info("SecurityManager is now: " + System.getSecurityManager());
+        logger.info("SecurityManager is now: {}", System.getSecurityManager());
 
         if (newShutdownAction != null) {
             logUI.setShutdownAction(newShutdownAction);
@@ -329,8 +327,6 @@ public class LogUI extends JFrame {
         setJMenuBar(getToolBarAndMenus().getMenubar());
 
         setTabbedPane(new ChainsawTabbedPane());
-//        getSettingsManager().addSettingsListener(getTabbedPane());
-//        getSettingsManager().configure(getTabbedPane());
 
         /**
          * This adds Drag & Drop capability to Chainsaw
@@ -346,8 +342,6 @@ public class LogUI extends JFrame {
                     final Decoder decoder = new XMLDecoder();
                     try {
                         getStatusBar().setMessage("Loading " + file.getAbsolutePath() + "...");
-//                        FileLoadAction.importURL(handler, decoder, file
-//                            .getName(), file.toURI().toURL());
                     } catch (Exception e) {
                         String errorMsg = "Failed to import a file";
                         logger.error(errorMsg, e);
@@ -423,7 +417,7 @@ public class LogUI extends JFrame {
 
         tb.add(Box.createHorizontalGlue());
 
-        /**
+        /*
          * Setup a listener on the HelpURL property and automatically change the WelcomePages URL
          * to it.
          */
@@ -450,8 +444,6 @@ public class LogUI extends JFrame {
     /**
      * Given the load event, configures the size/location of the main window etc
      * etc.
-     *
-     * @param event DOCUMENT ME!
      */
     private void loadSettings() {
         AbstractConfiguration config = SettingsManager.getInstance().getGlobalConfiguration();
@@ -487,7 +479,7 @@ public class LogUI extends JFrame {
         initGUI();
         loadSettings();
 
-        if (m_receivers.size() == 0) {
+        if (m_receivers.isEmpty()) {
             noReceiversDefined = true;
         }
 
@@ -668,8 +660,7 @@ public class LogUI extends JFrame {
                         String name = getTabbedPane().getTitleAt(index);
 
                         if (
-                            getPanelMap().keySet().contains(name)
-                                && !name.equals(currentName)) {
+                            getPanelMap().containsKey(name) && !name.equals(currentName)) {
                             displayPanel(name, false);
                             tbms.stateChange();
                         } else {
@@ -799,9 +790,9 @@ public class LogUI extends JFrame {
                             gen.start();
                         }
 
-                        putValue("TutorialStarted", Boolean.TRUE);
+                        putValue(LABEL_TUTORIAL_STARTED, Boolean.TRUE);
                     } else {
-                        putValue("TutorialStarted", Boolean.FALSE);
+                        putValue(LABEL_TUTORIAL_STARTED, Boolean.FALSE);
                     }
                 }
             };
@@ -824,7 +815,7 @@ public class LogUI extends JFrame {
                                 }
                             }).start();
                         setEnabled(false);
-                        startTutorial.putValue("TutorialStarted", Boolean.FALSE);
+                        startTutorial.putValue(LABEL_TUTORIAL_STARTED, Boolean.FALSE);
                     }
                 }
             };
@@ -841,7 +832,7 @@ public class LogUI extends JFrame {
         PropertyChangeListener pcl =
             evt -> {
                 stopTutorial.setEnabled(
-                    startTutorial.getValue("TutorialStarted").equals(Boolean.TRUE));
+                    startTutorial.getValue(LABEL_TUTORIAL_STARTED).equals(Boolean.TRUE));
                 startButton.setSelected(stopTutorial.isEnabled());
             };
 
@@ -862,7 +853,7 @@ public class LogUI extends JFrame {
                 }
 
                 if (count == 0) {
-                    startTutorial.putValue("TutorialStarted", Boolean.FALSE);
+                    startTutorial.putValue(LABEL_TUTORIAL_STARTED, Boolean.FALSE);
                 }
             }
         });
@@ -893,7 +884,7 @@ public class LogUI extends JFrame {
                 }
             });
 
-        /**
+        /*
          * loads the saved tab settings and if there are hidden tabs,
          * hide those tabs out of currently loaded tabs..
          */
@@ -1335,7 +1326,7 @@ public class LogUI extends JFrame {
                     panel.setProgress(progress++);
                     Thread.sleep(delay);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error(e,e);
                 }
 
                 fireShutdownEvent();
@@ -1344,7 +1335,7 @@ public class LogUI extends JFrame {
             };
 
         if (OSXIntegration.IS_OSX) {
-            /**
+            /*
              * or OSX we do it in the current thread because otherwise returning
              * will exit the process before it's had a chance to save things
              *
@@ -1591,7 +1582,7 @@ public class LogUI extends JFrame {
             thisPanel.setReceiver(rx);
         }
 
-        /**
+        /*
          * Now add the panel as a batch listener so it can handle it's own
          * batchs
          */
@@ -1638,7 +1629,7 @@ public class LogUI extends JFrame {
         getTabbedPane().add(ident, thisPanel);
         getPanelMap().put(ident, thisPanel);
 
-        /**
+        /*
          * Let the new LogPanel receive this batch
          */
 
@@ -1666,11 +1657,8 @@ public class LogUI extends JFrame {
             List<ChainsawLoggingEvent> list = new ArrayList<>();
             Rule rule = ExpressionRule.getRule(ident);
 
-            for (Object identifierPanel : identifierPanels) {
-                LogPanel panel = (LogPanel) identifierPanel;
-
-                for (Object o : panel.getMatchingEvents(rule)) {
-                    LoggingEventWrapper e = (LoggingEventWrapper) o;
+            for (LogPanel identifierPanel : identifierPanels) {
+                for (LoggingEventWrapper e : identifierPanel.getMatchingEvents(rule)) {
                     list.add(e.getLoggingEvent());
                 }
             }
@@ -1823,7 +1811,7 @@ public class LogUI extends JFrame {
             stream.close();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e,e);
         }
     }
 }
