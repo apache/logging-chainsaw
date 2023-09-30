@@ -44,6 +44,7 @@ class ChainsawSplash extends JWindow {
 
         Container container = getContentPane();
         JPanel panel = new JPanel(new BorderLayout());
+
         JLabel logo = new JLabel(ChainsawIcons.ICON_LOG4J);
 
         JLabel text = new JLabel("Chainsaw v2", SwingConstants.CENTER);

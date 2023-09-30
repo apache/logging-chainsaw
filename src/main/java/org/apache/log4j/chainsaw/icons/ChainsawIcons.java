@@ -104,9 +104,7 @@ public class ChainsawIcons {
         ChainsawIcons.class.getClassLoader().getResource(
             BASE_ICON_PATH + "ZoomIn16.gif");
     public static final ImageIcon ICON_LOG4J =
-        new ImageIcon(
-            ChainsawIcons.class.getClassLoader().getResource(
-                "org/apache/log4j/chainsaw/logo.jpg"));
+        new ImageIcon(ChainsawIcons.class.getClassLoader().getResource("org/apache/log4j/chainsaw/logo.png"));
 
     public static final URL ANIM_NET_CONNECT =
         ChainsawIcons.class.getClassLoader().getResource(
