@@ -37,7 +37,7 @@ import java.util.*;
  */
 public class LogPanelLoggerTreeModel extends DefaultTreeModel
     implements LoggerNameListener {
-    private Map<String, LogPanelTreeNode> fullPackageMap = new HashMap<>();
+    private final Map<String, LogPanelTreeNode> fullPackageMap = new HashMap<>();
     private final Logger logger = LogManager.getLogger(LogPanelLoggerTreeModel.class);
 
     LogPanelLoggerTreeModel() {
@@ -63,19 +63,18 @@ public class LogPanelLoggerTreeModel extends DefaultTreeModel
     private void addLoggerNameInDispatchThread(final String loggerName) {
         String[] packages = tokenize(loggerName);
 
-        /**
+        /*
          * The packages array is effectively the tree
          * path that must exist within the tree, so
          * we walk the tree ensuring each level is present
          */
         DefaultMutableTreeNode current = (DefaultMutableTreeNode) getRoot();
 
-
-/**
- * This label is used to break out when descending the
- * current tree hierachy, and it has matched a package name
- * with an already existing TreeNode.
- */
+        /*
+         * This label is used to break out when descending the
+         * current tree hierachy, and it has matched a package name
+         * with an already existing TreeNode.
+         */
         outerFor:
         for (int i = 0; i < packages.length; i++) {
             String packageName = packages[i];
@@ -87,12 +86,12 @@ public class LogPanelLoggerTreeModel extends DefaultTreeModel
                 String childName = child.getUserObject().toString();
 
                 if (childName.equals(packageName)) {
-                    /**
+                    /*
                      * This the current known branch to descend
                      */
                     current = child;
 
-                    /**
+                    /*
                      * we've found it, so break back to the outer
                      * for loop to continue processing further
                      * down the tree
@@ -117,7 +116,7 @@ public class LogPanelLoggerTreeModel extends DefaultTreeModel
                 }
             }
 
-            logger.debug("Adding to Map " + fullPackageBuf.toString());
+            logger.debug("Adding to Map {}", fullPackageBuf.toString());
             fullPackageMap.put(fullPackageBuf.toString(), newChild);
 
             final DefaultMutableTreeNode changedNode = current;
@@ -141,8 +140,8 @@ public class LogPanelLoggerTreeModel extends DefaultTreeModel
         if (fullPackageMap.containsKey(newLogger)) {
             return fullPackageMap.get(newLogger);
         } else {
-            logger.debug("No logger found matching '" + newLogger + "'");
-            logger.debug("Map Dump: " + fullPackageMap);
+            logger.debug("No logger found matching '{}'", newLogger);
+            logger.debug("Map Dump: {}", fullPackageMap);
         }
 
         return null;
@@ -179,14 +178,8 @@ public class LogPanelLoggerTreeModel extends DefaultTreeModel
         }
 
         public void insert(MutableTreeNode newChild, int childIndex) {
-            //      logger.debug("[" + this.getUserObject() + "] inserting child " + newChild + " @ index " + childIndex);
-            //      logger.debug("Children now: " + this.children);
             super.insert(newChild, childIndex);
-
-            //	  logger.debug("Children after insert: " + this.children);
             this.children.sort(nodeComparator);
-
-            //	  logger.debug("Children after sort: " + this.children);
         }
     }
 }
