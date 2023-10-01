@@ -222,20 +222,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         findCombo.setPrototypeDisplayValue(prototypeValue);
         buildCombo(findCombo, false, filterCombo.model);
 
-        final Map<Object, String> columnNameKeywordMap = new HashMap<>();
-        columnNameKeywordMap.put(ChainsawConstants.CLASS_COL_NAME, LoggingEventFieldResolver.CLASS_FIELD);
-        columnNameKeywordMap.put(ChainsawConstants.FILE_COL_NAME, LoggingEventFieldResolver.FILE_FIELD);
-        columnNameKeywordMap.put(ChainsawConstants.LEVEL_COL_NAME, LoggingEventFieldResolver.LEVEL_FIELD);
-        columnNameKeywordMap.put(ChainsawConstants.LINE_COL_NAME, LoggingEventFieldResolver.LINE_FIELD);
-        columnNameKeywordMap.put(ChainsawConstants.LOGGER_COL_NAME, LoggingEventFieldResolver.LOGGER_FIELD);
-        columnNameKeywordMap.put(ChainsawConstants.NDC_COL_NAME, LoggingEventFieldResolver.NDC_FIELD);
-        columnNameKeywordMap.put(ChainsawConstants.MESSAGE_COL_NAME, LoggingEventFieldResolver.MSG_FIELD);
-        columnNameKeywordMap.put(ChainsawConstants.THREAD_COL_NAME, LoggingEventFieldResolver.THREAD_FIELD);
-        columnNameKeywordMap.put(ChainsawConstants.THROWABLE_COL_NAME, LoggingEventFieldResolver.EXCEPTION_FIELD);
-        columnNameKeywordMap.put(ChainsawConstants.TIMESTAMP_COL_NAME, LoggingEventFieldResolver.TIMESTAMP_FIELD);
-        columnNameKeywordMap.put(ChainsawConstants.ID_COL_NAME.toUpperCase(), LoggingEventFieldResolver.PROP_FIELD + Constants.LOG4J_ID_KEY);
-        columnNameKeywordMap.put(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE.toUpperCase(), LoggingEventFieldResolver.PROP_FIELD + ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
-        columnNameKeywordMap.put(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE.toUpperCase(), LoggingEventFieldResolver.PROP_FIELD + ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
+        ColumnNameKeywordMapper columnNameKeywordMapper = new ColumnNameKeywordMapper();
 
         logPanelPreferencesFrame.setTitle("'" + identifier + "' Log Panel Preferences");
         logPanelPreferencesFrame.setIconImage(
@@ -626,7 +613,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         searchTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_A, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "none");
 
         //add a listener to update the 'refine focus'
-        tableModel.addNewKeyListener(e -> columnNameKeywordMap.put(e.getKey(), "PROP." + e.getKey()));
+        tableModel.addNewKeyListener(e -> columnNameKeywordMapper.put(e.getKey().toString(), "PROP." + e.getKey()));
 
         /*
          * Set the Display rule to use the mediator, the model will add itself as
@@ -1301,9 +1288,9 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
                             String colName = currentTable.getColumnName(column).toUpperCase();
                             String value = getValueOf(row, column);
 
-                            if (columnNameKeywordMap.containsKey(colName)) {
+                            if (columnNameKeywordMapper.contains(colName)) {
                                 filterText.setText(
-                                    columnNameKeywordMap.get(colName).toString() + " " + operator
+                                    columnNameKeywordMapper.get(colName) + " " + operator
                                         + " '" + value + "'");
                             }
                         }
@@ -1323,10 +1310,10 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
                             String value = getValueOf(row, column);
                             String colName = currentTable.getColumnName(column).toUpperCase();
 
-                            if (columnNameKeywordMap.containsKey(colName)) {
+                            if (columnNameKeywordMapper.contains(colName)) {
                                 filterText.setText(
                                     filterText.getText() + " && "
-                                        + columnNameKeywordMap.get(colName).toString() + " "
+                                        + columnNameKeywordMapper.get(colName) + " "
                                         + operator + " '" + value + "'");
                             }
 
@@ -1347,10 +1334,10 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
                             String value = getValueOf(row, column);
                             String colName = currentTable.getColumnName(column).toUpperCase();
 
-                            if (columnNameKeywordMap.containsKey(colName)) {
+                            if (columnNameKeywordMapper.contains(colName)) {
                                 findCombo.setSelectedItem(
                                     findText.getText() + " && "
-                                        + columnNameKeywordMap.get(colName).toString() + " "
+                                        + columnNameKeywordMapper.get(colName) + " "
                                         + operator + " '" + value + "'");
                                 findNext();
                             }
@@ -1371,10 +1358,10 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
                             String colName = currentTable.getColumnName(column).toUpperCase();
                             String value = getValueOf(row, column);
 
-                            if (columnNameKeywordMap.containsKey(colName)) {
+                            if (columnNameKeywordMapper.contains(colName)) {
                                 Color c = JColorChooser.showDialog(getRootPane(), "Choose a color", Color.red);
                                 if (c != null) {
-                                    String expression = columnNameKeywordMap.get(colName).toString() + " " + operator + " '" + value + "'";
+                                    String expression = columnNameKeywordMapper.get(colName) + " " + operator + " '" + value + "'";
                                     colorizer.addRule(new ColorRule(expression,
                                         ExpressionRule.getRule(expression), c, ChainsawConstants.COLOR_DEFAULT_FOREGROUND));
                                 }
@@ -1483,9 +1470,9 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
                             int row = currentTable.rowAtPoint(currentPoint);
                             String colName = currentTable.getColumnName(column).toUpperCase();
                             String value = getValueOf(row, column);
-                            if (columnNameKeywordMap.containsKey(colName)) {
+                            if (columnNameKeywordMapper.contains(colName)) {
                                 findCombo.setSelectedItem(
-                                    columnNameKeywordMap.get(colName).toString() + " " + operator
+                                    columnNameKeywordMapper.get(colName) + " " + operator
                                         + " '" + value + "'");
                                 findNext();
                             }
