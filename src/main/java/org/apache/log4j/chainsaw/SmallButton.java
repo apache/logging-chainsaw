@@ -23,8 +23,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.SoftBevelBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.net.URL;
@@ -164,9 +162,6 @@ public class SmallButton extends JButton implements MouseListener {
 
         String shortDescription;
 
-        // Action.Accelerator
-        KeyEvent keyEvent;
-        InputEvent inputEvent;
         private KeyStroke keyStroke;
 
         Builder action(Runnable action) {
