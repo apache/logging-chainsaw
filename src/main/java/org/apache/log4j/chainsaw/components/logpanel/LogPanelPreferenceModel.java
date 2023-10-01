@@ -27,7 +27,6 @@ import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
 import java.util.*;
 
-
 /**
  * Used to encapsulate all the preferences for a given LogPanel
  *
@@ -179,9 +178,6 @@ public class LogPanelPreferenceModel implements Serializable {
             "dateFormatPattern", oldVal, this.dateFormatPattern);
     }
 
-    /**
-     * @param dateFormatPattern
-     */
     public final void setDateFormatPattern(String dateFormatPattern) {
         String oldVal = this.dateFormatPattern;
         this.dateFormatPattern = dateFormatPattern;
@@ -189,35 +185,21 @@ public class LogPanelPreferenceModel implements Serializable {
             "dateFormatPattern", oldVal, this.dateFormatPattern);
     }
 
-    /**
-     * @param listener
-     */
     public synchronized void addPropertyChangeListener(
         PropertyChangeListener listener) {
         propertySupport.addPropertyChangeListener(listener);
     }
 
-    /**
-     * @param propertyName
-     * @param listener
-     */
     public synchronized void addPropertyChangeListener(
         String propertyName, PropertyChangeListener listener) {
         propertySupport.addPropertyChangeListener(propertyName, listener);
     }
 
-    /**
-     * @param listener
-     */
     public synchronized void removePropertyChangeListener(
         PropertyChangeListener listener) {
         propertySupport.removePropertyChangeListener(listener);
     }
 
-    /**
-     * @param propertyName
-     * @param listener
-     */
     public synchronized void removePropertyChangeListener(
         String propertyName, PropertyChangeListener listener) {
         propertySupport.removePropertyChangeListener(propertyName, listener);
@@ -280,9 +262,6 @@ public class LogPanelPreferenceModel implements Serializable {
         return highlightSearchMatchText;
     }
 
-    /**
-     * @param levelIcons
-     */
     public void setLevelIcons(boolean levelIcons) {
         this.levelIcons = levelIcons;
         propertySupport.firePropertyChange("levelIcons", !levelIcons, levelIcons);
@@ -298,17 +277,11 @@ public class LogPanelPreferenceModel implements Serializable {
         return searchResultsVisible;
     }
 
-    /**
-     * @param wrapMsg
-     */
     public void setWrapMessage(boolean wrapMsg) {
         this.wrapMsg = wrapMsg;
         propertySupport.firePropertyChange("wrapMessage", !wrapMsg, wrapMsg);
     }
 
-    /**
-     * @param highlightSearchMatchText
-     */
     public void setHighlightSearchMatchText(boolean highlightSearchMatchText) {
         this.highlightSearchMatchText = highlightSearchMatchText;
         propertySupport.firePropertyChange("highlightSearchMatchText", !highlightSearchMatchText, highlightSearchMatchText);
@@ -385,9 +358,6 @@ public class LogPanelPreferenceModel implements Serializable {
         return detailPaneVisible;
     }
 
-    /**
-     * @param detailPaneVisible
-     */
     public final void setDetailPaneVisible(boolean detailPaneVisible) {
         boolean oldValue = this.detailPaneVisible;
         this.detailPaneVisible = detailPaneVisible;
@@ -407,9 +377,6 @@ public class LogPanelPreferenceModel implements Serializable {
         return showMillisDeltaAsGap;
     }
 
-    /**
-     * @param scrollToBottom
-     */
     public final void setScrollToBottom(boolean scrollToBottom) {
         boolean oldValue = this.scrollToBottom;
         this.scrollToBottom = scrollToBottom;
@@ -417,9 +384,6 @@ public class LogPanelPreferenceModel implements Serializable {
             "scrollToBottom", oldValue, this.scrollToBottom);
     }
 
-    /**
-     * @param showMillisDeltaAsGap
-     */
     public final void setShowMillisDeltaAsGap(boolean showMillisDeltaAsGap) {
         boolean oldValue = this.showMillisDeltaAsGap;
         this.showMillisDeltaAsGap = showMillisDeltaAsGap;
@@ -444,9 +408,6 @@ public class LogPanelPreferenceModel implements Serializable {
         return toolTips;
     }
 
-    /**
-     * @param toolTips
-     */
     public final void setToolTips(boolean toolTips) {
         boolean oldValue = this.toolTips;
         this.toolTips = toolTips;
@@ -460,9 +421,6 @@ public class LogPanelPreferenceModel implements Serializable {
         return logTreePanelVisible;
     }
 
-    /**
-     * @param logTreePanelVisible
-     */
     public final void setLogTreePanelVisible(boolean logTreePanelVisible) {
         boolean oldValue = this.logTreePanelVisible;
         this.logTreePanelVisible = logTreePanelVisible;
