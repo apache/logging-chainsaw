@@ -989,135 +989,10 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
                 }
             });
 
-        /*
-         * Upper panel definition
-         */
-        JPanel upperPanel = new JPanel();
-        upperPanel.setLayout(new BoxLayout(upperPanel, BoxLayout.X_AXIS));
-        upperPanel.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 0));
-
-        final JLabel filterLabel = new JLabel("Refine focus on: ");
-        filterLabel.setFont(filterLabel.getFont().deriveFont(Font.BOLD));
-
-        upperPanel.add(filterLabel);
-        upperPanel.add(Box.createHorizontalStrut(3));
-        upperPanel.add(filterCombo);
-        upperPanel.add(Box.createHorizontalStrut(3));
-
         final JTextField filterText = (JTextField) filterCombo.getEditor().getEditorComponent();
         final JTextField findText = (JTextField) findCombo.getEditor().getEditorComponent();
 
-
-        //Adding a button to clear filter expressions which are currently remembered by Chainsaw...
-        final JButton removeFilterButton = new JButton(" Remove ");
-
-        removeFilterButton.setToolTipText("Click here to remove the selected expression from the list");
-        removeFilterButton.addActionListener(
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    Object selectedItem = filterCombo.getSelectedItem();
-                    if (e.getSource() == removeFilterButton && selectedItem != null && !selectedItem.toString().trim().equals("")) {
-                        //don't just remove the entry from the store, clear the field
-                        int index = filterCombo.getSelectedIndex();
-                        filterText.setText(null);
-                        filterCombo.setSelectedIndex(-1);
-                        filterCombo.removeItemAt(index);
-                        if (!(findCombo.getSelectedItem() != null && findCombo.getSelectedItem().equals(selectedItem))) {
-                            //now remove the entry from the other model
-                            ((AutoFilterComboBox.AutoFilterComboBoxModel) findCombo.getModel()).removeElement(selectedItem);
-                        }
-                    }
-                }
-            }
-        );
-        upperPanel.add(removeFilterButton);
-        //add some space between refine focus and search sections of the panel
-        upperPanel.add(Box.createHorizontalStrut(25));
-
-        final JLabel findLabel = new JLabel("Find: ");
-        findLabel.setFont(filterLabel.getFont().deriveFont(Font.BOLD));
-
-        upperPanel.add(findLabel);
-        upperPanel.add(Box.createHorizontalStrut(3));
-
-        upperPanel.add(findCombo);
-        upperPanel.add(Box.createHorizontalStrut(3));
-
-        //add up & down search
-        upperPanel.add(createFindNextButton());
-        upperPanel.add(createFindPreviousButton());
-
-        upperPanel.add(Box.createHorizontalStrut(3));
-
-        //Adding a button to clear filter expressions which are currently remembered by Chainsaw...
-        final JButton removeFindButton = new JButton(" Remove ");
-        removeFindButton.setToolTipText("Click here to remove the selected expression from the list");
-        removeFindButton.addActionListener(
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    Object selectedItem = findCombo.getSelectedItem();
-                    if (e.getSource() == removeFindButton && selectedItem != null && !selectedItem.toString().trim().equals("")) {
-                        //don't just remove the entry from the store, clear the field
-                        int index = findCombo.getSelectedIndex();
-                        findText.setText(null);
-                        findCombo.setSelectedIndex(-1);
-                        findCombo.removeItemAt(index);
-                        if (!(filterCombo.getSelectedItem() != null && filterCombo.getSelectedItem().equals(selectedItem))) {
-                            //now remove the entry from the other model if it wasn't selected
-                            ((AutoFilterComboBox.AutoFilterComboBoxModel) filterCombo.getModel()).removeElement(selectedItem);
-                        }
-                    }
-                }
-            }
-        );
-        upperPanel.add(removeFindButton);
-
-        //define search and refine focus selection and clear actions
-        Action findFocusAction = new AbstractAction() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                findCombo.requestFocus();
-            }
-        };
-
-        Action filterFocusAction = new AbstractAction() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                filterCombo.requestFocus();
-            }
-        };
-
-        Action findClearAction = new AbstractAction() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                findCombo.setSelectedIndex(-1);
-                findNext();
-            }
-        };
-
-        Action filterClearAction = new AbstractAction() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                setRefineFocusText("");
-                filterCombo.refilter();
-            }
-        };
-
-        //now add them to the action and input maps for the logpanel
-        KeyStroke ksFindFocus =
-            KeyStroke.getKeyStroke(KeyEvent.VK_F, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
-        KeyStroke ksFilterFocus =
-            KeyStroke.getKeyStroke(KeyEvent.VK_R, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
-        KeyStroke ksFindClear =
-            KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
-        KeyStroke ksFilterClear =
-            KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
-
-        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksFindFocus, "FindFocus");
-        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksFilterFocus, "FilterFocus");
-        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksFindClear, "FindClear");
-        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksFilterClear, "FilterClear");
-
-        getActionMap().put("FindFocus", findFocusAction);
-        getActionMap().put("FilterFocus", filterFocusAction);
-        getActionMap().put("FindClear", findClearAction);
-        getActionMap().put("FilterClear", filterClearAction);
+        JPanel upperPanel = createUpperPanel(filterText, findText);
 
         /*
          * Detail pane definition
@@ -1796,6 +1671,136 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         searchTable.addMouseListener(searchTablePopupListener);
 
         loadSettings();
+    }
+
+    private JPanel createUpperPanel(JTextField filterText, JTextField findText) {
+        /*
+         * Upper panel definition
+         */
+        JPanel upperPanel = new JPanel();
+        upperPanel.setLayout(new BoxLayout(upperPanel, BoxLayout.X_AXIS));
+        upperPanel.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 0));
+
+        final JLabel filterLabel = new JLabel("Refine focus on: ");
+        filterLabel.setFont(filterLabel.getFont().deriveFont(Font.BOLD));
+
+        upperPanel.add(filterLabel);
+        upperPanel.add(Box.createHorizontalStrut(3));
+        upperPanel.add(filterCombo);
+        upperPanel.add(Box.createHorizontalStrut(3));
+
+        //Adding a button to clear filter expressions which are currently remembered by Chainsaw...
+        final JButton removeFilterButton = new JButton(" Remove ");
+
+        removeFilterButton.setToolTipText("Click here to remove the selected expression from the list");
+        removeFilterButton.addActionListener(
+            new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    Object selectedItem = filterCombo.getSelectedItem();
+                    if (e.getSource() == removeFilterButton && selectedItem != null && !selectedItem.toString().trim().equals("")) {
+                        //don't just remove the entry from the store, clear the field
+                        int index = filterCombo.getSelectedIndex();
+                        filterText.setText(null);
+                        filterCombo.setSelectedIndex(-1);
+                        filterCombo.removeItemAt(index);
+                        if (!(findCombo.getSelectedItem() != null && findCombo.getSelectedItem().equals(selectedItem))) {
+                            //now remove the entry from the other model
+                            ((AutoFilterComboBox.AutoFilterComboBoxModel) findCombo.getModel()).removeElement(selectedItem);
+                        }
+                    }
+                }
+            }
+        );
+        upperPanel.add(removeFilterButton);
+        //add some space between refine focus and search sections of the panel
+        upperPanel.add(Box.createHorizontalStrut(25));
+
+        final JLabel findLabel = new JLabel("Find: ");
+        findLabel.setFont(filterLabel.getFont().deriveFont(Font.BOLD));
+
+        upperPanel.add(findLabel);
+        upperPanel.add(Box.createHorizontalStrut(3));
+
+        upperPanel.add(findCombo);
+        upperPanel.add(Box.createHorizontalStrut(3));
+
+        //add up & down search
+        upperPanel.add(createFindNextButton());
+        upperPanel.add(createFindPreviousButton());
+
+        upperPanel.add(Box.createHorizontalStrut(3));
+
+        //Adding a button to clear filter expressions which are currently remembered by Chainsaw...
+        final JButton removeFindButton = new JButton(" Remove ");
+        removeFindButton.setToolTipText("Click here to remove the selected expression from the list");
+        removeFindButton.addActionListener(
+            new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    Object selectedItem = findCombo.getSelectedItem();
+                    if (e.getSource() == removeFindButton && selectedItem != null && !selectedItem.toString().trim().equals("")) {
+                        //don't just remove the entry from the store, clear the field
+                        int index = findCombo.getSelectedIndex();
+                        findText.setText(null);
+                        findCombo.setSelectedIndex(-1);
+                        findCombo.removeItemAt(index);
+                        if (!(filterCombo.getSelectedItem() != null && filterCombo.getSelectedItem().equals(selectedItem))) {
+                            //now remove the entry from the other model if it wasn't selected
+                            ((AutoFilterComboBox.AutoFilterComboBoxModel) filterCombo.getModel()).removeElement(selectedItem);
+                        }
+                    }
+                }
+            }
+        );
+        upperPanel.add(removeFindButton);
+
+        //define search and refine focus selection and clear actions
+        Action findFocusAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                findCombo.requestFocus();
+            }
+        };
+
+        Action filterFocusAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                filterCombo.requestFocus();
+            }
+        };
+
+        Action findClearAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                findCombo.setSelectedIndex(-1);
+                findNext();
+            }
+        };
+
+        Action filterClearAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                setRefineFocusText("");
+                filterCombo.refilter();
+            }
+        };
+
+        //now add them to the action and input maps for the logpanel
+        KeyStroke ksFindFocus =
+            KeyStroke.getKeyStroke(KeyEvent.VK_F, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+        KeyStroke ksFilterFocus =
+            KeyStroke.getKeyStroke(KeyEvent.VK_R, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+        KeyStroke ksFindClear =
+            KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+        KeyStroke ksFilterClear =
+            KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksFindFocus, "FindFocus");
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksFilterFocus, "FilterFocus");
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksFindClear, "FindClear");
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksFilterClear, "FilterClear");
+
+        getActionMap().put("FindFocus", findFocusAction);
+        getActionMap().put("FilterFocus", filterFocusAction);
+        getActionMap().put("FindClear", findClearAction);
+        getActionMap().put("FilterClear", filterClearAction);
+
+        return upperPanel;
     }
 
     private SmallButton createFindNextButton() {
