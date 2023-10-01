@@ -17,20 +17,13 @@
 
 package org.apache.log4j.chainsaw.receivers;
 
-import org.apache.log4j.chainsaw.help.HelpManager;
+import org.apache.log4j.chainsaw.ChainsawReceiver;
+import org.apache.log4j.chainsaw.ChainsawReceiverFactory;
 import org.apache.log4j.chainsaw.helper.OkCancelPanel;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
-import java.io.IOException;
-import java.net.URL;
-import org.apache.log4j.chainsaw.ChainsawReceiver;
-import org.apache.log4j.chainsaw.ChainsawReceiverFactory;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 
 /**
@@ -40,14 +33,11 @@ import org.apache.logging.log4j.LogManager;
  * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 public class NewReceiverDialogPanel extends JPanel {
-
-    private PluginPropertyEditorPanel pluginEditorPanel =
-        new PluginPropertyEditorPanel();
+    private final PluginPropertyEditorPanel pluginEditorPanel = new PluginPropertyEditorPanel();
     private final OkCancelPanel okPanel = new OkCancelPanel();
     private final JEditorPane javaDocPane = new JEditorPane();
     private final JScrollPane javaDocScroller = new JScrollPane(javaDocPane);
     private final JSplitPane splitter = new JSplitPane();
-    private static final Logger logger = LogManager.getLogger();
 
     private NewReceiverDialogPanel() {
         setupComponents();
@@ -93,7 +83,6 @@ public class NewReceiverDialogPanel extends JPanel {
      * of a NEW instance of the specified class (which must implement the Receiver
      * interface)
      *
-     * @param receiverClass
      * @return NewReceiverDialogPanel
      * @throws IllegalArgumentException if the specified class is not a Receiver
      */
@@ -114,7 +103,6 @@ public class NewReceiverDialogPanel extends JPanel {
      * @return Returns the okPanel.
      */
     public final OkCancelPanel getOkPanel() {
-
         return okPanel;
     }
 
@@ -122,8 +110,6 @@ public class NewReceiverDialogPanel extends JPanel {
      *
      */
     public ChainsawReceiver getReceiver() {
-
         return this.pluginEditorPanel.getPlugin();
     }
-
 }
