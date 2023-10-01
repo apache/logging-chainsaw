@@ -17,23 +17,31 @@
 
 package org.apache.log4j.chainsaw.receivers;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.log4j.chainsaw.ChainsawReceiver;
+import org.apache.log4j.chainsaw.ChainsawReceiverFactory;
+import org.apache.log4j.chainsaw.ChainsawStatusBar;
+import org.apache.log4j.chainsaw.LogUI;
 import org.apache.log4j.chainsaw.PopupListener;
 import org.apache.log4j.chainsaw.SmallButton;
 import org.apache.log4j.chainsaw.help.HelpManager;
 import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.chainsaw.icons.LevelIconFactory;
-import org.apache.log4j.chainsaw.icons.LineIconFactory;
+import org.apache.log4j.chainsaw.logevents.Level;
 import org.apache.log4j.chainsaw.prefs.LoadSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SettingsListener;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
-import org.apache.log4j.net.SocketNodeEventListener;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
@@ -48,11 +56,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import org.apache.log4j.chainsaw.ChainsawReceiver;
-import org.apache.log4j.chainsaw.LogUI;
-import org.apache.log4j.chainsaw.ChainsawReceiverFactory;
-import org.apache.log4j.chainsaw.ChainsawStatusBar;
-import org.apache.log4j.chainsaw.logevents.Level;
 
 
 /**
@@ -308,7 +311,6 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
                                     rx.start();
                                 }
 
-                                updateReceiverTreeInDispatchThread();
                                 m_statusBar.setMessage(
                                     "All Receivers have been (re)started");
                             }).start();
@@ -331,8 +333,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
         receiversTree.addMouseListener(popupListener);
         this.addMouseListener(popupListener);
 
-        JComponent component = receiversTree;
-        JScrollPane pane = new JScrollPane(component);
+        JScrollPane pane = new JScrollPane(receiversTree);
 
         splitter.setOrientation(JSplitPane.VERTICAL_SPLIT);
 
@@ -342,21 +343,6 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
         splitter.setResizeWeight(0.7);
         add(buttonPanel, BorderLayout.NORTH);
         add(splitter, BorderLayout.CENTER);
-
-        /**
-         * This Tree likes to be notified when Socket's are accepted so
-         * we listen for them and update the Tree.
-         */
-        SocketNodeEventListener listener =
-            new SocketNodeEventListener() {
-                public void socketOpened(String remoteInfo) {
-                    updateReceiverTreeInDispatchThread();
-                }
-
-                public void socketClosedEvent(Exception e) {
-                    updateReceiverTreeInDispatchThread();
-                }
-            };
     }
 
     private void saveReceivers() {
@@ -523,21 +509,6 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
             shutdownReceiverButtonAction.setEnabled(false);
             restartReceiverButtonAction.setEnabled(false);
         }
-    }
-
-    /**
-     * Ensures that the Receiver tree is updated with the latest information
-     * and that this operation occurs in the Swing Event Dispatch thread.
-     */
-    public void updateReceiverTreeInDispatchThread() {
-        logger.debug(
-            "updateReceiverTreeInDispatchThread, should not be needed now");
-
-        //    if (SwingUtilities.isEventDispatchThread()) {
-        //      updateReceiverTree.run();
-        //    } else {
-        //      SwingUtilities.invokeLater(updateReceiverTree);
-        //    }
     }
 
     /* (non-Javadoc)
