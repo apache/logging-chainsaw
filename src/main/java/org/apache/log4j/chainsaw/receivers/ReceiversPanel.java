@@ -587,12 +587,12 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
                                 dialog.pack();
                                 SwingHelper.centerOnScreen(dialog);
 
-                                /**
+                                /*
                                  * Make the default button the ok button
                                  */
                                 dialog.getRootPane().setDefaultButton(panel.getOkPanel().getOkButton());
 
-                                /**
+                                /*
                                  * Use the standard Cancel metaphor
                                  */
                                 SwingHelper.configureCancelForDialog(dialog, panel.getOkPanel().getCancelButton());
