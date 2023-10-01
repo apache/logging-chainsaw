@@ -62,6 +62,18 @@ public class SmallButton extends JButton implements MouseListener {
         addMouseListener(this);
     }
 
+    public Action getAction() {
+        return super.getAction();
+    }
+
+    public Object getActionName() {
+        return getAction().getValue(Action.NAME);
+    }
+
+    public KeyStroke getActionAcceleratorKey() {
+        return (KeyStroke)getAction().getValue(Action.ACCELERATOR_KEY);
+    }
+
     /**
      * {@inheritDoc}
      * Set to 0.5
@@ -142,6 +154,8 @@ public class SmallButton extends JButton implements MouseListener {
         Runnable action;
         String name = "";
 
+        String text = "";
+
         boolean enabled = true;
         Icon icon;
         URL iconUrl;
@@ -163,6 +177,12 @@ public class SmallButton extends JButton implements MouseListener {
             this.name = name;
             return this;
         }
+
+        Builder text(String text) {
+            this.text = text;
+            return this;
+        }
+
         Builder enabled() {
             this.enabled = true;
             return this;
@@ -209,7 +229,12 @@ public class SmallButton extends JButton implements MouseListener {
                 }
             });
 
-            button.setText(name);
+            if (text != null) {
+                button.setText(text);
+            } else if (name != null) {
+                button.setText(name);
+            }
+
             if (keyStroke != null) {
                 button.getAction().putValue(Action.ACCELERATOR_KEY, keyStroke);
             }
@@ -217,6 +242,9 @@ public class SmallButton extends JButton implements MouseListener {
                 button.setIcon(icon);
             } else  if (iconUrl != null) {
                 button.setIcon(new ImageIcon(iconUrl));
+            }
+            if (name != null) {
+                button.getAction().putValue(Action.NAME, name);
             }
             if (smallIconUrl != null) {
                 button.getAction().putValue(Action.SMALL_ICON, new ImageIcon(smallIconUrl));

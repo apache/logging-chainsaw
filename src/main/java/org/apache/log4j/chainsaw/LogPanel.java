@@ -1043,16 +1043,8 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         upperPanel.add(findCombo);
         upperPanel.add(Box.createHorizontalStrut(3));
 
-        Action findNextAction = getFindNextAction();
         Action findPreviousAction = getFindPreviousAction();
         //add up & down search
-        JButton findNextButton = new SmallButton(findNextAction);
-        findNextButton.setText("");
-        findNextButton.getActionMap().put(
-            findNextAction.getValue(Action.NAME), findNextAction);
-        findNextButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-            (KeyStroke) findNextAction.getValue(Action.ACCELERATOR_KEY),
-            findNextAction.getValue(Action.NAME));
 
         JButton findPreviousButton = new SmallButton(findPreviousAction);
         findPreviousButton.setText("");
@@ -1062,7 +1054,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             (KeyStroke) findPreviousAction.getValue(Action.ACCELERATOR_KEY),
             findPreviousAction.getValue(Action.NAME));
 
-        upperPanel.add(findNextButton);
+        upperPanel.add(createFindNextButton());
 
         upperPanel.add(findPreviousButton);
         upperPanel.add(Box.createHorizontalStrut(3));
@@ -1816,6 +1808,22 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         loadSettings();
     }
 
+    private SmallButton createFindNextButton() {
+        SmallButton findNextButton =new SmallButton.Builder()
+            .action(this::findNext)
+            .name("Find next")
+            .text("")
+            .smallIconUrl(ChainsawIcons.DOWN)
+            .shortDescription("Find the next occurrence of the rule from the current row")
+            .keyStroke(KeyStroke.getKeyStroke("F3"))
+            .build();
+        findNextButton.getActionMap()
+            .put(findNextButton.getActionName(), findNextButton.getAction());
+        findNextButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+            .put(findNextButton.getActionAcceleratorKey(), findNextButton.getActionName());
+        return findNextButton;
+    }
+
     private String getValueOf(int row, int column) {
         if (currentTable == null) {
             return "";
@@ -1849,24 +1857,6 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             return value.toString();
         }
         return "";
-    }
-
-    private Action getFindNextAction() {
-        final Action action =
-            new AbstractAction("Find next") {
-                public void actionPerformed(ActionEvent e) {
-                    findNext();
-                }
-            };
-
-        //    action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_F));
-        action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F3"));
-        action.putValue(
-            Action.SHORT_DESCRIPTION,
-            "Find the next occurrence of the rule from the current row");
-        action.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.DOWN));
-
-        return action;
     }
 
     private Action getFindPreviousAction() {
