@@ -18,6 +18,8 @@
 package org.apache.log4j.chainsaw;
 
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
@@ -35,6 +37,8 @@ import java.util.Stack;
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 public class WelcomePanel extends JPanel {
+    private Logger logger = LogManager.getLogger(WelcomePanel.class);
+
     private Stack<URL> urlStack = new Stack<>();
     private final JEditorPane textInfo = new JEditorPane();
     private final URLToolbar urlToolbar = new URLToolbar();
@@ -72,7 +76,7 @@ public class WelcomePanel extends JPanel {
                         }
                     });
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error(e,e);
             }
         }
     }
@@ -87,7 +91,7 @@ public class WelcomePanel extends JPanel {
                     JTextComponentFormatter.applySystemFontAndSize(textInfo);
                     urlToolbar.updateToolbar();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logger.error(e,e);
                 }
             });
     }
