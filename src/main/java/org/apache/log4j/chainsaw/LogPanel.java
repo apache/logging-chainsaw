@@ -1043,20 +1043,10 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         upperPanel.add(findCombo);
         upperPanel.add(Box.createHorizontalStrut(3));
 
-        Action findPreviousAction = getFindPreviousAction();
         //add up & down search
-
-        JButton findPreviousButton = new SmallButton(findPreviousAction);
-        findPreviousButton.setText("");
-        findPreviousButton.getActionMap().put(
-            findPreviousAction.getValue(Action.NAME), findPreviousAction);
-        findPreviousButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-            (KeyStroke) findPreviousAction.getValue(Action.ACCELERATOR_KEY),
-            findPreviousAction.getValue(Action.NAME));
-
         upperPanel.add(createFindNextButton());
+        upperPanel.add(createFindPreviousButton());
 
-        upperPanel.add(findPreviousButton);
         upperPanel.add(Box.createHorizontalStrut(3));
 
         //Adding a button to clear filter expressions which are currently remembered by Chainsaw...
@@ -1809,7 +1799,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
     }
 
     private SmallButton createFindNextButton() {
-        SmallButton findNextButton =new SmallButton.Builder()
+        SmallButton button = new SmallButton.Builder()
             .action(this::findNext)
             .name("Find next")
             .text("")
@@ -1817,11 +1807,27 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             .shortDescription("Find the next occurrence of the rule from the current row")
             .keyStroke(KeyStroke.getKeyStroke("F3"))
             .build();
-        findNextButton.getActionMap()
-            .put(findNextButton.getActionName(), findNextButton.getAction());
-        findNextButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
-            .put(findNextButton.getActionAcceleratorKey(), findNextButton.getActionName());
-        return findNextButton;
+
+        button.getActionMap().put(button.getActionName(), button.getAction());
+        button.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+            .put(button.getActionAcceleratorKey(), button.getActionName());
+        return button;
+    }
+
+    private SmallButton createFindPreviousButton() {
+        SmallButton button = new SmallButton.Builder()
+            .action(this::findPrevious)
+            .name("Find previous")
+            .text("")
+            .smallIconUrl(ChainsawIcons.UP)
+            .shortDescription("Find the previous occurrence of the rule from the current row")
+            .keyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_MASK))
+            .build();
+
+        button.getActionMap().put(button.getActionName(), button.getAction());
+        button.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+            .put(button.getActionAcceleratorKey(), button.getActionName());
+        return button;
     }
 
     private String getValueOf(int row, int column) {
@@ -1857,26 +1863,6 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             return value.toString();
         }
         return "";
-    }
-
-    private Action getFindPreviousAction() {
-        final Action action =
-            new AbstractAction("Find previous") {
-                public void actionPerformed(ActionEvent e) {
-                    findPrevious();
-                }
-            };
-
-        //    action.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_F));
-        action.putValue(
-            Action.ACCELERATOR_KEY,
-            KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_MASK));
-        action.putValue(
-            Action.SHORT_DESCRIPTION,
-            "Find the previous occurrence of the rule from the current row");
-        action.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.UP));
-
-        return action;
     }
 
     private void buildCombo(final AutoFilterComboBox combo, boolean isFiltering, final AutoFilterComboBox.AutoFilterComboBoxModel otherModel) {
