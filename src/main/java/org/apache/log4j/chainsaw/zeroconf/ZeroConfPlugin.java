@@ -119,8 +119,14 @@ public class ZeroConfPlugin extends DockablePanel {
         deviceTable.addMouseListener(new ConnectorMouseListener());
 
         JToolBar toolbar = new JToolBar();
-        SmallButton helpButton = new SmallButton(helpItem.getAction());
-        helpButton.setText(helpItem.getText());
+
+        SmallButton helpButton = new SmallButton.Builder()
+            .text(helpItem.getText())
+            .icon(ChainsawIcons.ICON_HELP)
+            .action(() -> HelpManager.getInstance().showHelpForClass(ZeroConfPlugin.class))
+            .name("Learn more about ZeroConf...")
+            .build();
+
         toolbar.add(helpButton);
         toolbar.setFloatable(false);
         add(toolbar, BorderLayout.NORTH);

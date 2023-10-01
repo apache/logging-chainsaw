@@ -773,19 +773,13 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
 
             addSeparator();
 
-            Action closeAction =
-                new AbstractAction(null, LineIconFactory.createCloseIcon()) {
-                    public void actionPerformed(ActionEvent e) {
-                        ReceiversPanel.this.setVisible(false);
-                    }
-                };
-
-            closeAction.putValue(
-                Action.SHORT_DESCRIPTION, "Closes the Receiver panel");
-
             add(Box.createHorizontalGlue());
 
-            add(new SmallButton(closeAction));
+            SmallButton closeButton = new SmallButton.Builder()
+                .shortDescription("Closes the Receiver panel")
+                .action(() -> ReceiversPanel.this.setVisible(false))
+                .build();
+            add(closeButton);
 
             add(Box.createHorizontalStrut(5));
         }
