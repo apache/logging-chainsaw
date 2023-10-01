@@ -16,14 +16,16 @@
  */
 package org.apache.log4j.chainsaw.components.logpanel;
 
+import org.apache.commons.configuration2.AbstractConfiguration;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.event.ConfigurationEvent;
 import org.apache.log4j.chainsaw.AbstractPreferencePanel;
 import org.apache.log4j.chainsaw.ApplicationPreferenceModel;
 import org.apache.log4j.chainsaw.BasicPrefPanel;
 import org.apache.log4j.chainsaw.CheckListCellRenderer;
 import org.apache.log4j.chainsaw.JTextComponentFormatter;
 import org.apache.log4j.chainsaw.ModifiableListModel;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.log4j.chainsaw.prefs.SettingsManager;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -35,10 +37,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.configuration2.AbstractConfiguration;
-import org.apache.commons.configuration2.Configuration;
-import org.apache.commons.configuration2.event.ConfigurationEvent;
-import org.apache.log4j.chainsaw.prefs.SettingsManager;
 
 
 /**
@@ -50,7 +48,6 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel {
     //~ Instance fields =========================================================
 
     private final ModifiableListModel columnListModel = new ModifiableListModel();
-    private static final Logger logger = LogManager.getLogger(LogPanelPreferencePanel.class);
     private ApplicationPreferenceModel appPreferenceModel;
     private final String m_panelIdentifier;
 
@@ -186,7 +183,6 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel {
         private final JTextField timeZone = new JTextField(10);
         private final JRadioButton rdLevelIcons = new JRadioButton("Icons ");
         private final JRadioButton rdLevelText = new JRadioButton("Text ");
-        private JRadioButton rdLast;
 
         //~ Constructors ==========================================================
 
@@ -211,8 +207,6 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel {
                     BorderFactory.createEtchedBorder(), "Timestamp"));
 
             ButtonGroup bgDateFormat = new ButtonGroup();
-
-//            rdISO.setSelected(preferenceModel.isUseISO8601Format());
 
             rdISO.setHorizontalTextPosition(SwingConstants.RIGHT);
             rdISO.setAlignmentX(Component.LEFT_ALIGNMENT);
