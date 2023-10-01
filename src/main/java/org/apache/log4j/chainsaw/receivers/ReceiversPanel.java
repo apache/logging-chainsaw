@@ -451,7 +451,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
      * Takes the currently selected Receiver and pauess it, effectively
      * discarding any received event BEFORE it is even posted to the logger
      * repository.
-     * <p>
+     *
      * The user is NOT asked to confirm this operation
      */
     private void pauseCurrentlySelectedReceiver() {
@@ -471,7 +471,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
     /**
      * Takes the currently selected Receiver and stops it, which effectively
      * removes it from the PluginRegistry.
-     * <p>
+     *
      * The user is asked to confirm this operation
      */
     private void shutdownCurrentlySelectedReceiver() {
