@@ -2619,19 +2619,14 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             evt -> dockPauseButton.getModel().setSelected(isPaused()));
         toolbar.add(dockPauseButton);
 
-        Action dockShowPrefsAction =
-            new AbstractAction("") {
-                public void actionPerformed(ActionEvent arg0) {
-                    showPreferences();
-                }
-            };
+        SmallButton showDockButton =
+            new SmallButton.Builder()
+                .action(this::showPreferences)
+                .shortDescription("Define preferences...")
+                .smallIconUrl(ChainsawIcons.PREFERENCES)
+                .build();
 
-        dockShowPrefsAction.putValue(
-            Action.SHORT_DESCRIPTION, "Define preferences...");
-        dockShowPrefsAction.putValue(
-            Action.SMALL_ICON, ChainsawIcons.ICON_PREFERENCES);
-
-        toolbar.add(new SmallButton(dockShowPrefsAction));
+        toolbar.add(showDockButton);
 
         Action dockToggleLogTreeAction =
             new AbstractAction() {
