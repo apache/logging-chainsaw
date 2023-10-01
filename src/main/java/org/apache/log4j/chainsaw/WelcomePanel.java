@@ -101,8 +101,6 @@ public class WelcomePanel extends JPanel {
 
         private URLToolbar() {
             setFloatable(false);
-            updateToolbar();
-
 
             JButton home = new SmallButton.Builder()
                 .iconUrl(ChainsawIcons.ICON_HOME)
@@ -131,6 +129,7 @@ public class WelcomePanel extends JPanel {
             add(previousButton);
 
             addSeparator();
+            updateToolbar();
         }
 
         void updateToolbar() {
