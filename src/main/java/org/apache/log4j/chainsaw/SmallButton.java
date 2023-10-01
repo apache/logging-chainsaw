@@ -148,7 +148,7 @@ public class SmallButton extends JButton implements MouseListener {
         setBorder(inactiveBorder);
     }
 
-    static class Builder {
+    static public class Builder {
         Runnable action;
         String name = "";
 
@@ -164,51 +164,51 @@ public class SmallButton extends JButton implements MouseListener {
 
         private KeyStroke keyStroke;
 
-        Builder action(Runnable action) {
+        public Builder action(Runnable action) {
             this.action = action;
             return this;
         }
-        Builder name(String name) {
+        public Builder name(String name) {
             this.name = name;
             return this;
         }
 
-        Builder text(String text) {
+        public Builder text(String text) {
             this.text = text;
             return this;
         }
 
-        Builder enabled() {
+        public Builder enabled() {
             this.enabled = true;
             return this;
         }
-        Builder disabled() {
+        public Builder disabled() {
             this.enabled = false;
             return this;
         }
-        Builder icon(Icon icon) {
+        public Builder icon(Icon icon) {
             this.icon = icon;
             return this;
         }
-        Builder iconUrl(URL iconUrl) {
+        public Builder iconUrl(URL iconUrl) {
             this.iconUrl = iconUrl;
             return this;
         }
-        Builder smallIconUrl(URL smallIconUrl) {
+        public Builder smallIconUrl(URL smallIconUrl) {
             this.smallIconUrl = smallIconUrl;
             return this;
         }
-        Builder shortDescription(String shortDescription) {
+        public Builder shortDescription(String shortDescription) {
             this.shortDescription = shortDescription;
             return this;
         }
 
-        Builder keyStroke(KeyStroke keyStroke) {
+        public Builder keyStroke(KeyStroke keyStroke) {
             this.keyStroke = keyStroke;
             return this;
         }
 
-        SmallButton build() {
+        public SmallButton build() {
             SmallButton button = new SmallButton();
             if (action == null) {
                 throw new NullPointerException("Action must not be null for SmallButton");
