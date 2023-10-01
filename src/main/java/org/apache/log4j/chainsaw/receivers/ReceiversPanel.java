@@ -146,7 +146,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
                         (node != null) && (node.getUserObject() != null)
                             && (node.getUserObject() instanceof ChainsawReceiver)) {
                         ChainsawReceiver p = (ChainsawReceiver) node.getUserObject();
-                        logger.debug("plugin=" + p);
+                        logger.debug("plugin={}", p);
                         pluginEditorPanel.setReceiverAndProperties(p, 
                                 m_classToProperties.get(p.getClass()));
                     } else {
