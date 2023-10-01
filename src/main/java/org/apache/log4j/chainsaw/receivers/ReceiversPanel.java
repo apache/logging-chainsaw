@@ -630,9 +630,6 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
      * @author Paul Smith &lt;psmith@apache.org&gt;
      */
     class ReceiverPopupMenu extends JPopupMenu {
-        ReceiverPopupMenu() {
-        }
-
         /* (non-Javadoc)
          * @see javax.swing.JPopupMenu#show(java.awt.Component, int, int)
          */
