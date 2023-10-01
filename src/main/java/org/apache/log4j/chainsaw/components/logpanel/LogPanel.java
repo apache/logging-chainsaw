@@ -671,31 +671,8 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
          * Logger tree panel
          *
          */
-        LogPanelLoggerTreeModel logTreeModel = new LogPanelLoggerTreeModel();
-        logTreePanel = new LoggerNameTreePanel(logTreeModel, tabConfig, this, colorizer, filterModel);
-        logTreePanel.getLoggerVisibilityRule().addPropertyChangeListener(evt -> {
-            if (evt.getPropertyName().equals("searchExpression")) {
-                findCombo.setSelectedItem(evt.getNewValue().toString());
-                findNext();
-            }
-        });
-        logTreePanel.addComponentListener(new ComponentListener() {
-            @Override
-            public void componentResized(ComponentEvent ce) {
-                Dimension dim = ce.getComponent().getSize();
-                tabConfig.setProperty("logpanel.treeDividerLocation", dim.width);
-            }
 
-            @Override
-            public void componentMoved(ComponentEvent ce) {}
-            @Override
-            public void componentShown(ComponentEvent ce) {}
-            @Override
-            public void componentHidden(ComponentEvent ce) {}
-        });
-
-        tableModel.addLoggerNameListener(logTreeModel);
-        tableModel.addLoggerNameListener(logTreePanel);
+        logTreePanel = createLoggerNameTreePanel(tabConfig);
 
         /**
          * Set the LoggerRule to be the LoggerTreePanel, as this visual component
@@ -1661,6 +1638,36 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         searchTable.addMouseListener(searchTablePopupListener);
 
         loadSettings();
+    }
+
+    private LoggerNameTreePanel createLoggerNameTreePanel(AbstractConfiguration tabConfig) {
+        final LoggerNameTreePanel logTreePanel;
+        LogPanelLoggerTreeModel logTreeModel = new LogPanelLoggerTreeModel();
+        logTreePanel = new LoggerNameTreePanel(logTreeModel, tabConfig, this, colorizer, filterModel);
+        logTreePanel.getLoggerVisibilityRule().addPropertyChangeListener(evt -> {
+            if (evt.getPropertyName().equals("searchExpression")) {
+                findCombo.setSelectedItem(evt.getNewValue().toString());
+                findNext();
+            }
+        });
+        logTreePanel.addComponentListener(new ComponentListener() {
+            @Override
+            public void componentResized(ComponentEvent ce) {
+                Dimension dim = ce.getComponent().getSize();
+                tabConfig.setProperty("logpanel.treeDividerLocation", dim.width);
+            }
+
+            @Override
+            public void componentMoved(ComponentEvent ce) {}
+            @Override
+            public void componentShown(ComponentEvent ce) {}
+            @Override
+            public void componentHidden(ComponentEvent ce) {}
+        });
+
+        tableModel.addLoggerNameListener(logTreeModel);
+        tableModel.addLoggerNameListener(logTreePanel);
+        return logTreePanel;
     }
 
     private JPanel createUpperPanel(JTextField filterText, JTextField findText) {
