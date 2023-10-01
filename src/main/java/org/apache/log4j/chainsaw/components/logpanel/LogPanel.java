@@ -1728,8 +1728,8 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         upperPanel.add(Box.createHorizontalStrut(3));
 
         //add up & down search
-        upperPanel.add(createFindNextButton());
-        upperPanel.add(createFindPreviousButton());
+        upperPanel.add(ElementFactory.createFindNextButton(this::findNext));
+        upperPanel.add(ElementFactory.createFindPreviousButton(this::findPrevious));
 
         upperPanel.add(Box.createHorizontalStrut(3));
 
@@ -1806,37 +1806,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         return upperPanel;
     }
 
-    private SmallButton createFindNextButton() {
-        SmallButton button = new SmallButton.Builder()
-            .action(this::findNext)
-            .name("Find next")
-            .text("")
-            .smallIconUrl(ChainsawIcons.DOWN)
-            .shortDescription("Find the next occurrence of the rule from the current row")
-            .keyStroke(KeyStroke.getKeyStroke("F3"))
-            .build();
 
-        button.getActionMap().put(button.getActionName(), button.getAction());
-        button.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
-            .put(button.getActionAcceleratorKey(), button.getActionName());
-        return button;
-    }
-
-    private SmallButton createFindPreviousButton() {
-        SmallButton button = new SmallButton.Builder()
-            .action(this::findPrevious)
-            .name("Find previous")
-            .text("")
-            .smallIconUrl(ChainsawIcons.UP)
-            .shortDescription("Find the previous occurrence of the rule from the current row")
-            .keyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_MASK))
-            .build();
-
-        button.getActionMap().put(button.getActionName(), button.getAction());
-        button.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
-            .put(button.getActionAcceleratorKey(), button.getActionName());
-        return button;
-    }
 
     private String getValueOf(int row, int column) {
         if (currentTable == null) {
