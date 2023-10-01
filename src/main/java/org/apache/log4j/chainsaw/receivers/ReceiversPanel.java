@@ -658,9 +658,6 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
             super.show(invoker, x, y);
         }
 
-        /**
-         *
-         */
         private DefaultMutableTreeNode getRootOfTree() {
             return (DefaultMutableTreeNode) receiversTree.getModel().getRoot();
         }
@@ -670,7 +667,6 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
          * Receiver node in the Tree.
          */
         private void buildForReceiverNode() {
-
             add(playReceiverButtonAction);
             add(pauseReceiverButtonAction);
             add(restartReceiverButtonAction);
