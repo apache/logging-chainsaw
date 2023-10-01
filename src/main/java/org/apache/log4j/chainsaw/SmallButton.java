@@ -213,11 +213,6 @@ public class SmallButton extends JButton implements MouseListener {
             return this;
         }
 
-        Builder accelerator(KeyEvent keyEvent, InputEvent inputEvent) {
-            this.keyEvent = keyEvent;
-            this.inputEvent = inputEvent;
-            return this;
-        }
         SmallButton build() {
             SmallButton button = new SmallButton();
             if (action == null) {
@@ -253,11 +248,6 @@ public class SmallButton extends JButton implements MouseListener {
                 button.getAction().putValue(Action.SHORT_DESCRIPTION, shortDescription);
             }
             button.setEnabled(enabled);
-            if (keyEvent != null && inputEvent != null) {
-                button.getAction().putValue(
-                    Action.ACCELERATOR_KEY,
-                    KeyStroke.getKeyStroke(keyEvent.getKeyCode(), inputEvent.getModifiers()));
-            }
             return button;
         }
     }
