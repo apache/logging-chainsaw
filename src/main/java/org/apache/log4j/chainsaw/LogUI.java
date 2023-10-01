@@ -20,6 +20,8 @@ package org.apache.log4j.chainsaw;
 import org.apache.commons.configuration2.AbstractConfiguration;
 import org.apache.commons.configuration2.event.ConfigurationEvent;
 import org.apache.log4j.chainsaw.color.RuleColorizer;
+import org.apache.log4j.chainsaw.components.elements.SmallButton;
+import org.apache.log4j.chainsaw.components.elements.SmallToggleButton;
 import org.apache.log4j.chainsaw.components.logpanel.LogPanel;
 import org.apache.log4j.chainsaw.dnd.FileDnDTarget;
 import org.apache.log4j.chainsaw.help.HelpManager;

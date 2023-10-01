@@ -18,6 +18,8 @@
  */
 package org.apache.log4j.chainsaw;
 
+import org.apache.log4j.chainsaw.components.elements.SmallButton;
+import org.apache.log4j.chainsaw.components.elements.SmallToggleButton;
 import org.apache.log4j.chainsaw.components.logpanel.LogPanel;
 import org.apache.log4j.chainsaw.components.logpanel.LogPanelLoggerTreeModel;
 import org.apache.logging.log4j.LogManager;

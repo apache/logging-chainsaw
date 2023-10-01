@@ -22,7 +22,7 @@ import org.apache.log4j.chainsaw.ChainsawReceiverFactory;
 import org.apache.log4j.chainsaw.ChainsawStatusBar;
 import org.apache.log4j.chainsaw.LogUI;
 import org.apache.log4j.chainsaw.PopupListener;
-import org.apache.log4j.chainsaw.SmallButton;
+import org.apache.log4j.chainsaw.components.elements.SmallButton;
 import org.apache.log4j.chainsaw.help.HelpManager;
 import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;

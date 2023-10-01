@@ -17,6 +17,7 @@
 
 package org.apache.log4j.chainsaw;
 
+import org.apache.log4j.chainsaw.components.elements.SmallButton;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

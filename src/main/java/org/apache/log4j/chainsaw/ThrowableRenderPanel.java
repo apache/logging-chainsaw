@@ -23,6 +23,8 @@
  */
 package org.apache.log4j.chainsaw;
 
+import org.apache.log4j.chainsaw.components.elements.SmallButton;
+
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
