@@ -17,8 +17,9 @@
 
 /*
  */
-package org.apache.log4j.chainsaw;
+package org.apache.log4j.chainsaw.components.logpanel;
 
+import org.apache.log4j.chainsaw.LoggerNameListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -34,7 +35,7 @@ import java.util.*;
  *
  * @author Paul Smith &lt;psmith@apache.org&gt;
  */
-class LogPanelLoggerTreeModel extends DefaultTreeModel
+public class LogPanelLoggerTreeModel extends DefaultTreeModel
     implements LoggerNameListener {
     private Map<String, LogPanelTreeNode> fullPackageMap = new HashMap<>();
     private final Logger logger = LogManager.getLogger(LogPanelLoggerTreeModel.class);
@@ -136,7 +137,7 @@ class LogPanelLoggerTreeModel extends DefaultTreeModel
         }
     }
 
-    LogPanelTreeNode lookupLogger(String newLogger) {
+    public LogPanelTreeNode lookupLogger(String newLogger) {
         if (fullPackageMap.containsKey(newLogger)) {
             return fullPackageMap.get(newLogger);
         } else {

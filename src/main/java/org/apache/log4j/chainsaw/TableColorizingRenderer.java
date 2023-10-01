@@ -18,6 +18,7 @@
 package org.apache.log4j.chainsaw;
 
 import org.apache.log4j.chainsaw.color.RuleColorizer;
+import org.apache.log4j.chainsaw.components.logpanel.LogPanelPreferenceModel;
 import org.apache.log4j.chainsaw.icons.LevelIconFactory;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.rule.Rule;
@@ -34,7 +35,6 @@ import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -519,7 +519,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
      *
      * @param formatter
      */
-    void setDateFormatter(DateFormat formatter) {
+    public void setDateFormatter(DateFormat formatter) {
         this.dateFormatInUse = formatter;
         if (dateFormatInUse != null && dateFormatTZ != null && !("".equals(dateFormatTZ))) {
             dateFormatInUse.setTimeZone(TimeZone.getTimeZone(dateFormatTZ));
@@ -533,7 +533,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
      *
      * @param loggerPrecisionText
      */
-    void setLoggerPrecision(String loggerPrecisionText) {
+    public void setLoggerPrecision(String loggerPrecisionText) {
         try {
             loggerPrecision = Integer.parseInt(loggerPrecisionText);
         } catch (NumberFormatException nfe) {

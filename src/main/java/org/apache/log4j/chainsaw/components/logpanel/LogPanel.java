@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.log4j.chainsaw;
+package org.apache.log4j.chainsaw.components.logpanel;
 
 import org.apache.commons.configuration2.event.EventListener;
+import org.apache.log4j.chainsaw.*;
 import org.apache.log4j.chainsaw.color.ColorPanel;
 import org.apache.log4j.chainsaw.color.RuleColorizer;
 import org.apache.log4j.chainsaw.filter.FilterModel;
@@ -2212,7 +2213,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
     /**
      * Display the panel preferences frame
      */
-    void showPreferences() {
+    public void showPreferences() {
         //don't pack this frame
         centerAndSetVisible(logPanelPreferencesFrame);
     }
@@ -2227,7 +2228,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
     /**
      * Display the color rule frame
      */
-    void showColorPreferences() {
+    public void showColorPreferences() {
         colorPanel.componentChanged();
         colorFrame.pack();
         centerAndSetVisible(colorFrame);
@@ -2236,7 +2237,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
     /**
      * Toggle panel preference for detail visibility on or off
      */
-    void toggleDetailVisible() {
+    public void toggleDetailVisible() {
         AbstractConfiguration config = SettingsManager.getInstance().getSettingsForReceiverTab(identifier);
 
         boolean visible = config.getBoolean("logpanel.detailColumnVisible");
@@ -2248,7 +2249,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
      *
      * @return detail visibility flag
      */
-    boolean isDetailVisible() {
+    public boolean isDetailVisible() {
         AbstractConfiguration config = SettingsManager.getInstance().getSettingsForReceiverTab(identifier);
 
         boolean visible = config.getBoolean("logpanel.detailColumnVisible");
@@ -2262,7 +2263,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
     /**
      * Toggle panel preference for logger tree visibility on or off
      */
-    void toggleLogTreeVisible() {
+    public void toggleLogTreeVisible() {
         AbstractConfiguration config = SettingsManager.getInstance().getSettingsForReceiverTab(identifier);
 
         boolean visible = config.getBoolean("logpanel.logTreePanelVisible");
@@ -2274,7 +2275,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
      *
      * @return logger tree visibility flag
      */
-    boolean isLogTreeVisible() {
+    public boolean isLogTreeVisible() {
         AbstractConfiguration config = SettingsManager.getInstance().getSettingsForReceiverTab(identifier);
 
         return config.getBoolean("logpanel.logTreePanelVisible");
@@ -2294,18 +2295,18 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
      *
      * @return list of LoggingEvents
      */
-    List getFilteredEvents() {
+    public List getFilteredEvents() {
         return tableModel.getFilteredEvents();
     }
 
-    List<LoggingEventWrapper> getMatchingEvents(Rule rule) {
+    public List<LoggingEventWrapper> getMatchingEvents(Rule rule) {
         return tableModel.getMatchingEvents(rule);
     }
 
     /**
      * Remove all events
      */
-    void clearEvents() {
+    public void clearEvents() {
         clearModel();
     }
 
@@ -2314,7 +2315,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
      *
      * @return identifier
      */
-    String getIdentifier() {
+    public String getIdentifier() {
         return identifier;
     }
 
@@ -2322,7 +2323,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
      * Undocks this DockablePanel by removing the panel from the LogUI window
      * and placing it inside it's own JFrame.
      */
-    void undock() {
+    public void undock() {
         final int row = table.getSelectedRow();
         setDocked(false);
         externalPanel.removeAll();
@@ -2345,7 +2346,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
      *
      * @param l
      */
-    void addEventCountListener(EventCountListener l) {
+    public void addEventCountListener(EventCountListener l) {
         tableModel.addEventCountListener(l);
     }
 
@@ -2354,7 +2355,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
      *
      * @return paused flag
      */
-    boolean isPaused() {
+    public boolean isPaused() {
         return paused;
     }
 
@@ -2363,7 +2364,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
      *
      * @param paused
      */
-    void setPaused(boolean paused) {
+    public void setPaused(boolean paused) {
         boolean oldValue = this.paused;
         this.paused = paused;
         firePropertyChange("paused", oldValue, paused);
@@ -2375,7 +2376,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
      * @param eventNumber
      * @return row number or -1 if row with log4jid property with that number was not found
      */
-    int setSelectedEvent(int eventNumber) {
+    public int setSelectedEvent(int eventNumber) {
         int row = tableModel.locate(ExpressionRule.getRule("prop.log4jid == " + eventNumber), 0, true);
         if (row > -1) {
             preferenceModel.setScrollToBottom(false);
@@ -2390,7 +2391,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
      *
      * @param listener
      */
-    void addPreferencePropertyChangeListener(PropertyChangeListener listener) {
+    public void addPreferencePropertyChangeListener(PropertyChangeListener listener) {
         preferenceModel.addPropertyChangeListener(listener);
     }
 
@@ -2398,7 +2399,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
      * Toggle the LoggingEvent container from either managing a cyclic buffer of
      * events or an ArrayList of events
      */
-    void toggleCyclic() {
+    public void toggleCyclic() {
         boolean toggledCyclic = !preferenceModel.isCyclic();
 
         preferenceModel.setCyclic(toggledCyclic);
@@ -2411,7 +2412,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
      *
      * @return flag answering if LoggingEvent container is a cyclic buffer
      */
-    boolean isCyclic() {
+    public boolean isCyclic() {
         return preferenceModel.isCyclic();
     }
 
@@ -2732,7 +2733,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
     /**
      * Update the status bar with current selected row and row count
      */
-    protected void updateStatusBar() {
+    public void updateStatusBar() {
         SwingHelper.invokeOnEDT(
             () -> {
                 statusBar.setSelectedLine(

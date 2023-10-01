@@ -231,7 +231,7 @@ public class ChainsawStatusBar extends JPanel {
         }
     }
 
-    void setSelectedLine(
+    public void setSelectedLine(
         final int selectedLine, final int lineCount, final int total, String tabName) {
         if (tabName.equals(logUI.getActiveTabName())) {
             SwingUtilities.invokeLater(
@@ -242,7 +242,7 @@ public class ChainsawStatusBar extends JPanel {
         }
     }
 
-    void setSearchMatchCount(int searchMatchCount, String tabName) {
+    public void setSearchMatchCount(int searchMatchCount, String tabName) {
         if (tabName.equals(logUI.getActiveTabName())) {
             if (searchMatchCount == 0) {
                 searchMatchLabel.setText("");
@@ -252,7 +252,7 @@ public class ChainsawStatusBar extends JPanel {
         }
     }
 
-    void setNothingSelected() {
+    public void setNothingSelected() {
         SwingUtilities.invokeLater(
             () -> lineSelectionLabel.setText(""));
     }

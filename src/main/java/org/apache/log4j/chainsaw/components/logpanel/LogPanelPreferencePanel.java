@@ -14,13 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.log4j.chainsaw;
+package org.apache.log4j.chainsaw.components.logpanel;
 
+import org.apache.log4j.chainsaw.AbstractPreferencePanel;
+import org.apache.log4j.chainsaw.ApplicationPreferenceModel;
+import org.apache.log4j.chainsaw.BasicPrefPanel;
+import org.apache.log4j.chainsaw.CheckListCellRenderer;
+import org.apache.log4j.chainsaw.JTextComponentFormatter;
+import org.apache.log4j.chainsaw.ModifiableListModel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
-import javax.swing.table.TableColumn;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
@@ -29,7 +34,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import org.apache.commons.configuration2.AbstractConfiguration;
 import org.apache.commons.configuration2.Configuration;

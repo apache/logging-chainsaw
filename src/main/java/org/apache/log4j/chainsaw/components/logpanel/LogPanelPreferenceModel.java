@@ -17,9 +17,8 @@
 
 /*
  */
-package org.apache.log4j.chainsaw;
+package org.apache.log4j.chainsaw.components.logpanel;
 
-import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.helpers.Constants;
 
 import javax.swing.table.TableColumn;

@@ -18,6 +18,8 @@
  */
 package org.apache.log4j.chainsaw;
 
+import org.apache.log4j.chainsaw.components.logpanel.LogPanel;
+import org.apache.log4j.chainsaw.components.logpanel.LogPanelLoggerTreeModel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.log4j.chainsaw.color.RuleColorizer;
@@ -47,7 +49,7 @@ import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
  *
  * @author Paul Smith &lt;psmith@apache.org&gt;
  */
-final class LoggerNameTreePanel extends JPanel implements LoggerNameListener {
+public final class LoggerNameTreePanel extends JPanel implements LoggerNameListener {
     //~ Static fields/initializers ==============================================
 
     private static final int WARN_DEPTH = 4;
@@ -118,7 +120,7 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener {
      *
      * @param logTreeModel
      */
-    LoggerNameTreePanel(LogPanelLoggerTreeModel logTreeModel, 
+    public LoggerNameTreePanel(LogPanelLoggerTreeModel logTreeModel,
             AbstractConfiguration panelConfiguration,
             LogPanel logPanel,
             RuleColorizer colorizer,
@@ -549,7 +551,7 @@ final class LoggerNameTreePanel extends JPanel implements LoggerNameListener {
      *
      * @param fqnLoggersToIgnore
      */
-    void ignore(Collection fqnLoggersToIgnore) {
+    public void ignore(Collection fqnLoggersToIgnore) {
         hiddenSet.addAll(fqnLoggersToIgnore);
         visibilityRuleDelegate.firePropertyChange("hiddenSet", null, null);
         fireChangeEvent();

@@ -38,7 +38,7 @@ import java.awt.event.MouseListener;
  * @author Pavel Vorobeiv
  * @author Paul Smith &lt;psmith@apache.org&gt;
  */
-class SmallToggleButton extends JToggleButton implements ItemListener,
+public class SmallToggleButton extends JToggleButton implements ItemListener,
     MouseListener {
     protected Border m_highlighted = new SoftBevelBorder(BevelBorder.RAISED);
     protected Border m_raised = BorderFactory.createEmptyBorder(3, 3, 3, 3);

@@ -49,7 +49,7 @@ import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  * @author Stephen Pain
  */
-class ChainsawCyclicBufferTableModel extends AbstractTableModel
+public class ChainsawCyclicBufferTableModel extends AbstractTableModel
     implements EventContainer, PropertyChangeListener {
 
     //cyclic field used internally in this class, but not exposed via the eventcontainer

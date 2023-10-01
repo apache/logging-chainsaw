@@ -71,21 +71,21 @@ public class ChainsawConstants {
     static final String SETTINGS_EXTENSION = ".settings";
 
     //COLUMN NAMES
-    static final String LOGGER_COL_NAME = "LOGGER";
-    static final String LOG4J_MARKER_COL_NAME_LOWERCASE = "marker";
-    static final String TIMESTAMP_COL_NAME = "TIMESTAMP";
-    static final String LEVEL_COL_NAME = "LEVEL";
-    static final String THREAD_COL_NAME = "THREAD";
-    static final String MESSAGE_COL_NAME = "MESSAGE";
-    static final String NDC_COL_NAME = "NDC";
-    static final String THROWABLE_COL_NAME = "THROWABLE";
-    static final String CLASS_COL_NAME = "CLASS";
-    static final String METHOD_COL_NAME = "METHOD";
-    static final String FILE_COL_NAME = "FILE";
-    static final String LINE_COL_NAME = "LINE";
-    static final String PROPERTIES_COL_NAME = "PROPERTIES";
+    public static final String LOGGER_COL_NAME = "LOGGER";
+    public static final String LOG4J_MARKER_COL_NAME_LOWERCASE = "marker";
+    public static final String TIMESTAMP_COL_NAME = "TIMESTAMP";
+    public static final String LEVEL_COL_NAME = "LEVEL";
+    public static final String THREAD_COL_NAME = "THREAD";
+    public static final String MESSAGE_COL_NAME = "MESSAGE";
+    public static final String NDC_COL_NAME = "NDC";
+    public static final String THROWABLE_COL_NAME = "THROWABLE";
+    public static final String CLASS_COL_NAME = "CLASS";
+    public static final String METHOD_COL_NAME = "METHOD";
+    public static final String FILE_COL_NAME = "FILE";
+    public static final String LINE_COL_NAME = "LINE";
+    public static final String PROPERTIES_COL_NAME = "PROPERTIES";
     public static final String MILLIS_DELTA_COL_NAME_LOWERCASE = "millisdelta";
-    static final String ID_COL_NAME = "ID";
+    public static final String ID_COL_NAME = "ID";
 
     //none is not a real column name, but is used by filters as a way to apply no filter for colors or display
     static final String NONE_COL_NAME = "None";
