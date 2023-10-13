@@ -20,6 +20,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.configuration2.AbstractConfiguration;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.logevents.Level;
 

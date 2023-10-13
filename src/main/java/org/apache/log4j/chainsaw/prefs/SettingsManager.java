@@ -16,14 +16,20 @@
  */
 package org.apache.log4j.chainsaw.prefs;
 
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
 import javax.swing.event.EventListenerList;
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.ServiceLoader;
+import java.util.logging.Level;
 import org.apache.commons.configuration2.AbstractConfiguration;
 import org.apache.commons.configuration2.CombinedConfiguration;
 import org.apache.commons.configuration2.PropertiesConfiguration;
@@ -34,6 +40,8 @@ import org.apache.commons.configuration2.builder.fluent.Parameters;
 import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.tree.OverrideCombiner;
+import org.apache.log4j.chainsaw.ChainsawReceiver;
+import org.apache.log4j.chainsaw.ChainsawReceiverFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -58,6 +66,10 @@ public final class SettingsManager {
     private PropertiesConfiguration m_configuration;
     private FileBasedConfigurationBuilder<PropertiesConfiguration> m_builder;
     private Map<String,TabSettingsData> m_tabSettings;
+
+    private final Map<Class,PropertyDescriptor[]> m_classToProperties =
+            new HashMap<>();
+    private final Map<Class, String> m_classToName = new HashMap<>();
 
     /**
      * Initialises the SettingsManager by loading the default Properties from
@@ -94,8 +106,19 @@ public final class SettingsManager {
             PropertiesConfiguration config = m_builder.getConfiguration();
             m_configuration = config;
             m_builder.getFileHandler().setFile(f);
-            return;
         }catch( ConfigurationException ex ){
+        }
+
+        ServiceLoader<ChainsawReceiverFactory> sl = ServiceLoader.load(ChainsawReceiverFactory.class);
+
+        for( ChainsawReceiverFactory crFactory : sl ){
+            ChainsawReceiver rx = crFactory.create();
+            try {
+                m_classToProperties.put(rx.getClass(), crFactory.getPropertyDescriptors());
+                m_classToName.put(rx.getClass(), crFactory.getReceiverName());
+            } catch (IntrospectionException ex) {
+                logger.error(ex);
+            }
         }
 
         // If we get here, it is likely that we have not opened the file.
@@ -176,7 +199,7 @@ public final class SettingsManager {
         return null;
     }
 
-    public File getSettingsDirectory() {
+    public static File getSettingsDirectory() {
         return new File(System.getProperty("user.home"), ".chainsaw");
     }
 
@@ -189,6 +212,7 @@ public final class SettingsManager {
     }
 
     public void saveAllSettings(){
+        logger.info("Saving all settings");
         try{
             m_builder.save();
         }catch( ConfigurationException ex ){
@@ -203,6 +227,48 @@ public final class SettingsManager {
                 m_tabSettings.get(key).file.save();
             }catch( ConfigurationException ex ){
                 logger.error( "Unable to save settings for {}", key );
+            }
+        }
+    }
+
+    public void saveSettingsForReceiver(ChainsawReceiver rx){
+        PropertyDescriptor[] desc = m_classToProperties.get(rx.getClass());
+
+        if(desc == null){
+            return;
+        }
+
+        AbstractConfiguration config = getSettingsForReceiverTab(rx.getName());
+
+        config.setProperty("receiver.type", m_classToName.get(rx.getClass()));
+
+        for(PropertyDescriptor d : desc){
+            Method readMethod = d.getReadMethod();
+
+            try{
+                config.setProperty("receiver." + d.getDisplayName(), readMethod.invoke(rx));
+            }catch(IllegalAccessException | IllegalArgumentException |  InvocationTargetException ex){
+                logger.error(ex);
+            }
+        }
+    }
+
+    public void loadSettingsForReceiver(ChainsawReceiver rx){
+        PropertyDescriptor[] desc = m_classToProperties.get(rx.getClass());
+
+        if(desc == null){
+            return;
+        }
+
+        AbstractConfiguration config = getSettingsForReceiverTab(rx.getName());
+
+        for(PropertyDescriptor d : desc){
+            Method writeMethod = d.getWriteMethod();
+
+            try{
+                writeMethod.invoke(rx, config.get(d.getPropertyType(), "receiver." + d.getDisplayName()));
+            }catch(IllegalAccessException | IllegalArgumentException |  InvocationTargetException ex){
+                logger.error(ex);
             }
         }
     }

@@ -42,7 +42,7 @@ import java.net.URL;
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 class FileMenu extends JMenu {
-    private final Action loadConfigAction;
+    private final Action loadReceiverAction;
     private final Action exitAction;
     private final Action loadLog4JAction;
     private final Action loadUtilLoggingAction;
@@ -54,9 +54,9 @@ class FileMenu extends JMenu {
         super("File");
         setMnemonic(KeyEvent.VK_F);
 
-        loadConfigAction = new AbstractAction("Load Chainsaw configuration") {
+        loadReceiverAction = new AbstractAction("Load Receiver") {
             public void actionPerformed(ActionEvent actionEvent) {
-                logUI.showReceiverConfiguration();
+                logUI.loadReceiver();
             }
         };
 
@@ -87,7 +87,7 @@ class FileMenu extends JMenu {
 
         saveAction = new FileSaveAction(logUI);
 
-        JMenuItem loadChainsawConfig = new JMenuItem(loadConfigAction);
+        JMenuItem loadReceiver = new JMenuItem(loadReceiverAction);
         JMenuItem loadLog4JFile = new JMenuItem(loadLog4JAction);
         JMenuItem loadUtilLoggingFile = new JMenuItem(loadUtilLoggingAction);
         JMenuItem remoteLog4JFile = new JMenuItem(remoteLog4JAction);
@@ -110,7 +110,7 @@ class FileMenu extends JMenu {
 
         JMenuItem menuItemExit = new JMenuItem(exitAction);
 
-//        add(loadChainsawConfig);
+        add(loadReceiver);
 //        add(loadLog4JFile);
 //        add(loadUtilLoggingFile);
 //        addSeparator();

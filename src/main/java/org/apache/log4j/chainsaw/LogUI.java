@@ -80,6 +80,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 
 
@@ -1203,6 +1204,10 @@ public class LogUI extends JFrame {
      * Exits the application, ensuring Settings are saved.
      */
     public boolean exit() {
+        for(ChainsawReceiver rx : m_receivers){
+            getSettingsManager().saveSettingsForReceiver(rx);
+        }
+
         getSettingsManager().saveAllSettings();
 
         return shutdown();
@@ -1234,8 +1239,36 @@ public class LogUI extends JFrame {
         preferencesFrame.setVisible(true);
     }
 
-    public void showReceiverConfiguration() {
-        showReceiverConfigurationPanel();
+    public void loadReceiver() {
+        Runnable r = () -> {
+            JFileChooser jfc = new JFileChooser(SettingsManager.getSettingsDirectory());
+            int returnVal = jfc.showOpenDialog(this);
+            if(returnVal != JFileChooser.APPROVE_OPTION) {
+                return;
+            }
+
+            logger.debug("Load file {}", jfc.getSelectedFile());
+
+            // Create the receiver
+            String fileToLoad = jfc.getSelectedFile().getName();
+            String receiverName = fileToLoad.split( "-" )[0];
+            AbstractConfiguration config = SettingsManager.getInstance().getSettingsForReceiverTab(receiverName);
+            String typeToLoad = config.getString("receiver.type");
+            ServiceLoader<ChainsawReceiverFactory> sl = ServiceLoader.load(ChainsawReceiverFactory.class);
+
+            for( ChainsawReceiverFactory crFactory : sl ){
+                if(crFactory.getReceiverName().equals(typeToLoad)){
+                    ChainsawReceiver rx = crFactory.create();
+                    rx.setName(receiverName);
+                    SettingsManager.getInstance().loadSettingsForReceiver(rx);
+                    addReceiver(rx);
+
+                    rx.start();
+                }
+            }
+        };
+        
+        SwingUtilities.invokeLater(r);
     }
 
     public void showAboutBox() {

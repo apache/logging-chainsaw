@@ -17,11 +17,11 @@
 package org.apache.log4j.chainsaw;
 
 import java.beans.PropertyChangeListener;
+import org.apache.commons.configuration2.AbstractConfiguration;
 import org.apache.log4j.chainsaw.logevents.Level;
 
 /**
- * A receiver receives log events from a source.  A ChainsawReceiver will create
- * from 1...N ChainsawReceiverNodes
+ * A receiver receives log events from a source.
  */
 public interface ChainsawReceiver {
     
@@ -67,4 +67,6 @@ public interface ChainsawReceiver {
     public void removePropertyChangeListener(
         final String propertyName,
         final PropertyChangeListener listener);
+
+//    public void setConfiguration(AbstractConfiguration conf);
 }
