@@ -120,9 +120,9 @@ public class LogUI extends JFrame {
     private final List<String> filterableColumns = new ArrayList<>();
     private final Map<String, Component> panelMap = new HashMap<>();
     private ChainsawAppender chainsawAppender;
-    private ChainsawToolBarAndMenus tbms;
+    private ChainsawToolBarAndMenus chainsawToolBarAndMenus;
     private ChainsawAbout aboutBox;
-    private final SettingsManager sm = SettingsManager.getInstance();
+    private final SettingsManager settingsManager = SettingsManager.getInstance();
     private final JFrame tutorialFrame = new JFrame("Chainsaw Tutorial");
     private JSplitPane mainReceiverSplitPane;
     private double lastMainReceiverSplitLocation = DEFAULT_MAIN_RECEIVER_SPLIT_LOCATION;
@@ -628,7 +628,7 @@ public class LogUI extends JFrame {
                     Component selectedComp = getTabbedPane().getSelectedComponent();
                     if (selectedComp instanceof LogPanel) {
                         displayPanel(getCurrentLogPanel().getIdentifier(), false);
-                        tbms.stateChange();
+                        chainsawToolBarAndMenus.stateChange();
                     } else {
                         getTabbedPane().remove(selectedComp);
                     }
@@ -657,7 +657,7 @@ public class LogUI extends JFrame {
                         if (
                             getPanelMap().containsKey(name) && !name.equals(currentName)) {
                             displayPanel(name, false);
-                            tbms.stateChange();
+                            chainsawToolBarAndMenus.stateChange();
                         } else {
                             index++;
                         }
@@ -687,7 +687,7 @@ public class LogUI extends JFrame {
 
                             if (!found) {
                                 displayPanel(identifier, true);
-                                tbms.stateChange();
+                                chainsawToolBarAndMenus.stateChange();
                             }
                         }
                     }
@@ -727,7 +727,7 @@ public class LogUI extends JFrame {
 
         setVisible(true);
 
-        if (sm.getGlobalConfiguration().getBoolean("showReceivers", false)) {
+        if (settingsManager.getGlobalConfiguration().getBoolean("showReceivers", false)) {
             showReceiverPanel();
         } else {
             hideReceiverPanel();
@@ -741,15 +741,16 @@ public class LogUI extends JFrame {
 
         if (
             noReceiversDefined
-                && sm.getGlobalConfiguration().getBoolean("showNoReceiverWarning", true)) {
+                && settingsManager.getGlobalConfiguration().getBoolean("showNoReceiverWarning", true)) {
             SwingHelper.invokeOnEDT(this::showReceiverConfigurationPanel);
         }
 
         Container container = tutorialFrame.getContentPane();
+        container.setLayout(new BorderLayout());
+
         final JEditorPane tutorialArea = new JEditorPane();
         tutorialArea.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
         tutorialArea.setEditable(false);
-        container.setLayout(new BorderLayout());
 
         try {
             tutorialArea.setPage(ChainsawConstants.TUTORIAL_URL);
@@ -792,13 +793,13 @@ public class LogUI extends JFrame {
          * hide those tabs out of currently loaded tabs..
          */
 
-        if (!sm.getGlobalConfiguration().getBoolean("displayWelcomeTab", true)) {
+        if (!settingsManager.getGlobalConfiguration().getBoolean("displayWelcomeTab", true)) {
             displayPanel(ChainsawTabbedPane.WELCOME_TAB, false);
         }
-        if (!sm.getGlobalConfiguration().getBoolean("displayZeroconfTab", true)) {
+        if (!settingsManager.getGlobalConfiguration().getBoolean("displayZeroconfTab", true)) {
             displayPanel(ChainsawTabbedPane.ZEROCONF, false);
         }
-        tbms.stateChange();
+        chainsawToolBarAndMenus.stateChange();
 
     }
 
@@ -942,7 +943,7 @@ public class LogUI extends JFrame {
 //            evt -> handler.setIdentifierExpression(evt.getNewValue().toString()));
 //        handler.setIdentifierExpression(applicationPreferenceModel.getIdentifierExpression());
 
-        int tooltipDisplayMillis = sm.getGlobalConfiguration().getInt("tooltipDisplayMillis", 4000);
+        int tooltipDisplayMillis = settingsManager.getGlobalConfiguration().getInt("tooltipDisplayMillis", 4000);
 //        applicationPreferenceModel.addPropertyChangeListener(
 //            "toolTipDisplayMillis",
 //            evt -> ToolTipManager.sharedInstance().setDismissDelay(
@@ -976,17 +977,17 @@ public class LogUI extends JFrame {
 //                    }
 //                }));
 //
-        sm.getGlobalConfiguration().addEventListener(ConfigurationEvent.SET_PROPERTY,
+        settingsManager.getGlobalConfiguration().addEventListener(ConfigurationEvent.SET_PROPERTY,
             evt -> {
                 if( evt.getPropertyName().equals( "statusBar" ) ){
                     boolean value = (Boolean) evt.getPropertyValue();
                     statusBar.setVisible(value);
                 }
             });
-        boolean showStatusBar = sm.getGlobalConfiguration().getBoolean("statusBar", true);
+        boolean showStatusBar = settingsManager.getGlobalConfiguration().getBoolean("statusBar", true);
         setStatusBarVisible(showStatusBar);
 
-        sm.getGlobalConfiguration().addEventListener(ConfigurationEvent.SET_PROPERTY,
+        settingsManager.getGlobalConfiguration().addEventListener(ConfigurationEvent.SET_PROPERTY,
             evt -> {
                 if( evt.getPropertyName().equals( "showReceivers" ) ){
                     boolean value = (Boolean) evt.getPropertyValue();
@@ -997,7 +998,7 @@ public class LogUI extends JFrame {
                     }
                 }
             });
-        boolean showReceivers = sm.getGlobalConfiguration().getBoolean("showReceivers", false);
+        boolean showReceivers = settingsManager.getGlobalConfiguration().getBoolean("showReceivers", false);
         setStatusBarVisible(showStatusBar);
         if( showReceivers ){
             showReceiverPanel();
@@ -1023,14 +1024,14 @@ public class LogUI extends JFrame {
 ////    }
 //
 //
-        sm.getGlobalConfiguration().addEventListener(ConfigurationEvent.SET_PROPERTY,
+        settingsManager.getGlobalConfiguration().addEventListener(ConfigurationEvent.SET_PROPERTY,
             evt -> {
                 if( evt.getPropertyName().equals( "toolbar" ) ){
                     boolean value = (Boolean) evt.getPropertyValue();
                     toolbar.setVisible(value);
                 }
             });
-        boolean showToolbar = sm.getGlobalConfiguration().getBoolean("toolbar", true);
+        boolean showToolbar = settingsManager.getGlobalConfiguration().getBoolean("toolbar", true);
         toolbar.setVisible(showToolbar);
 
     }
@@ -1325,7 +1326,7 @@ public class LogUI extends JFrame {
      * Shutsdown by ensuring the Appender gets a chance to close.
      */
     public boolean shutdown() {
-        boolean confirmExit = sm.getGlobalConfiguration().getBoolean("confirmExit", true);
+        boolean confirmExit = settingsManager.getGlobalConfiguration().getBoolean("confirmExit", true);
         if (confirmExit) {
             if (
                 JOptionPane.showConfirmDialog(
@@ -1517,7 +1518,7 @@ public class LogUI extends JFrame {
      * @return DOCUMENT ME!
      */
     public SettingsManager getSettingsManager() {
-        return sm;
+        return settingsManager;
     }
 
     /**
@@ -1535,7 +1536,7 @@ public class LogUI extends JFrame {
      * @param tbms DOCUMENT ME!
      */
     public void setToolBarAndMenus(ChainsawToolBarAndMenus tbms) {
-        this.tbms = tbms;
+        this.chainsawToolBarAndMenus = tbms;
     }
 
     /**
@@ -1544,7 +1545,7 @@ public class LogUI extends JFrame {
      * @return DOCUMENT ME!
      */
     public ChainsawToolBarAndMenus getToolBarAndMenus() {
-        return tbms;
+        return chainsawToolBarAndMenus;
     }
 
     /**
@@ -1641,7 +1642,7 @@ public class LogUI extends JFrame {
         tabbedPane.addChangeListener(iconHandler);
 
         PropertyChangeListener toolbarMenuUpdateListener =
-            evt -> tbms.stateChange();
+            evt -> chainsawToolBarAndMenus.stateChange();
 
         thisPanel.addPropertyChangeListener(toolbarMenuUpdateListener);
         thisPanel.addPreferencePropertyChangeListener(toolbarMenuUpdateListener);
