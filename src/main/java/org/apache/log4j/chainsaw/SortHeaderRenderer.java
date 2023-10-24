@@ -40,9 +40,9 @@ public class SortHeaderRenderer extends DefaultTableCellRenderer {
         setHorizontalAlignment(CENTER);
     }
 
+    @Override
     public Component getTableCellRendererComponent(
-        JTable table, Object value, boolean isSelected, boolean hasFocus, int row,
-        int col) {
+        JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
         int index = -1;
         boolean ascending = true;
 
@@ -60,7 +60,6 @@ public class SortHeaderRenderer extends DefaultTableCellRenderer {
                 setBackground(header.getBackground());
                 Font font = header.getFont();
                 if (col == index) {
-
                     setFont(new Font(font.getName(), Font.BOLD, font.getSize()));
                 } else {
                     setFont(font);

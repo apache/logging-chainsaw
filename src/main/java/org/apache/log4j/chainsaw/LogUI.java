@@ -754,7 +754,6 @@ public class LogUI extends JFrame {
         try {
             tutorialArea.setPage(ChainsawConstants.TUTORIAL_URL);
             JTextComponentFormatter.applySystemFontAndSize(tutorialArea);
-
             container.add(new JScrollPane(tutorialArea), BorderLayout.CENTER);
         } catch (Exception e) {
             logger.error("Can't load tutorial", e);
@@ -764,34 +763,46 @@ public class LogUI extends JFrame {
         tutorialFrame.setIconImage(new ImageIcon(ChainsawIcons.HELP).getImage());
         tutorialFrame.setSize(new Dimension(640, 480));
 
-        final Action startTutorial =
-            new AbstractAction(
-                "Start Tutorial", new ImageIcon(ChainsawIcons.ICON_RESUME_RECEIVER)) {
-                public void actionPerformed(ActionEvent e) {
-                    if (
-                        JOptionPane.showConfirmDialog(
-                            null,
-                            "This will start 3 \"Generator\" receivers for use in the Tutorial.  Is that ok?",
-                            "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                        // Create and start generators
-                        Generator[] generators = {
-                            new Generator("Generator 1"),
-                            new Generator("Generator 2"),
-                            new Generator("Generator 3"),
-                        };
-                        
-                        for( Generator gen : generators ){
-                            addReceiver(gen);
-                            gen.start();
-                        }
+        final Action startTutorial = createStartTutorialAction();
+        final Action stopTutorial = createStopTutorialAction(startTutorial);
+        final JToolBar tutorialToolbar = createTutorialToolbar(startTutorial, stopTutorial);
 
-                        putValue(LABEL_TUTORIAL_STARTED, Boolean.TRUE);
+        container.add(tutorialToolbar, BorderLayout.NORTH);
+        tutorialArea.addHyperlinkListener(
+            e -> {
+                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                    if (e.getDescription().equals("StartTutorial")) {
+                        startTutorial.actionPerformed(null);
+                    } else if (e.getDescription().equals("StopTutorial")) {
+                        stopTutorial.actionPerformed(null);
                     } else {
-                        putValue(LABEL_TUTORIAL_STARTED, Boolean.FALSE);
+                        try {
+                            tutorialArea.setPage(e.getURL());
+                        } catch (IOException e1) {
+                            statusBar.setMessage("Failed to change URL for tutorial");
+                            logger.error(
+                                "Failed to change the URL for the Tutorial", e1);
+                        }
                     }
                 }
-            };
+            });
 
+        /*
+         * loads the saved tab settings and if there are hidden tabs,
+         * hide those tabs out of currently loaded tabs..
+         */
+
+        if (!sm.getGlobalConfiguration().getBoolean("displayWelcomeTab", true)) {
+            displayPanel(ChainsawTabbedPane.WELCOME_TAB, false);
+        }
+        if (!sm.getGlobalConfiguration().getBoolean("displayZeroconfTab", true)) {
+            displayPanel(ChainsawTabbedPane.ZEROCONF, false);
+        }
+        tbms.stateChange();
+
+    }
+
+    private Action createStopTutorialAction(Action startTutorial) {
         final Action stopTutorial =
             new AbstractAction(
                 "Stop Tutorial", new ImageIcon(ChainsawIcons.ICON_STOP_RECEIVER)) {
@@ -818,11 +829,46 @@ public class LogUI extends JFrame {
         stopTutorial.putValue(
             Action.SHORT_DESCRIPTION,
             "Removes all of the Tutorials Generator Receivers, leaving all other Receivers untouched");
+
+        stopTutorial.setEnabled(false);
+        return stopTutorial;
+    }
+
+    private Action createStartTutorialAction() {
+        final Action startTutorial =
+            new AbstractAction(
+                "Start Tutorial", new ImageIcon(ChainsawIcons.ICON_RESUME_RECEIVER)) {
+                public void actionPerformed(ActionEvent e) {
+                    if (
+                        JOptionPane.showConfirmDialog(
+                            null,
+                            "This will start 3 \"Generator\" receivers for use in the Tutorial.  Is that ok?",
+                            "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                        // Create and start generators
+                        Generator[] generators = {
+                            new Generator("Generator 1"),
+                            new Generator("Generator 2"),
+                            new Generator("Generator 3"),
+                        };
+
+                        for( Generator gen : generators ){
+                            addReceiver(gen);
+                            gen.start();
+                        }
+
+                        putValue(LABEL_TUTORIAL_STARTED, Boolean.TRUE);
+                    } else {
+                        putValue(LABEL_TUTORIAL_STARTED, Boolean.FALSE);
+                    }
+                }
+            };
         startTutorial.putValue(
             Action.SHORT_DESCRIPTION,
             "Begins the Tutorial, starting up some Generator Receivers so you can see Chainsaw in action");
-        stopTutorial.setEnabled(false);
+        return startTutorial;
+    }
 
+    private JToolBar createTutorialToolbar(Action startTutorial, Action stopTutorial) {
         final SmallToggleButton startButton = new SmallToggleButton(startTutorial);
         PropertyChangeListener pcl =
             evt -> {
@@ -859,39 +905,7 @@ public class LogUI extends JFrame {
         tutorialToolbar.setFloatable(false);
         tutorialToolbar.add(startButton);
         tutorialToolbar.add(stopButton);
-        container.add(tutorialToolbar, BorderLayout.NORTH);
-        tutorialArea.addHyperlinkListener(
-            e -> {
-                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                    if (e.getDescription().equals("StartTutorial")) {
-                        startTutorial.actionPerformed(null);
-                    } else if (e.getDescription().equals("StopTutorial")) {
-                        stopTutorial.actionPerformed(null);
-                    } else {
-                        try {
-                            tutorialArea.setPage(e.getURL());
-                        } catch (IOException e1) {
-                            statusBar.setMessage("Failed to change URL for tutorial");
-                            logger.error(
-                                "Failed to change the URL for the Tutorial", e1);
-                        }
-                    }
-                }
-            });
-
-        /*
-         * loads the saved tab settings and if there are hidden tabs,
-         * hide those tabs out of currently loaded tabs..
-         */
-
-        if (!sm.getGlobalConfiguration().getBoolean("displayWelcomeTab", true)) {
-            displayPanel(ChainsawTabbedPane.WELCOME_TAB, false);
-        }
-        if (!sm.getGlobalConfiguration().getBoolean("displayZeroconfTab", true)) {
-            displayPanel(ChainsawTabbedPane.ZEROCONF, false);
-        }
-        tbms.stateChange();
-
+        return tutorialToolbar;
     }
 
     /**
