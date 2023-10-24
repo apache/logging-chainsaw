@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.nio.CharBuffer;
 import java.util.Vector;
 import java.net.URL;
+
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.junit.Test;
 
@@ -31,24 +32,23 @@ import static junit.framework.TestCase.assertEquals;
 
 /**
  * Tests for XMLDecoder.
- *
  */
 public class XMLDecoderTest {
 
-  public String getStringFromResource(final String resourceName,
-                                      final int maxSize) throws Exception {
-      InputStream is = XMLDecoderTest.class.getResourceAsStream(resourceName);
-      if (is == null) {
-          throw new FileNotFoundException(resourceName);
-      }
-      InputStreamReader reader = new InputStreamReader(is, "UTF-8");
-      CharBuffer cb = CharBuffer.allocate(maxSize);
+    public String getStringFromResource(final String resourceName,
+                                        final int maxSize) throws Exception {
+        InputStream is = XMLDecoderTest.class.getResourceAsStream(resourceName);
+        if (is == null) {
+            throw new FileNotFoundException(resourceName);
+        }
+        InputStreamReader reader = new InputStreamReader(is, "UTF-8");
+        CharBuffer cb = CharBuffer.allocate(maxSize);
 
-      while (reader.read(cb) != -1);
+        while (reader.read(cb) != -1) ;
 
-      cb.flip();
-      return cb.toString();
-  }
+        cb.flip();
+        return cb.toString();
+    }
 
     @Test
     public void testDecodeEventsString1() throws Exception {
@@ -59,12 +59,12 @@ public class XMLDecoderTest {
     }
 
     @Test
-  public void testDecodeEventsString2() throws Exception {
-      String xmlStr = getStringFromResource("xsltLayout.1.xml", 10000);
-      XMLDecoder decoder = new XMLDecoder();
-      Vector<ChainsawLoggingEvent> events = decoder.decodeEvents(xmlStr);
-      assertEquals(15, events.size());
-  }
+    public void testDecodeEventsString2() throws Exception {
+        String xmlStr = getStringFromResource("xsltLayout.1.xml", 10000);
+        XMLDecoder decoder = new XMLDecoder();
+        Vector<ChainsawLoggingEvent> events = decoder.decodeEvents(xmlStr);
+        assertEquals(15, events.size());
+    }
 
     @Test
     public void testDecodeEventsURL1() throws Exception {
