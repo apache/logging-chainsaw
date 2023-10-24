@@ -49,9 +49,9 @@ public class XMLDecoderTest extends TestCase {
       }
       InputStreamReader reader = new InputStreamReader(is, "UTF-8");
       CharBuffer cb = CharBuffer.allocate(maxSize);
-      for(int chars = reader.read(cb);
-          chars != -1;
-          chars = reader.read(cb));
+
+      while (reader.read(cb) != -1);
+
       cb.flip();
       return cb.toString();
   }
