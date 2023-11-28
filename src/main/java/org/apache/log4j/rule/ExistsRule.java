@@ -91,7 +91,7 @@ public class ExistsRule extends AbstractRule {
   public boolean evaluate(final ChainsawLoggingEvent event, Map matches) {
     Object p2 = RESOLVER.getValue(field, event);
 
-    boolean result = !((p2 == null) || (p2.toString().equals("")));
+    boolean result = !((p2 == null) || (p2.toString().isEmpty()));
     if (result && matches != null) {
         Set entries = (Set) matches.get(field.toUpperCase());
         if (entries == null) {

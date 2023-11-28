@@ -246,7 +246,7 @@ public class LogFileXMLReceiver extends ChainsawReceiverSkeleton {
             try {
                 URL url = new URL(fileURL);
                 host = url.getHost();
-                if (host != null && host.equals("")) {
+                if (host != null && host.isEmpty()) {
                     host = FILE_KEY;
                 }
                 path = url.getPath();

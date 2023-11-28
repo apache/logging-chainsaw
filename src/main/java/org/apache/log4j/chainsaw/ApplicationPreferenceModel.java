@@ -191,13 +191,13 @@ public class ApplicationPreferenceModel {
      */
     public void apply(ApplicationPreferenceModel model) {
         setIdentifierExpression(model.getIdentifierExpression());
-        setShowNoReceiverWarning(model.isShowNoReceiverWarning() || (model.getConfigurationURL() == null || model.getConfigurationURL().trim().equals("")));
+        setShowNoReceiverWarning(model.isShowNoReceiverWarning() || (model.getConfigurationURL() == null || model.getConfigurationURL().trim().isEmpty()));
         setResponsiveness(model.getResponsiveness());
         setTabPlacement(model.getTabPlacement());
         setStatusBar(model.isStatusBar());
         setToolbar(model.isToolbar());
         setReceivers(model.isReceivers());
-        if (model.getLookAndFeelClassName() != null && !model.getLookAndFeelClassName().trim().equals("")) {
+        if (model.getLookAndFeelClassName() != null && !model.getLookAndFeelClassName().trim().isEmpty()) {
             setLookAndFeelClassName(model.getLookAndFeelClassName());
         } else {
             //ensure current look and feel is selected
@@ -446,7 +446,7 @@ public class ApplicationPreferenceModel {
      */
     public void setBypassConfigurationURL(String bypassConfigurationURL) {
         //don't change configuration URL..configurationURL is persisted on app exit
-        if (bypassConfigurationURL != null && bypassConfigurationURL.trim().equals("")) {
+        if (bypassConfigurationURL != null && bypassConfigurationURL.trim().isEmpty()) {
             this.bypassConfigurationURL = null;
         }
         this.bypassConfigurationURL = bypassConfigurationURL;
@@ -459,7 +459,7 @@ public class ApplicationPreferenceModel {
         //don't add empty entries, but allow the current configuration URL to be set to an empty string
         Object oldValue = this.bypassConfigurationURL != null ? this.bypassConfigurationURL : this.configurationURL;
         bypassConfigurationURL = null;
-        if (configurationURL == null || configurationURL.trim().equals("")) {
+        if (configurationURL == null || configurationURL.trim().isEmpty()) {
             this.configurationURL = "";
             firePropertyChange("configurationURL", oldValue, this.configurationURL);
             return;

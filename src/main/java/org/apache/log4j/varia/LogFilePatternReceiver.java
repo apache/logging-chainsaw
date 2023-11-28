@@ -532,7 +532,7 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
             String input = line.toString();
             eventMatcher = regexpPattern.matcher(input);
             //skip empty line entries
-            if (input.trim().equals("")) {
+            if (input.trim().isEmpty()) {
                 continue;
             }
             exceptionMatcher = exceptionPattern.matcher(input);
@@ -668,10 +668,10 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
                 e1.printStackTrace();
             }
         }
-        if (host == null || host.trim().equals("")) {
+        if (host == null || host.trim().isEmpty()) {
             host = DEFAULT_HOST;
         }
-        if (path == null || path.trim().equals("")) {
+        if (path == null || path.trim().isEmpty()) {
             path = fileURL;
         }
 

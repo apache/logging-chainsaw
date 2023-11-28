@@ -493,7 +493,7 @@ public class ZeroConfPlugin extends DockablePanel {
             receiver.setAddress(info.getPropertyString("multicastAddress"));
             receiver.setPort(port);
             receiver.setName(name + "-receiver");
-            if (decoderClass != null && !decoderClass.equals("")) {
+            if (decoderClass != null && !decoderClass.isEmpty()) {
                 receiver.setDecoder(decoderClass);
             }
 
@@ -504,7 +504,7 @@ public class ZeroConfPlugin extends DockablePanel {
             UDPReceiver receiver = new UDPReceiver();
             receiver.setPort(port);
             receiver.setName(name + "-receiver");
-            if (decoderClass != null && !decoderClass.equals("")) {
+            if (decoderClass != null && !decoderClass.isEmpty()) {
                 receiver.setDecoder(decoderClass);
             }
             return receiver;
@@ -515,7 +515,7 @@ public class ZeroConfPlugin extends DockablePanel {
             XMLSocketReceiver receiver = new XMLSocketReceiver();
             receiver.setPort(port);
             receiver.setName(name + "-receiver");
-            if (decoderClass != null && !decoderClass.equals("")) {
+            if (decoderClass != null && !decoderClass.isEmpty()) {
                 receiver.setDecoder(decoderClass);
             }
             return receiver;

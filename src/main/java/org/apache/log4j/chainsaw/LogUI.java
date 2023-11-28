@@ -220,7 +220,7 @@ public class LogUI extends JFrame {
 
         EventQueue.invokeLater(() -> {
             String lookAndFeelClassName = configuration.getString("lookAndFeelClassName");
-            if (lookAndFeelClassName == null || lookAndFeelClassName.trim().equals("")) {
+            if (lookAndFeelClassName == null || lookAndFeelClassName.trim().isEmpty()) {
                 String osName = System.getProperty("os.name");
                 if (osName.toLowerCase(Locale.ENGLISH).startsWith("mac")) {
                     //no need to assign look and feel
@@ -233,7 +233,7 @@ public class LogUI extends JFrame {
                 }
             }
 
-            if (lookAndFeelClassName != null && !(lookAndFeelClassName.trim().equals(""))) {
+            if (lookAndFeelClassName != null && !(lookAndFeelClassName.trim().isEmpty())) {
                 try{
                     UIManager.setLookAndFeel(lookAndFeelClassName);
                 }catch(Exception ex){}

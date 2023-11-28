@@ -231,7 +231,7 @@ class ReceiverConfigurationPanel extends JPanel {
         okButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 panelModel.setCancelled(false);
-                if (logFileFormatComboBox.getSelectedItem() != null && !(logFileFormatComboBox.getSelectedItem().toString().trim().equals(""))) {
+                if (logFileFormatComboBox.getSelectedItem() != null && !(logFileFormatComboBox.getSelectedItem().toString().trim().isEmpty())) {
                     panelModel.setLogFormat(logFileFormatComboBox.getSelectedItem().toString());
                 }
                 completionActionListener.actionPerformed(new ActionEvent(this, -1, "ok"));

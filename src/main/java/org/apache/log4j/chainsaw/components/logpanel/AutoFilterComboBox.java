@@ -59,7 +59,7 @@ public class AutoFilterComboBox extends JComboBox {
         }
         bypassFiltering = false;
         //TODO: on no-match, don't filter at all (show the popup?)
-        if (displayedEntries.size() > 0 && !textToMatch.equals("")) {
+        if (displayedEntries.size() > 0 && !textToMatch.isEmpty()) {
             showPopup();
         } else {
             hidePopup();

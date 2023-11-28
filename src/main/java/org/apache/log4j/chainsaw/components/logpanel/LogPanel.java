@@ -1076,7 +1076,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         Action copyToRefineFocusAction = new AbstractAction("Set 'refine focus' field") {
             public void actionPerformed(ActionEvent e) {
                 String selectedText = detail.getSelectedText();
-                if (selectedText == null || selectedText.equals("")) {
+                if (selectedText == null || selectedText.isEmpty()) {
                     //no-op empty searches
                     return;
                 }
@@ -1087,7 +1087,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         Action copyToSearchAction = new AbstractAction("Find next") {
             public void actionPerformed(ActionEvent e) {
                 String selectedText = detail.getSelectedText();
-                if (selectedText == null || selectedText.equals("")) {
+                if (selectedText == null || selectedText.isEmpty()) {
                     //no-op empty searches
                     return;
                 }
@@ -1694,7 +1694,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
                     Object selectedItem = filterCombo.getSelectedItem();
-                    if (e.getSource() == removeFilterButton && selectedItem != null && !selectedItem.toString().trim().equals("")) {
+                    if (e.getSource() == removeFilterButton && selectedItem != null && !selectedItem.toString().trim().isEmpty()) {
                         //don't just remove the entry from the store, clear the field
                         int index = filterCombo.getSelectedIndex();
                         filterText.setText(null);
@@ -1734,7 +1734,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
                     Object selectedItem = findCombo.getSelectedItem();
-                    if (e.getSource() == removeFindButton && selectedItem != null && !selectedItem.toString().trim().equals("")) {
+                    if (e.getSource() == removeFindButton && selectedItem != null && !selectedItem.toString().trim().isEmpty()) {
                         //don't just remove the entry from the store, clear the field
                         int index = findCombo.getSelectedIndex();
                         findText.setText(null);
@@ -1825,7 +1825,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             StringBuilder value = new StringBuilder();
             //exception - build message + throwable
             String[] ti = (String[]) o;
-            if (ti.length > 0 && (!(ti.length == 1 && ti[0].equals("")))) {
+            if (ti.length > 0 && (!(ti.length == 1 && ti[0].isEmpty()))) {
                 LoggingEventWrapper loggingEventWrapper = ((ChainsawCyclicBufferTableModel) (currentTable.getModel())).getRow(row);
                 value = new StringBuilder(loggingEventWrapper.getLoggingEvent().m_message);
                 for (int i = 0; i < ((String[]) o).length; i++) {
@@ -1861,7 +1861,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
                             try {
                                 //verify the expression is valid
                                 Object item = combo.getSelectedItem();
-                                if (item != null && !item.toString().trim().equals("")) {
+                                if (item != null && !item.toString().trim().isEmpty()) {
                                     ExpressionRule.getRule(item.toString());
                                     //add entry as first row of the combo box
                                     combo.insertItemAt(item, 0);
@@ -2383,7 +2383,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
     }
 
     public void updateFindRule(String ruleText) {
-        if ((ruleText == null) || (ruleText.trim().equals(""))) {
+        if ((ruleText == null) || (ruleText.trim().isEmpty())) {
             findRule = null;
             tableModel.updateEventsWithFindRule(null);
             colorizer.setFindRule(null);
@@ -3259,7 +3259,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
          * Update refinement rule based on the entered expression.
          */
         private void setFilter() {
-            if (textField.getText().trim().equals("")) {
+            if (textField.getText().trim().isEmpty()) {
                 //reset background color in case we were previously an invalid expression
                 textField.setBackground(UIManager.getColor("TextField.background"));
                 tableRuleMediator.setFilterRule(null);
@@ -3542,7 +3542,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
 
             //throwable string representation may be a length-one empty array
 //            String[] ti = loggingEventWrapper.getLoggingEvent().getThrowableStrRep();
-//            if (ti != null && ti.length > 0 && (!(ti.length == 1 && ti[0].equals("")))) {
+//            if (ti != null && ti.length > 0 && (!(ti.length == 1 && ti[0].isEmpty()))) {
 //                detailDialog.setTitle(throwableTable.getColumnName(throwableTable.getSelectedColumn()) + " detail...");
 //                StringBuilder buf = new StringBuilder();
 //                buf.append(loggingEventWrapper.getLoggingEvent().getMessage());
@@ -3579,7 +3579,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         }
 
         public boolean stopCellEditing() {
-            if (textField.getText().trim().equals("")) {
+            if (textField.getText().trim().isEmpty()) {
                 currentLoggingEventWrapper.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
             } else {
                 currentLoggingEventWrapper.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE, textField.getText());
@@ -3657,7 +3657,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
 
         boolean primaryMatches(ThumbnailLoggingEventWrapper wrapper) {
             String millisDelta = wrapper.loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
-            if (millisDelta != null && !millisDelta.trim().equals("")) {
+            if (millisDelta != null && !millisDelta.trim().isEmpty()) {
                 long millisDeltaLong = Long.parseLong(millisDelta);
                 //arbitrary
                 return millisDeltaLong >= 1000;

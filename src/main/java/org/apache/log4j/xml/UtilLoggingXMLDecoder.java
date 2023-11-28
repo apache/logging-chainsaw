@@ -231,7 +231,7 @@ public class UtilLoggingXMLDecoder implements Decoder {
 
         if (document != null) {
 
-            if (document.trim().equals("")) {
+            if (document.trim().isEmpty()) {
                 return null;
             }
 

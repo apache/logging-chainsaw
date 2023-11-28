@@ -234,7 +234,7 @@ public class XMLDecoder implements Decoder {
      */
     public Vector<ChainsawLoggingEvent> decodeEvents(final String document) {
         if (document != null) {
-            if (document.trim().equals("")) {
+            if (document.trim().isEmpty()) {
                 return null;
             }
             String newDoc;
@@ -375,7 +375,7 @@ public class XMLDecoder implements Decoder {
 
                 if (tagName.equalsIgnoreCase("log4j:throwable")) {
                     String exceptionString = getCData(list.item(y));
-                    if (exceptionString != null && !exceptionString.trim().equals("")) {
+                    if (exceptionString != null && !exceptionString.trim().isEmpty()) {
                         exception = new String[]{exceptionString.trim()
                         };
                     }

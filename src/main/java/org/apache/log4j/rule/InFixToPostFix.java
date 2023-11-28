@@ -333,7 +333,7 @@ public class InFixToPostFix {
        text.append(input.substring(newPos, ++newPos));
      }
      //don't add empty text entry (may be at end)
-     if (!text.toString().trim().equals("")) {
+     if (!text.toString().trim().isEmpty()) {
       linkedList.add(text);
      }
      return newPos;

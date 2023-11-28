@@ -387,7 +387,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
 
     private boolean updateIgnoreExpression(String ignoreText) {
         try {
-            if (ignoreText != null && !ignoreText.trim().equals("")) {
+            if (ignoreText != null && !ignoreText.trim().isEmpty()) {
                 ignoreExpressionRule = ExpressionRule.getRule(ignoreText);
             } else {
                 ignoreExpressionRule = null;
@@ -406,7 +406,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
 
     private boolean updateAlwaysDisplayExpression(String alwaysDisplayText) {
         try {
-            if (alwaysDisplayText != null && !alwaysDisplayText.trim().equals("")) {
+            if (alwaysDisplayText != null && !alwaysDisplayText.trim().isEmpty()) {
                 alwaysDisplayExpressionRule = ExpressionRule.getRule(alwaysDisplayText);
             } else {
                 alwaysDisplayExpressionRule = null;
@@ -973,7 +973,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
                             }
                             parentPathString.append(path[i].toString());
                         }
-                        if (!(parentPathString.toString().equals(""))) {
+                        if (!(parentPathString.toString().isEmpty())) {
                             parentPathString.append(".");
                         }
                     }
@@ -1339,7 +1339,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
 
     public String getHiddenExpression() {
         String text = ignoreExpressionEntryField.getText();
-        if (text == null || text.trim().equals("")) {
+        if (text == null || text.trim().isEmpty()) {
             return null;
         }
         return text.trim();
@@ -1352,7 +1352,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
 
     public String getAlwaysDisplayExpression() {
         String text = alwaysDisplayExpressionEntryField.getText();
-        if (text == null || text.trim().equals("")) {
+        if (text == null || text.trim().isEmpty()) {
             return null;
         }
         return text.trim();

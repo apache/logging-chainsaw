@@ -572,7 +572,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
                                 panel.getOkPanel().getOkButton().addActionListener(
                                     e2 -> {
                                         ChainsawReceiver receiver = panel.getReceiver();
-                                        if (receiver.getName() != null && !receiver.getName().trim().equals("")) {
+                                        if (receiver.getName() != null && !receiver.getName().trim().isEmpty()) {
                                             dialog.dispose();
                                             // Notify the LogUI that a new reciever has been created so it can spawn a new tab
                                             m_parent.addReceiver(receiver);
