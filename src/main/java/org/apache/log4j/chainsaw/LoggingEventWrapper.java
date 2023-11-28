@@ -16,17 +16,16 @@
  */
 package org.apache.log4j.chainsaw;
 
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.rule.Rule;
 
 import java.awt.*;
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
 /**
  * Wrap access to a LoggingEvent.  All property updates need to go through this object and not through the wrapped logging event,

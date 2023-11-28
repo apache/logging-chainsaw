@@ -17,6 +17,8 @@
 
 package org.apache.log4j.chainsaw;
 
+import org.apache.log4j.chainsaw.components.elements.JSortTable;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;

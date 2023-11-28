@@ -21,6 +21,7 @@ import org.apache.commons.configuration2.event.EventListener;
 import org.apache.log4j.chainsaw.*;
 import org.apache.log4j.chainsaw.color.ColorPanel;
 import org.apache.log4j.chainsaw.color.RuleColorizer;
+import org.apache.log4j.chainsaw.components.elements.JSortTable;
 import org.apache.log4j.chainsaw.components.elements.SmallButton;
 import org.apache.log4j.chainsaw.components.elements.SmallToggleButton;
 import org.apache.log4j.chainsaw.filter.FilterModel;
