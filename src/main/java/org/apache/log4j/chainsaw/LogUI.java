@@ -1305,7 +1305,7 @@ public class LogUI extends JFrame {
      *
      * @return current log panel
      */
-    LogPanel getCurrentLogPanel() {
+    public LogPanel getCurrentLogPanel() {
         Component selectedTab = getTabbedPane().getSelectedComponent();
 
         if (selectedTab instanceof LogPanel) {

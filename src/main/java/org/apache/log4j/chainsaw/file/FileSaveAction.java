@@ -15,8 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.log4j.chainsaw;
+package org.apache.log4j.chainsaw.file;
 
+import org.apache.log4j.chainsaw.LogUI;
+import org.apache.log4j.chainsaw.LoggingEventWrapper;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 
 import javax.swing.*;

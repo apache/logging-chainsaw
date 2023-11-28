@@ -22,6 +22,7 @@ import org.apache.commons.configuration2.event.ConfigurationEvent;
 import org.apache.log4j.chainsaw.components.elements.SmallButton;
 import org.apache.log4j.chainsaw.components.elements.SmallToggleButton;
 import org.apache.log4j.chainsaw.components.logpanel.LogPanel;
+import org.apache.log4j.chainsaw.file.FileMenu;
 import org.apache.log4j.chainsaw.filter.FilterModel;
 import org.apache.log4j.chainsaw.help.HelpManager;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;

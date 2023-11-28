@@ -19,8 +19,9 @@
  * @author Paul Smith &lt;psmith@apache.org&gt;
  *
  */
-package org.apache.log4j.chainsaw;
+package org.apache.log4j.chainsaw.file;
 
+import org.apache.log4j.chainsaw.LogUI;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.chainsaw.osx.OSXIntegration;
 import org.apache.log4j.chainsaw.prefs.MRUFileList;
@@ -41,7 +42,7 @@ import java.net.URL;
  * @author Paul Smith &lt;psmith@apache.org&gt;
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
-class FileMenu extends JMenu {
+public class FileMenu extends JMenu {
     private final Action loadReceiverAction;
     private final Action exitAction;
     private final Action loadLog4JAction;
@@ -160,7 +161,7 @@ class FileMenu extends JMenu {
         }
     }
 
-    Action getLog4JFileOpenAction() {
+    public Action getLog4JFileOpenAction() {
         return loadLog4JAction;
     }
 
@@ -168,7 +169,7 @@ class FileMenu extends JMenu {
         return loadUtilLoggingAction;
     }
 
-    Action getFileSaveAction() {
+    public Action getFileSaveAction() {
         return saveAction;
     }
 
