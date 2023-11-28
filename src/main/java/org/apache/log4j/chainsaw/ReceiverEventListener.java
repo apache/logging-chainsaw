@@ -16,6 +16,8 @@
  */
 package org.apache.log4j.chainsaw;
 
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiver;
+
 /**
  * A ReceiverEventListener is an interface that lets you listen to events, such
  * as receivers being added or removed.

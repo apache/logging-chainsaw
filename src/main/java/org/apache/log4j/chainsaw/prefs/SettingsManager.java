@@ -25,8 +25,8 @@ import org.apache.commons.configuration2.builder.fluent.Parameters;
 import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.tree.OverrideCombiner;
-import org.apache.log4j.chainsaw.ChainsawReceiver;
-import org.apache.log4j.chainsaw.ChainsawReceiverFactory;
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiver;
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiverFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

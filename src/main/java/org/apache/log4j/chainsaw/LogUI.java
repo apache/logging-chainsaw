@@ -32,6 +32,8 @@ import org.apache.log4j.chainsaw.icons.LineIconFactory;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.osx.OSXIntegration;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiver;
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiverFactory;
 import org.apache.log4j.chainsaw.receivers.ReceiversPanel;
 import org.apache.log4j.chainsaw.zeroconf.ZeroConfPlugin;
 import org.apache.log4j.rule.ExpressionRule;

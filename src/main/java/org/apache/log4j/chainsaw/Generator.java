@@ -22,6 +22,7 @@ import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
 import org.apache.log4j.chainsaw.logevents.Level;
 import org.apache.log4j.chainsaw.logevents.LocationInfo;
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiverSkeleton;
 
 
 /**

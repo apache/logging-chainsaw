@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.log4j.chainsaw;
+package org.apache.log4j.chainsaw.receiver;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
@@ -28,25 +28,25 @@ public interface ChainsawReceiverFactory {
      * Create a new ChainsawReceiver from this factory.
      * @return 
      */
-    public ChainsawReceiver create();
+    ChainsawReceiver create();
     
     /**
      * For the type of ChainsawReceiver that this factory creates,
      * get the property descriptors for the class.
      * @return 
      */
-    public PropertyDescriptor[] getPropertyDescriptors() throws IntrospectionException;
+    PropertyDescriptor[] getPropertyDescriptors() throws IntrospectionException;
     
     /**
      * Get the name of the receiver that this factory will create
      * @return 
      */
-    public String getReceiverName();
+    String getReceiverName();
 
     /**
      * Documentation string in HTML format that will be displayed to the user.
      * 
      * @return
      */
-    public String getReceiverDocumentation();
+    String getReceiverDocumentation();
 }

@@ -25,7 +25,7 @@ import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.*;
-import org.apache.log4j.chainsaw.ChainsawReceiver;
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiver;
 
 
 /**

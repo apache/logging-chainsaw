@@ -17,8 +17,8 @@
 
 package org.apache.log4j.chainsaw.receivers;
 
-import org.apache.log4j.chainsaw.ChainsawReceiver;
-import org.apache.log4j.chainsaw.ChainsawReceiverFactory;
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiver;
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiverFactory;
 import org.apache.log4j.chainsaw.helper.OkCancelPanel;
 
 import javax.swing.*;

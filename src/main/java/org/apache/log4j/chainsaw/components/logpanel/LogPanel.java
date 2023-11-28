@@ -33,6 +33,7 @@ import org.apache.log4j.chainsaw.layout.LayoutEditorPane;
 import org.apache.log4j.chainsaw.prefs.LoadSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.Profileable;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiver;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.rule.ColorRule;
 import org.apache.log4j.rule.ExpressionRule;

@@ -18,8 +18,8 @@ package org.apache.log4j.varia;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
-import org.apache.log4j.chainsaw.ChainsawReceiver;
-import org.apache.log4j.chainsaw.ChainsawReceiverFactory;
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiver;
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiverFactory;
 
 /**
  *

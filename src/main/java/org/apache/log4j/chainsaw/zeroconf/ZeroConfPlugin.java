@@ -17,7 +17,7 @@
 package org.apache.log4j.chainsaw.zeroconf;
 
 import org.apache.log4j.chainsaw.ChainsawConstants;
-import org.apache.log4j.chainsaw.ChainsawReceiver;
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiver;
 import org.apache.log4j.chainsaw.DockablePanel;
 import org.apache.log4j.chainsaw.components.elements.SmallButton;
 import org.apache.log4j.chainsaw.help.HelpManager;

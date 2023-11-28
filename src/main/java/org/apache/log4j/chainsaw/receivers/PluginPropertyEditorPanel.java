@@ -20,7 +20,6 @@ import org.apache.log4j.chainsaw.logevents.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.log4j.chainsaw.ChainsawConstants;
-import org.apache.log4j.chainsaw.Generator;
 import org.apache.log4j.chainsaw.helper.TableCellEditorFactory;
 
 import javax.swing.*;
@@ -29,17 +28,11 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.util.*;
 import java.util.List;
-import javax.swing.event.CellEditorListener;
-import javax.swing.table.TableCellRenderer;
-import org.apache.log4j.chainsaw.ChainsawReceiver;
+
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiver;
 
 
 /**

@@ -24,10 +24,9 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import java.beans.PropertyChangeListener;
-import java.util.Collection;
 import java.util.Enumeration;
-import java.util.Vector;
-import org.apache.log4j.chainsaw.ChainsawReceiver;
+
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiver;
 import org.apache.log4j.chainsaw.ReceiverEventListener;
 
 

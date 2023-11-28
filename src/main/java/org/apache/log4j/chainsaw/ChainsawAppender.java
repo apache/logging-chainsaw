@@ -18,6 +18,8 @@ package org.apache.log4j.chainsaw;
 
 import java.time.Instant;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiver;
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiverSkeleton;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.appender.AbstractOutputStreamAppender;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
@@ -27,7 +29,7 @@ import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 @Plugin(name = "ChainsawAppender", category = "Core", elementType = "appender", printObject = true)
 public final class ChainsawAppender extends AbstractOutputStreamAppender {
 
-    private ChainsawAppenderReceiver m_receiver = new ChainsawAppenderReceiver();
+    private ChainsawAppenderReceiver receiver = new ChainsawAppenderReceiver();
 
     private ChainsawAppender(String name) {
         super(name, null, null, true, true, null);
@@ -55,11 +57,11 @@ public final class ChainsawAppender extends AbstractOutputStreamAppender {
                 .setThreadName( event.getThreadName() )
                 .setTimestamp( Instant.ofEpochMilli(event.getInstant().getEpochMillisecond()) );
 
-        m_receiver.append(builder.create());
+        receiver.append(builder.create());
     }
 
     public ChainsawReceiver getReceiver(){
-        return m_receiver;
+        return receiver;
     }
 
     class ChainsawAppenderReceiver extends ChainsawReceiverSkeleton {

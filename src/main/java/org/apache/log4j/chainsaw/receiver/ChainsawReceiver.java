@@ -14,59 +14,58 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.log4j.chainsaw;
+package org.apache.log4j.chainsaw.receiver;
+
+import org.apache.log4j.chainsaw.ChainsawEventBatchListener;
+import org.apache.log4j.chainsaw.logevents.Level;
 
 import java.beans.PropertyChangeListener;
-import org.apache.commons.configuration2.AbstractConfiguration;
-import org.apache.log4j.chainsaw.logevents.Level;
 
 /**
  * A receiver receives log events from a source.
  */
 public interface ChainsawReceiver {
     
-    public void addChainsawEventBatchListener( ChainsawEventBatchListener listen );
+    void addChainsawEventBatchListener( ChainsawEventBatchListener listen );
     
-    public void removeEventBatchListener( ChainsawEventBatchListener listen );
+    void removeEventBatchListener( ChainsawEventBatchListener listen );
     
-    public void setThreshold(final Level level);
+    void setThreshold(final Level level);
     
-    public Level getThreshold();
+    Level getThreshold();
     
-    public String getName();
+    String getName();
     
-    public void setName(String name);
+    void setName(String name);
     
-    public int getQueueInterval();
+    int getQueueInterval();
 
-    public void setQueueInterval(int interval);
+    void setQueueInterval(int interval);
     
-    public void setPaused(boolean paused);
+    void setPaused(boolean paused);
     
-    public boolean getPaused();
+    boolean getPaused();
     
     /**
      * Start this receiver by(for example) opening a network socket.
      */
-    public void start();
+    void start();
     
     /**
      * Stop this receiver by(for example) closing network sockets.
      */
-    public void shutdown();
+    void shutdown();
     
-    public void addPropertyChangeListener(final PropertyChangeListener listener);
+    void addPropertyChangeListener(final PropertyChangeListener listener);
     
-    public void addPropertyChangeListener(
+    void addPropertyChangeListener(
         final String propertyName,
         final PropertyChangeListener listener);
     
-    public void removePropertyChangeListener(
+    void removePropertyChangeListener(
         final PropertyChangeListener listener);
     
-    public void removePropertyChangeListener(
+    void removePropertyChangeListener(
         final String propertyName,
         final PropertyChangeListener listener);
-
-//    public void setConfiguration(AbstractConfiguration conf);
 }

@@ -14,15 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.log4j.chainsaw;
+package org.apache.log4j.chainsaw.receiver;
+
+import org.apache.log4j.chainsaw.ChainsawEventBatchListener;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.log4j.chainsaw.logevents.Level;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.configuration2.AbstractConfiguration;
-import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
-import org.apache.log4j.chainsaw.logevents.Level;
 
 /**
  *
@@ -146,7 +147,7 @@ public abstract class ChainsawReceiverSkeleton implements ChainsawReceiver {
      * 
      * @param event 
      */
-    protected void append(final ChainsawLoggingEvent event){
+    public void append(final ChainsawLoggingEvent event){
         if( m_paused ) return;
         m_worker.enqueue(event);
     }
