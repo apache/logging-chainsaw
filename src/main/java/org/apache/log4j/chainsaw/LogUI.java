@@ -37,7 +37,6 @@ import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -69,16 +68,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.security.AllPermission;
-import java.security.CodeSource;
-import java.security.PermissionCollection;
-import java.security.Permissions;
-import java.security.Policy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -105,7 +98,6 @@ public class LogUI extends JFrame {
     private static final String MAIN_WINDOW_Y = "main.window.y";
     private static final String MAIN_WINDOW_X = "main.window.x";
     public static final String LABEL_TUTORIAL_STARTED = "TutorialStarted";
-    private static ChainsawSplash splash;
     private static final double DEFAULT_MAIN_RECEIVER_SPLIT_LOCATION = 0.85d;
     private final JFrame preferencesFrame = new JFrame();
     private boolean noReceiversDefined;
@@ -119,7 +111,7 @@ public class LogUI extends JFrame {
     private final Map tableMap = new HashMap();
     private final List<String> filterableColumns = new ArrayList<>();
     private final Map<String, Component> panelMap = new HashMap<>();
-    private ChainsawAppender chainsawAppender;
+    public ChainsawAppender chainsawAppender;
     private ChainsawToolBarAndMenus chainsawToolBarAndMenus;
     private ChainsawAbout aboutBox;
     private final SettingsManager settingsManager = SettingsManager.getInstance();
@@ -128,7 +120,7 @@ public class LogUI extends JFrame {
     private double lastMainReceiverSplitLocation = DEFAULT_MAIN_RECEIVER_SPLIT_LOCATION;
     private final List<LogPanel> identifierPanels = new ArrayList<>();
     private int dividerSize;
-    private int cyclicBufferSize;
+    public int cyclicBufferSize;
     private List<ChainsawReceiver> m_receivers = new ArrayList<>();
     private List<ReceiverEventListener> m_receiverListeners = new ArrayList<>();
     private ZeroConfPlugin m_zeroConf = new ZeroConfPlugin();
@@ -172,19 +164,6 @@ public class LogUI extends JFrame {
         }
     }
 
-    private static void showSplash(Frame owner) {
-        splash = new ChainsawSplash(owner);
-        SwingHelper.centerOnScreen(splash);
-        splash.setVisible(true);
-    }
-
-    private static void removeSplash() {
-        if (splash != null) {
-            splash.setVisible(false);
-            splash.dispose();
-        }
-    }
-
     /**
      * Registers a ShutdownListener with this calss so that it can be notified
      * when the user has requested that Chainsaw exit.
@@ -203,112 +182,6 @@ public class LogUI extends JFrame {
      */
     public void removeShutdownListener(ShutdownListener l) {
         shutdownListenerList.remove(ShutdownListener.class, l);
-    }
-
-    /**
-     * Starts Chainsaw by attaching a new instance to the Log4J main root Logger
-     * via a ChainsawAppender, and activates itself
-     *
-     * @param args
-     */
-    public static void main(String[] args) {
-        if (OSXIntegration.IS_OSX) {
-            System.setProperty("apple.laf.useScreenMenuBar", "true");
-        }
-
-        AbstractConfiguration configuration = SettingsManager.getInstance().getGlobalConfiguration();
-
-        EventQueue.invokeLater(() -> {
-            String lookAndFeelClassName = configuration.getString("lookAndFeelClassName");
-            if (lookAndFeelClassName == null || lookAndFeelClassName.trim().isEmpty()) {
-                String osName = System.getProperty("os.name");
-                if (osName.toLowerCase(Locale.ENGLISH).startsWith("mac")) {
-                    //no need to assign look and feel
-                } else if (osName.toLowerCase(Locale.ENGLISH).startsWith("windows")) {
-                    lookAndFeelClassName = "com.sun.java.swing.plaf.windows.WindowsLookAndFeel";
-                    configuration.setProperty("lookAndFeelClassName",lookAndFeelClassName);
-                } else if (osName.toLowerCase(Locale.ENGLISH).startsWith("linux")) {
-                    lookAndFeelClassName = "com.sun.java.swing.plaf.gtk.GTKLookAndFeel";
-                    configuration.setProperty("lookAndFeelClassName",lookAndFeelClassName);
-                }
-            }
-
-            if (lookAndFeelClassName != null && !(lookAndFeelClassName.trim().isEmpty())) {
-                try{
-                    UIManager.setLookAndFeel(lookAndFeelClassName);
-                }catch(Exception ex){}
-            }else{
-                try{
-                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                }catch(Exception ex){}
-            }
-            createChainsawGUI(null);
-        });
-    }
-
-    /**
-     * Creates, activates, and then shows the Chainsaw GUI, optionally showing
-     * the splash screen, and using the passed shutdown action when the user
-     * requests to exit the application (if null, then Chainsaw will exit the vm)
-     *
-     * @param newShutdownAction DOCUMENT ME!
-     */
-    public static void createChainsawGUI(Action newShutdownAction) {
-        AbstractConfiguration config = SettingsManager.getInstance().getGlobalConfiguration();
-
-        if (config.getBoolean("okToRemoveSecurityManager", false)) {
-            System.setSecurityManager(null);
-            // this SHOULD set the Policy/Permission stuff for any
-            // code loaded from our custom classloader.  
-            // crossing fingers...
-            Policy.setPolicy(new Policy() {
-                @Override
-                public PermissionCollection getPermissions(CodeSource codesource) {
-                    Permissions perms = new Permissions();
-                    perms.add(new AllPermission());
-                    return (perms);
-                }
-            });
-        }
-
-        final LogUI logUI = new LogUI();
-        final LoggerContext ctx = (LoggerContext) org.apache.logging.log4j.LogManager.getContext(false);
-        logUI.chainsawAppender = ctx.getConfiguration().getAppender("chainsaw");
-
-        if (config.getBoolean("slowSplash", true)) {
-            showSplash(logUI);
-        }
-        logUI.cyclicBufferSize = config.getInt("cyclicBufferSize", 50000);
-
-
-        /**
-         * TODO until we work out how JoranConfigurator might be able to have
-         * configurable class loader, if at all.  For now we temporarily replace the
-         * TCCL so that Plugins that need access to resources in
-         * the Plugins directory can find them (this is particularly
-         * important for the Web start version of Chainsaw
-         */
-        //configuration initialized here
-
-        Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
-            logger.error("Uncaught exception in thread {}", t.getName(), e);
-        });
-
-        EventQueue.invokeLater(logUI::activateViewer);
-        EventQueue.invokeLater(logUI::buildChainsawLogPanel);
-
-        logger.info("SecurityManager is now: {}", System.getSecurityManager());
-
-        if (newShutdownAction != null) {
-            logUI.setShutdownAction(newShutdownAction);
-        } else {
-            logUI.setShutdownAction(
-                new AbstractAction() {
-                    public void actionPerformed(ActionEvent e) {
-                        System.exit(0);
-                    }
-                });
-        }
     }
 
     /**
@@ -729,8 +602,6 @@ public class LogUI extends JFrame {
         } else {
             hideReceiverPanel();
         }
-
-        removeSplash();
 
         synchronized (initializationLock) {
             initializationLock.notifyAll();

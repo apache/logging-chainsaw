@@ -19,7 +19,7 @@
  * @author Paul Smith &lt;psmith@apache.org&gt;
  *
  */
-package org.apache.log4j.chainsaw;
+package org.apache.log4j.chainsaw.components.splash;
 
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.logging.log4j.LogManager;

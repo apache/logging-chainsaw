@@ -118,7 +118,7 @@
   </scm>
 
   <properties>
-    <chainsaw.mainclass>org.apache.log4j.chainsaw.LogUI</chainsaw.mainclass>
+    <chainsaw.mainclass>org.apache.log4j.chainsaw.ChainsawStarter</chainsaw.mainclass>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
     <log4j.version>2.20.0</log4j.version>
