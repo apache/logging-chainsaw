@@ -21,8 +21,6 @@ import java.util.Locale;
 public class ChainsawStarter {
     private static Logger logger = LogManager.getLogger(ChainsawStarter.class);
 
-
-
     /**
      * Starts Chainsaw by attaching a new instance to the Log4J main root Logger
      * via a ChainsawAppender, and activates itself
@@ -34,8 +32,9 @@ public class ChainsawStarter {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
         }
 
-        AbstractConfiguration configuration = SettingsManager.getInstance().getGlobalConfiguration();
+        SettingsManager settingsManager = new SettingsManager();
 
+        AbstractConfiguration configuration = settingsManager.getGlobalConfiguration();
         EventQueue.invokeLater(() -> {
             String lookAndFeelClassName = configuration.getString("lookAndFeelClassName");
             if (lookAndFeelClassName == null || lookAndFeelClassName.trim().isEmpty()) {
@@ -60,7 +59,7 @@ public class ChainsawStarter {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                 }catch(Exception ex){}
             }
-            createChainsawGUI(null);
+            createChainsawGUI(settingsManager, null);
         });
     }
 
@@ -71,11 +70,11 @@ public class ChainsawStarter {
      *
      * @param newShutdownAction DOCUMENT ME!
      */
-    public static void createChainsawGUI(Action newShutdownAction) {
-        AbstractConfiguration config = SettingsManager.getInstance().getGlobalConfiguration();
+    public static void createChainsawGUI(SettingsManager settingsManager, Action newShutdownAction) {
         SplashViewer splashViewer = new SplashViewer();
 
-        if (config.getBoolean("okToRemoveSecurityManager", false)) {
+        AbstractConfiguration configuration = settingsManager.getGlobalConfiguration();
+        if (configuration.getBoolean("okToRemoveSecurityManager", false)) {
             System.setSecurityManager(null);
             // this SHOULD set the Policy/Permission stuff for any
             // code loaded from our custom classloader.
@@ -90,14 +89,14 @@ public class ChainsawStarter {
             });
         }
 
-        final LogUI logUI = new LogUI();
+        final LogUI logUI = new LogUI(settingsManager);
         final LoggerContext ctx = (LoggerContext) org.apache.logging.log4j.LogManager.getContext(false);
         logUI.chainsawAppender = ctx.getConfiguration().getAppender("chainsaw");
 
-        if (config.getBoolean("slowSplash", true)) {
+        if (configuration.getBoolean("slowSplash", true)) {
             splashViewer.showSplash(logUI);
         }
-        logUI.cyclicBufferSize = config.getInt("cyclicBufferSize", 50000);
+        logUI.cyclicBufferSize = configuration.getInt("cyclicBufferSize", 50000);
 
 
         /**

@@ -19,7 +19,6 @@ package org.apache.log4j.chainsaw;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.chainsaw.osx.OSXIntegration;
 
 import javax.swing.*;
@@ -27,9 +26,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import java.awt.*;
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -51,21 +47,19 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
     private JTextField cyclicBufferSize;
     private GeneralAllPrefPanel generalAllPrefPanel;
     private AbstractConfiguration m_globalConfiguration;
+    private SettingsManager settingsManager;
 
-    ApplicationPreferenceModelPanel() {
-        m_globalConfiguration = SettingsManager.getInstance().getGlobalConfiguration();
+    ApplicationPreferenceModelPanel(SettingsManager settingsManager) {
+        this.m_globalConfiguration = settingsManager.getGlobalConfiguration();
+        this.settingsManager = settingsManager;
         initComponents();
         getOkButton().addActionListener(
             e -> {
-                SettingsManager.getInstance().saveGlobalSettings();
+                settingsManager.saveGlobalSettings();
                 hidePanel();
             });
 
         getCancelButton().addActionListener(e -> hidePanel());
-    }
-
-    public void updateModel(){
-
     }
 
     /* (non-Javadoc)
@@ -128,7 +122,7 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
          *
          */
         private void setupListeners() {
-            final AbstractConfiguration config = SettingsManager.getInstance().getGlobalConfiguration();
+            final AbstractConfiguration config = settingsManager.getGlobalConfiguration();
 
             topPlacement.addActionListener(
                 e -> config.setProperty("tabPlacement", SwingConstants.TOP));
@@ -221,7 +215,7 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
             JPanel lfPanel = new JPanel();
             lfPanel.setLayout(new BoxLayout(lfPanel, BoxLayout.Y_AXIS));
             lfPanel.setBorder(BorderFactory.createTitledBorder(" Look & Feel "));
-            final AbstractConfiguration configuration = SettingsManager.getInstance().getGlobalConfiguration();
+            final AbstractConfiguration configuration = settingsManager.getGlobalConfiguration();
 
             for (final UIManager.LookAndFeelInfo lfInfo : lookAndFeels) {
                 final JRadioButton lfItem = new JRadioButton(" " + lfInfo.getName() + " ");
@@ -272,7 +266,7 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
         }
 
         public void updateModel(){
-            AbstractConfiguration config = SettingsManager.getInstance().getGlobalConfiguration();
+            AbstractConfiguration config = settingsManager.getGlobalConfiguration();
 
             statusBar.setSelected(config.getBoolean("statusBar"));
             receivers.setSelected(config.getBoolean("showReceivers"));

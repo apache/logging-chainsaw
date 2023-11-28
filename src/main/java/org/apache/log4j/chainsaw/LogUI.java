@@ -114,7 +114,7 @@ public class LogUI extends JFrame {
     public ChainsawAppender chainsawAppender;
     private ChainsawToolBarAndMenus chainsawToolBarAndMenus;
     private ChainsawAbout aboutBox;
-    private final SettingsManager settingsManager = SettingsManager.getInstance();
+    private SettingsManager settingsManager;
     private final JFrame tutorialFrame = new JFrame("Chainsaw Tutorial");
     private JSplitPane mainReceiverSplitPane;
     private double lastMainReceiverSplitLocation = DEFAULT_MAIN_RECEIVER_SPLIT_LOCATION;
@@ -123,7 +123,7 @@ public class LogUI extends JFrame {
     public int cyclicBufferSize;
     private List<ChainsawReceiver> m_receivers = new ArrayList<>();
     private List<ReceiverEventListener> m_receiverListeners = new ArrayList<>();
-    private ZeroConfPlugin m_zeroConf = new ZeroConfPlugin();
+    private ZeroConfPlugin m_zeroConf = new ZeroConfPlugin(settingsManager);
 
     private static Logger logger = LogManager.getLogger();
 
@@ -145,18 +145,22 @@ public class LogUI extends JFrame {
 
     //map of tab names to rulecolorizers
     private Map<String, RuleColorizer> allColorizers = new HashMap<>();
-    private RuleColorizer globalRuleColorizer = new RuleColorizer(true);
-    private ReceiverConfigurationPanel receiverConfigurationPanel = new ReceiverConfigurationPanel();
+    private RuleColorizer globalRuleColorizer = new RuleColorizer(settingsManager, true);
+    private ReceiverConfigurationPanel receiverConfigurationPanel = new ReceiverConfigurationPanel(settingsManager);
+    private AbstractConfiguration configuration;
 
     /**
      * Constructor which builds up all the visual elements of the frame including
      * the Menu bar
      */
-    public LogUI() {
+    public LogUI(SettingsManager settingsManager) {
         super("Chainsaw");
+
+        this.settingsManager = settingsManager;
+        this.configuration = settingsManager.getGlobalConfiguration();
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
-        globalRuleColorizer.setConfiguration(SettingsManager.getInstance().getGlobalConfiguration());
+        globalRuleColorizer.setConfiguration(configuration);
         globalRuleColorizer.loadColorSettings();
 
         if (ChainsawIcons.WINDOW_ICON != null) {
@@ -194,7 +198,7 @@ public class LogUI extends JFrame {
         statusBar = new ChainsawStatusBar(this);
         setupReceiverPanel();
 
-        setToolBarAndMenus(new ChainsawToolBarAndMenus(this));
+        setToolBarAndMenus(new ChainsawToolBarAndMenus(this, configuration));
         toolbar = getToolBarAndMenus().getToolbar();
         setJMenuBar(getToolBarAndMenus().getMenubar());
 
@@ -227,7 +231,7 @@ public class LogUI extends JFrame {
 
         });
 
-        applicationPreferenceModelPanel = new ApplicationPreferenceModelPanel();
+        applicationPreferenceModelPanel = new ApplicationPreferenceModelPanel(settingsManager);
 
         applicationPreferenceModelPanel.setOkCancelActionListener(
             e -> preferencesFrame.setVisible(false));
@@ -246,7 +250,7 @@ public class LogUI extends JFrame {
     }
 
     private void setupReceiverPanel() {
-        receiversPanel = new ReceiversPanel(this, statusBar);
+        receiversPanel = new ReceiversPanel(settingsManager, this, statusBar);
 //        receiversPanel.addPropertyChangeListener(
 //            "visible",
 //            evt -> getApplicationPreferenceModel().setReceivers(
@@ -311,7 +315,7 @@ public class LogUI extends JFrame {
      * etc.
      */
     private void loadSettings() {
-        AbstractConfiguration config = SettingsManager.getInstance().getGlobalConfiguration();
+        AbstractConfiguration config = settingsManager.getGlobalConfiguration();
         setLocation(
             config.getInt(LogUI.MAIN_WINDOW_X, 0), config.getInt(LogUI.MAIN_WINDOW_Y, 0));
         int width = config.getInt(LogUI.MAIN_WINDOW_WIDTH, -1);
@@ -326,7 +330,7 @@ public class LogUI extends JFrame {
         }
 
         getToolBarAndMenus().stateChange();
-        RuleColorizer colorizer = new RuleColorizer();
+        RuleColorizer colorizer = new RuleColorizer(settingsManager);
         allColorizers.put(ChainsawConstants.DEFAULT_COLOR_RULE_NAME, colorizer);
     }
 
@@ -597,7 +601,7 @@ public class LogUI extends JFrame {
 
         setVisible(true);
 
-        if (settingsManager.getGlobalConfiguration().getBoolean("showReceivers", false)) {
+        if (configuration.getBoolean("showReceivers", false)) {
             showReceiverPanel();
         } else {
             hideReceiverPanel();
@@ -609,7 +613,7 @@ public class LogUI extends JFrame {
 
         if (
             noReceiversDefined
-                && settingsManager.getGlobalConfiguration().getBoolean("showNoReceiverWarning", true)) {
+                && configuration.getBoolean("showNoReceiverWarning", true)) {
             SwingHelper.invokeOnEDT(this::showReceiverConfigurationPanel);
         }
 
@@ -661,10 +665,10 @@ public class LogUI extends JFrame {
          * hide those tabs out of currently loaded tabs..
          */
 
-        if (!settingsManager.getGlobalConfiguration().getBoolean("displayWelcomeTab", true)) {
+        if (!configuration.getBoolean("displayWelcomeTab", true)) {
             displayPanel(ChainsawTabbedPane.WELCOME_TAB, false);
         }
-        if (!settingsManager.getGlobalConfiguration().getBoolean("displayZeroconfTab", true)) {
+        if (!configuration.getBoolean("displayZeroconfTab", true)) {
             displayPanel(ChainsawTabbedPane.ZEROCONF, false);
         }
         chainsawToolBarAndMenus.stateChange();
@@ -811,7 +815,7 @@ public class LogUI extends JFrame {
 //            evt -> handler.setIdentifierExpression(evt.getNewValue().toString()));
 //        handler.setIdentifierExpression(applicationPreferenceModel.getIdentifierExpression());
 
-        int tooltipDisplayMillis = settingsManager.getGlobalConfiguration().getInt("tooltipDisplayMillis", 4000);
+        int tooltipDisplayMillis = configuration.getInt("tooltipDisplayMillis", 4000);
 //        applicationPreferenceModel.addPropertyChangeListener(
 //            "toolTipDisplayMillis",
 //            evt -> ToolTipManager.sharedInstance().setDismissDelay(
@@ -845,17 +849,17 @@ public class LogUI extends JFrame {
 //                    }
 //                }));
 //
-        settingsManager.getGlobalConfiguration().addEventListener(ConfigurationEvent.SET_PROPERTY,
+        configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
             evt -> {
                 if( evt.getPropertyName().equals( "statusBar" ) ){
                     boolean value = (Boolean) evt.getPropertyValue();
                     statusBar.setVisible(value);
                 }
             });
-        boolean showStatusBar = settingsManager.getGlobalConfiguration().getBoolean("statusBar", true);
+        boolean showStatusBar = configuration.getBoolean("statusBar", true);
         setStatusBarVisible(showStatusBar);
 
-        settingsManager.getGlobalConfiguration().addEventListener(ConfigurationEvent.SET_PROPERTY,
+        configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
             evt -> {
                 if( evt.getPropertyName().equals( "showReceivers" ) ){
                     boolean value = (Boolean) evt.getPropertyValue();
@@ -866,7 +870,7 @@ public class LogUI extends JFrame {
                     }
                 }
             });
-        boolean showReceivers = settingsManager.getGlobalConfiguration().getBoolean("showReceivers", false);
+        boolean showReceivers = configuration.getBoolean("showReceivers", false);
         setStatusBarVisible(showStatusBar);
         if( showReceivers ){
             showReceiverPanel();
@@ -892,14 +896,14 @@ public class LogUI extends JFrame {
 ////    }
 //
 //
-        settingsManager.getGlobalConfiguration().addEventListener(ConfigurationEvent.SET_PROPERTY,
+        configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
             evt -> {
                 if( evt.getPropertyName().equals( "toolbar" ) ){
                     boolean value = (Boolean) evt.getPropertyValue();
                     toolbar.setVisible(value);
                 }
             });
-        boolean showToolbar = settingsManager.getGlobalConfiguration().getBoolean("toolbar", true);
+        boolean showToolbar = configuration.getBoolean("toolbar", true);
         toolbar.setVisible(showToolbar);
 
     }
@@ -1088,10 +1092,10 @@ public class LogUI extends JFrame {
      */
     public boolean exit() {
         for(ChainsawReceiver rx : m_receivers){
-            getSettingsManager().saveSettingsForReceiver(rx);
+            settingsManager.saveSettingsForReceiver(rx);
         }
 
-        getSettingsManager().saveAllSettings();
+        settingsManager.saveAllSettings();
 
         return shutdown();
     }
@@ -1118,13 +1122,13 @@ public class LogUI extends JFrame {
     }
 
     public void showApplicationPreferences() {
-        applicationPreferenceModelPanel.updateModel();
+        // applicationPreferenceModelPanel.updateModel();
         preferencesFrame.setVisible(true);
     }
 
     public void loadReceiver() {
         Runnable r = () -> {
-            JFileChooser jfc = new JFileChooser(SettingsManager.getSettingsDirectory());
+            JFileChooser jfc = new JFileChooser(settingsManager.getSettingsDirectory());
             int returnVal = jfc.showOpenDialog(this);
             if(returnVal != JFileChooser.APPROVE_OPTION) {
                 return;
@@ -1135,7 +1139,7 @@ public class LogUI extends JFrame {
             // Create the receiver
             String fileToLoad = jfc.getSelectedFile().getName();
             String receiverName = fileToLoad.split( "-" )[0];
-            AbstractConfiguration config = SettingsManager.getInstance().getSettingsForReceiverTab(receiverName);
+            AbstractConfiguration config = settingsManager.getSettingsForReceiverTab(receiverName);
             String typeToLoad = config.getString("receiver.type");
             ServiceLoader<ChainsawReceiverFactory> sl = ServiceLoader.load(ChainsawReceiverFactory.class);
 
@@ -1143,7 +1147,7 @@ public class LogUI extends JFrame {
                 if(crFactory.getReceiverName().equals(typeToLoad)){
                     ChainsawReceiver rx = crFactory.create();
                     rx.setName(receiverName);
-                    SettingsManager.getInstance().loadSettingsForReceiver(rx);
+                    settingsManager.loadSettingsForReceiver(rx);
                     addReceiver(rx);
 
                     rx.start();
@@ -1194,7 +1198,7 @@ public class LogUI extends JFrame {
      * Shutsdown by ensuring the Appender gets a chance to close.
      */
     public boolean shutdown() {
-        boolean confirmExit = settingsManager.getGlobalConfiguration().getBoolean("confirmExit", true);
+        boolean confirmExit = configuration.getBoolean("confirmExit", true);
         if (confirmExit) {
             if (
                 JOptionPane.showConfirmDialog(
@@ -1376,19 +1380,6 @@ public class LogUI extends JFrame {
         return panelMap;
     }
 
-    //  public Map getLevelMap() {
-    //    return levelMap;
-    //  }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public SettingsManager getSettingsManager() {
-        return settingsManager;
-    }
-
     /**
      * DOCUMENT ME!
      *
@@ -1401,7 +1392,7 @@ public class LogUI extends JFrame {
     /**
      * DOCUMENT ME!
      *
-     * @param tbms DOCUMENT ME!
+     * @param tbms          DOCUMENT ME!
      */
     public void setToolBarAndMenus(ChainsawToolBarAndMenus tbms) {
         this.chainsawToolBarAndMenus = tbms;
@@ -1486,7 +1477,7 @@ public class LogUI extends JFrame {
     private void buildLogPanel(
         boolean customExpression, final String ident, final List<ChainsawLoggingEvent> events, final ChainsawReceiver rx)
         throws IllegalArgumentException {
-        final LogPanel thisPanel = new LogPanel(getStatusBar(), ident, cyclicBufferSize, allColorizers, applicationPreferenceModel, globalRuleColorizer);
+        final LogPanel thisPanel = new LogPanel(settingsManager, getStatusBar(), ident, cyclicBufferSize, allColorizers, applicationPreferenceModel, globalRuleColorizer);
 
         if( !customExpression && rx != null ){
             thisPanel.setReceiver(rx);

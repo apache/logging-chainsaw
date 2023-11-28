@@ -61,6 +61,7 @@ public class RuleColorizer implements Colorizer {
     private static final String DEFAULT_WARN_EXPRESSION = "level == WARN";
     private static final String DEFAULT_FATAL_ERROR_EXCEPTION_EXPRESSION = "level == FATAL || level == ERROR || exception exists";
     private static final String DEFAULT_MARKER_EXPRESSION = "prop.marker exists";
+    private SettingsManager settingsManager;
 
     public static List<ColorRule> defaultRules(){
         List<ColorRule> rulesList = new ArrayList<>();
@@ -85,12 +86,14 @@ public class RuleColorizer implements Colorizer {
         return rulesList;
     }
 
-    public RuleColorizer() {
+    public RuleColorizer(SettingsManager settingsManager) {
+        this.settingsManager = settingsManager;
         this.rules = defaultRules();
         isGlobal = false;
     }
 
-    public RuleColorizer(boolean isGlobal){
+    public RuleColorizer(SettingsManager settingsManager, boolean isGlobal){
+        this.settingsManager = settingsManager;
         this.rules = defaultRules();
         this.isGlobal = isGlobal;
     }
@@ -185,7 +188,7 @@ public class RuleColorizer implements Colorizer {
     }
 
     public void setUseDefaultSettings(boolean useDefaultSettings){
-        if( configuration == SettingsManager.getInstance().getGlobalConfiguration() ){
+        if( configuration == settingsManager.getGlobalConfiguration() ){
             return;
         }
 

@@ -62,7 +62,6 @@ import org.apache.commons.configuration2.AbstractConfiguration;
 import org.apache.commons.configuration2.event.ConfigurationEvent;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.logevents.Level;
-import org.apache.log4j.spi.LoggingEventFieldResolver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -120,6 +119,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
     private static final DateFormat TIMESTAMP_DATE_FORMAT = new SimpleDateFormat(Constants.TIMESTAMP_RULE_FORMAT);
     private static final double DEFAULT_DETAIL_SPLIT_LOCATION = 0.71d;
     private static final double DEFAULT_LOG_TREE_SPLIT_LOCATION = 0.2d;
+    private SettingsManager settingsManager;
     private final String identifier;
     private final ChainsawStatusBar statusBar;
     private final JFrame logPanelPreferencesFrame = new JFrame();
@@ -188,26 +188,29 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
      * Creates a new LogPanel object.  If a LogPanel with this identifier has
      * been loaded previously, reload settings saved on last exit.
      *
-     * @param statusBar  shared status bar, provided by main application
-     * @param identifier used to load and save settings
+     * @param settingsManager
+     * @param statusBar       shared status bar, provided by main application
+     * @param identifier      used to load and save settings
      */
-    public LogPanel(final ChainsawStatusBar statusBar, 
-            final String identifier,
-            int cyclicBufferSize,
+    public LogPanel(SettingsManager settingsManager, final ChainsawStatusBar statusBar,
+                    final String identifier,
+                    int cyclicBufferSize,
                     Map<String, RuleColorizer> allColorizers,
                     final ApplicationPreferenceModel applicationPreferenceModel,
                     RuleColorizer globalRuleColorizer) {
+        this.settingsManager = settingsManager;
+
         this.identifier = identifier;
         this.statusBar = statusBar;
         this.applicationPreferenceModel = applicationPreferenceModel;
-        this.logPanelPreferencesPanel = new LogPanelPreferencePanel(identifier);
+        this.logPanelPreferencesPanel = new LogPanelPreferencePanel(settingsManager, identifier);
         this.colorizer = globalRuleColorizer;
         this.m_globalColorizer = globalRuleColorizer;
         this.m_allColorizers = allColorizers;
         logger.debug("creating logpanel for {}", identifier);
 
-        m_configuration = SettingsManager.getInstance().getCombinedSettingsForRecevierTab(identifier);
-        AbstractConfiguration tabConfig = SettingsManager.getInstance().getSettingsForReceiverTab(identifier);
+        m_configuration = settingsManager.getCombinedSettingsForRecevierTab(identifier);
+        AbstractConfiguration tabConfig = settingsManager.getSettingsForReceiverTab(identifier);
 
         setLayout(new BorderLayout());
 
@@ -692,7 +695,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             ((ImageIcon) ChainsawIcons.ICON_PREFERENCES).getImage());
 
         allColorizers.put(identifier, colorizer);
-        colorPanel = new ColorPanel(m_globalColorizer, filterModel, allColorizers, this);
+        colorPanel = new ColorPanel(settingsManager, m_globalColorizer, filterModel, allColorizers, this);
 
         colorFrame.getContentPane().add(colorPanel);
 
@@ -848,12 +851,12 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
                 }
             });
 
-        renderer = new TableColorizingRenderer(colorizer, applicationPreferenceModel, tableModel, preferenceModel, true);
+        renderer = new TableColorizingRenderer(settingsManager, colorizer, applicationPreferenceModel, tableModel, preferenceModel, true);
         renderer.setToolTipsVisible(preferenceModel.isToolTips());
 
         table.setDefaultRenderer(Object.class, renderer);
 
-        searchRenderer = new TableColorizingRenderer(colorizer, applicationPreferenceModel, searchModel, preferenceModel, false);
+        searchRenderer = new TableColorizingRenderer(settingsManager, colorizer, applicationPreferenceModel, searchModel, preferenceModel, false);
         searchRenderer.setToolTipsVisible(preferenceModel.isToolTips());
 
         searchTable.setDefaultRenderer(Object.class, searchRenderer);
@@ -1937,7 +1940,6 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
      * Accessor
      *
      * @return identifier
-     * @see EventBatchListener
      */
     public String getInterestedIdentifier() {
         return getIdentifier();
@@ -2027,12 +2029,12 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             }
         }
 
-        AbstractConfiguration configuration = SettingsManager.getInstance().getSettingsForReceiverTab(identifier);
+        AbstractConfiguration configuration = settingsManager.getSettingsForReceiverTab(identifier);
 
         if( configuration.getBoolean( "color.rules.default", true ) ){
             colorizer = m_globalColorizer;
         }else{
-            setRuleColorizer(new RuleColorizer());
+            setRuleColorizer(new RuleColorizer(settingsManager));
             colorizer.setConfiguration(configuration);
             colorizer.loadColorSettings();
         }
@@ -2158,7 +2160,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         if( colorizer == m_globalColorizer ){
             // Current colorizer is the global one, so set our new colorizer
             colorizer = newRuleColor;
-            AbstractConfiguration configuration = SettingsManager.getInstance().getSettingsForReceiverTab(identifier);
+            AbstractConfiguration configuration = settingsManager.getSettingsForReceiverTab(identifier);
 
             colorizer.setConfiguration(configuration);
             colorizer.setUseDefaultSettings(false);
@@ -2204,7 +2206,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
      * Toggle panel preference for detail visibility on or off
      */
     public void toggleDetailVisible() {
-        AbstractConfiguration config = SettingsManager.getInstance().getSettingsForReceiverTab(identifier);
+        AbstractConfiguration config = settingsManager.getSettingsForReceiverTab(identifier);
 
         boolean visible = config.getBoolean("logpanel.detailColumnVisible");
         config.setProperty("logpanel.detailColumnVisible", !visible);
@@ -2216,7 +2218,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
      * @return detail visibility flag
      */
     public boolean isDetailVisible() {
-        AbstractConfiguration config = SettingsManager.getInstance().getSettingsForReceiverTab(identifier);
+        AbstractConfiguration config = settingsManager.getSettingsForReceiverTab(identifier);
 
         boolean visible = config.getBoolean("logpanel.detailColumnVisible");
         return visible;
@@ -2230,7 +2232,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
      * Toggle panel preference for logger tree visibility on or off
      */
     public void toggleLogTreeVisible() {
-        AbstractConfiguration config = SettingsManager.getInstance().getSettingsForReceiverTab(identifier);
+        AbstractConfiguration config = settingsManager.getSettingsForReceiverTab(identifier);
 
         boolean visible = config.getBoolean("logpanel.logTreePanelVisible");
         config.setProperty("logpanel.logTreePanelVisible", !visible);
@@ -2242,7 +2244,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
      * @return logger tree visibility flag
      */
     public boolean isLogTreeVisible() {
-        AbstractConfiguration config = SettingsManager.getInstance().getSettingsForReceiverTab(identifier);
+        AbstractConfiguration config = settingsManager.getSettingsForReceiverTab(identifier);
 
         return config.getBoolean("logpanel.logTreePanelVisible");
     }

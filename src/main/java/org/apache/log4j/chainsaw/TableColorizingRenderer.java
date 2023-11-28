@@ -75,6 +75,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     private final JPanel multiLinePanel = new JPanel(new BorderLayout());
     private final JPanel generalPanel = new JPanel(new BorderLayout());
     private final JPanel levelPanel = new JPanel(new BorderLayout());
+    private SettingsManager settingsManager;
     private ApplicationPreferenceModel applicationPreferenceModel;
     private JTextPane multiLineTextPane;
     private MutableAttributeSet boldAttributeSet;
@@ -89,9 +90,10 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     /**
      * Creates a new TableColorizingRenderer object.
      */
-    public TableColorizingRenderer(RuleColorizer colorizer, ApplicationPreferenceModel applicationPreferenceModel,
+    public TableColorizingRenderer(SettingsManager settingsManager, RuleColorizer colorizer, ApplicationPreferenceModel applicationPreferenceModel,
                                    EventContainer eventContainer, LogPanelPreferenceModel logPanelPreferenceModel,
                                    boolean colorizeSearch) {
+        this.settingsManager = settingsManager;
         this.applicationPreferenceModel = applicationPreferenceModel;
         this.logPanelPreferenceModel = logPanelPreferenceModel;
         this.eventContainer = eventContainer;
@@ -404,7 +406,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         Color background;
         Color foreground;
         Rule loggerRule = colorizer.getLoggerRule();
-        AbstractConfiguration configuration = SettingsManager.getInstance().getGlobalConfiguration();
+        AbstractConfiguration configuration = settingsManager.getGlobalConfiguration();
         //use logger colors in table instead of event colors if event passes logger rule
         if (loggerRule != null && loggerRule.evaluate(loggingEventWrapper.getLoggingEvent(), null)) {
             background = configuration.get(Color.class, "searchBackgroundColor", ChainsawConstants.FIND_LOGGER_BACKGROUND);

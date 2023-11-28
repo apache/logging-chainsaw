@@ -85,9 +85,11 @@ public class ZeroConfPlugin extends DockablePanel {
     private static final String NEW_UDP_APPENDER_SERVICE_NAME = "_log4j._udp.local.";
 
     private JmDNS jmDNS;
+    private SettingsManager settingsManager;
 
-    public ZeroConfPlugin() {
+    public ZeroConfPlugin(SettingsManager settingsManager) {
         setName("Zeroconf");
+        this.settingsManager = settingsManager;
         deviceTable.setRowHeight(ChainsawConstants.DEFAULT_ROW_HEIGHT);
         try{
             activateOptions();
@@ -107,7 +109,7 @@ public class ZeroConfPlugin extends DockablePanel {
     }
 
     private File getPreferenceFileLocation() {
-        return new File(SettingsManager.getInstance().getSettingsDirectory(), "zeroconfprefs.xml");
+        return new File(settingsManager.getSettingsDirectory(), "zeroconfprefs.xml");
     }
 
     private void activateOptions() throws IOException {

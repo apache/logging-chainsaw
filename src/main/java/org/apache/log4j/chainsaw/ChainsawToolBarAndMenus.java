@@ -17,6 +17,8 @@
 
 package org.apache.log4j.chainsaw;
 
+import org.apache.commons.configuration2.AbstractConfiguration;
+import org.apache.commons.configuration2.event.ConfigurationEvent;
 import org.apache.log4j.chainsaw.components.elements.SmallButton;
 import org.apache.log4j.chainsaw.components.elements.SmallToggleButton;
 import org.apache.log4j.chainsaw.components.logpanel.LogPanel;
@@ -35,9 +37,6 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.apache.commons.configuration2.AbstractConfiguration;
-import org.apache.commons.configuration2.event.ConfigurationEvent;
-import org.apache.log4j.chainsaw.prefs.SettingsManager;
 
 
 /**
@@ -89,6 +88,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     private final JCheckBoxMenuItem menuShowWelcome = new JCheckBoxMenuItem();
     private final JToolBar toolbar;
     private final LogUI logui;
+    private AbstractConfiguration configuration;
     private final SmallButton clearButton = new SmallButton();
     private final SmallToggleButton detailPaneButton = new SmallToggleButton();
     private final SmallToggleButton logTreePaneButton = new SmallToggleButton();
@@ -98,8 +98,9 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     private final Action[] logPanelSpecificActions;
     private final JMenu activeTabMenu = new JMenu("Current tab");
 
-    ChainsawToolBarAndMenus(final LogUI logui) {
+    ChainsawToolBarAndMenus(final LogUI logui, AbstractConfiguration configuration) {
         this.logui = logui;
+        this.configuration = configuration;
         toolbar = new JToolBar(SwingConstants.HORIZONTAL);
         menuBar = new JMenuBar();
         fileMenu = new FileMenu(logui);
@@ -138,7 +139,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
                 toggleLogTreeAction, toggleScrollToBottomAction, changeModelAction,
             };
 
-            SettingsManager.getInstance().getGlobalConfiguration().addEventListener(ConfigurationEvent.SET_PROPERTY,
+            configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
             evt -> {
                 if( evt.getPropertyName().equals( "statusBar" ) ){
                     boolean value = (Boolean) evt.getPropertyValue();
@@ -146,7 +147,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
                 }
             });
 
-            SettingsManager.getInstance().getGlobalConfiguration().addEventListener(ConfigurationEvent.SET_PROPERTY,
+            configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
             evt -> {
                 if( evt.getPropertyName().equals( "showReceivers" ) ){
                     boolean value = (Boolean) evt.getPropertyValue();
@@ -395,8 +396,6 @@ class ChainsawToolBarAndMenus implements ChangeListener {
 
         viewMenu.setMnemonic('V');
 
-        AbstractConfiguration configuration = SettingsManager.getInstance().getGlobalConfiguration();
-
         toggleShowToolbarCheck.setAction(toggleToolbarAction);
         toggleShowToolbarCheck.setSelected(configuration.getBoolean("toolbar", true));
 
@@ -440,8 +439,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
             new AbstractAction("Show Status bar") {
                 public void actionPerformed(ActionEvent arg0) {
                     boolean isSelected = toggleStatusBarCheck.isSelected();
-                    SettingsManager.getInstance().getGlobalConfiguration()
-                            .setProperty("statusBar", isSelected);
+                    configuration.setProperty("statusBar", isSelected);
                 }
             };
 
@@ -632,10 +630,8 @@ class ChainsawToolBarAndMenus implements ChangeListener {
                 public void actionPerformed(ActionEvent arg0) {
                     // Since this action can be triggered from either a button
                     // or a check box, get the current value and invert it.
-                    boolean currentValue = SettingsManager.getInstance().getGlobalConfiguration()
-                            .getBoolean("showReceivers", false);
-                    SettingsManager.getInstance().getGlobalConfiguration()
-                            .setProperty("showReceivers", !currentValue);
+                    boolean currentValue = configuration.getBoolean("showReceivers", false);
+                    configuration.setProperty("showReceivers", !currentValue);
                 }
             };
 
@@ -683,8 +679,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
             new AbstractAction("Show Toolbar") {
                 public void actionPerformed(ActionEvent e) {
                     boolean isSelected = toggleShowToolbarCheck.isSelected();
-                    SettingsManager.getInstance().getGlobalConfiguration()
-                            .setProperty("toolbar", isSelected);
+                    configuration.setProperty("toolbar", isSelected);
                 }
             };
 
@@ -794,7 +789,6 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     }
 
     private void scanState() {
-        AbstractConfiguration configuration = SettingsManager.getInstance().getGlobalConfiguration();
         boolean showReceiversByDefault = configuration.getBoolean("showReceivers", false);
 
         toggleStatusBarCheck.setSelected(logui.isStatusBarVisible());

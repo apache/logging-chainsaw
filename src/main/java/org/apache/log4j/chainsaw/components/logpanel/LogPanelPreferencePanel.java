@@ -49,11 +49,13 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel {
 
     private final ModifiableListModel columnListModel = new ModifiableListModel();
     private ApplicationPreferenceModel appPreferenceModel;
+    private SettingsManager settingsManager;
     private final String m_panelIdentifier;
 
     //~ Constructors ============================================================
 
-    public LogPanelPreferencePanel(String panelIdent) {
+    public LogPanelPreferencePanel(SettingsManager settingsManager, String panelIdent) {
+        this.settingsManager = settingsManager;
         m_panelIdentifier = panelIdent;
         initComponents();
 
@@ -109,7 +111,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel {
             final JList columnList = new JList();
             columnList.setVisibleRowCount(17);
 
-            AbstractConfiguration mergedConfig = SettingsManager.getInstance().getCombinedSettingsForRecevierTab(m_panelIdentifier);
+            AbstractConfiguration mergedConfig = settingsManager.getCombinedSettingsForRecevierTab(m_panelIdentifier);
 
             String[] columnsOrder = mergedConfig.getStringArray( "table.columns.order" );
 
@@ -197,7 +199,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel {
         private void initComponents() {
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-            AbstractConfiguration config = SettingsManager.getInstance().getCombinedSettingsForRecevierTab(m_panelIdentifier);
+            AbstractConfiguration config = settingsManager.getCombinedSettingsForRecevierTab(m_panelIdentifier);
 
 
             JPanel dateFormatPanel = new JPanel();
@@ -445,7 +447,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel {
          * DOCUMENT ME!
          */
         private void initPanelComponents() {
-            AbstractConfiguration config = SettingsManager.getInstance().getCombinedSettingsForRecevierTab(m_panelIdentifier);
+            AbstractConfiguration config = settingsManager.getCombinedSettingsForRecevierTab(m_panelIdentifier);
 
             JTextComponentFormatter.applySystemFontAndSize(clearTableExpression);
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -485,8 +487,8 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel {
          * DOCUMENT ME!
          */
         private void setupListeners() {
-            Configuration config = SettingsManager.getInstance().getCombinedSettingsForRecevierTab(m_panelIdentifier).getConfiguration(0);
-            AbstractConfiguration tabConfig = SettingsManager.getInstance().getSettingsForReceiverTab(m_panelIdentifier);
+            Configuration config = settingsManager.getCombinedSettingsForRecevierTab(m_panelIdentifier).getConfiguration(0);
+            AbstractConfiguration tabConfig = settingsManager.getSettingsForReceiverTab(m_panelIdentifier);
 
             ActionListener wrapMessageListener = e -> config.setProperty("logpanel.wrapMsg", wrapMessage.isSelected());
 

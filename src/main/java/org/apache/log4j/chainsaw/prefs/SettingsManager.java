@@ -16,24 +16,9 @@
  */
 package org.apache.log4j.chainsaw.prefs;
 
-import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
-import javax.swing.event.EventListenerList;
-import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.EventListener;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.ServiceLoader;
-import java.util.logging.Level;
 import org.apache.commons.configuration2.AbstractConfiguration;
 import org.apache.commons.configuration2.CombinedConfiguration;
 import org.apache.commons.configuration2.PropertiesConfiguration;
-import org.apache.commons.configuration2.builder.BasicConfigurationBuilder;
 import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.fluent.FileBasedBuilderParameters;
 import org.apache.commons.configuration2.builder.fluent.Parameters;
@@ -45,6 +30,16 @@ import org.apache.log4j.chainsaw.ChainsawReceiverFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ServiceLoader;
+
 
 /**
  * SettingManager allows components to register interest in Saving/Loading
@@ -55,7 +50,7 @@ import org.apache.logging.log4j.Logger;
  */
 public final class SettingsManager {
     private static final Logger logger = LogManager.getLogger();
-    private static final SettingsManager instance = new SettingsManager();
+
     private static final String GLOBAL_SETTINGS_FILE_NAME = "chainsaw.settings.properties";
 
     private class TabSettingsData{
@@ -75,7 +70,7 @@ public final class SettingsManager {
      * Initialises the SettingsManager by loading the default Properties from
      * a resource
      */
-    private SettingsManager() {
+    public SettingsManager() {
         m_tabSettings = new HashMap<>();
         Parameters params = new Parameters();
         File f = new File(getSettingsDirectory(), GLOBAL_SETTINGS_FILE_NAME);
@@ -133,15 +128,6 @@ public final class SettingsManager {
 //        }
     }
 
-    /**
-     * Returns the singleton instance of the SettingsManager
-     *
-     * @return settings manager
-     */
-    public static SettingsManager getInstance() {
-        return instance;
-    }
-
     public AbstractConfiguration getGlobalConfiguration(){
         return m_configuration;
     }
@@ -161,8 +147,6 @@ public final class SettingsManager {
             return m_tabSettings.get( identifier ).tabSettings;
         }
         
-        PropertiesConfiguration configuration = null;
-
         // Either we don't contain the key, or we got an exception.  Regardless,
         // create a new configuration that we can use
         FileBasedBuilderParameters params = new Parameters().fileBased();
@@ -176,7 +160,7 @@ public final class SettingsManager {
         }
 
         FileBasedConfigurationBuilder<PropertiesConfiguration> builder =
-                new FileBasedConfigurationBuilder<PropertiesConfiguration>(
+                new FileBasedConfigurationBuilder<>(
                 PropertiesConfiguration.class)
                 .configure(params
                         .setListDelimiterHandler(new DefaultListDelimiterHandler(','))

@@ -86,10 +86,12 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
     private final LogUI m_parent;
     private final Map<Class,PropertyDescriptor[]> m_classToProperties = 
             new HashMap<>();
+    private SettingsManager settingsManager;
     private final ChainsawStatusBar m_statusBar;
 
-    public ReceiversPanel(LogUI parentUi, ChainsawStatusBar sb) {
+    public ReceiversPanel(SettingsManager settingsManager, LogUI parentUi, ChainsawStatusBar sb) {
         super(new BorderLayout());
+        this.settingsManager = settingsManager;
         m_statusBar = sb;
         m_parent = parentUi;
         final ReceiversTreeModel model = new ReceiversTreeModel();
@@ -529,7 +531,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
      */
 
     public void saveSettings(SaveSettingsEvent event) {
-        File file = new File(SettingsManager.getInstance().getSettingsDirectory(), "receiver-config.xml");
+        File file = new File(settingsManager.getSettingsDirectory(), "receiver-config.xml");
         m_parent.saveReceiversToFile(file);
     }
 

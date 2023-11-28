@@ -82,14 +82,16 @@ public class ColorPanel extends JPanel {
     private JCheckBox globalRulesCheckbox;
     private final LogPanel parentLogPanel;
     private JLabel rulesLabel;
+    private SettingsManager settingsManager;
 
-    public ColorPanel(final RuleColorizer globalColorizer,
+    public ColorPanel(SettingsManager settingsManager, final RuleColorizer globalColorizer,
                       final FilterModel filterModel,
                       final Map<String, RuleColorizer> allLogPanelColorizers,
                       final LogPanel parent) {
         super(new BorderLayout());
+        this.settingsManager = settingsManager;
 
-        AbstractConfiguration configuration = SettingsManager.getInstance().getGlobalConfiguration();
+        AbstractConfiguration configuration = settingsManager.getGlobalConfiguration();
 
         this.filterModel = filterModel;
         this.allLogPanelColorizers = allLogPanelColorizers;
@@ -227,7 +229,7 @@ public class ColorPanel extends JPanel {
                 Object selectedItem = loadPanelColorizersComboBox.getSelectedItem();
                 if (selectedItem != null) {
                     RuleColorizer sourceColorizer = allLogPanelColorizers.get(selectedItem.toString());
-                    RuleColorizer newColorizer = new RuleColorizer();
+                    RuleColorizer newColorizer = new RuleColorizer(settingsManager);
                     newColorizer.setRules(sourceColorizer.getRules());
                     parent.setRuleColorizer(newColorizer);
                     updateColors();
@@ -270,7 +272,7 @@ public class ColorPanel extends JPanel {
             }
         }
 
-        AbstractConfiguration configuration = SettingsManager.getInstance().getGlobalConfiguration();
+        AbstractConfiguration configuration = settingsManager.getGlobalConfiguration();
         //update search and alternating colors, since they may have changed from another color panel
         searchDataVectorEntry.set(0, configuration.get(Color.class, "searchBackgroundColor", ChainsawConstants.FIND_LOGGER_BACKGROUND));
         searchDataVectorEntry.set(1, configuration.get(Color.class, "searchForegroundColor", ChainsawConstants.FIND_LOGGER_FOREGROUND));
@@ -445,7 +447,7 @@ public class ColorPanel extends JPanel {
 
     private void saveSearchColors() {
         Vector thisVector = searchTableModel.getDataVector().get(0);
-        AbstractConfiguration globalConfig = SettingsManager.getInstance().getGlobalConfiguration();
+        AbstractConfiguration globalConfig = settingsManager.getGlobalConfiguration();
         globalConfig.setProperty("searchBackgroundColor", RuleColorizer.colorToRGBString((Color) thisVector.get(0)));
         globalConfig.setProperty("searchForegroundColor", RuleColorizer.colorToRGBString((Color) thisVector.get(1)));
     }
@@ -541,7 +543,7 @@ public class ColorPanel extends JPanel {
                         if( globalRulesCheckbox.isSelected() ){
                             parentLogPanel.setRuleColorizer(globalColorizer);
                         }else{
-                            parentLogPanel.setRuleColorizer(new RuleColorizer());
+                            parentLogPanel.setRuleColorizer(new RuleColorizer(settingsManager));
                         }
                         componentChanged();
                         parentLogPanel.getCurrentRuleColorizer().addPropertyChangeListener(

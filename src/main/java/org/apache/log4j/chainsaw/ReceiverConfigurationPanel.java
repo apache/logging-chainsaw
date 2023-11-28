@@ -47,7 +47,7 @@ import org.apache.logging.log4j.Logger;
 class ReceiverConfigurationPanel extends JPanel {
     private final Logger logger = LogManager.getLogger();
 
-    private final PanelModel panelModel = new PanelModel();
+    private final PanelModel panelModel;
 
     //network receiver widgets
     private JComboBox<String> networkReceiverPortComboBox;
@@ -102,10 +102,11 @@ class ReceiverConfigurationPanel extends JPanel {
     //used as frame for file open dialogs
     private Container dialog;
 
-    ReceiverConfigurationPanel() {
+    ReceiverConfigurationPanel(SettingsManager settingsManager) {
         setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
         setLayout(new GridBagLayout());
 
+        panelModel = new PanelModel(settingsManager);
         buttonGroup = new ButtonGroup();
 
         lowerPanel = new JPanel(new BorderLayout());
@@ -647,15 +648,6 @@ class ReceiverConfigurationPanel extends JPanel {
         return result;
     }
 
-    public static void main(String[] args) {
-
-        JFrame frame = new JFrame();
-        frame.getContentPane().add(new ReceiverConfigurationPanel());
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.pack();
-        frame.setVisible(true);
-    }
-
     /**
      * @return Returns the dontWarnMeAgain.
      */
@@ -680,8 +672,8 @@ class ReceiverConfigurationPanel extends JPanel {
         private String lastLogFormat;
         private File saveConfigFile;
 
-        public PanelModel() {
-            file = new File(SettingsManager.getInstance().getSettingsDirectory(), "receiver-config.xml");
+        public PanelModel(SettingsManager settingsManager) {
+            file = new File(settingsManager.getSettingsDirectory(), "receiver-config.xml");
         }
 
         boolean isNetworkReceiverMode() {
