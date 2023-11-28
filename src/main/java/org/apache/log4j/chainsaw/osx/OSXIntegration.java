@@ -20,7 +20,6 @@ import org.apache.log4j.chainsaw.LogUI;
 
 import java.awt.Desktop;
 
-
 /**
  * This class leverages the 'Desktop' awt API in order to follow Mac-specific UI guidelines.
  * <p>
@@ -32,20 +31,20 @@ public class OSXIntegration {
     public static final boolean IS_OSX = System.getProperty("os.name").startsWith("Mac OS X");
     private static final Desktop desktop = Desktop.getDesktop();
 
-    public static final void init(final LogUI logUI) {
-        if( desktop.isSupported(Desktop.Action.APP_ABOUT) ){
+    public static void init(final LogUI logUI) {
+        if (desktop.isSupported(Desktop.Action.APP_ABOUT)) {
             desktop.setAboutHandler(e ->
                 logUI.showAboutBox()
             );
         }
 
-        if( desktop.isSupported(Desktop.Action.APP_PREFERENCES) ){
+        if (desktop.isSupported(Desktop.Action.APP_PREFERENCES)) {
             desktop.setPreferencesHandler(e ->
                 logUI.showApplicationPreferences()
             );
         }
 
-        if( desktop.isSupported(Desktop.Action.APP_QUIT_HANDLER) ){
+        if (desktop.isSupported(Desktop.Action.APP_QUIT_HANDLER)) {
             desktop.setQuitHandler((e, r) -> {
                     if (
                         logUI.exit()) {
