@@ -23,6 +23,7 @@ import org.apache.log4j.chainsaw.color.RuleColorizer;
 import org.apache.log4j.chainsaw.components.elements.SmallButton;
 import org.apache.log4j.chainsaw.components.elements.SmallToggleButton;
 import org.apache.log4j.chainsaw.components.logpanel.LogPanel;
+import org.apache.log4j.chainsaw.components.welcome.WelcomePanel;
 import org.apache.log4j.chainsaw.dnd.FileDnDTarget;
 import org.apache.log4j.chainsaw.help.HelpManager;
 import org.apache.log4j.chainsaw.helper.SwingHelper;
@@ -1340,26 +1341,6 @@ public class LogUI extends JFrame {
         }
     }
 
-    /**
-     * Causes the Welcome Panel to become visible, and shows the URL specified as
-     * it's contents
-     *
-     * @param url for content to show
-     */
-    public void showHelp(URL url) {
-        ensureWelcomePanelVisible();
-        //    TODO ensure the Welcome Panel is the selected tab
-        getWelcomePanel().setURL(url);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return welcome panel
-     */
-    private WelcomePanel getWelcomePanel() {
-        return welcomePanel;
-    }
 
     /**
      * DOCUMENT ME!

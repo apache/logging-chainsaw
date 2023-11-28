@@ -15,8 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.log4j.chainsaw;
+package org.apache.log4j.chainsaw.components.welcome;
 
+import org.apache.log4j.chainsaw.ChainsawConstants;
+import org.apache.log4j.chainsaw.JTextComponentFormatter;
 import org.apache.log4j.chainsaw.components.elements.SmallButton;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.logging.log4j.LogManager;
@@ -82,7 +84,7 @@ public class WelcomePanel extends JPanel {
         }
     }
 
-    void setURL(final URL url) {
+    public void setURL(final URL url) {
         SwingUtilities.invokeLater(
             () -> {
                 try {
