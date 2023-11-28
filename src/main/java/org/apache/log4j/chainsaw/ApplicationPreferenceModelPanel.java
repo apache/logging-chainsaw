@@ -41,7 +41,7 @@ import org.apache.log4j.chainsaw.prefs.SettingsManager;
  * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger logger = LogManager.getLogger(ApplicationPreferenceModelPanel.class);
     
     private JTextField toolTipDisplayMillis;
     private JTextField cyclicBufferSize;
