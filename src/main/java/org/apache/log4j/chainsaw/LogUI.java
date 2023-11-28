@@ -262,10 +262,7 @@ public class LogUI extends JFrame {
             // code loaded from our custom classloader.  
             // crossing fingers...
             Policy.setPolicy(new Policy() {
-
-                public void refresh() {
-                }
-
+                @Override
                 public PermissionCollection getPermissions(CodeSource codesource) {
                     Permissions perms = new Permissions();
                     perms.add(new AllPermission());
