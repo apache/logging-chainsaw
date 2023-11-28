@@ -40,7 +40,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
 
-
 /**
  * SettingManager allows components to register interest in Saving/Loading
  * of general application preferences/settings.
@@ -49,29 +48,28 @@ import java.util.ServiceLoader;
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 public final class SettingsManager {
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger logger = LogManager.getLogger(SettingsManager.class);
 
     private static final String GLOBAL_SETTINGS_FILE_NAME = "chainsaw.settings.properties";
 
-    private class TabSettingsData{
+    private static class TabSettingsData {
         FileBasedConfigurationBuilder<PropertiesConfiguration> file;
         AbstractConfiguration tabSettings;
     }
 
-    private PropertiesConfiguration m_configuration;
-    private FileBasedConfigurationBuilder<PropertiesConfiguration> m_builder;
-    private Map<String,TabSettingsData> m_tabSettings;
+    private PropertiesConfiguration propertiesConfiguration;
+    private FileBasedConfigurationBuilder<PropertiesConfiguration> builder;
+    private Map<String, TabSettingsData> tabSettings;
 
-    private final Map<Class,PropertyDescriptor[]> m_classToProperties =
-            new HashMap<>();
-    private final Map<Class, String> m_classToName = new HashMap<>();
+    private final Map<Class, PropertyDescriptor[]> classToProperties = new HashMap<>();
+    private final Map<Class, String> classToName = new HashMap<>();
 
     /**
      * Initialises the SettingsManager by loading the default Properties from
      * a resource
      */
     public SettingsManager() {
-        m_tabSettings = new HashMap<>();
+        tabSettings = new HashMap<>();
         Parameters params = new Parameters();
         File f = new File(getSettingsDirectory(), GLOBAL_SETTINGS_FILE_NAME);
 
@@ -82,35 +80,36 @@ public final class SettingsManager {
         }
 
         FileBasedBuilderParameters fileParams = params.fileBased();
-        if( f.exists() ){
+        if (f.exists()) {
             fileParams.setFile(f);
-        }else{
+        } else {
             URL defaultPrefs = this.getClass().getClassLoader()
                 .getResource("org/apache/log4j/chainsaw/prefs/default.properties");
             fileParams.setURL(defaultPrefs);
         }
 
-        m_builder =
-            new FileBasedConfigurationBuilder<PropertiesConfiguration>(
+        builder =
+            new FileBasedConfigurationBuilder<>(
                 PropertiesConfiguration.class)
                 .configure(fileParams
-                        .setListDelimiterHandler(new DefaultListDelimiterHandler(','))
+                    .setListDelimiterHandler(new DefaultListDelimiterHandler(','))
                 );
 
-        try{
-            PropertiesConfiguration config = m_builder.getConfiguration();
-            m_configuration = config;
-            m_builder.getFileHandler().setFile(f);
-        }catch( ConfigurationException ex ){
+        try {
+            PropertiesConfiguration config = builder.getConfiguration();
+            propertiesConfiguration = config;
+            builder.getFileHandler().setFile(f);
+        } catch (ConfigurationException ex) {
+            logger.error(ex);
         }
 
         ServiceLoader<ChainsawReceiverFactory> sl = ServiceLoader.load(ChainsawReceiverFactory.class);
 
-        for( ChainsawReceiverFactory crFactory : sl ){
+        for (ChainsawReceiverFactory crFactory : sl) {
             ChainsawReceiver rx = crFactory.create();
             try {
-                m_classToProperties.put(rx.getClass(), crFactory.getPropertyDescriptors());
-                m_classToName.put(rx.getClass(), crFactory.getReceiverName());
+                classToProperties.put(rx.getClass(), crFactory.getPropertyDescriptors());
+                classToName.put(rx.getClass(), crFactory.getReceiverName());
             } catch (IntrospectionException ex) {
                 logger.error(ex);
             }
@@ -128,11 +127,11 @@ public final class SettingsManager {
 //        }
     }
 
-    public AbstractConfiguration getGlobalConfiguration(){
-        return m_configuration;
+    public AbstractConfiguration getGlobalConfiguration() {
+        return propertiesConfiguration;
     }
 
-    public CombinedConfiguration getCombinedSettingsForRecevierTab(String identifier){
+    public CombinedConfiguration getCombinedSettingsForRecevierTab(String identifier) {
         // Override combiner: nodes in the first structure take precedence over the second
         CombinedConfiguration combinedConfig = new CombinedConfiguration(new OverrideCombiner());
 
@@ -142,44 +141,47 @@ public final class SettingsManager {
         return combinedConfig;
     }
 
-    public AbstractConfiguration getSettingsForReceiverTab(String identifier){
-        if( m_tabSettings.containsKey( identifier ) ){
-            return m_tabSettings.get( identifier ).tabSettings;
+    public AbstractConfiguration getSettingsForReceiverTab(String identifier) {
+        if (tabSettings.containsKey(identifier)) {
+            return tabSettings.get(identifier).tabSettings;
         }
-        
+
         // Either we don't contain the key, or we got an exception.  Regardless,
         // create a new configuration that we can use
         FileBasedBuilderParameters params = new Parameters().fileBased();
         File f = new File(getSettingsDirectory(), identifier + "-receiver.properties");
-        if( !f.exists() ){
+
+        if (!f.exists()) {
             URL defaultPrefs = this.getClass().getClassLoader()
                 .getResource("org/apache/log4j/chainsaw/prefs/logpanel.properties");
             params.setURL(defaultPrefs);
-        }else{
-            params.setFile( f );
+        } else {
+            params.setFile(f);
         }
 
         FileBasedConfigurationBuilder<PropertiesConfiguration> builder =
-                new FileBasedConfigurationBuilder<>(
+            new FileBasedConfigurationBuilder<>(
                 PropertiesConfiguration.class)
                 .configure(params
-                        .setListDelimiterHandler(new DefaultListDelimiterHandler(','))
+                    .setListDelimiterHandler(new DefaultListDelimiterHandler(','))
                 );
 
         TabSettingsData data = new TabSettingsData();
         data.file = builder;
 
-        try{
+        try {
             AbstractConfiguration config = builder.getConfiguration();
 
             builder.getFileHandler().setFile(f);
             data.tabSettings = config;
 
-            m_tabSettings.put( identifier, data );
+            tabSettings.put(identifier, data);
 
             return config;
-        }catch( ConfigurationException ex ){}
-        
+        } catch (ConfigurationException ex) {
+            logger.error(ex);
+        }
+
         return null;
     }
 
@@ -187,71 +189,71 @@ public final class SettingsManager {
         return new File(System.getProperty("user.home"), ".chainsaw");
     }
 
-    public void saveGlobalSettings(){
-        try{
-            m_builder.save();
-        }catch( ConfigurationException ex ){
-            logger.error( "Unable to save global settings: {}", ex );
+    public void saveGlobalSettings() {
+        try {
+            builder.save();
+        } catch (ConfigurationException ex) {
+            logger.error("Unable to save global settings: {}", ex);
         }
     }
 
-    public void saveAllSettings(){
+    public void saveAllSettings() {
         logger.info("Saving all settings");
-        try{
-            m_builder.save();
-        }catch( ConfigurationException ex ){
-            logger.error( "Unable to save global settings: {}", ex );
+        try {
+            builder.save();
+        } catch (ConfigurationException ex) {
+            logger.error("Unable to save global settings: {}", ex);
         }
 
-        for( String key : m_tabSettings.keySet() ){
-            try{
-                logger.debug( "Saving {}({}) to {}", key,
-                        m_tabSettings.get(key).tabSettings,
-                        m_tabSettings.get(key).file.getFileHandler().getURL() );
-                m_tabSettings.get(key).file.save();
-            }catch( ConfigurationException ex ){
-                logger.error( "Unable to save settings for {}", key );
+        for (String key : tabSettings.keySet()) {
+            try {
+                logger.debug("Saving {}({}) to {}", key,
+                    tabSettings.get(key).tabSettings,
+                    tabSettings.get(key).file.getFileHandler().getURL());
+                tabSettings.get(key).file.save();
+            } catch (ConfigurationException ex) {
+                logger.error("Unable to save settings for {}", key);
             }
         }
     }
 
-    public void saveSettingsForReceiver(ChainsawReceiver rx){
-        PropertyDescriptor[] desc = m_classToProperties.get(rx.getClass());
+    public void saveSettingsForReceiver(ChainsawReceiver rx) {
+        PropertyDescriptor[] desc = classToProperties.get(rx.getClass());
 
-        if(desc == null){
+        if (desc == null) {
             return;
         }
 
         AbstractConfiguration config = getSettingsForReceiverTab(rx.getName());
 
-        config.setProperty("receiver.type", m_classToName.get(rx.getClass()));
+        config.setProperty("receiver.type", classToName.get(rx.getClass()));
 
-        for(PropertyDescriptor d : desc){
+        for (PropertyDescriptor d : desc) {
             Method readMethod = d.getReadMethod();
 
-            try{
+            try {
                 config.setProperty("receiver." + d.getDisplayName(), readMethod.invoke(rx));
-            }catch(IllegalAccessException | IllegalArgumentException |  InvocationTargetException ex){
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                 logger.error(ex);
             }
         }
     }
 
-    public void loadSettingsForReceiver(ChainsawReceiver rx){
-        PropertyDescriptor[] desc = m_classToProperties.get(rx.getClass());
+    public void loadSettingsForReceiver(ChainsawReceiver rx) {
+        PropertyDescriptor[] desc = classToProperties.get(rx.getClass());
 
-        if(desc == null){
+        if (desc == null) {
             return;
         }
 
         AbstractConfiguration config = getSettingsForReceiverTab(rx.getName());
 
-        for(PropertyDescriptor d : desc){
+        for (PropertyDescriptor d : desc) {
             Method writeMethod = d.getWriteMethod();
 
-            try{
+            try {
                 writeMethod.invoke(rx, config.get(d.getPropertyType(), "receiver." + d.getDisplayName()));
-            }catch(IllegalAccessException | IllegalArgumentException |  InvocationTargetException ex){
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                 logger.error(ex);
             }
         }

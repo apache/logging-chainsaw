@@ -19,13 +19,11 @@ import java.security.Policy;
 import java.util.Locale;
 
 public class ChainsawStarter {
-    private static Logger logger = LogManager.getLogger(ChainsawStarter.class);
+    private static final Logger logger = LogManager.getLogger(ChainsawStarter.class);
 
     /**
      * Starts Chainsaw by attaching a new instance to the Log4J main root Logger
      * via a ChainsawAppender, and activates itself
-     *
-     * @param args
      */
     public static void main(String[] args) {
         if (OSXIntegration.IS_OSX) {
@@ -53,11 +51,15 @@ public class ChainsawStarter {
             if (lookAndFeelClassName != null && !(lookAndFeelClassName.trim().isEmpty())) {
                 try{
                     UIManager.setLookAndFeel(lookAndFeelClassName);
-                }catch(Exception ex){}
+                } catch (Exception ex){
+                    logger.error(ex);
+                }
             }else{
                 try{
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                }catch(Exception ex){}
+                } catch (Exception ex){
+                    logger.error(ex);
+                }
             }
             createChainsawGUI(settingsManager, null);
         });
