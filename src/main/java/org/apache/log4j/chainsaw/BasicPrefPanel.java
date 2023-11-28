@@ -29,7 +29,6 @@ public abstract class BasicPrefPanel extends JPanel {
     private String title;
 
     protected BasicPrefPanel(String title) {
-        //    	setBorder(BorderFactory.createLineBorder(Color.red));
         this.title = title;
     }
 
