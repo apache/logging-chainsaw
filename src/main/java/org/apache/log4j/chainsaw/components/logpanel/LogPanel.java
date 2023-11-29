@@ -1213,6 +1213,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
          */
         nameTreeAndMainPanelSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, logTreePanel, lowerPanel);
         nameTreeAndMainPanelSplit.setDividerLocation(-1);
+        nameTreeAndMainPanelSplit.setContinuousLayout(true);
 
         add(nameTreeAndMainPanelSplit, BorderLayout.CENTER);
 

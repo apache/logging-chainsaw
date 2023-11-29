@@ -471,6 +471,7 @@ public class LogUI extends JFrame {
         getContentPane().add(statusBar, BorderLayout.SOUTH);
 
         mainReceiverSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panePanel, receiversPanel);
+        mainReceiverSplitPane.setContinuousLayout(true);
         dividerSize = mainReceiverSplitPane.getDividerSize();
         mainReceiverSplitPane.setDividerLocation(-1);
 
