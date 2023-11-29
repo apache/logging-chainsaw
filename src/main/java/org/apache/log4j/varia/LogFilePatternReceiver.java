@@ -17,6 +17,7 @@
 
 package org.apache.log4j.varia;
 
+import java.nio.charset.StandardCharsets;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
@@ -180,7 +181,7 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
 
     private Rule expressionRule;
 
-    private Map currentMap;
+    private Map<String, String> currentMap;
     private List<String> additionalLines;
     private List<String> matchingKeywords;
 
@@ -200,7 +201,7 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
 
     protected boolean active = false;
 
-    private ChainsawLoggingEventBuilder build = new ChainsawLoggingEventBuilder();
+    private final ChainsawLoggingEventBuilder build = new ChainsawLoggingEventBuilder();
 
     private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger();
 
@@ -437,7 +438,7 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
      * @return message
      */
     private String buildMessage(String firstMessageLine, int exceptionLine) {
-        if (additionalLines.size() == 0) {
+        if (additionalLines.isEmpty()) {
             return firstMessageLine;
         }
         StringBuilder message = new StringBuilder();
@@ -483,8 +484,8 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
      * @return event
      */
     private ChainsawLoggingEvent buildEvent() {
-        if (currentMap.size() == 0) {
-            if (additionalLines.size() > 0) {
+        if (currentMap.isEmpty()) {
+            if (!additionalLines.isEmpty()) {
                 for (Object additionalLine : additionalLines) {
                     logger.debug("found non-matching line: " + additionalLine);
                 }
@@ -497,8 +498,8 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
         String[] exception = buildException(exceptionLine);
 
         //messages are listed before exceptions in additionallines
-        if (additionalLines.size() > 0 && exception.length > 0) {
-            currentMap.put(MESSAGE, buildMessage((String) currentMap.get(MESSAGE),
+        if (!additionalLines.isEmpty() && exception.length > 0) {
+            currentMap.put(MESSAGE, buildMessage(currentMap.get(MESSAGE),
                 exceptionLine));
         }
         ChainsawLoggingEvent event = convertToEvent(currentMap, exception);
@@ -612,14 +613,13 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
      * @param result
      * @return map
      */
-    private Map processEvent(MatchResult result) {
-        Map map = new HashMap();
+    private Map<String, String> processEvent(MatchResult result) {
+        Map<String, String> map = new HashMap<>();
         //group zero is the entire match - process all other groups
         for (int i = 1; i < result.groupCount() + 1; i++) {
-            Object key = matchingKeywords.get(i - 1);
-            Object value = result.group(i);
+            String key = matchingKeywords.get(i - 1);
+            String value = result.group(i);
             map.put(key, value);
-
         }
         return map;
     }
@@ -675,7 +675,7 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
             path = fileURL;
         }
 
-        currentMap = new HashMap();
+        currentMap = new HashMap<>();
         additionalLines = new ArrayList<>();
         matchingKeywords = new ArrayList<>();
 
@@ -736,19 +736,18 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
          * contain only one of these per entry...properties are the only 'keyword'
          * that can occur multiple times in an entry
          */
-        for (Object keyword1 : keywords) {
-            String keyword = (String) keyword1;
-            int index2 = newPattern.indexOf(keyword);
+        for (String keyword1 : keywords) {
+            int index2 = newPattern.indexOf(keyword1);
             if (index2 > -1) {
-                buildingKeywords.add(keyword);
-                newPattern = singleReplace(newPattern, keyword, Integer.toString(buildingKeywords.size() - 1));
+                buildingKeywords.add(keyword1);
+                newPattern = singleReplace(newPattern, keyword1, Integer.toString(buildingKeywords.size() - 1));
             }
         }
 
         StringBuilder buildingInt = new StringBuilder();
 
         for (int i = 0; i < newPattern.length(); i++) {
-            String thisValue = String.valueOf(newPattern.substring(i, i + 1));
+            String thisValue = newPattern.substring(i, i + 1);
             if (isInteger(thisValue)) {
                 buildingInt.append(thisValue);
             } else {
@@ -799,7 +798,7 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
             customLevelDefinitionMap.clear();
             while (entryTokenizer.hasMoreTokens()) {
                 StringTokenizer innerTokenizer = new StringTokenizer(entryTokenizer.nextToken(), "=");
-//                customLevelDefinitionMap.put(innerTokenizer.nextToken(), Level.toLevel(innerTokenizer.nextToken()));
+                customLevelDefinitionMap.put(innerTokenizer.nextToken(), Level.valueOf(innerTokenizer.nextToken()));
             }
         }
     }
@@ -898,7 +897,7 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
      * @param exception
      * @return logging event
      */
-    private ChainsawLoggingEvent convertToEvent(Map fieldMap, String[] exception) {
+    private ChainsawLoggingEvent convertToEvent(Map<String, String> fieldMap, String[] exception) {
         if (fieldMap == null) {
             return null;
         }
@@ -911,7 +910,7 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
             exception = emptyException;
         }
 
-        String logger;
+        String loggerValue;
         long timeStamp = 0L;
         String level;
         String threadName;
@@ -921,13 +920,13 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
         String methodName;
         String eventFileName;
         String lineNumber;
-        Hashtable properties = new Hashtable();
+        Map<String, String> properties = new HashMap<>();
 
-        logger = (String) fieldMap.remove(LOGGER);
+        loggerValue = fieldMap.remove(LOGGER);
 
         if ((dateFormat != null) && fieldMap.containsKey(TIMESTAMP)) {
             try {
-                timeStamp = dateFormat.parse((String) fieldMap.remove(TIMESTAMP))
+                timeStamp = dateFormat.parse(fieldMap.remove(TIMESTAMP))
                     .getTime();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -938,43 +937,35 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
             timeStamp = System.currentTimeMillis();
         }
 
-        message = (String)fieldMap.remove(MESSAGE);
+        message = fieldMap.remove(MESSAGE);
         if (message == null) {
             message = "";
         }
 
-        level = (String) fieldMap.remove(LEVEL);
-//        Level levelImpl;
-//        if (level == null) {
-//            levelImpl = Level.DEBUG;
-//        } else {
-//            //first try to resolve against custom level definition map, then fall back to regular levels
-//            levelImpl = customLevelDefinitionMap.get(level);
-//            if (levelImpl == null) {
-//                levelImpl = Level.toLevel(level.trim());
-//                if (!level.equals(levelImpl.toString())) {
-//                    //check custom level map
-//                    if (levelImpl == null) {
-//                        levelImpl = Level.DEBUG;
-//                        logger.debug("found unexpected level: " + level + ", logger: " + logger.getName() + ", msg: " + message);
-//                        //make sure the text that couldn't match a level is added to the message
-//                        message = level + " " + message;
-//                    }
-//                }
-//            }
-//        }
+        level = fieldMap.remove(LEVEL);
+        Level levelImpl;
+        if (level == null) {
+            levelImpl = Level.DEBUG;
+        } else {
+            //first try to resolve against custom level definition map, then fall back to regular levels
+            levelImpl = customLevelDefinitionMap.get(level);
+            if (levelImpl == null) {
+                levelImpl = Level.valueOf(level.trim());
+            }
+        }
+        level = levelImpl.name();
 
-        threadName = (String) fieldMap.remove(THREAD);
+        threadName = fieldMap.remove(THREAD);
 
-        ndc = (String) fieldMap.remove(NDC);
+        ndc = fieldMap.remove(NDC);
 
-        className = (String) fieldMap.remove(CLASS);
+        className = fieldMap.remove(CLASS);
 
-        methodName = (String) fieldMap.remove(METHOD);
+        methodName = fieldMap.remove(METHOD);
 
-        eventFileName = (String) fieldMap.remove(FILE);
+        eventFileName = fieldMap.remove(FILE);
 
-        lineNumber = (String) fieldMap.remove(LINE);
+        lineNumber = fieldMap.remove(LINE);
 
         properties.put(Constants.HOSTNAME_KEY, host);
         properties.put(Constants.APPLICATION_KEY, path);
@@ -990,12 +981,12 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
 
         if ((eventFileName != null) || (className != null) || (methodName != null)
             || (lineNumber != null)) {
-            info = new LocationInfo(eventFileName, className, methodName, 
+            info = new LocationInfo(eventFileName, className, methodName,
                     Integer.parseInt(lineNumber));
         }
 
         build.clear();
-        build.setLogger(logger)
+        build.setLogger(loggerValue)
                 .setTimestamp(Instant.ofEpochMilli(timeStamp))
                 .setLevelFromString(level)
                 .setMessage(message)
@@ -1053,7 +1044,7 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
                 while (reader == null) {
                     logger.info("attempting to load file: " + getFileURL());
                     try {
-                        reader = new InputStreamReader(new URL(getFileURL()).openStream(), "UTF-8");
+                        reader = new InputStreamReader(new URL(getFileURL()).openStream(), StandardCharsets.UTF_8);
                     } catch (FileNotFoundException fnfe) {
                         logger.info("file not available - will try again");
                         synchronized (this) {

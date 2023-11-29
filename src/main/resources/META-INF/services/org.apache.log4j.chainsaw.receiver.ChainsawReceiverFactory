@@ -3,3 +3,4 @@ org.apache.log4j.net.UDPReceiverFactory
 org.apache.log4j.net.XMLReceiverFactory
 org.apache.log4j.varia.LogFilePatternReceiverFactory
 org.apache.log4j.net.JsonReceiverFactory
+org.apache.log4j.chainsaw.vfs.VFSLogFilePatternReceiverFactory
