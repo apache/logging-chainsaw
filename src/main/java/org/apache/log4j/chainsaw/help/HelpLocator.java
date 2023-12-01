@@ -36,10 +36,7 @@ import java.util.List;
  */
 class HelpLocator {
     private List<ClassLoader> classLoaders = new ArrayList<>();
-    private static Logger logger = LogManager.getLogger(HelpLocator.class);
-
-    HelpLocator() {
-    }
+    private final static Logger logger = LogManager.getLogger(HelpLocator.class);
 
     /**
      * Adds a ClassLoader to be used as a help resource locator
@@ -104,11 +101,9 @@ class HelpLocator {
             try {
                 URL resourceURL = new URL(root, name);
                 URL[] urlArray = new URL[]{root, resourceURL};
-                logger.debug("Looking for Help resource at:" + resourceURL.toExternalForm());
-                logger.debug("urlArray=" + Arrays.asList(urlArray));
-                return new URLClassLoader(
-                    urlArray).findResource(
-                    name);
+                logger.debug("Looking for Help resource at: {}", resourceURL.toExternalForm());
+                logger.debug("urlArray={}", Arrays.asList(urlArray));
+                return new URLClassLoader(urlArray).findResource(name);
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
@@ -116,19 +111,4 @@ class HelpLocator {
             return null;
         }
     }
-
-    //  public static void main(String[] args) throws Exception {
-    //    HelpLocator locator = new HelpLocator();
-    //    locator.installLocator(new File(".").toURL());
-    //    locator.installLocator(new
-    // URL("http://java.sun.com/j2se/1.4.2/docs/api/"));
-    //    String[] resources =
-    //      new String[] { "build.properties", "java/lang/ClassLoader.html", };
-    //
-    //    for (int i = 0; i < resources.length; i++) {
-    //      String resource = resources[i];
-    //      URL url = locator.findResource(resource);
-    //      System.out.println("resource=" + resource + ", url=" + url);
-    //    }
-    //  }
 }
