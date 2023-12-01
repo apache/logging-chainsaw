@@ -23,6 +23,7 @@ import org.apache.log4j.chainsaw.color.RuleColorizer;
 import org.apache.log4j.chainsaw.components.elements.SmallButton;
 import org.apache.log4j.chainsaw.components.elements.SmallToggleButton;
 import org.apache.log4j.chainsaw.components.logpanel.LogPanel;
+import org.apache.log4j.chainsaw.components.tutorial.TutorialFrame;
 import org.apache.log4j.chainsaw.components.welcome.WelcomePanel;
 import org.apache.log4j.chainsaw.dnd.FileDnDTarget;
 import org.apache.log4j.chainsaw.help.HelpManager;
@@ -100,7 +101,7 @@ public class LogUI extends JFrame {
     private static final String MAIN_WINDOW_WIDTH = "main.window.width";
     private static final String MAIN_WINDOW_Y = "main.window.y";
     private static final String MAIN_WINDOW_X = "main.window.x";
-    public static final String LABEL_TUTORIAL_STARTED = "TutorialStarted";
+
     private static final double DEFAULT_MAIN_RECEIVER_SPLIT_LOCATION = 0.85d;
     private final JFrame preferencesFrame = new JFrame();
     private boolean noReceiversDefined;
@@ -621,48 +622,7 @@ public class LogUI extends JFrame {
             SwingHelper.invokeOnEDT(this::showReceiverConfigurationPanel);
         }
 
-        Container container = tutorialFrame.getContentPane();
-        container.setLayout(new BorderLayout());
-
-        final JEditorPane tutorialArea = new JEditorPane();
-        tutorialArea.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
-        tutorialArea.setEditable(false);
-
-        try {
-            tutorialArea.setPage(ChainsawConstants.TUTORIAL_URL);
-            JTextComponentFormatter.applySystemFontAndSize(tutorialArea);
-            container.add(new JScrollPane(tutorialArea), BorderLayout.CENTER);
-        } catch (Exception e) {
-            logger.error("Can't load tutorial", e);
-            statusBar.setMessage("Can't load tutorial");
-        }
-
-        tutorialFrame.setIconImage(new ImageIcon(ChainsawIcons.HELP).getImage());
-        tutorialFrame.setSize(new Dimension(640, 480));
-
-        final Action startTutorial = createStartTutorialAction();
-        final Action stopTutorial = createStopTutorialAction(startTutorial);
-        final JToolBar tutorialToolbar = createTutorialToolbar(startTutorial, stopTutorial);
-
-        container.add(tutorialToolbar, BorderLayout.NORTH);
-        tutorialArea.addHyperlinkListener(
-            e -> {
-                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                    if (e.getDescription().equals("StartTutorial")) {
-                        startTutorial.actionPerformed(null);
-                    } else if (e.getDescription().equals("StopTutorial")) {
-                        stopTutorial.actionPerformed(null);
-                    } else {
-                        try {
-                            tutorialArea.setPage(e.getURL());
-                        } catch (IOException e1) {
-                            statusBar.setMessage("Failed to change URL for tutorial");
-                            logger.error(
-                                "Failed to change the URL for the Tutorial", e1);
-                        }
-                    }
-                }
-            });
+        new TutorialFrame(m_receivers, m_receiverListeners, this).createTutorialFrame(tutorialFrame, statusBar);
 
         /*
          * loads the saved tab settings and if there are hidden tabs,
@@ -679,111 +639,6 @@ public class LogUI extends JFrame {
 
     }
 
-    private Action createStopTutorialAction(Action startTutorial) {
-        final Action stopTutorial =
-            new AbstractAction(
-                "Stop Tutorial", new ImageIcon(ChainsawIcons.ICON_STOP_RECEIVER)) {
-                public void actionPerformed(ActionEvent e) {
-                    if (
-                        JOptionPane.showConfirmDialog(
-                            null,
-                            "This will stop all of the \"Generator\" receivers used in the Tutorial, but leave any other Receiver untouched.  Is that ok?",
-                            "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                        new Thread(
-                            () -> {
-                                for( ChainsawReceiver rx : m_receivers ){
-                                    if( rx instanceof Generator ){
-                                        rx.shutdown();
-                                    }
-                                }
-                            }).start();
-                        setEnabled(false);
-                        startTutorial.putValue(LABEL_TUTORIAL_STARTED, Boolean.FALSE);
-                    }
-                }
-            };
-
-        stopTutorial.putValue(
-            Action.SHORT_DESCRIPTION,
-            "Removes all of the Tutorials Generator Receivers, leaving all other Receivers untouched");
-
-        stopTutorial.setEnabled(false);
-        return stopTutorial;
-    }
-
-    private Action createStartTutorialAction() {
-        final Action startTutorial =
-            new AbstractAction(
-                "Start Tutorial", new ImageIcon(ChainsawIcons.ICON_RESUME_RECEIVER)) {
-                public void actionPerformed(ActionEvent e) {
-                    if (
-                        JOptionPane.showConfirmDialog(
-                            null,
-                            "This will start 3 \"Generator\" receivers for use in the Tutorial.  Is that ok?",
-                            "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                        // Create and start generators
-                        Generator[] generators = {
-                            new Generator("Generator 1"),
-                            new Generator("Generator 2"),
-                            new Generator("Generator 3"),
-                        };
-
-                        for( Generator gen : generators ){
-                            addReceiver(gen);
-                            gen.start();
-                        }
-
-                        putValue(LABEL_TUTORIAL_STARTED, Boolean.TRUE);
-                    } else {
-                        putValue(LABEL_TUTORIAL_STARTED, Boolean.FALSE);
-                    }
-                }
-            };
-        startTutorial.putValue(
-            Action.SHORT_DESCRIPTION,
-            "Begins the Tutorial, starting up some Generator Receivers so you can see Chainsaw in action");
-        return startTutorial;
-    }
-
-    private JToolBar createTutorialToolbar(Action startTutorial, Action stopTutorial) {
-        final SmallToggleButton startButton = new SmallToggleButton(startTutorial);
-        PropertyChangeListener pcl =
-            evt -> {
-                stopTutorial.setEnabled(
-                    startTutorial.getValue(LABEL_TUTORIAL_STARTED).equals(Boolean.TRUE));
-                startButton.setSelected(stopTutorial.isEnabled());
-            };
-
-        startTutorial.addPropertyChangeListener(pcl);
-        stopTutorial.addPropertyChangeListener(pcl);
-
-        addReceiverEventListener(new ReceiverEventListener() {
-            @Override
-            public void receiverAdded(ChainsawReceiver rx) {}
-
-            @Override
-            public void receiverRemoved(ChainsawReceiver rx1) {
-                int count = 0;
-                for( ChainsawReceiver rx : m_receivers ){
-                    if( rx instanceof Generator ){
-                        count++;
-                    }
-                }
-
-                if (count == 0) {
-                    startTutorial.putValue(LABEL_TUTORIAL_STARTED, Boolean.FALSE);
-                }
-            }
-        });
-
-        final SmallButton stopButton = new SmallButton(stopTutorial);
-
-        final JToolBar tutorialToolbar = new JToolBar();
-        tutorialToolbar.setFloatable(false);
-        tutorialToolbar.add(startButton);
-        tutorialToolbar.add(stopButton);
-        return tutorialToolbar;
-    }
 
     /**
      * Display the log tree pane, using the last known divider location
@@ -1434,9 +1289,6 @@ public class LogUI extends JFrame {
         return applicationPreferenceModel;
     }
 
-    /**
-     * DOCUMENT ME!
-     */
     public void setupTutorial() {
         SwingUtilities.invokeLater(
             () -> {
