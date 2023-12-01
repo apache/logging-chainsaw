@@ -109,7 +109,6 @@ public class LogUI extends JFrame {
     private ChainsawTabbedPane tabbedPane;
     private JToolBar toolbar;
     private ChainsawStatusBar statusBar;
-    private ApplicationPreferenceModel applicationPreferenceModel;
     private ApplicationPreferenceModelPanel applicationPreferenceModelPanel;
     private final Map tableModelMap = new HashMap();
     private final Map tableMap = new HashMap();
@@ -255,10 +254,6 @@ public class LogUI extends JFrame {
 
     private void setupReceiverPanel() {
         receiversPanel = new ReceiversPanel(settingsManager, m_receivers, this, statusBar);
-//        receiversPanel.addPropertyChangeListener(
-//            "visible",
-//            evt -> getApplicationPreferenceModel().setReceivers(
-//                (Boolean) evt.getNewValue()));
     }
 
     /**
@@ -1282,12 +1277,6 @@ public class LogUI extends JFrame {
         return tabbedPane;
     }
 
-    /**
-     * @return Returns the applicationPreferenceModel.
-     */
-    public final ApplicationPreferenceModel getApplicationPreferenceModel() {
-        return applicationPreferenceModel;
-    }
 
     public void setupTutorial() {
         SwingUtilities.invokeLater(
