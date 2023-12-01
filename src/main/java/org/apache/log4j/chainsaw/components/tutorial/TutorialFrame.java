@@ -36,7 +36,7 @@ public class TutorialFrame {
         this.logUI = logUI;
     }
 
-    public void createTutorialFrame(ChainsawStatusBar statusBar) {
+    public void createTutorialFrame(JFrame tutorialFrame, ChainsawStatusBar statusBar) {
         Container container = tutorialFrame.getContentPane();
         container.setLayout(new BorderLayout());
 
@@ -53,8 +53,8 @@ public class TutorialFrame {
             statusBar.setMessage("Can't load tutorial");
         }
 
-        tutorialFrame.setIconImage(new ImageIcon(ChainsawIcons.HELP).getImage());
-        tutorialFrame.setSize(new Dimension(640, 480));
+        this.tutorialFrame.setIconImage(new ImageIcon(ChainsawIcons.HELP).getImage());
+        this.tutorialFrame.setSize(new Dimension(640, 480));
 
         final Action startTutorial = createStartTutorialAction();
         final Action stopTutorial = createStopTutorialAction(startTutorial);
