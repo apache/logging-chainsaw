@@ -128,7 +128,7 @@ public class LogUI extends JFrame {
     private List<ReceiverEventListener> m_receiverListeners = new ArrayList<>();
     private ZeroConfPlugin m_zeroConf = new ZeroConfPlugin(settingsManager);
 
-    private static Logger logger = LogManager.getLogger();
+    private static Logger logger = LogManager.getLogger(LogUI.class);
 
     private final Object initializationLock = new Object();
 

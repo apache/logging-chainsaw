@@ -38,13 +38,12 @@ import java.net.URL;
  * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 public final class HelpManager {
+    private final Logger logger = LogManager.getLogger(HelpManager.class);
 
     private static final HelpManager instance = new HelpManager();
     private HelpLocator helpLocator = new HelpLocator();
     private URL helpURL;
-    private final PropertyChangeSupport propertySupport =
-        new PropertyChangeSupport(this);
-    private final Logger logger = LogManager.getLogger(HelpManager.class);
+    private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
 
     private HelpManager() {
 
@@ -65,11 +64,10 @@ public final class HelpManager {
                 logger.warn("Could not find any local JavaDocs, you might want to consider running 'ant javadoc'. The release version will be able to access Javadocs from the Apache website.");
             }
         } catch (Exception e) {
-            // TODO: handle exception
+            logger.error(e);
         }
 
         helpLocator.installClassloaderLocator(this.getClass().getClassLoader());
-//      helpLocator.installLocator(new URL());
     }
 
     /**
@@ -87,81 +85,45 @@ public final class HelpManager {
         firePropertyChange("helpURL", null, this.helpURL);
     }
 
-    /**
-     * @param listener
-     */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         propertySupport.addPropertyChangeListener(listener);
     }
 
-    /**
-     * @param propertyName
-     * @param listener
-     */
     public synchronized void addPropertyChangeListener(String propertyName,
                                                        PropertyChangeListener listener) {
         propertySupport.addPropertyChangeListener(propertyName, listener);
     }
 
-    /**
-     * @param evt
-     */
     public void firePropertyChange(PropertyChangeEvent evt) {
         propertySupport.firePropertyChange(evt);
     }
 
-    /**
-     * @param propertyName
-     * @param oldValue
-     * @param newValue
-     */
     public void firePropertyChange(String propertyName, boolean oldValue,
                                    boolean newValue) {
         propertySupport.firePropertyChange(propertyName, oldValue, newValue);
     }
 
-    /**
-     * @param propertyName
-     * @param oldValue
-     * @param newValue
-     */
     public void firePropertyChange(String propertyName, int oldValue,
                                    int newValue) {
         propertySupport.firePropertyChange(propertyName, oldValue, newValue);
     }
 
-    /**
-     * @param propertyName
-     * @param oldValue
-     * @param newValue
-     */
     public void firePropertyChange(String propertyName, Object oldValue,
                                    Object newValue) {
         propertySupport.firePropertyChange(propertyName, oldValue, newValue);
     }
 
-    /**
-     * @param listener
-     */
     public synchronized void removePropertyChangeListener(
         PropertyChangeListener listener) {
         propertySupport.removePropertyChangeListener(listener);
     }
 
-    /**
-     * @param propertyName
-     * @param listener
-     */
     public synchronized void removePropertyChangeListener(String propertyName,
                                                           PropertyChangeListener listener) {
         propertySupport.removePropertyChangeListener(propertyName, listener);
     }
 
-    /**
-     *
-     */
     public static HelpManager getInstance() {
-
         return instance;
     }
 
@@ -169,10 +131,9 @@ public final class HelpManager {
      * Given a class, and that it belongs within the org.apache.log4j project,
      * sets the URL to the JavaDoc for that class.
      *
-     * @param c
+     * @param c the class to show help for
      */
     public void showHelpForClass(Class c) {
-
         URL url = getHelpForClass(c);
         setHelpURL(url);
     }
