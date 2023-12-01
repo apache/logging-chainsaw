@@ -34,6 +34,8 @@ import org.apache.log4j.chainsaw.prefs.SettingsListener;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import javax.swing.*;
 import javax.swing.event.TreeExpansionEvent;
@@ -45,12 +47,23 @@ import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.beans.BeanInfo;
+import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -87,11 +100,13 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
     private final Map<Class,PropertyDescriptor[]> m_classToProperties = 
             new HashMap<>();
     private SettingsManager settingsManager;
+    private List<ChainsawReceiver> m_receivers;
     private final ChainsawStatusBar m_statusBar;
 
-    public ReceiversPanel(SettingsManager settingsManager, LogUI parentUi, ChainsawStatusBar sb) {
+    public ReceiversPanel(SettingsManager settingsManager, List<ChainsawReceiver> m_receivers, LogUI parentUi, ChainsawStatusBar sb) {
         super(new BorderLayout());
         this.settingsManager = settingsManager;
+        this.m_receivers = m_receivers;
         m_statusBar = sb;
         m_parent = parentUi;
         final ReceiversTreeModel model = new ReceiversTreeModel();
@@ -350,10 +365,58 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
     private void saveReceivers() {
         File saveConfigFile = SwingHelper.promptForFile(this, null, "Save receiver configuration XML file", false);
         if (saveConfigFile != null) {
-            m_parent.saveReceiversToFile(saveConfigFile);
+            saveReceiversToFile(saveConfigFile);
         }
     }
 
+    public void saveReceiversToFile(File file){
+        try {
+            //we programmatically register the ZeroConf plugin in the plugin registry
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document document = builder.newDocument();
+            Element rootElement = document.createElementNS("http://jakarta.apache.org/log4j/", "configuration");
+            rootElement.setPrefix("log4j");
+            rootElement.setAttribute("xmlns:log4j", "http://jakarta.apache.org/log4j/");
+            rootElement.setAttribute("debug", "true");
+
+            for (ChainsawReceiver receiver : m_receivers) {
+                Element pluginElement = document.createElement("plugin");
+                pluginElement.setAttribute("name", receiver.getName());
+                pluginElement.setAttribute("class", receiver.getClass().getName());
+
+                BeanInfo beanInfo = Introspector.getBeanInfo(receiver.getClass());
+                List<PropertyDescriptor> list = new ArrayList<>(Arrays.asList(beanInfo.getPropertyDescriptors()));
+
+                for (PropertyDescriptor desc : list) {
+                    Object o = desc.getReadMethod().invoke(receiver);
+                    if (o != null) {
+                        Element paramElement = document.createElement("param");
+                        paramElement.setAttribute("name", desc.getName());
+                        paramElement.setAttribute("value", o.toString());
+                        pluginElement.appendChild(paramElement);
+                    }
+                }
+
+                rootElement.appendChild(pluginElement);
+
+            }
+
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+            DOMSource source = new DOMSource(rootElement);
+            FileOutputStream stream = new FileOutputStream(file);
+            StreamResult result = new StreamResult(stream);
+            transformer.transform(source, result);
+            stream.close();
+
+        } catch (Exception e) {
+            logger.error(e,e);
+        }
+    }
     protected ReceiversTreeModel getReceiverTreeModel() {
         return ((ReceiversTreeModel) receiversTree.getModel());
     }
@@ -532,7 +595,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
 
     public void saveSettings(SaveSettingsEvent event) {
         File file = new File(settingsManager.getSettingsDirectory(), "receiver-config.xml");
-        m_parent.saveReceiversToFile(file);
+        saveReceiversToFile(file);
     }
 
     /**

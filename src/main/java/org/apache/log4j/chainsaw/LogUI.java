@@ -254,7 +254,7 @@ public class LogUI extends JFrame {
     }
 
     private void setupReceiverPanel() {
-        receiversPanel = new ReceiversPanel(settingsManager, this, statusBar);
+        receiversPanel = new ReceiversPanel(settingsManager, m_receivers, this, statusBar);
 //        receiversPanel.addPropertyChangeListener(
 //            "visible",
 //            evt -> getApplicationPreferenceModel().setReceivers(
@@ -1503,52 +1503,5 @@ public class LogUI extends JFrame {
         return m_receivers;
     }
 
-    public void saveReceiversToFile(File file){
-        try {
-            //we programmatically register the ZeroConf plugin in the plugin registry
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            factory.setNamespaceAware(true);
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Document document = builder.newDocument();
-            Element rootElement = document.createElementNS("http://jakarta.apache.org/log4j/", "configuration");
-            rootElement.setPrefix("log4j");
-            rootElement.setAttribute("xmlns:log4j", "http://jakarta.apache.org/log4j/");
-            rootElement.setAttribute("debug", "true");
 
-            for (ChainsawReceiver receiver : m_receivers) {
-                Element pluginElement = document.createElement("plugin");
-                pluginElement.setAttribute("name", receiver.getName());
-                pluginElement.setAttribute("class", receiver.getClass().getName());
-
-                BeanInfo beanInfo = Introspector.getBeanInfo(receiver.getClass());
-                List<PropertyDescriptor> list = new ArrayList<>(Arrays.asList(beanInfo.getPropertyDescriptors()));
-
-                for (PropertyDescriptor desc : list) {
-                    Object o = desc.getReadMethod().invoke(receiver);
-                    if (o != null) {
-                        Element paramElement = document.createElement("param");
-                        paramElement.setAttribute("name", desc.getName());
-                        paramElement.setAttribute("value", o.toString());
-                        pluginElement.appendChild(paramElement);
-                    }
-                }
-
-                rootElement.appendChild(pluginElement);
-
-            }
-
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            Transformer transformer = transformerFactory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-            DOMSource source = new DOMSource(rootElement);
-            FileOutputStream stream = new FileOutputStream(file);
-            StreamResult result = new StreamResult(stream);
-            transformer.transform(source, result);
-            stream.close();
-
-        } catch (Exception e) {
-            logger.error(e,e);
-        }
-    }
 }
