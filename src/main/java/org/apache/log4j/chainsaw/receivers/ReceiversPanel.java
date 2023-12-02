@@ -594,7 +594,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
      */
 
     public void saveSettings(SaveSettingsEvent event) {
-        File file = new File(settingsManager.getSettingsDirectory(), "receiver-config.xml");
+        File file = new File(SettingsManager.getSettingsDirectory(), "receiver-config.xml");
         saveReceiversToFile(file);
     }
 

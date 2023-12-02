@@ -109,7 +109,7 @@ public class ZeroConfPlugin extends DockablePanel {
     }
 
     private File getPreferenceFileLocation() {
-        return new File(settingsManager.getSettingsDirectory(), "zeroconfprefs.xml");
+        return new File(SettingsManager.getSettingsDirectory(), "zeroconfprefs.xml");
     }
 
     private void activateOptions() throws IOException {

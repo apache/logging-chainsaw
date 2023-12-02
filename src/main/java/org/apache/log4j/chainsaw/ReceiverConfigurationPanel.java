@@ -673,7 +673,7 @@ class ReceiverConfigurationPanel extends JPanel {
         private File saveConfigFile;
 
         public PanelModel(SettingsManager settingsManager) {
-            file = new File(settingsManager.getSettingsDirectory(), "receiver-config.xml");
+            file = new File(SettingsManager.getSettingsDirectory(), "receiver-config.xml");
         }
 
         boolean isNetworkReceiverMode() {

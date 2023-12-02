@@ -987,7 +987,7 @@ public class LogUI extends JFrame {
 
     public void loadReceiver() {
         Runnable r = () -> {
-            JFileChooser jfc = new JFileChooser(settingsManager.getSettingsDirectory());
+            JFileChooser jfc = new JFileChooser(SettingsManager.getSettingsDirectory());
             int returnVal = jfc.showOpenDialog(this);
             if(returnVal != JFileChooser.APPROVE_OPTION) {
                 return;
@@ -1470,7 +1470,7 @@ public class LogUI extends JFrame {
             }
         }
     }
-    
+
     public void addReceiver(ChainsawReceiver rx){
         m_receivers.add(rx);
         List<ChainsawLoggingEvent> list = new ArrayList<>();

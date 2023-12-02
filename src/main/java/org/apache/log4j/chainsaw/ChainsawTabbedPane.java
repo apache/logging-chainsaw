@@ -125,7 +125,7 @@ class ChainsawTabbedPane extends JTabbedPane implements SettingsListener {
      */
 
     public void saveSettings(SaveSettingsEvent event) {
-//        File file = new File(SettingsManager.getInstance().getSettingsDirectory(), "tab-settings.xml");
+        File file = new File(SettingsManager.getSettingsDirectory(), "tab-settings.xml");
 //        XStream stream = new XStream(new DomDriver());
 //        try {
 //            FileWriter writer = new FileWriter(file);
