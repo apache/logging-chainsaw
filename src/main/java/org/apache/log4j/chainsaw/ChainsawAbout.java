@@ -45,8 +45,8 @@ class ChainsawAbout extends JDialog {
 
     private final Object guard = new Object();
 
-    ChainsawAbout(JFrame parent) {
-        super(parent, "About Chainsaw v2", true);
+    ChainsawAbout(LogUI logUI) {
+        super(logUI, "About Chainsaw v2", true);
         // setResizable(false);
         setBackground(Color.white);
         getContentPane().setLayout(new BorderLayout());
@@ -76,7 +76,7 @@ class ChainsawAbout extends JDialog {
         new Thread(new Scroller()).start();
         scrollPane.getViewport().setViewPosition(new Point(0, 0));
 
-        setLocationRelativeTo(parent);
+        setLocationRelativeTo(logUI);
     }
 
     private class Scroller implements Runnable {

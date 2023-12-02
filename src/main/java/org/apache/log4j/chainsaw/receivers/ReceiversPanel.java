@@ -100,14 +100,14 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
     private final Map<Class,PropertyDescriptor[]> m_classToProperties = 
             new HashMap<>();
     private SettingsManager settingsManager;
-    private List<ChainsawReceiver> m_receivers;
-    private final ChainsawStatusBar m_statusBar;
+    private List<ChainsawReceiver> receivers;
+    private final ChainsawStatusBar statusBar;
 
-    public ReceiversPanel(SettingsManager settingsManager, List<ChainsawReceiver> m_receivers, LogUI parentUi, ChainsawStatusBar sb) {
+    public ReceiversPanel(SettingsManager settingsManager, List<ChainsawReceiver> receivers, LogUI parentUi, ChainsawStatusBar statusBar) {
         super(new BorderLayout());
         this.settingsManager = settingsManager;
-        this.m_receivers = m_receivers;
-        m_statusBar = sb;
+        this.receivers = receivers;
+        this.statusBar = statusBar;
         m_parent = parentUi;
         final ReceiversTreeModel model = new ReceiversTreeModel();
         m_parent.addReceiverEventListener(model);
@@ -328,8 +328,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
                                     rx.start();
                                 }
 
-                                m_statusBar.setMessage(
-                                    "All Receivers have been (re)started");
+                                statusBar.setMessage("All Receivers have been (re)started");
                             }).start();
                     }
                 }
@@ -381,7 +380,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
             rootElement.setAttribute("xmlns:log4j", "http://jakarta.apache.org/log4j/");
             rootElement.setAttribute("debug", "true");
 
-            for (ChainsawReceiver receiver : m_receivers) {
+            for (ChainsawReceiver receiver : receivers) {
                 Element pluginElement = document.createElement("plugin");
                 pluginElement.setAttribute("name", receiver.getName());
                 pluginElement.setAttribute("class", receiver.getClass().getName());
@@ -643,7 +642,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
                                             m_parent.addReceiver(receiver);
                                             receiver.start();
                                             m_classToProperties.put(receiver.getClass(), descriptors);
-                                            m_statusBar.setMessage("Receiver '" + receiver.getName() + "' started");
+                                            statusBar.setMessage("Receiver '" + receiver.getName() + "' started");
                                         } else {
                                             logger.error("Name required to create receiver");
                                         }
