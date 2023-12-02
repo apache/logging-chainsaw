@@ -80,7 +80,7 @@ class HelpLocator {
     }
 
     private static class HelpResourceLoader extends ClassLoader {
-        private URL root;
+        private final URL root;
 
         private HelpResourceLoader(URL root) {
             this.root = root;
@@ -91,6 +91,7 @@ class HelpLocator {
          *
          * @see java.lang.ClassLoader#findResource(java.lang.String)
          */
+        @Override
         protected URL findResource(String name) {
             URL url = super.findResource(name);
 
@@ -105,7 +106,7 @@ class HelpLocator {
                 logger.debug("urlArray={}", Arrays.asList(urlArray));
                 return new URLClassLoader(urlArray).findResource(name);
             } catch (MalformedURLException e) {
-                e.printStackTrace();
+                logger.error(e, e);
             }
 
             return null;
