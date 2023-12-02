@@ -35,8 +35,8 @@ import java.util.List;
  * &lt;psmith@apache.org&gt;
  */
 class HelpLocator {
-    private List<ClassLoader> classLoaders = new ArrayList<>();
-    private final static Logger logger = LogManager.getLogger(HelpLocator.class);
+    private final List<ClassLoader> classLoaders = new ArrayList<>();
+    private static final Logger logger = LogManager.getLogger(HelpLocator.class);
 
     /**
      * Adds a ClassLoader to be used as a help resource locator
@@ -55,7 +55,7 @@ class HelpLocator {
             classLoaders.add(new HelpResourceLoader(url));
         } catch (Exception e) {
             logger.error(
-                "Failed to setup the resoure loaders for the Help Subsystem");
+                "Failed to setup the resource loaders for the Help Subsystem");
         }
     }
 
@@ -65,18 +65,15 @@ class HelpLocator {
      * @return URL of the located resource, or null if it cannot be located.
      */
     URL findResource(String name) {
-        URL url = null;
-
-        for (Object classLoader : classLoaders) {
-            ClassLoader loader = (ClassLoader) classLoader;
-            url = loader.getResource(name);
+        for (ClassLoader classLoader : classLoaders) {
+            URL url = classLoader.getResource(name);
 
             if (url != null) {
-                break;
+                return url;
             }
         }
 
-        return url;
+        return null;
     }
 
     private static class HelpResourceLoader extends ClassLoader {
