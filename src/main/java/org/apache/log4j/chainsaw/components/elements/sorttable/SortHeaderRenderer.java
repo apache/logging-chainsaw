@@ -15,9 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.log4j.chainsaw;
-
-import org.apache.log4j.chainsaw.components.elements.JSortTable;
+package org.apache.log4j.chainsaw.components.elements.sorttable;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;

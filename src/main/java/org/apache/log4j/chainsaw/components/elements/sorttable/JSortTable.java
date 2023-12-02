@@ -15,10 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.log4j.chainsaw.components.elements;
+package org.apache.log4j.chainsaw.components.elements.sorttable;
 
 import org.apache.log4j.chainsaw.ChainsawColumns;
-import org.apache.log4j.chainsaw.SortHeaderRenderer;
 import org.apache.log4j.chainsaw.SortTableModel;
 import org.apache.log4j.chainsaw.helper.SwingHelper;
 

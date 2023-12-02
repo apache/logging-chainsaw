@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.log4j.chainsaw;
+package org.apache.log4j.chainsaw.components.elements.sorttable;
 
 import javax.swing.*;
 import java.awt.*;
