@@ -19,18 +19,24 @@
  * @author Paul Smith &lt;psmith@apache.org&gt;
  *
  */
-package org.apache.log4j.chainsaw;
+package org.apache.log4j.chainsaw.components.tabbedpane;
 
+import com.owlike.genson.Genson;
+import org.apache.log4j.chainsaw.LogUI;
 import org.apache.log4j.chainsaw.prefs.LoadSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SettingsListener;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
 
 
 /**
@@ -52,17 +58,11 @@ import java.io.FileWriter;
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 
-class ChainsawTabbedPane extends JTabbedPane implements SettingsListener {
+public class ChainsawTabbedPane extends JTabbedPane implements SettingsListener {
+    private static Logger logger = LogManager.getLogger(ChainsawTabbedPane.class);
     public SavableTabSetting tabSetting;
     public static final String WELCOME_TAB = "Welcome";
     public static final String ZEROCONF = "Zeroconf";
-
-    /**
-     * Create the tabbed pane.
-     */
-    public ChainsawTabbedPane() {
-        super();
-    }
 
     /**
      * Returns true if this TabbedPane has an instance of the WelcomePanel
@@ -70,7 +70,7 @@ class ChainsawTabbedPane extends JTabbedPane implements SettingsListener {
      *
      * @return true/false
      */
-    boolean containsWelcomePanel() {
+    public boolean containsWelcomePanel() {
         return indexOfTab("Welcome") > -1;
     }
 
@@ -123,37 +123,41 @@ class ChainsawTabbedPane extends JTabbedPane implements SettingsListener {
      * panels as they are the panel which are always running. Saves
      * whether they are hidden or not....
      */
-
     public void saveSettings(SaveSettingsEvent event) {
-        File file = new File(SettingsManager.getSettingsDirectory(), "tab-settings.xml");
-//        XStream stream = new XStream(new DomDriver());
-//        try {
-//            FileWriter writer = new FileWriter(file);
-//            int count = super.getTabCount();
-//            String title;
-//            SavableTabSetting setting = new SavableTabSetting();
-//            for (int i = 0; i < count; i++) {
-//                title = super.getTitleAt(i);
-//                switch (title) {
-//                    case WELCOME_TAB:
-//                        setting.setWelcome(true);
-//                        break;
-//                    case "chainsaw-log":
-//                        setting.setChainsawLog(true);
-//                        break;
-//                    case ZEROCONF:
-//                        setting.setZeroconf(true);
-//                        break;
-//                }
-//            }
-//
-//            stream.toXML(setting, writer);
-//            writer.close();
-//
-//        } catch (Exception e) {
-//            file.delete();
-//            e.printStackTrace();
-//        }
+        File file = new File(SettingsManager.getSettingsDirectory(), "tab-settings.json");
+
+        int count = super.getTabCount();
+        String title;
+
+        SavableTabSetting setting = new SavableTabSetting();
+        for (int i = 0; i < count; i++) {
+            title = super.getTitleAt(i);
+            switch (title) {
+                case WELCOME_TAB:
+                    setting.setWelcome(true);
+                    break;
+                case "chainsaw-log":
+                    setting.setChainsawLog(true);
+                    break;
+                case ZEROCONF:
+                    setting.setZeroconf(true);
+                    break;
+            }
+        }
+
+        Genson genson = new Genson();
+        String serialize = genson.serialize(setting);
+
+        try (FileWriter writer = new FileWriter(file)) {
+            writer.write(serialize);
+        } catch (Exception e) {
+            logger.error("Could not write to tab-settings.json", e);
+            try {
+                Files.deleteIfExists(file.toPath());
+            } catch (IOException ex) {
+                logger.error("Could not clean up file tab-settings.json", ex);
+            }
+        }
     }
 
     /**
@@ -163,22 +167,26 @@ class ChainsawTabbedPane extends JTabbedPane implements SettingsListener {
      */
 
     public void loadSettings(LoadSettingsEvent event) {
-//        File file = new File(SettingsManager.getInstance().getSettingsDirectory(), "tab-settings.xml");
-//        XStream stream = new XStream(new DomDriver());
-//        try {
-//            if (file.exists()) {
-//                FileReader reader = new FileReader(file);
-//                tabSetting = (SavableTabSetting) stream.fromXML(reader);
-//                reader.close();
-//            } else {
-//                tabSetting = new SavableTabSetting();
-//                tabSetting.setWelcome(true);
-//                tabSetting.setChainsawLog(true);
-//                tabSetting.setZeroconf(true);
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            file.delete();
-//        }
+        File file = new File(SettingsManager.getSettingsDirectory(), "tab-settings.json");
+        Genson genson = new Genson();
+
+        try {
+            if (file.exists()) {
+                String json = Files.readAllLines(file.toPath()).get(0);
+                tabSetting = genson.deserialize(json, SavableTabSetting.class);
+            } else {
+                tabSetting = new SavableTabSetting();
+                tabSetting.setWelcome(true);
+                tabSetting.setChainsawLog(true);
+                tabSetting.setZeroconf(true);
+            }
+        } catch (Exception e) {
+            logger.error("Could not read from tab-settings.json", e);
+            try {
+                Files.deleteIfExists(file.toPath());
+            } catch (IOException ex) {
+                logger.error("Could not clean up file tab-settings.json", ex);
+            }
+        }
     }
 }
