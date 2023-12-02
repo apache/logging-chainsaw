@@ -29,7 +29,7 @@ import java.util.EventListener;
  * however (i.e. do not call System.exit()).
  *
  * @author Paul Smith &lt;psmith@apache.org&gt;
- * @see LogUI#setShutdownAction(Action)
+ * @see LogUI#addShutdownListener(ShutdownListener)
  */
 public interface ShutdownListener extends EventListener {
 
