@@ -2,7 +2,6 @@ package org.apache.log4j.chainsaw.components.tutorial;
 
 import org.apache.log4j.chainsaw.ChainsawConstants;
 import org.apache.log4j.chainsaw.ChainsawStatusBar;
-import org.apache.log4j.chainsaw.Generator;
 import org.apache.log4j.chainsaw.JTextComponentFormatter;
 import org.apache.log4j.chainsaw.LogUI;
 import org.apache.log4j.chainsaw.ReceiverEventListener;

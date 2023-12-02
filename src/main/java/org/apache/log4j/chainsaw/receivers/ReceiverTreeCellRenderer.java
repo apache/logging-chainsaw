@@ -17,7 +17,7 @@
 
 package org.apache.log4j.chainsaw.receivers;
 
-import org.apache.log4j.chainsaw.Generator;
+import org.apache.log4j.chainsaw.components.tutorial.Generator;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.chainsaw.icons.LevelIconFactory;
 

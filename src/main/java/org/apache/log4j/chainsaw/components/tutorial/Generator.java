@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.log4j.chainsaw;
+package org.apache.log4j.chainsaw.components.tutorial;
 
 import java.time.Instant;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
