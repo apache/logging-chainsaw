@@ -95,8 +95,6 @@ public class LogUI extends JFrame {
     private ChainsawStatusBar statusBar;
     private ApplicationPreferenceModel applicationPreferenceModel;
     private ApplicationPreferenceModelPanel applicationPreferenceModelPanel;
-    private final Map tableModelMap = new HashMap();
-    private final Map tableMap = new HashMap();
     private final List<String> filterableColumns = new ArrayList<>();
     private final Map<String, Component> panelMap = new HashMap<>();
     public ChainsawAppender chainsawAppender;
@@ -1217,24 +1215,6 @@ public class LogUI extends JFrame {
      */
     public ChainsawToolBarAndMenus getToolBarAndMenus() {
         return chainsawToolBarAndMenus;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public Map getTableMap() {
-        return tableMap;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public Map getTableModelMap() {
-        return tableModelMap;
     }
 
     /**
