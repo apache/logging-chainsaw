@@ -22,7 +22,6 @@
 package org.apache.log4j.chainsaw.components.tabbedpane;
 
 import com.owlike.genson.Genson;
-import org.apache.log4j.chainsaw.LogUI;
 import org.apache.log4j.chainsaw.prefs.LoadSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SettingsListener;
@@ -33,7 +32,6 @@ import org.apache.logging.log4j.Logger;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
