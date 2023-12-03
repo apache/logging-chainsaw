@@ -336,10 +336,8 @@ public class LogUI extends JFrame {
         initGUI();
         loadSettings();
 
-        if (m_receivers.isEmpty()) {
-            noReceiversDefined = true;
-        }
-
+        noReceiversDefined = m_receivers.isEmpty();
+        
         filterableColumns.add(ChainsawConstants.LEVEL_COL_NAME);
         filterableColumns.add(ChainsawConstants.LOGGER_COL_NAME);
         filterableColumns.add(ChainsawConstants.THREAD_COL_NAME);
