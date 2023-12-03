@@ -340,15 +340,15 @@ public class LogUI extends JFrame {
             noReceiversDefined = true;
         }
 
-        getFilterableColumns().add(ChainsawConstants.LEVEL_COL_NAME);
-        getFilterableColumns().add(ChainsawConstants.LOGGER_COL_NAME);
-        getFilterableColumns().add(ChainsawConstants.THREAD_COL_NAME);
-        getFilterableColumns().add(ChainsawConstants.NDC_COL_NAME);
-        getFilterableColumns().add(ChainsawConstants.PROPERTIES_COL_NAME);
-        getFilterableColumns().add(ChainsawConstants.CLASS_COL_NAME);
-        getFilterableColumns().add(ChainsawConstants.METHOD_COL_NAME);
-        getFilterableColumns().add(ChainsawConstants.FILE_COL_NAME);
-        getFilterableColumns().add(ChainsawConstants.NONE_COL_NAME);
+        filterableColumns.add(ChainsawConstants.LEVEL_COL_NAME);
+        filterableColumns.add(ChainsawConstants.LOGGER_COL_NAME);
+        filterableColumns.add(ChainsawConstants.THREAD_COL_NAME);
+        filterableColumns.add(ChainsawConstants.NDC_COL_NAME);
+        filterableColumns.add(ChainsawConstants.PROPERTIES_COL_NAME);
+        filterableColumns.add(ChainsawConstants.CLASS_COL_NAME);
+        filterableColumns.add(ChainsawConstants.METHOD_COL_NAME);
+        filterableColumns.add(ChainsawConstants.FILE_COL_NAME);
+        filterableColumns.add(ChainsawConstants.NONE_COL_NAME);
 
         JPanel panePanel = new JPanel();
         panePanel.setLayout(new BorderLayout(2, 2));
@@ -1201,15 +1201,6 @@ public class LogUI extends JFrame {
      */
     public Map<String, Component> getPanelMap() {
         return panelMap;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public List<String> getFilterableColumns() {
-        return filterableColumns;
     }
 
     /**
