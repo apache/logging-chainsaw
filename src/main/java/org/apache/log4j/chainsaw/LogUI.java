@@ -109,9 +109,9 @@ public class LogUI extends JFrame {
     private final List<LogPanel> identifierPanels = new ArrayList<>();
     private int dividerSize;
     public int cyclicBufferSize;
-    private List<ChainsawReceiver> m_receivers = new ArrayList<>();
-    private List<ReceiverEventListener> m_receiverListeners = new ArrayList<>();
-    private ZeroConfPlugin m_zeroConf = new ZeroConfPlugin(settingsManager);
+    private List<ChainsawReceiver> receivers = new ArrayList<>();
+    private List<ReceiverEventListener> receiverListeners = new ArrayList<>();
+    private ZeroConfPlugin zeroConf = new ZeroConfPlugin(settingsManager);
 
     private static Logger logger = LogManager.getLogger(LogUI.class);
 
@@ -238,7 +238,7 @@ public class LogUI extends JFrame {
     }
 
     private void setupReceiverPanel() {
-        receiversPanel = new ReceiversPanel(settingsManager, m_receivers, this, statusBar);
+        receiversPanel = new ReceiversPanel(settingsManager, receivers, this, statusBar);
 //        receiversPanel.addPropertyChangeListener(
 //            "visible",
 //            evt -> getApplicationPreferenceModel().setReceivers(
@@ -336,8 +336,8 @@ public class LogUI extends JFrame {
         initGUI();
         loadSettings();
 
-        noReceiversDefined = m_receivers.isEmpty();
-        
+        noReceiversDefined = receivers.isEmpty();
+
         filterableColumns.add(ChainsawConstants.LEVEL_COL_NAME);
         filterableColumns.add(ChainsawConstants.LOGGER_COL_NAME);
         filterableColumns.add(ChainsawConstants.THREAD_COL_NAME);
@@ -604,7 +604,7 @@ public class LogUI extends JFrame {
             SwingHelper.invokeOnEDT(this::showReceiverConfigurationPanel);
         }
 
-        new TutorialFrame(m_receivers, m_receiverListeners, this).createTutorialFrame(tutorialFrame, statusBar);
+        new TutorialFrame(receivers, receiverListeners, this).createTutorialFrame(tutorialFrame, statusBar);
 
         /*
          * loads the saved tab settings and if there are hidden tabs,
@@ -932,7 +932,7 @@ public class LogUI extends JFrame {
      * Exits the application, ensuring Settings are saved.
      */
     public boolean exit() {
-        for(ChainsawReceiver rx : m_receivers){
+        for(ChainsawReceiver rx : receivers){
             settingsManager.saveSettingsForReceiver(rx);
         }
 
@@ -1071,7 +1071,7 @@ public class LogUI extends JFrame {
 
                     Thread.sleep(delay);
 
-                    for( ChainsawReceiver rx : m_receivers ){
+                    for( ChainsawReceiver rx : receivers){
                         rx.shutdown();
                     }
                     panel.setProgress(progress++);
@@ -1353,7 +1353,7 @@ public class LogUI extends JFrame {
                 thisPanel.layoutComponents();
 
                 getTabbedPane().addANewTab(ChainsawTabbedPane.ZEROCONF,
-                        m_zeroConf,
+                    zeroConf,
                         null,
                         false);
             });
@@ -1445,35 +1445,35 @@ public class LogUI extends JFrame {
     }
 
     public void addReceiver(ChainsawReceiver rx){
-        m_receivers.add(rx);
+        receivers.add(rx);
         List<ChainsawLoggingEvent> list = new ArrayList<>();
         buildLogPanel(false, rx.getName(), list, rx);
         
-        for(ReceiverEventListener listen : m_receiverListeners){
+        for(ReceiverEventListener listen : receiverListeners){
             listen.receiverAdded(rx);
         }
     }
     
     public void removeReceiver(ChainsawReceiver rx){
-        if( !m_receivers.remove(rx) ){
+        if( !receivers.remove(rx) ){
             return;
         }
         
-        for(ReceiverEventListener listen : m_receiverListeners){
+        for(ReceiverEventListener listen : receiverListeners){
             listen.receiverRemoved(rx);
         }
     }
     
     public void addReceiverEventListener(ReceiverEventListener listener){
-        m_receiverListeners.add(listener);
+        receiverListeners.add(listener);
     }
     
     public void removeReceiverEventListener(ReceiverEventListener listener){
-        m_receiverListeners.remove(listener);
+        receiverListeners.remove(listener);
     }
     
     public List<ChainsawReceiver> getAllReceivers(){
-        return m_receivers;
+        return receivers;
     }
 
 
