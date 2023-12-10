@@ -96,6 +96,11 @@
       <name>Matt Sicker</name>
       <email>mattsicker@apache.org</email>
     </developer>
+    <developer>
+      <id>grobmeier</id>
+      <name>Christian Grobmeier</name>
+      <email>grobmeier@apache.org</email>
+    </developer>
   </developers>
   <contributors>
     <contributor>
