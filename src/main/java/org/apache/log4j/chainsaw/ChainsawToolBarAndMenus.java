@@ -501,7 +501,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
         Action startTutorial =
             new AbstractAction("Tutorial...", new ImageIcon(ChainsawIcons.HELP)) {
                 public void actionPerformed(ActionEvent e) {
-                    logui.setupTutorial();
+                    logui.tutorialFrame.setupTutorial();
                 }
             };
 

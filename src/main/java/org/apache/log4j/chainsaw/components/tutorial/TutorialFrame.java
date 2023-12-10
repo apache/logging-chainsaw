@@ -20,23 +20,45 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.List;
 
-public class TutorialFrame {
+public class TutorialFrame extends JFrame {
     public static final String LABEL_TUTORIAL_STARTED = "TutorialStarted";
 
     private final Logger logger = LogManager.getLogger(TutorialFrame.class);
 
-    private List<ChainsawReceiver> receivers;
-    private List<ReceiverEventListener> receiverEventListeners;
-    private LogUI logUI;
-    private final JFrame tutorialFrame = new JFrame("Chainsaw Tutorial");
-    public TutorialFrame(List<ChainsawReceiver> receivers, List<ReceiverEventListener> receiverEventListeners, LogUI logUI) {
+    private final List<ChainsawReceiver> receivers;
+    private final List<ReceiverEventListener> receiverEventListeners;
+    private final LogUI logUI;
+
+    public TutorialFrame(List<ChainsawReceiver> receivers, List<ReceiverEventListener> receiverEventListeners, LogUI logUI, ChainsawStatusBar statusBar) {
+        super("Chainsaw Tutorial");
         this.receivers = receivers;
         this.receiverEventListeners = receiverEventListeners;
         this.logUI = logUI;
+
+        createTutorialFrame(statusBar);
     }
 
-    public void createTutorialFrame(JFrame tutorialFrame, ChainsawStatusBar statusBar) {
-        Container container = tutorialFrame.getContentPane();
+    public void setupTutorial() {
+        SwingUtilities.invokeLater(
+            () -> {
+                Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+                setLocation(0, getLocation().y);
+
+                double chainsawwidth = 0.7;
+                double tutorialwidth = 1 - chainsawwidth;
+                setSize((int) (screen.width * chainsawwidth), getSize().height);
+                invalidate();
+                validate();
+
+                Dimension size = getSize();
+                Point loc = getLocation();
+                setSize((int) (screen.width * tutorialwidth), size.height);
+                setLocation(loc.x + size.width, loc.y);
+                setVisible(true);
+            });
+    }
+    public void createTutorialFrame(ChainsawStatusBar statusBar) {
+        Container container = getContentPane();
         container.setLayout(new BorderLayout());
 
         final JEditorPane tutorialArea = new JEditorPane();
@@ -52,8 +74,8 @@ public class TutorialFrame {
             statusBar.setMessage("Can't load tutorial");
         }
 
-        this.tutorialFrame.setIconImage(new ImageIcon(ChainsawIcons.HELP).getImage());
-        this.tutorialFrame.setSize(new Dimension(640, 480));
+        this.setIconImage(new ImageIcon(ChainsawIcons.HELP).getImage());
+        this.setSize(new Dimension(640, 480));
 
         final Action startTutorial = createStartTutorialAction();
         final Action stopTutorial = createStopTutorialAction(startTutorial);
@@ -72,8 +94,7 @@ public class TutorialFrame {
                             tutorialArea.setPage(e.getURL());
                         } catch (IOException e1) {
                             statusBar.setMessage("Failed to change URL for tutorial");
-                            logger.error(
-                                "Failed to change the URL for the Tutorial", e1);
+                            logger.error("Failed to change the URL for the Tutorial", e1);
                         }
                     }
                 }

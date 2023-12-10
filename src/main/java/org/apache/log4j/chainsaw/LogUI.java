@@ -101,7 +101,7 @@ public class LogUI extends JFrame {
     private ChainsawToolBarAndMenus chainsawToolBarAndMenus;
     private ChainsawAbout aboutBox;
     private SettingsManager settingsManager;
-    private final JFrame tutorialFrame = new JFrame("Chainsaw Tutorial");
+    public TutorialFrame tutorialFrame;
     private JSplitPane mainReceiverSplitPane;
     private double lastMainReceiverSplitLocation = DEFAULT_MAIN_RECEIVER_SPLIT_LOCATION;
     private final List<LogPanel> identifierPanels = new ArrayList<>();
@@ -249,11 +249,11 @@ public class LogUI extends JFrame {
     private void setupHelpSystem() {
         welcomePanel = new WelcomePanel();
 
+        tutorialFrame = new TutorialFrame(receivers, receiverListeners, this, statusBar) ;
+
         JToolBar tb = welcomePanel.getToolbar();
-
-
         JButton help = new SmallButton.Builder().iconUrl(ChainsawIcons.HELP)
-            .action(this::setupTutorial).shortDescription("Tutorial").build();
+            .action(tutorialFrame::setupTutorial).shortDescription("Tutorial").build();
 
         tb.add(help);
 
@@ -602,7 +602,7 @@ public class LogUI extends JFrame {
             SwingHelper.invokeOnEDT(this::showReceiverConfigurationPanel);
         }
 
-        new TutorialFrame(receivers, receiverListeners, this).createTutorialFrame(tutorialFrame, statusBar);
+
 
         /*
          * loads the saved tab settings and if there are hidden tabs,
@@ -1242,26 +1242,6 @@ public class LogUI extends JFrame {
         return applicationPreferenceModel;
     }
 
-    public void setupTutorial() {
-        SwingUtilities.invokeLater(
-            () -> {
-                Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-                setLocation(0, getLocation().y);
-
-                double chainsawwidth = 0.7;
-                double tutorialwidth = 1 - chainsawwidth;
-                setSize((int) (screen.width * chainsawwidth), getSize().height);
-                invalidate();
-                validate();
-
-                Dimension size = getSize();
-                Point loc = getLocation();
-                tutorialFrame.setSize(
-                    (int) (screen.width * tutorialwidth), size.height);
-                tutorialFrame.setLocation(loc.x + size.width, loc.y);
-                tutorialFrame.setVisible(true);
-            });
-    }
 
     private void buildLogPanel(
         boolean customExpression, final String ident, final List<ChainsawLoggingEvent> events, final ChainsawReceiver rx)
