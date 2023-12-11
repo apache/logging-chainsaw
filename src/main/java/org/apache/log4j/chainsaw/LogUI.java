@@ -81,6 +81,8 @@ import java.util.Set;
  * @author Paul Smith  &lt;psmith@apache.org&gt;
  */
 public class LogUI extends JFrame {
+    private static Logger logger = LogManager.getLogger(LogUI.class);
+
     private static final String MAIN_WINDOW_HEIGHT = "main.window.height";
     private static final String MAIN_WINDOW_WIDTH = "main.window.width";
     private static final String MAIN_WINDOW_Y = "main.window.y";
@@ -111,7 +113,6 @@ public class LogUI extends JFrame {
     private List<ReceiverEventListener> receiverListeners = new ArrayList<>();
     private ZeroConfPlugin zeroConf = new ZeroConfPlugin(settingsManager);
 
-    private static Logger logger = LogManager.getLogger(LogUI.class);
 
     private final Object initializationLock = new Object();
 
