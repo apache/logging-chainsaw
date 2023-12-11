@@ -1,16 +1,15 @@
 package org.apache.log4j.chainsaw;
 
 import org.apache.commons.configuration2.AbstractConfiguration;
+import org.apache.log4j.chainsaw.components.splash.SplashViewer;
 import org.apache.log4j.chainsaw.osx.OSXIntegration;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
-import org.apache.log4j.chainsaw.components.splash.SplashViewer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
