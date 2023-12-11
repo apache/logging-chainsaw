@@ -61,7 +61,7 @@ public class ChainsawStarter {
                     logger.error(ex);
                 }
             }
-            createChainsawGUI(settingsManager, null);
+            createChainsawGUI(settingsManager);
         });
     }
 
@@ -69,10 +69,8 @@ public class ChainsawStarter {
      * Creates, activates, and then shows the Chainsaw GUI, optionally showing
      * the splash screen, and using the passed shutdown action when the user
      * requests to exit the application (if null, then Chainsaw will exit the vm)
-     *
-     * @param newShutdownAction DOCUMENT ME!
      */
-    public static void createChainsawGUI(SettingsManager settingsManager, Action newShutdownAction) {
+    public static void createChainsawGUI(SettingsManager settingsManager) {
         SplashViewer splashViewer = new SplashViewer();
 
         AbstractConfiguration configuration = settingsManager.getGlobalConfiguration();
@@ -122,15 +120,5 @@ public class ChainsawStarter {
 
         logger.info("SecurityManager is now: {}", System.getSecurityManager());
 
-        if (newShutdownAction != null) {
-            logUI.setShutdownAction(newShutdownAction);
-        } else {
-            logUI.setShutdownAction(
-                new AbstractAction() {
-                    public void actionPerformed(ActionEvent e) {
-                        System.exit(0);
-                    }
-                });
-        }
     }
 }

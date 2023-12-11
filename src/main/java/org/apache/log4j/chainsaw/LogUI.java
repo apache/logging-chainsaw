@@ -116,12 +116,7 @@ public class LogUI extends JFrame {
 
     private final Object initializationLock = new Object();
 
-    /**
-     * The shutdownAction is called when the user requests to exit Chainsaw, and
-     * by default this exits the VM, but a developer may replace this action with
-     * something that better suits their needs
-     */
-    private Action shutdownAction = null;
+
 
     /**
      * Clients can register a ShutdownListener to be notified when the user has
@@ -136,6 +131,7 @@ public class LogUI extends JFrame {
     private ReceiverConfigurationPanel receiverConfigurationPanel = new ReceiverConfigurationPanel(settingsManager);
     private AbstractConfiguration configuration;
 
+    private ShutdownManager shutdownManager;
     /**
      * Constructor which builds up all the visual elements of the frame including
      * the Menu bar
@@ -153,7 +149,10 @@ public class LogUI extends JFrame {
         if (ChainsawIcons.WINDOW_ICON != null) {
             setIconImage(new ImageIcon(ChainsawIcons.WINDOW_ICON).getImage());
         }
+
+        shutdownManager = new ShutdownManager(this, configuration, receivers, shutdownListenerList);
     }
+
 
     /**
      * Registers a ShutdownListener with this calss so that it can be notified
@@ -927,7 +926,7 @@ public class LogUI extends JFrame {
 
         settingsManager.saveAllSettings();
 
-        return shutdown();
+        return shutdownManager.shutdown();
     }
 
     void addWelcomePanel() {
@@ -1023,109 +1022,6 @@ public class LogUI extends JFrame {
         }
     }
 
-
-    /**
-     * Shutsdown by ensuring the Appender gets a chance to close.
-     */
-    public boolean shutdown() {
-        boolean confirmExit = configuration.getBoolean("confirmExit", true);
-        if (confirmExit) {
-            if (
-                JOptionPane.showConfirmDialog(
-                    LogUI.this, "Are you sure you want to exit Chainsaw?",
-                    "Confirm Exit", JOptionPane.YES_NO_OPTION,
-                    JOptionPane.INFORMATION_MESSAGE) != JOptionPane.YES_OPTION) {
-                return false;
-            }
-
-        }
-
-        final JWindow progressWindow = new JWindow();
-        final ProgressPanel panel = new ProgressPanel(1, 3, "Shutting down");
-        progressWindow.getContentPane().add(panel);
-        progressWindow.pack();
-
-        Point p = new Point(getLocation());
-        p.move((int) getSize().getWidth() >> 1, (int) getSize().getHeight() >> 1);
-        progressWindow.setLocation(p);
-        progressWindow.setVisible(true);
-
-        Runnable runnable =
-            () -> {
-                try {
-                    int progress = 1;
-                    final int delay = 25;
-
-                    panel.setProgress(progress++);
-
-                    Thread.sleep(delay);
-
-                    for( ChainsawReceiver rx : receivers){
-                        rx.shutdown();
-                    }
-                    panel.setProgress(progress++);
-
-                    Thread.sleep(delay);
-
-                    panel.setProgress(progress++);
-                    Thread.sleep(delay);
-                } catch (Exception e) {
-                    logger.error(e,e);
-                }
-
-                fireShutdownEvent();
-                performShutdownAction();
-                progressWindow.setVisible(false);
-            };
-
-        if (OSXIntegration.IS_OSX) {
-            /*
-             * or OSX we do it in the current thread because otherwise returning
-             * will exit the process before it's had a chance to save things
-             *
-             */
-            runnable.run();
-        } else {
-            new Thread(runnable).start();
-        }
-        return true;
-    }
-
-    /**
-     * Ensures all the registered ShutdownListeners are notified.
-     */
-    private void fireShutdownEvent() {
-        ShutdownListener[] listeners =
-            shutdownListenerList.getListeners(
-                ShutdownListener.class);
-
-        for (ShutdownListener listener : listeners) {
-            listener.shuttingDown();
-        }
-    }
-
-    /**
-     * Configures LogUI's with an action to execute when the user requests to
-     * exit the application, the default action is to exit the VM. This Action is
-     * called AFTER all the ShutdownListeners have been notified
-     *
-     * @param shutdownAction
-     */
-    public final void setShutdownAction(Action shutdownAction) {
-        this.shutdownAction = shutdownAction;
-    }
-
-    /**
-     * Using the current thread, calls the registed Shutdown action's
-     * actionPerformed(...) method.
-     */
-    private void performShutdownAction() {
-        logger.debug(
-            "Calling the shutdown Action. Goodbye!");
-
-        shutdownAction.actionPerformed(
-            new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "Shutting Down"));
-    }
 
     /**
      * Returns the currently selected LogPanel, if there is one, otherwise null
@@ -1426,6 +1322,4 @@ public class LogUI extends JFrame {
     public List<ChainsawReceiver> getAllReceivers(){
         return receivers;
     }
-
-
 }
