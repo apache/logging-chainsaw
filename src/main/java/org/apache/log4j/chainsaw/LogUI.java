@@ -126,6 +126,7 @@ public class LogUI extends JFrame {
     private AbstractConfiguration configuration;
 
     private ShutdownManager shutdownManager;
+
     /**
      * Constructor which builds up all the visual elements of the frame including
      * the Menu bar
@@ -228,7 +229,7 @@ public class LogUI extends JFrame {
     private void setupHelpSystem() {
         welcomePanel = new WelcomePanel();
 
-        tutorialFrame = new TutorialFrame(receivers, receiverListeners, this, statusBar) ;
+        tutorialFrame = new TutorialFrame(receivers, receiverListeners, this, statusBar);
 
         JToolBar tb = welcomePanel.getToolbar();
         JButton help = new SmallButton.Builder().iconUrl(ChainsawIcons.HELP)
@@ -240,7 +241,7 @@ public class LogUI extends JFrame {
 
         JButton exampleButton = new SmallButton.Builder().iconUrl(ChainsawIcons.HELP)
             .action(
-                ()-> HelpManager.getInstance().setHelpURL(ChainsawConstants.EXAMPLE_CONFIG_URL)
+                () -> HelpManager.getInstance().setHelpURL(ChainsawConstants.EXAMPLE_CONFIG_URL)
             )
             .name("View example Receiver configuration")
             .shortDescription("Displays an example Log4j configuration file with several Receivers defined.")
@@ -299,7 +300,7 @@ public class LogUI extends JFrame {
         allColorizers.put(ChainsawConstants.DEFAULT_COLOR_RULE_NAME, colorizer);
     }
 
-    public void buildChainsawLogPanel(){
+    public void buildChainsawLogPanel() {
         List<ChainsawLoggingEvent> events = new ArrayList<>();
         buildLogPanel(false, "Chainsaw", events, chainsawAppender.getReceiver());
     }
@@ -601,7 +602,7 @@ public class LogUI extends JFrame {
 
         configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
             evt -> {
-                if( evt.getPropertyName().equals( "statusBar" ) ){
+                if (evt.getPropertyName().equals("statusBar")) {
                     boolean value = (Boolean) evt.getPropertyValue();
                     statusBar.setVisible(value);
                 }
@@ -611,26 +612,26 @@ public class LogUI extends JFrame {
 
         configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
             evt -> {
-                if( evt.getPropertyName().equals( "showReceivers" ) ){
+                if (evt.getPropertyName().equals("showReceivers")) {
                     boolean value = (Boolean) evt.getPropertyValue();
-                    if( value ){
+                    if (value) {
                         showReceiverPanel();
-                    }else{
+                    } else {
                         hideReceiverPanel();
                     }
                 }
             });
         boolean showReceivers = configuration.getBoolean("showReceivers", false);
         setStatusBarVisible(showStatusBar);
-        if( showReceivers ){
+        if (showReceivers) {
             showReceiverPanel();
-        }else{
+        } else {
             hideReceiverPanel();
         }
 
         configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
             evt -> {
-                if( evt.getPropertyName().equals( "toolbar" ) ){
+                if (evt.getPropertyName().equals("toolbar")) {
                     boolean value = (Boolean) evt.getPropertyValue();
                     toolbar.setVisible(value);
                 }
@@ -644,7 +645,7 @@ public class LogUI extends JFrame {
      * Exits the application, ensuring Settings are saved.
      */
     public boolean exit() {
-        for(ChainsawReceiver rx : receivers){
+        for (ChainsawReceiver rx : receivers) {
             settingsManager.saveSettingsForReceiver(rx);
         }
 
@@ -682,7 +683,7 @@ public class LogUI extends JFrame {
         Runnable r = () -> {
             JFileChooser jfc = new JFileChooser(SettingsManager.getSettingsDirectory());
             int returnVal = jfc.showOpenDialog(this);
-            if(returnVal != JFileChooser.APPROVE_OPTION) {
+            if (returnVal != JFileChooser.APPROVE_OPTION) {
                 return;
             }
 
@@ -690,13 +691,13 @@ public class LogUI extends JFrame {
 
             // Create the receiver
             String fileToLoad = jfc.getSelectedFile().getName();
-            String receiverName = fileToLoad.split( "-" )[0];
+            String receiverName = fileToLoad.split("-")[0];
             AbstractConfiguration config = settingsManager.getSettingsForReceiverTab(receiverName);
             String typeToLoad = config.getString("receiver.type");
             ServiceLoader<ChainsawReceiverFactory> sl = ServiceLoader.load(ChainsawReceiverFactory.class);
 
-            for( ChainsawReceiverFactory crFactory : sl ){
-                if(crFactory.getReceiverName().equals(typeToLoad)){
+            for (ChainsawReceiverFactory crFactory : sl) {
+                if (crFactory.getReceiverName().equals(typeToLoad)) {
                     ChainsawReceiver rx = crFactory.create();
                     rx.setName(receiverName);
                     settingsManager.loadSettingsForReceiver(rx);
@@ -706,7 +707,7 @@ public class LogUI extends JFrame {
                 }
             }
         };
-        
+
         SwingUtilities.invokeLater(r);
     }
 
@@ -809,7 +810,7 @@ public class LogUI extends JFrame {
     /**
      * DOCUMENT ME!
      *
-     * @param tbms          DOCUMENT ME!
+     * @param tbms DOCUMENT ME!
      */
     public void setToolBarAndMenus(ChainsawToolBarAndMenus tbms) {
         this.chainsawToolBarAndMenus = tbms;
@@ -848,7 +849,7 @@ public class LogUI extends JFrame {
         throws IllegalArgumentException {
         final LogPanel thisPanel = new LogPanel(settingsManager, getStatusBar(), ident, cyclicBufferSize, allColorizers, globalRuleColorizer);
 
-        if( !customExpression && rx != null ){
+        if (!customExpression && rx != null) {
             thisPanel.setReceiver(rx);
         }
 
@@ -881,7 +882,7 @@ public class LogUI extends JFrame {
                     getPanelMap().put(logPanel.getIdentifier(), logPanel);
                     getTabbedPane().addANewTab(
                         logPanel.getIdentifier(), logPanel, null,
-                            true);
+                        true);
                     getTabbedPane().setSelectedTab(getTabbedPane().indexOfTab(logPanel.getIdentifier()));
                 } else {
                     getTabbedPane().remove(logPanel);
@@ -904,15 +905,15 @@ public class LogUI extends JFrame {
             () -> {
                 getTabbedPane().addANewTab(
                     ident,
-                        thisPanel,
-                        new ImageIcon(ChainsawIcons.ANIM_RADIO_TOWER),
-                        false);
+                    thisPanel,
+                    new ImageIcon(ChainsawIcons.ANIM_RADIO_TOWER),
+                    false);
                 thisPanel.layoutComponents();
 
                 getTabbedPane().addANewTab(ChainsawTabbedPane.ZEROCONF,
                     zeroConf,
-                        null,
-                        false);
+                    null,
+                    false);
             });
 
         logger.debug("added tab {}", ident);
@@ -1001,21 +1002,21 @@ public class LogUI extends JFrame {
         }
     }
 
-    public void addReceiver(ChainsawReceiver rx){
+    public void addReceiver(ChainsawReceiver rx) {
         receivers.add(rx);
         List<ChainsawLoggingEvent> list = new ArrayList<>();
         buildLogPanel(false, rx.getName(), list, rx);
-        
-        for(ReceiverEventListener listen : receiverListeners){
+
+        for (ReceiverEventListener listen : receiverListeners) {
             listen.receiverAdded(rx);
         }
     }
 
-    public void addReceiverEventListener(ReceiverEventListener listener){
+    public void addReceiverEventListener(ReceiverEventListener listener) {
         receiverListeners.add(listener);
     }
 
-    public List<ChainsawReceiver> getAllReceivers(){
+    public List<ChainsawReceiver> getAllReceivers() {
         return receivers;
     }
 }
