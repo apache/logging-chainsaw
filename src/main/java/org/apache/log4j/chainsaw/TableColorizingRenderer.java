@@ -90,7 +90,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     /**
      * Creates a new TableColorizingRenderer object.
      */
-    public TableColorizingRenderer(SettingsManager settingsManager, RuleColorizer colorizer, ApplicationPreferenceModel applicationPreferenceModel,
+    public TableColorizingRenderer(SettingsManager settingsManager, RuleColorizer colorizer,
                                    EventContainer eventContainer, LogPanelPreferenceModel logPanelPreferenceModel,
                                    boolean colorizeSearch) {
         this.settingsManager = settingsManager;

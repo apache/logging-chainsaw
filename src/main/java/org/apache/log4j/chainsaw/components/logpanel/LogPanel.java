@@ -141,7 +141,6 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
     private final JSplitPane nameTreeAndMainPanelSplit;
     private final LoggerNameTreePanel logTreePanel;
     private final LogPanelPreferenceModel preferenceModel = new LogPanelPreferenceModel();
-    private ApplicationPreferenceModel applicationPreferenceModel;
     private final LogPanelPreferencePanel logPanelPreferencesPanel;
     private final FilterModel filterModel = new FilterModel();
     private RuleColorizer colorizer;
@@ -198,13 +197,11 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
                     final String identifier,
                     int cyclicBufferSize,
                     Map<String, RuleColorizer> allColorizers,
-                    final ApplicationPreferenceModel applicationPreferenceModel,
                     RuleColorizer globalRuleColorizer) {
         this.settingsManager = settingsManager;
 
         this.identifier = identifier;
         this.statusBar = statusBar;
-        this.applicationPreferenceModel = applicationPreferenceModel;
         this.logPanelPreferencesPanel = new LogPanelPreferencePanel(settingsManager, identifier);
         this.colorizer = globalRuleColorizer;
         this.m_globalColorizer = globalRuleColorizer;
@@ -302,14 +299,13 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             new JRadioButtonMenuItem(
                 new AbstractAction("Use ISO8601Format") {
                     public void actionPerformed(ActionEvent e) {
-//                        preferenceModel.setDateFormatPattern("ISO8601");
+
                     }
                 });
         final JRadioButtonMenuItem simpleTimeButton =
             new JRadioButtonMenuItem(
                 new AbstractAction("Use simple time") {
                     public void actionPerformed(ActionEvent e) {
-//                        preferenceModel.setDateFormatPattern("HH:mm:ss");
                     }
                 });
 
@@ -334,20 +330,6 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
                 menuItemToggleDetails.isSelected());});
 
         menuItemToggleDetails.setIcon(new ImageIcon(ChainsawIcons.INFO));
-
-        /*
-         * add preferencemodel listeners
-         */
-//        preferenceModel.addPropertyChangeListener("levelIcons",
-//            new PropertyChangeListener() {
-//                public void propertyChange(PropertyChangeEvent evt) {
-//                    boolean useIcons = (Boolean) evt.getNewValue();
-//                    renderer.setLevelUseIcons(useIcons);
-//                    table.tableChanged(new TableModelEvent(tableModel));
-//                    searchRenderer.setLevelUseIcons(useIcons);
-//                    searchTable.tableChanged(new TableModelEvent(searchModel));
-//                }
-//            });
 
         /*
          * add preferencemodel listeners
@@ -853,12 +835,12 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
                 }
             });
 
-        renderer = new TableColorizingRenderer(settingsManager, colorizer, applicationPreferenceModel, tableModel, preferenceModel, true);
+        renderer = new TableColorizingRenderer(settingsManager, colorizer, tableModel, preferenceModel, true);
         renderer.setToolTipsVisible(preferenceModel.isToolTips());
 
         table.setDefaultRenderer(Object.class, renderer);
 
-        searchRenderer = new TableColorizingRenderer(settingsManager, colorizer, applicationPreferenceModel, searchModel, preferenceModel, false);
+        searchRenderer = new TableColorizingRenderer(settingsManager, colorizer, searchModel, preferenceModel, false);
         searchRenderer.setToolTipsVisible(preferenceModel.isToolTips());
 
         searchTable.setDefaultRenderer(Object.class, searchRenderer);
@@ -902,8 +884,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
                 col.setHeaderValue(e.getKey());
 
                 if (preferenceModel.addColumn(col)) {
-                    if (preferenceModel.isColumnVisible(col) || !applicationPreferenceModel.isDefaultColumnsSet() || applicationPreferenceModel.isDefaultColumnsSet() &&
-                        applicationPreferenceModel.getDefaultColumnNames().contains(col.getHeaderValue())) {
+                    if (preferenceModel.isColumnVisible(col)) {
                         table.addColumn(col);
                         searchTable.addColumn(col);
                         preferenceModel.setColumnVisible(e.getKey().toString(), true);
@@ -2911,18 +2892,6 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         preferenceModel.setHighlightSearchMatchText(event.asBoolean("highlightSearchMatchText"));
         preferenceModel.setWrapMessage(event.asBoolean("wrapMessage"));
         preferenceModel.setSearchResultsVisible(event.asBoolean("searchResultsVisible"));
-        //re-add columns to the table in the order provided from the list
-        for (Object aSortedColumnList : sortedColumnList) {
-            TableColumn element = (TableColumn) aSortedColumnList;
-            if (preferenceModel.addColumn(element)) {
-                if (!applicationPreferenceModel.isDefaultColumnsSet() || applicationPreferenceModel.isDefaultColumnsSet() &&
-                    applicationPreferenceModel.getDefaultColumnNames().contains(element.getHeaderValue())) {
-                    table.addColumn(element);
-                    searchTable.addColumn(element);
-                    preferenceModel.setColumnVisible(element.getHeaderValue().toString(), true);
-                }
-            }
-        }
 
         String columnWidths = event.getSetting(TABLE_COLUMN_WIDTHS);
 
