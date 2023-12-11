@@ -166,16 +166,6 @@ public class LogUI extends JFrame {
     }
 
     /**
-     * Removes the registered ShutdownListener so that the listener will not be
-     * notified on a shutdown.
-     *
-     * @param l
-     */
-    public void removeShutdownListener(ShutdownListener l) {
-        shutdownListenerList.remove(ShutdownListener.class, l);
-    }
-
-    /**
      * Initialises the menu's and toolbars, but does not actually create any of
      * the main panel components.
      */
