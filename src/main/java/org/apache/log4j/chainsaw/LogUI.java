@@ -152,13 +152,13 @@ public class LogUI extends JFrame {
 
 
     /**
-     * Registers a ShutdownListener with this calss so that it can be notified
+     * Registers a ShutdownListener with this class so that it can be notified
      * when the user has requested that Chainsaw exit.
      *
-     * @param l
+     * @param listener the listener to add
      */
-    public void addShutdownListener(ShutdownListener l) {
-        shutdownListenerList.add(ShutdownListener.class, l);
+    public void addShutdownListener(ShutdownListener listener) {
+        shutdownListenerList.add(ShutdownListener.class, listener);
     }
 
     /**
