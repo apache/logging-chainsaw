@@ -89,34 +89,38 @@ public class LogUI extends JFrame {
     private static final String MAIN_WINDOW_X = "main.window.x";
 
     private static final double DEFAULT_MAIN_RECEIVER_SPLIT_LOCATION = 0.85d;
+
+    /* Panels / Views */
     private final JFrame preferencesFrame = new JFrame();
     private ReceiversPanel receiversPanel;
+    private WelcomePanel welcomePanel;
     private ChainsawTabbedPane tabbedPane;
+    private ChainsawAbout aboutBox;
+    public TutorialFrame tutorialFrame;
+    private JSplitPane mainReceiverSplitPane;
+    private final List<LogPanel> identifierPanels = new ArrayList<>();
+
+
     private JToolBar toolbar;
+    private ChainsawToolBarAndMenus chainsawToolBarAndMenus;
     private ChainsawStatusBar statusBar;
     private ApplicationPreferenceModelPanel applicationPreferenceModelPanel;
     private final List<String> filterableColumns = new ArrayList<>();
     private final Map<String, Component> panelMap = new HashMap<>();
     public ChainsawAppender chainsawAppender;
-    private ChainsawToolBarAndMenus chainsawToolBarAndMenus;
-    private ChainsawAbout aboutBox;
     private SettingsManager settingsManager;
-    public TutorialFrame tutorialFrame;
-    private JSplitPane mainReceiverSplitPane;
     private double lastMainReceiverSplitLocation = DEFAULT_MAIN_RECEIVER_SPLIT_LOCATION;
-    private final List<LogPanel> identifierPanels = new ArrayList<>();
     private int dividerSize;
     public int cyclicBufferSize;
     private List<ChainsawReceiver> receivers = new ArrayList<>();
     private List<ReceiverEventListener> receiverListeners = new ArrayList<>();
     private ZeroConfPlugin zeroConf = new ZeroConfPlugin(settingsManager);
-    
+
     /**
      * Clients can register a ShutdownListener to be notified when the user has
      * requested Chainsaw to exit.
      */
     private EventListenerList shutdownListenerList = new EventListenerList();
-    private WelcomePanel welcomePanel;
 
     //map of tab names to rulecolorizers
     private Map<String, RuleColorizer> allColorizers = new HashMap<>();
