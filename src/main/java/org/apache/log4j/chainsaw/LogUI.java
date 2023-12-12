@@ -173,7 +173,7 @@ public class LogUI extends JFrame {
         toolbar = getToolBarAndMenus().getToolbar();
         setJMenuBar(getToolBarAndMenus().getMenubar());
 
-        setTabbedPane(new ChainsawTabbedPane());
+        tabbedPane = new ChainsawTabbedPane();
 
         /**
          * This adds Drag & Drop capability to Chainsaw
@@ -822,15 +822,6 @@ public class LogUI extends JFrame {
      */
     public ChainsawToolBarAndMenus getToolBarAndMenus() {
         return chainsawToolBarAndMenus;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param tabbedPane DOCUMENT ME!
-     */
-    public void setTabbedPane(ChainsawTabbedPane tabbedPane) {
-        this.tabbedPane = tabbedPane;
     }
 
     /**
