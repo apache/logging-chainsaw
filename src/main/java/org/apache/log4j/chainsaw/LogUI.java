@@ -301,8 +301,7 @@ public class LogUI extends JFrame {
     }
 
     public void buildChainsawLogPanel() {
-        List<ChainsawLoggingEvent> events = new ArrayList<>();
-        buildLogPanel(false, "Chainsaw", events, chainsawAppender.getReceiver());
+        buildLogPanel(false, "Chainsaw", chainsawAppender.getReceiver());
     }
 
     /**
@@ -844,8 +843,7 @@ public class LogUI extends JFrame {
     }
 
 
-    private void buildLogPanel(
-        boolean customExpression, final String ident, final List<ChainsawLoggingEvent> events, final ChainsawReceiver rx)
+    private void buildLogPanel(boolean customExpression, final String ident, final ChainsawReceiver rx)
         throws IllegalArgumentException {
         final LogPanel thisPanel = new LogPanel(settingsManager, getStatusBar(), ident, cyclicBufferSize, allColorizers, globalRuleColorizer);
 
@@ -931,7 +929,7 @@ public class LogUI extends JFrame {
                 }
             }
 
-            buildLogPanel(true, ident, list, null);
+            buildLogPanel(true, ident, null);
         } catch (IllegalArgumentException iae) {
             statusBar.setMessage(
                 "Unable to add tab using expression: " + ident + ", reason: "
@@ -1004,8 +1002,7 @@ public class LogUI extends JFrame {
 
     public void addReceiver(ChainsawReceiver rx) {
         receivers.add(rx);
-        List<ChainsawLoggingEvent> list = new ArrayList<>();
-        buildLogPanel(false, rx.getName(), list, rx);
+        buildLogPanel(false, rx.getName(), rx);
 
         for (ReceiverEventListener listen : receiverListeners) {
             listen.receiverAdded(rx);
