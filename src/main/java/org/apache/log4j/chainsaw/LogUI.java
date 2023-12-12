@@ -110,9 +110,7 @@ public class LogUI extends JFrame {
     private List<ChainsawReceiver> receivers = new ArrayList<>();
     private List<ReceiverEventListener> receiverListeners = new ArrayList<>();
     private ZeroConfPlugin zeroConf = new ZeroConfPlugin(settingsManager);
-
-    private final Object initializationLock = new Object();
-
+    
     /**
      * Clients can register a ShutdownListener to be notified when the user has
      * requested Chainsaw to exit.
@@ -545,10 +543,6 @@ public class LogUI extends JFrame {
             showReceiverPanel();
         } else {
             hideReceiverPanel();
-        }
-
-        synchronized (initializationLock) {
-            initializationLock.notifyAll();
         }
 
         /*
