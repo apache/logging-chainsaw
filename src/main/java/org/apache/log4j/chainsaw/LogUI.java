@@ -173,8 +173,8 @@ public class LogUI extends JFrame {
         setupReceiverPanel();
 
         this.chainsawToolBarAndMenus = new ChainsawToolBarAndMenus(this, configuration);
-        toolbar = getToolBarAndMenus().getToolbar();
-        setJMenuBar(getToolBarAndMenus().getMenubar());
+        toolbar = chainsawToolBarAndMenus.getToolbar();
+        setJMenuBar(chainsawToolBarAndMenus.getMenubar());
 
         tabbedPane = new ChainsawTabbedPane();
 
@@ -298,7 +298,7 @@ public class LogUI extends JFrame {
             setSize(width, height);
         }
 
-        getToolBarAndMenus().stateChange();
+        chainsawToolBarAndMenus.stateChange();
         RuleColorizer colorizer = new RuleColorizer(settingsManager);
         allColorizers.put(ChainsawConstants.DEFAULT_COLOR_RULE_NAME, colorizer);
     }
@@ -331,7 +331,7 @@ public class LogUI extends JFrame {
 
         getContentPane().setLayout(new BorderLayout());
 
-        getTabbedPane().addChangeListener(getToolBarAndMenus());
+        getTabbedPane().addChangeListener(chainsawToolBarAndMenus);
         getTabbedPane().addChangeListener(e -> {
             LogPanel thisLogPanel = getCurrentLogPanel();
             if (thisLogPanel != null) {
@@ -494,7 +494,7 @@ public class LogUI extends JFrame {
                         String name = getTabbedPane().getTitleAt(index);
 
                         if (
-                            getPanelMap().containsKey(name) && !name.equals(currentName)) {
+                            panelMap.containsKey(name) && !name.equals(currentName)) {
                             displayPanel(name, false);
                             chainsawToolBarAndMenus.stateChange();
                         } else {
@@ -657,7 +657,7 @@ public class LogUI extends JFrame {
             ChainsawTabbedPane.WELCOME_TAB, new ImageIcon(ChainsawIcons.ABOUT), welcomePanel,
             "Welcome/Help", 0);
         getTabbedPane().setSelectedComponent(welcomePanel);
-        getPanelMap().put(ChainsawTabbedPane.WELCOME_TAB, welcomePanel);
+        panelMap.put(ChainsawTabbedPane.WELCOME_TAB, welcomePanel);
     }
 
     void removeWelcomePanel() {
@@ -719,7 +719,7 @@ public class LogUI extends JFrame {
 
     Map<String, Boolean> getPanels() {
         Map<String, Boolean> result = new HashMap<>();
-        Set<Map.Entry<String, Component>> panelSet = getPanelMap().entrySet();
+        Set<Map.Entry<String, Component>> panelSet = panelMap.entrySet();
 
         for (Map.Entry<String, Component> panel : panelSet) {
             Component component = panel.getValue();
@@ -731,7 +731,7 @@ public class LogUI extends JFrame {
     }
 
     void displayPanel(String panelName, boolean display) {
-        Component p = getPanelMap().get(panelName);
+        Component p = panelMap.get(panelName);
 
         int index = getTabbedPane().indexOfTab(panelName);
 
@@ -801,24 +801,6 @@ public class LogUI extends JFrame {
      *
      * @return DOCUMENT ME!
      */
-    public Map<String, Component> getPanelMap() {
-        return panelMap;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public ChainsawToolBarAndMenus getToolBarAndMenus() {
-        return chainsawToolBarAndMenus;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public ChainsawTabbedPane getTabbedPane() {
         return tabbedPane;
     }
@@ -857,7 +839,7 @@ public class LogUI extends JFrame {
                 LogPanel logPanel = (LogPanel) evt.getSource();
 
                 if (logPanel.isDocked()) {
-                    getPanelMap().put(logPanel.getIdentifier(), logPanel);
+                    panelMap.put(logPanel.getIdentifier(), logPanel);
                     getTabbedPane().addANewTab(
                         logPanel.getIdentifier(), logPanel, null,
                         true);
@@ -873,7 +855,7 @@ public class LogUI extends JFrame {
         //verify the frames in the individual log panels initialize to their
         //correct sizes
         getTabbedPane().add(ident, thisPanel);
-        getPanelMap().put(ident, thisPanel);
+        panelMap.put(ident, thisPanel);
 
         /*
          * Let the new LogPanel receive this batch
