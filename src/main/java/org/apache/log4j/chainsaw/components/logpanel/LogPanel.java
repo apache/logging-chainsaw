@@ -196,7 +196,6 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
      */
     public LogPanel(SettingsManager settingsManager, final ChainsawStatusBar statusBar,
                     final String identifier,
-                    int cyclicBufferSize,
                     Map<String, RuleColorizer> allColorizers,
                     RuleColorizer globalRuleColorizer) {
         this.settingsManager = settingsManager;
@@ -572,6 +571,8 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         /*
          *End of preferenceModel listeners
          */
+
+        int cyclicBufferSize = settingsManager.getGlobalConfiguration().getInt("cyclicBufferSize", 50000);
         tableModel = new ChainsawCyclicBufferTableModel(cyclicBufferSize, colorizer, "main");
         table = new JSortTable(tableModel);
 

@@ -28,9 +28,7 @@ import org.apache.log4j.chainsaw.components.tutorial.TutorialFrame;
 import org.apache.log4j.chainsaw.components.welcome.WelcomePanel;
 import org.apache.log4j.chainsaw.dnd.FileDnDTarget;
 import org.apache.log4j.chainsaw.help.HelpManager;
-import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
-import org.apache.log4j.chainsaw.icons.LineIconFactory;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.osx.OSXIntegration;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
@@ -44,8 +42,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -112,7 +108,6 @@ public class LogUI extends JFrame {
     private SettingsManager settingsManager;
     private double lastMainReceiverSplitLocation = DEFAULT_MAIN_RECEIVER_SPLIT_LOCATION;
     private int dividerSize;
-    public int cyclicBufferSize;
     private List<ChainsawReceiver> receivers = new ArrayList<>();
     private List<ReceiverEventListener> receiverListeners = new ArrayList<>();
     private ZeroConfPlugin zeroConf = new ZeroConfPlugin(settingsManager);
@@ -139,6 +134,7 @@ public class LogUI extends JFrame {
 
         this.settingsManager = settingsManager;
         this.configuration = settingsManager.getGlobalConfiguration();
+
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
         globalRuleColorizer.setConfiguration(configuration);
@@ -150,7 +146,6 @@ public class LogUI extends JFrame {
 
         shutdownManager = new ShutdownManager(this, configuration, receivers, shutdownListenerList);
     }
-
 
     /**
      * Registers a ShutdownListener with this class so that it can be notified
@@ -752,7 +747,7 @@ public class LogUI extends JFrame {
 
     private void buildLogPanel(boolean customExpression, final String ident, final ChainsawReceiver rx)
         throws IllegalArgumentException {
-        final LogPanel thisPanel = new LogPanel(settingsManager, getStatusBar(), ident, cyclicBufferSize, allColorizers, globalRuleColorizer);
+        final LogPanel thisPanel = new LogPanel(settingsManager, getStatusBar(), ident, allColorizers, globalRuleColorizer);
 
         if (!customExpression && rx != null) {
             thisPanel.setReceiver(rx);

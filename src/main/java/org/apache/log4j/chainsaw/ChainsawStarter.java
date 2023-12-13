@@ -96,8 +96,6 @@ public class ChainsawStarter {
         if (configuration.getBoolean("slowSplash", true)) {
             splashViewer.showSplash(logUI);
         }
-        logUI.cyclicBufferSize = configuration.getInt("cyclicBufferSize", 50000);
-
 
         /**
          * TODO until we work out how JoranConfigurator might be able to have
