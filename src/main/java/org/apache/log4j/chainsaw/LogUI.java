@@ -171,7 +171,7 @@ public class LogUI extends JFrame {
         statusBar = new ChainsawStatusBar(this);
         setupReceiverPanel();
 
-        setToolBarAndMenus(new ChainsawToolBarAndMenus(this, configuration));
+        this.chainsawToolBarAndMenus = new ChainsawToolBarAndMenus(this, configuration);
         toolbar = getToolBarAndMenus().getToolbar();
         setJMenuBar(getToolBarAndMenus().getMenubar());
 
@@ -802,15 +802,6 @@ public class LogUI extends JFrame {
      */
     public Map<String, Component> getPanelMap() {
         return panelMap;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param tbms DOCUMENT ME!
-     */
-    public void setToolBarAndMenus(ChainsawToolBarAndMenus tbms) {
-        this.chainsawToolBarAndMenus = tbms;
     }
 
     /**
