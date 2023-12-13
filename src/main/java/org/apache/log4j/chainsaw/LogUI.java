@@ -21,6 +21,7 @@ import org.apache.commons.configuration2.AbstractConfiguration;
 import org.apache.commons.configuration2.event.ConfigurationEvent;
 import org.apache.log4j.chainsaw.color.RuleColorizer;
 import org.apache.log4j.chainsaw.components.elements.SmallButton;
+import org.apache.log4j.chainsaw.components.elements.TabIconHandler;
 import org.apache.log4j.chainsaw.components.logpanel.LogPanel;
 import org.apache.log4j.chainsaw.components.tabbedpane.ChainsawTabbedPane;
 import org.apache.log4j.chainsaw.components.tutorial.TutorialFrame;
@@ -839,9 +840,8 @@ public class LogUI extends JFrame {
             identifierPanels.add(thisPanel);
         }
 
-        TabIconHandler iconHandler = new TabIconHandler(ident);
+        TabIconHandler iconHandler = new TabIconHandler(ident, tabbedPane);
         thisPanel.addEventCountListener(iconHandler);
-
 
         tabbedPane.addChangeListener(iconHandler);
 
@@ -917,68 +917,7 @@ public class LogUI extends JFrame {
         }
     }
 
-    private class TabIconHandler implements EventCountListener, ChangeListener {
-        //the tabIconHandler is associated with a new tab, and a new tab always
-        //shows the 'new events' icon
-        private boolean newEvents = true;
-        private boolean seenEvents = false;
-        private final String ident;
-        ImageIcon NEW_EVENTS = new ImageIcon(ChainsawIcons.ANIM_RADIO_TOWER);
-        ImageIcon HAS_EVENTS = new ImageIcon(ChainsawIcons.INFO);
-        Icon SELECTED = LineIconFactory.createBlankIcon();
 
-        public TabIconHandler(String identifier) {
-            ident = identifier;
-
-            new Thread(
-                () -> {
-                    while (true) {
-                        //if this tab is active, remove the icon
-                        //don't process undocked tabs
-                        if (getTabbedPane().indexOfTab(ident) > -1 &&
-                            getTabbedPane().getSelectedIndex() == getTabbedPane()
-                                .indexOfTab(ident)) {
-                            getTabbedPane().setIconAt(
-                                getTabbedPane().indexOfTab(ident), SELECTED);
-                            newEvents = false;
-                            seenEvents = true;
-                        } else if (getTabbedPane().indexOfTab(ident) > -1) {
-                            if (newEvents) {
-                                getTabbedPane().setIconAt(
-                                    getTabbedPane().indexOfTab(ident), NEW_EVENTS);
-                                newEvents = false;
-                                seenEvents = false;
-                            } else if (!seenEvents) {
-                                getTabbedPane().setIconAt(
-                                    getTabbedPane().indexOfTab(ident), HAS_EVENTS);
-                            }
-                        }
-
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException ie) {
-                        }
-                    }
-                }).start();
-        }
-
-        /**
-         * DOCUMENT ME!
-         *
-         * @param currentCount DOCUMENT ME!
-         * @param totalCount   DOCUMENT ME!
-         */
-        public void eventCountChanged(int currentCount, int totalCount) {
-            newEvents = true;
-        }
-
-        public void stateChanged(ChangeEvent event) {
-            if (
-                getTabbedPane().indexOfTab(ident) > -1 && getTabbedPane().indexOfTab(ident) == getTabbedPane().getSelectedIndex()) {
-                getTabbedPane().setIconAt(getTabbedPane().indexOfTab(ident), SELECTED);
-            }
-        }
-    }
 
     public void addReceiver(ChainsawReceiver rx) {
         receivers.add(rx);
