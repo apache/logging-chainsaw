@@ -339,64 +339,9 @@ public class LogUI extends JFrame {
             }
         });
 
-        KeyStroke ksRight =
-            KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
-        KeyStroke ksLeft =
-            KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
-        KeyStroke ksGotoLine =
-            KeyStroke.getKeyStroke(KeyEvent.VK_G, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
-
-        getTabbedPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-            ksRight, "MoveRight");
-        getTabbedPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-            ksLeft, "MoveLeft");
-        getTabbedPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-            ksGotoLine, "GotoLine");
-
-        Action moveRight =
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    int temp = getTabbedPane().getSelectedIndex();
-                    ++temp;
-
-                    if (temp != getTabbedPane().getTabCount()) {
-                        getTabbedPane().setSelectedTab(temp);
-                    }
-                }
-            };
-
-        Action moveLeft =
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    int temp = getTabbedPane().getSelectedIndex();
-                    --temp;
-
-                    if (temp > -1) {
-                        getTabbedPane().setSelectedTab(temp);
-                    }
-                }
-            };
-
-        Action gotoLine =
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    String inputLine = JOptionPane.showInputDialog(LogUI.this, "Enter the line number to go:", "Goto Line", JOptionPane.PLAIN_MESSAGE);
-                    try {
-                        int lineNumber = Integer.parseInt(inputLine);
-                        int row = getCurrentLogPanel().setSelectedEvent(lineNumber);
-                        if (row == -1) {
-                            JOptionPane.showMessageDialog(LogUI.this, "You have entered an invalid line number", "Error", JOptionPane.ERROR_MESSAGE);
-                        }
-                    } catch (NumberFormatException nfe) {
-                        JOptionPane.showMessageDialog(LogUI.this, "You have entered an invalid line number", "Error", JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-            };
-
-
-        getTabbedPane().getActionMap().put("MoveRight", moveRight);
-        getTabbedPane().getActionMap().put("MoveLeft", moveLeft);
-        getTabbedPane().getActionMap().put("GotoLine", gotoLine);
+        LogUiKeyStrokeCreator.createKeyStrokeRight(tabbedPane);
+        LogUiKeyStrokeCreator.createKeyStrokeLeft(tabbedPane);
+        LogUiKeyStrokeCreator.createKeyStrokeGotoLine(tabbedPane, this);
 
         /**
          * We listen for double clicks, and auto-undock currently selected Tab if
@@ -563,7 +508,6 @@ public class LogUI extends JFrame {
         }
         chainsawToolBarAndMenus.stateChange();
     }
-
 
     /**
      * Display the log tree pane, using the last known divider location
