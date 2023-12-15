@@ -84,17 +84,12 @@ public class LogUI extends JFrame {
     private static final String MAIN_WINDOW_WIDTH = "main.window.width";
     private static final String MAIN_WINDOW_Y = "main.window.y";
     private static final String MAIN_WINDOW_X = "main.window.x";
-
-    private static final double DEFAULT_MAIN_RECEIVER_SPLIT_LOCATION = 0.85d;
-
     /* Panels / Views */
     private final JFrame preferencesFrame = new JFrame();
-    private ReceiversPanel receiversPanel;
     private WelcomePanel welcomePanel;
     private ChainsawTabbedPane tabbedPane;
     private ChainsawAbout aboutBox;
     public TutorialFrame tutorialFrame;
-    private JSplitPane mainReceiverSplitPane;
     private final List<LogPanel> identifierPanels = new ArrayList<>();
     private LogUiReceiversPanel logUiReceiversPanel;
 
@@ -106,8 +101,6 @@ public class LogUI extends JFrame {
     private final Map<String, Component> panelMap = new HashMap<>();
     public ChainsawAppender chainsawAppender;
     private SettingsManager settingsManager;
-    private double lastMainReceiverSplitLocation = DEFAULT_MAIN_RECEIVER_SPLIT_LOCATION;
-    private int dividerSize;
     private List<ChainsawReceiver> receivers = new ArrayList<>();
     private List<ReceiverEventListener> receiverListeners = new ArrayList<>();
     private ZeroConfPlugin zeroConf = new ZeroConfPlugin(settingsManager);
@@ -214,10 +207,6 @@ public class LogUI extends JFrame {
 
         OSXIntegration.init(this);
 
-    }
-
-    private void setupReceiverPanel() {
-        receiversPanel = new ReceiversPanel(settingsManager, receivers, this, statusBar);
     }
 
     /**
