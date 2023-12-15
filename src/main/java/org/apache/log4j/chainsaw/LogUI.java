@@ -96,7 +96,7 @@ public class LogUI extends JFrame {
     public TutorialFrame tutorialFrame;
     private JSplitPane mainReceiverSplitPane;
     private final List<LogPanel> identifierPanels = new ArrayList<>();
-
+    private LogUiReceiversPanel logUiReceiversPanel;
 
     private JToolBar toolbar;
     private ChainsawToolBarAndMenus chainsawToolBarAndMenus;
@@ -165,7 +165,6 @@ public class LogUI extends JFrame {
 
         setupHelpSystem();
         statusBar = new ChainsawStatusBar(this);
-        setupReceiverPanel();
 
         this.chainsawToolBarAndMenus = new ChainsawToolBarAndMenus(this, configuration);
         toolbar = chainsawToolBarAndMenus.getToolbar();
@@ -371,14 +370,9 @@ public class LogUI extends JFrame {
         getContentPane().add(toolbar, BorderLayout.NORTH);
         getContentPane().add(statusBar, BorderLayout.SOUTH);
 
-        mainReceiverSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panePanel, receiversPanel);
-        mainReceiverSplitPane.setContinuousLayout(true);
-        dividerSize = mainReceiverSplitPane.getDividerSize();
-        mainReceiverSplitPane.setDividerLocation(-1);
+        logUiReceiversPanel = new LogUiReceiversPanel(settingsManager, receivers, this, statusBar, panePanel);
+        getContentPane().add(logUiReceiversPanel.getMainReceiverSplitPane(), BorderLayout.CENTER);
 
-        getContentPane().add(mainReceiverSplitPane, BorderLayout.CENTER);
-
-        mainReceiverSplitPane.setResizeWeight(1.0);
         addWindowListener(
             new WindowAdapter() {
                 public void windowClosing(WindowEvent event) {
@@ -485,9 +479,9 @@ public class LogUI extends JFrame {
         setVisible(true);
 
         if (configuration.getBoolean("showReceivers", false)) {
-            showReceiverPanel();
+            logUiReceiversPanel.showReceiverPanel();
         } else {
-            hideReceiverPanel();
+            logUiReceiversPanel.hideReceiverPanel();
         }
 
         /*
@@ -502,34 +496,6 @@ public class LogUI extends JFrame {
             displayPanel(ChainsawTabbedPane.ZEROCONF, false);
         }
         chainsawToolBarAndMenus.stateChange();
-    }
-
-    /**
-     * Display the log tree pane, using the last known divider location
-     */
-    private void showReceiverPanel() {
-        mainReceiverSplitPane.setDividerSize(dividerSize);
-        mainReceiverSplitPane.setDividerLocation(lastMainReceiverSplitLocation);
-        receiversPanel.setVisible(true);
-        mainReceiverSplitPane.repaint();
-    }
-
-    /**
-     * Hide the log tree pane, holding the current divider location for later use
-     */
-    private void hideReceiverPanel() {
-        //subtract one to make sizes match
-        int currentSize = mainReceiverSplitPane.getWidth() - mainReceiverSplitPane.getDividerSize();
-        if (mainReceiverSplitPane.getDividerLocation() > -1) {
-            if (!(((mainReceiverSplitPane.getDividerLocation() + 1) == currentSize)
-                || ((mainReceiverSplitPane.getDividerLocation() - 1) == 0))) {
-                lastMainReceiverSplitLocation = ((double) mainReceiverSplitPane
-                    .getDividerLocation() / currentSize);
-            }
-        }
-        mainReceiverSplitPane.setDividerSize(0);
-        receiversPanel.setVisible(false);
-        mainReceiverSplitPane.repaint();
     }
 
     private void initPrefModelListeners() {
@@ -552,18 +518,18 @@ public class LogUI extends JFrame {
                 if (evt.getPropertyName().equals("showReceivers")) {
                     boolean value = (Boolean) evt.getPropertyValue();
                     if (value) {
-                        showReceiverPanel();
+                        logUiReceiversPanel.showReceiverPanel();
                     } else {
-                        hideReceiverPanel();
+                        logUiReceiversPanel.hideReceiverPanel();
                     }
                 }
             });
         boolean showReceivers = configuration.getBoolean("showReceivers", false);
         setStatusBarVisible(showStatusBar);
         if (showReceivers) {
-            showReceiverPanel();
+            logUiReceiversPanel.showReceiverPanel();
         } else {
-            hideReceiverPanel();
+            logUiReceiversPanel.hideReceiverPanel();
         }
 
         configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
