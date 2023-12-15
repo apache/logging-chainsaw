@@ -79,7 +79,6 @@ import java.util.Set;
  */
 public class LogUI extends JFrame {
     private static Logger logger = LogManager.getLogger(LogUI.class);
-
     private static final String MAIN_WINDOW_HEIGHT = "main.window.height";
     private static final String MAIN_WINDOW_WIDTH = "main.window.width";
     private static final String MAIN_WINDOW_Y = "main.window.y";
@@ -97,7 +96,6 @@ public class LogUI extends JFrame {
     private ChainsawToolBarAndMenus chainsawToolBarAndMenus;
     private ChainsawStatusBar statusBar;
     private ApplicationPreferenceModelPanel applicationPreferenceModelPanel;
-    private final List<String> filterableColumns = new ArrayList<>();
     private final Map<String, Component> panelMap = new HashMap<>();
     public ChainsawAppender chainsawAppender;
     private SettingsManager settingsManager;
@@ -298,16 +296,6 @@ public class LogUI extends JFrame {
     public void activateViewer() {
         initGUI();
         loadSettings();
-
-        filterableColumns.add(ChainsawConstants.LEVEL_COL_NAME);
-        filterableColumns.add(ChainsawConstants.LOGGER_COL_NAME);
-        filterableColumns.add(ChainsawConstants.THREAD_COL_NAME);
-        filterableColumns.add(ChainsawConstants.NDC_COL_NAME);
-        filterableColumns.add(ChainsawConstants.PROPERTIES_COL_NAME);
-        filterableColumns.add(ChainsawConstants.CLASS_COL_NAME);
-        filterableColumns.add(ChainsawConstants.METHOD_COL_NAME);
-        filterableColumns.add(ChainsawConstants.FILE_COL_NAME);
-        filterableColumns.add(ChainsawConstants.NONE_COL_NAME);
 
         JPanel panePanel = new JPanel();
         panePanel.setLayout(new BorderLayout(2, 2));
