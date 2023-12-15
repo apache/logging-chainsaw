@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.chainsaw.help;
 
 import org.apache.logging.log4j.LogManager;
@@ -35,8 +34,8 @@ import java.util.List;
  * &lt;psmith@apache.org&gt;
  */
 class HelpLocator {
-    private final List<ClassLoader> classLoaders = new ArrayList<>();
     private static final Logger logger = LogManager.getLogger(HelpLocator.class);
+    private final List<ClassLoader> classLoaders = new ArrayList<>();
 
     /**
      * Adds a ClassLoader to be used as a help resource locator
@@ -54,8 +53,7 @@ class HelpLocator {
         try {
             classLoaders.add(new HelpResourceLoader(url));
         } catch (Exception e) {
-            logger.error(
-                "Failed to setup the resource loaders for the Help Subsystem");
+            logger.error("Failed to setup the resource loaders for the Help Subsystem");
         }
     }
 
