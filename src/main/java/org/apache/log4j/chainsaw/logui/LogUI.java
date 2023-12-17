@@ -18,9 +18,7 @@
 package org.apache.log4j.chainsaw.logui;
 
 import org.apache.commons.configuration2.AbstractConfiguration;
-import org.apache.commons.configuration2.event.ConfigurationEvent;
 import org.apache.log4j.chainsaw.*;
-import org.apache.log4j.chainsaw.color.RuleColorizer;
 import org.apache.log4j.chainsaw.components.elements.SmallButton;
 import org.apache.log4j.chainsaw.components.logpanel.LogPanel;
 import org.apache.log4j.chainsaw.components.tabbedpane.ChainsawTabbedPane;
@@ -59,7 +57,6 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 
-
 /**
  * The main entry point for Chainsaw, this class represents the first frame
  * that is used to display a Welcome panel, and any other panels that are
@@ -96,19 +93,19 @@ public class LogUI extends JFrame {
     private final Map<String, Component> panelMap = new HashMap<>();
     public ChainsawAppender chainsawAppender;
     private SettingsManager settingsManager;
-    private List<ChainsawReceiver> receivers = new ArrayList<>();
-    private List<ReceiverEventListener> receiverListeners = new ArrayList<>();
-    private ZeroConfPlugin zeroConf = new ZeroConfPlugin(settingsManager);
+    private final List<ChainsawReceiver> receivers = new ArrayList<>();
+    private final List<ReceiverEventListener> receiverListeners = new ArrayList<>();
+    private final ZeroConfPlugin zeroConf = new ZeroConfPlugin(settingsManager);
 
     /**
      * Clients can register a ShutdownListener to be notified when the user has
      * requested Chainsaw to exit.
      */
-    private EventListenerList shutdownListenerList = new EventListenerList();
+    private final EventListenerList shutdownListenerList = new EventListenerList();
 
-    private AbstractConfiguration configuration;
+    private final AbstractConfiguration configuration;
 
-    private ShutdownManager shutdownManager;
+    private final ShutdownManager shutdownManager;
     private LogUIPanelBuilder logUIPanelBuilder;
 
     /**
@@ -135,49 +132,24 @@ public class LogUI extends JFrame {
      * the main panel components.
      */
     private void initGUI() {
-
         setupHelpSystem();
         statusBar = new ChainsawStatusBar(this, configuration);
 
         boolean showStatusBar = configuration.getBoolean("statusBar", true);
         setStatusBarVisible(showStatusBar);
 
-        this.chainsawToolBarAndMenus = new ChainsawToolBarAndMenus(this, configuration);
+        chainsawToolBarAndMenus = new ChainsawToolBarAndMenus(this, configuration);
         toolbar = chainsawToolBarAndMenus.getToolbar();
         setJMenuBar(chainsawToolBarAndMenus.getMenubar());
 
         tabbedPane = new ChainsawTabbedPane();
 
-        /**
-         * This adds Drag & Drop capability to Chainsaw
-         */
-        FileDnDTarget dnDTarget = new FileDnDTarget(tabbedPane);
-        dnDTarget.addPropertyChangeListener("fileList", evt -> {
-            final List fileList = (List) evt.getNewValue();
-
-            Thread thread = new Thread(() -> {
-                logger.debug("Loading files: {}", fileList);
-                for (Object aFileList : fileList) {
-                    File file = (File) aFileList;
-                    try {
-                        getStatusBar().setMessage("Loading " + file.getAbsolutePath() + "...");
-                    } catch (Exception e) {
-                        String errorMsg = "Failed to import a file";
-                        logger.error(errorMsg, e);
-                        getStatusBar().setMessage(errorMsg);
-                    }
-                }
-            });
-
-            thread.setPriority(Thread.MIN_PRIORITY);
-            thread.start();
-
-        });
+        createDragAndDrop();
 
         applicationPreferenceModelPanel = new ApplicationPreferenceModelPanel(settingsManager);
 
-        applicationPreferenceModelPanel.setOkCancelActionListener(
-            e -> preferencesFrame.setVisible(false));
+        applicationPreferenceModelPanel.setOkCancelActionListener(e -> preferencesFrame.setVisible(false));
+
         KeyStroke escape = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false);
         Action closeAction = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
@@ -191,7 +163,35 @@ public class LogUI extends JFrame {
         logUIPanelBuilder = new LogUIPanelBuilder(tabbedPane, identifierPanels, chainsawToolBarAndMenus, panelMap, settingsManager, statusBar, zeroConf);
 
         OSXIntegration.init(this);
+    }
 
+    /**
+     * This adds Drag & Drop capability to Chainsaw
+     */
+    private void createDragAndDrop() {
+        FileDnDTarget dnDTarget = new FileDnDTarget(tabbedPane);
+        dnDTarget.addPropertyChangeListener("fileList", evt -> {
+            final List fileList = (List) evt.getNewValue();
+
+            Thread thread = new Thread(() -> {
+                logger.debug("Loading files: {}", fileList);
+
+                for (Object aFileList : fileList) {
+                    File file = (File) aFileList;
+
+                    try {
+                        getStatusBar().setMessage("Loading " + file.getAbsolutePath() + "...");
+                    } catch (Exception e) {
+                        String errorMsg = "Failed to import a file";
+                        logger.error(errorMsg, e);
+                        getStatusBar().setMessage(errorMsg);
+                    }
+                }
+            });
+
+            thread.setPriority(Thread.MIN_PRIORITY);
+            thread.start();
+        });
     }
 
     /**
@@ -220,7 +220,6 @@ public class LogUI extends JFrame {
 
 
         tb.add(exampleButton);
-
         tb.add(Box.createHorizontalGlue());
 
         /*
@@ -239,24 +238,29 @@ public class LogUI extends JFrame {
             });
     }
 
+    /**
+     * ensure that the Welcome Panel is made visible
+     */
     private void ensureWelcomePanelVisible() {
-        // ensure that the Welcome Panel is made visible
         if (!tabbedPane.containsWelcomePanel()) {
             addWelcomePanel();
         }
+
         tabbedPane.setSelectedComponent(welcomePanel);
     }
 
     /**
-     * Given the load event, configures the size/location of the main window etc
-     * etc.
+     * Given the load event, configures the size/location of the main window etc. etc.
      */
     private void loadSettings() {
         AbstractConfiguration config = settingsManager.getGlobalConfiguration();
         setLocation(
-            config.getInt(LogUI.MAIN_WINDOW_X, 0), config.getInt(LogUI.MAIN_WINDOW_Y, 0));
+            config.getInt(LogUI.MAIN_WINDOW_X, 0),
+            config.getInt(LogUI.MAIN_WINDOW_Y, 0));
+
         int width = config.getInt(LogUI.MAIN_WINDOW_WIDTH, -1);
         int height = config.getInt(LogUI.MAIN_WINDOW_HEIGHT, -1);
+
         if (width == -1 && height == -1) {
             width = Toolkit.getDefaultToolkit().getScreenSize().width;
             height = Toolkit.getDefaultToolkit().getScreenSize().height;
@@ -295,10 +299,6 @@ public class LogUI extends JFrame {
         LogUiKeyStrokeCreator.createKeyStrokeLeft(tabbedPane);
         LogUiKeyStrokeCreator.createKeyStrokeGotoLine(tabbedPane, this);
 
-        /**
-         * We listen for double clicks, and auto-undock currently selected Tab if
-         * the mouse event location matches the currently selected tab
-         */
         MouseAdapter mouseAdapter = createMouseAdapter();
         tabbedPane.addMouseListener(mouseAdapter);
 
@@ -357,10 +357,10 @@ public class LogUI extends JFrame {
          * loads the saved tab settings and if there are hidden tabs,
          * hide those tabs out of currently loaded tabs..
          */
-
         if (!configuration.getBoolean("displayWelcomeTab", true)) {
             displayPanel(ChainsawTabbedPane.WELCOME_TAB, false);
         }
+
         if (!configuration.getBoolean("displayZeroconfTab", true)) {
             displayPanel(ChainsawTabbedPane.ZEROCONF, false);
         }
@@ -439,7 +439,6 @@ public class LogUI extends JFrame {
         preferencesFrame.setVisible(true);
     }
 
-
     /**
      * Registers a ShutdownListener with this class so that it can be notified
      * when the user has requested that Chainsaw exit.
@@ -459,10 +458,8 @@ public class LogUI extends JFrame {
         }
 
         settingsManager.saveAllSettings();
-
         return shutdownManager.shutdown();
     }
-
 
     public void loadReceiver() {
         Runnable r = () -> {
@@ -508,7 +505,6 @@ public class LogUI extends JFrame {
 
         return result;
     }
-
 
     /**
      * Returns the currently selected LogPanel, if there is one, otherwise null
@@ -588,7 +584,10 @@ public class LogUI extends JFrame {
         return statusBar;
     }
 
-
+    /**
+     * We listen for double clicks, and auto-undock currently selected Tab if
+     * the mouse event location matches the currently selected tab
+     */
     private MouseAdapter createMouseAdapter() {
         return new MouseAdapter() {
             @Override
