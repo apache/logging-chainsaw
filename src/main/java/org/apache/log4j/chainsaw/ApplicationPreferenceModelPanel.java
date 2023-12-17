@@ -268,10 +268,10 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
         public void updateModel(){
             AbstractConfiguration config = settingsManager.getGlobalConfiguration();
 
-            statusBar.setSelected(config.getBoolean("statusBar"));
-            receivers.setSelected(config.getBoolean("showReceivers"));
-            toolBar.setSelected(config.getBoolean("toolbar"));
-            configureTabPlacement(config.getInt("tabPlacement"));
+            statusBar.setSelected(config.getBoolean("statusBar", false));
+            receivers.setSelected(config.getBoolean("showReceivers", false));
+            toolBar.setSelected(config.getBoolean("toolbar", false));
+            configureTabPlacement(config.getInt("tabPlacement", SwingConstants.TOP));
             Enumeration e = lookAndFeelGroup.getElements();
             while (e.hasMoreElements()) {
                 JRadioButton radioButton = (JRadioButton) e.nextElement();
