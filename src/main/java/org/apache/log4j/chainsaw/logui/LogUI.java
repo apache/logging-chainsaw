@@ -131,16 +131,6 @@ public class LogUI extends JFrame {
     }
 
     /**
-     * Registers a ShutdownListener with this class so that it can be notified
-     * when the user has requested that Chainsaw exit.
-     *
-     * @param listener the listener to add
-     */
-    public void addShutdownListener(ShutdownListener listener) {
-        shutdownListenerList.add(ShutdownListener.class, listener);
-    }
-
-    /**
      * Initialises the menu's and toolbars, but does not actually create any of
      * the main panel components.
      */
@@ -406,19 +396,6 @@ public class LogUI extends JFrame {
         logUIPanelBuilder.buildLogPanel(false, "Chainsaw", chainsawAppender.getReceiver());
     }
 
-    /**
-     * Exits the application, ensuring Settings are saved.
-     */
-    public boolean exit() {
-        for (ChainsawReceiver rx : receivers) {
-            settingsManager.saveSettingsForReceiver(rx);
-        }
-
-        settingsManager.saveAllSettings();
-
-        return shutdownManager.shutdown();
-    }
-
     public void addWelcomePanel() {
         tabbedPane.insertTab(
             ChainsawTabbedPane.WELCOME_TAB, new ImageIcon(ChainsawIcons.ABOUT), welcomePanel,
@@ -458,14 +435,34 @@ public class LogUI extends JFrame {
         }
     }
 
-
-    public ChainsawStatusBar getStatusBar() {
-        return statusBar;
-    }
-
     public void showApplicationPreferences() {
         preferencesFrame.setVisible(true);
     }
+
+
+    /**
+     * Registers a ShutdownListener with this class so that it can be notified
+     * when the user has requested that Chainsaw exit.
+     *
+     * @param listener the listener to add
+     */
+    public void addShutdownListener(ShutdownListener listener) {
+        shutdownListenerList.add(ShutdownListener.class, listener);
+    }
+
+    /**
+     * Exits the application, ensuring Settings are saved.
+     */
+    public boolean exit() {
+        for (ChainsawReceiver rx : receivers) {
+            settingsManager.saveSettingsForReceiver(rx);
+        }
+
+        settingsManager.saveAllSettings();
+
+        return shutdownManager.shutdown();
+    }
+
 
     public void loadReceiver() {
         Runnable r = () -> {
@@ -565,11 +562,6 @@ public class LogUI extends JFrame {
         return getCurrentLogPanel() != null && getCurrentLogPanel().isLogTreeVisible();
     }
 
-    /** @deprecated */
-    public ChainsawTabbedPane getTabbedPane() {
-        return tabbedPane;
-    }
-
     public void addReceiver(ChainsawReceiver rx) {
         receivers.add(rx);
         logUIPanelBuilder.buildLogPanel(false, rx.getName(), rx);
@@ -586,6 +578,16 @@ public class LogUI extends JFrame {
     public List<ChainsawReceiver> getAllReceivers() {
         return receivers;
     }
+
+    /** @deprecated */
+    public ChainsawTabbedPane getTabbedPane() {
+        return tabbedPane;
+    }
+
+    public ChainsawStatusBar getStatusBar() {
+        return statusBar;
+    }
+
 
     private MouseAdapter createMouseAdapter() {
         return new MouseAdapter() {
