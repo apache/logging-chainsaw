@@ -69,7 +69,6 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
     private final Action toggleToolbarAction;
     private final Action undockAction;
     private final Action customExpressionPanelAction;
-    private final Collection lookAndFeelMenus = new ArrayList();
     private final JCheckBoxMenuItem toggleShowReceiversCheck =
         new JCheckBoxMenuItem();
     private final JCheckBoxMenuItem toggleShowToolbarCheck =
@@ -848,18 +847,6 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
 
         for (Action logPanelSpecificAction : logPanelSpecificActions) {
             logPanelSpecificAction.setEnabled(activateLogPanelActions);
-        }
-
-        String currentLookAndFeelName = UIManager.getLookAndFeel().getName();
-
-        for (Object lookAndFeelMenu : lookAndFeelMenus) {
-            JRadioButtonMenuItem element = (JRadioButtonMenuItem) lookAndFeelMenu;
-
-            if (element.getText().equals(currentLookAndFeelName)) {
-                element.setSelected(true);
-            } else {
-                element.setSelected(false);
-            }
         }
     }
 
