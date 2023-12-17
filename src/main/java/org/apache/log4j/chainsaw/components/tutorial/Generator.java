@@ -18,6 +18,8 @@
 package org.apache.log4j.chainsaw.components.tutorial;
 
 import java.time.Instant;
+import java.util.Random;
+
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
 import org.apache.log4j.chainsaw.logevents.Level;
@@ -32,75 +34,67 @@ import org.apache.log4j.chainsaw.receiver.ChainsawReceiverSkeleton;
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 public class Generator extends ChainsawReceiverSkeleton implements Runnable {
-    private static final String logger1 =
-        "com.mycompany.mycomponentA";
-    private static final String logger2 =
-        "com.mycompany.mycomponentB";
-    private static final String logger3 =
-        "com.someothercompany.corecomponent";
-    private final String baseString_;
-    private Thread thread;
+    private static final String logger1 ="com.mycompany.mycomponentA";
+    private static final String logger2 = "com.mycompany.mycomponentB";
+    private static final String logger3 = "com.someothercompany.corecomponent";
+    private final String baseString;
+    private final RandomWordGenerator randomWordGenerator;
     private boolean shutdown;
-    private ChainsawLoggingEventBuilder m_builder;
+    private ChainsawLoggingEventBuilder builder;
 
     public Generator(String name) {
         setName(name);
-        baseString_ = name;
-        m_builder = new ChainsawLoggingEventBuilder();
+        baseString = name;
+        builder = new ChainsawLoggingEventBuilder();
+
+        randomWordGenerator = new RandomWordGenerator();
     }
 
     private ChainsawLoggingEvent createEvent(
         Level level, String logger, String msg, Throwable t) {
-        m_builder.clear();
-        m_builder.setLogger( logger )
+        builder.clear();
+        builder.setLogger(logger)
                 .setTimestamp(Instant.now())
                 .setLevel(level)
                 .setMessage(msg)
                 .setLocationInfo(new LocationInfo("file", logger, "method", 123))
                 .setNDC("NDC Value");
-        return m_builder.create();
+        return builder.create();
     }
 
     public void run() {
-//        NDC.push(baseString_);
-//        MDC.put("some string", "some value" + baseString_);
-
         int i = 0;
 
         while (!shutdown) {
             append(createEvent(Level.TRACE, logger1, "tracemsg" + i++, null));
             append(
                 createEvent(
-                    Level.DEBUG, logger1,
-                    "debugmsg " + i++
-                        + " g dg sdfa sadf sdf safd fsda asfd sdfa sdaf asfd asdf fasd fasd adfs fasd adfs fads afds afds afsd afsd afsd afsd afsd fasd asfd asfd afsd fasd afsd",
-                    null));
+                    Level.DEBUG, logger1, "debugmsg " + i++ + randomWordGenerator.generateSentence(), null));
+
             append(createEvent(Level.INFO, logger1, "infomsg " + i++, null));
             append(createEvent(Level.WARN, logger1, "warnmsg " + i++, null));
             append(createEvent(Level.ERROR, logger1, "errormsg " + i++, null));
-            append(createEvent(Level.FATAL, logger1, "fatalmsg " + i++, new Exception("someexception-" + baseString_)));
+            append(createEvent(Level.FATAL, logger1, "fatalmsg " + i++, new Exception("someexception-" + baseString)));
             append(createEvent(Level.TRACE, logger2, "tracemsg" + i++, null));
             append(
                 createEvent(
                     Level.DEBUG, logger2,
-                    "debugmsg " + i++
-                        + " g dg sdfa sadf sdf safd fsda asfd sdfa sdaf asfd asdf fasd fasd adfs fasd adfs fads afds afds afsd afsd afsd afsd afsd fasd asfd asfd afsd fasd afsd",
+                    "debugmsg " + i++ + randomWordGenerator.generateSentence(),
                     null));
             append(createEvent(Level.INFO, logger2, "infomsg " + i++, null));
             append(createEvent(Level.WARN, logger2, "warnmsg " + i++, null));
             append(createEvent(Level.ERROR, logger2, "errormsg " + i++, null));
-            append(createEvent(Level.FATAL, logger2, "fatalmsg " + i++, new Exception("someexception-" + baseString_)));
+            append(createEvent(Level.FATAL, logger2, "fatalmsg " + i++, new Exception("someexception-" + baseString)));
             append(createEvent(Level.TRACE, logger3, "tracemsg" + i++, null));
             append(
                 createEvent(
                     Level.DEBUG, logger3,
-                    "debugmsg " + i++
-                        + " g dg sdfa sadf sdf safd fsda asfd sdfa sdaf asfd asdf fasd fasd adfs fasd adfs fads afds afds afsd afsd afsd afsd afsd fasd asfd asfd afsd fasd afsd",
+                    "debugmsg " + i++ + randomWordGenerator.generateSentence(),
                     null));
             append(createEvent(Level.INFO, logger3, "infomsg " + i++, null));
             append(createEvent(Level.WARN, logger3, "warnmsg " + i++, null));
             append(createEvent(Level.ERROR, logger3, "errormsg " + i++, null));
-            append(createEvent(Level.FATAL, logger3, "fatalmsg " + i++, new Exception("someexception-" + baseString_)));
+            append(createEvent(Level.FATAL, logger3, "fatalmsg " + i++, new Exception("someexception-" + baseString)));
 
             try {
                 Thread.sleep(1000);
@@ -118,7 +112,7 @@ public class Generator extends ChainsawReceiverSkeleton implements Runnable {
 
     @Override
     public void start() {
-        thread = new Thread(this);
+        Thread thread = new Thread(this);
         thread.setPriority(Thread.MIN_PRIORITY);
         thread.start();
     }
