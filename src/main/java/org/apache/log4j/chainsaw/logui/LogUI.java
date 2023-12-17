@@ -22,7 +22,6 @@ import org.apache.commons.configuration2.event.ConfigurationEvent;
 import org.apache.log4j.chainsaw.*;
 import org.apache.log4j.chainsaw.color.RuleColorizer;
 import org.apache.log4j.chainsaw.components.elements.SmallButton;
-import org.apache.log4j.chainsaw.components.elements.TabIconHandler;
 import org.apache.log4j.chainsaw.components.logpanel.LogPanel;
 import org.apache.log4j.chainsaw.components.tabbedpane.ChainsawTabbedPane;
 import org.apache.log4j.chainsaw.components.tutorial.TutorialFrame;
@@ -51,7 +50,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
@@ -114,6 +112,7 @@ public class LogUI extends JFrame {
     private AbstractConfiguration configuration;
 
     private ShutdownManager shutdownManager;
+    private LogUIPanelBuilder logUIPanelBuilder;
 
     /**
      * Constructor which builds up all the visual elements of the frame including
@@ -202,6 +201,8 @@ public class LogUI extends JFrame {
         preferencesFrame.getRootPane().
             getActionMap().put("ESCAPE", closeAction);
 
+        logUIPanelBuilder = new LogUIPanelBuilder(tabbedPane, identifierPanels, chainsawToolBarAndMenus, panelMap, settingsManager, statusBar, zeroConf);
+
         OSXIntegration.init(this);
 
     }
@@ -284,7 +285,7 @@ public class LogUI extends JFrame {
     }
 
     public void buildChainsawLogPanel() {
-        buildLogPanel(false, "Chainsaw", chainsawAppender.getReceiver());
+        logUIPanelBuilder.buildLogPanel(false, "Chainsaw", chainsawAppender.getReceiver());
     }
 
     /**
@@ -580,80 +581,6 @@ public class LogUI extends JFrame {
         return tabbedPane;
     }
 
-
-    private void buildLogPanel(boolean customExpression, final String ident, final ChainsawReceiver rx)
-        throws IllegalArgumentException {
-        final LogPanel thisPanel = new LogPanel(settingsManager, getStatusBar(), ident, allColorizers, globalRuleColorizer);
-
-        if (!customExpression && rx != null) {
-            thisPanel.setReceiver(rx);
-        }
-
-        /*
-         * Now add the panel as a batch listener so it can handle it's own
-         * batchs
-         */
-        if (!customExpression) {
-            identifierPanels.add(thisPanel);
-        }
-
-        TabIconHandler iconHandler = new TabIconHandler(ident, tabbedPane);
-        thisPanel.addEventCountListener(iconHandler);
-
-        tabbedPane.addChangeListener(iconHandler);
-
-        PropertyChangeListener toolbarMenuUpdateListener =
-            evt -> chainsawToolBarAndMenus.stateChange();
-
-        thisPanel.addPropertyChangeListener(toolbarMenuUpdateListener);
-        thisPanel.addPreferencePropertyChangeListener(toolbarMenuUpdateListener);
-
-        thisPanel.addPropertyChangeListener(
-            "docked",
-            evt -> {
-                LogPanel logPanel = (LogPanel) evt.getSource();
-
-                if (logPanel.isDocked()) {
-                    panelMap.put(logPanel.getIdentifier(), logPanel);
-                    getTabbedPane().addANewTab(
-                        logPanel.getIdentifier(), logPanel, null,
-                        true);
-                    getTabbedPane().setSelectedTab(getTabbedPane().indexOfTab(logPanel.getIdentifier()));
-                } else {
-                    getTabbedPane().remove(logPanel);
-                }
-            });
-
-        logger.debug("adding logpanel to tabbed pane: {}", ident);
-
-        //NOTE: tab addition is a very fragile process - if you modify this code,
-        //verify the frames in the individual log panels initialize to their
-        //correct sizes
-        getTabbedPane().add(ident, thisPanel);
-        panelMap.put(ident, thisPanel);
-
-        /*
-         * Let the new LogPanel receive this batch
-         */
-
-        SwingUtilities.invokeLater(
-            () -> {
-                getTabbedPane().addANewTab(
-                    ident,
-                    thisPanel,
-                    new ImageIcon(ChainsawIcons.ANIM_RADIO_TOWER),
-                    false);
-                thisPanel.layoutComponents();
-
-                getTabbedPane().addANewTab(ChainsawTabbedPane.ZEROCONF,
-                    zeroConf,
-                    null,
-                    false);
-            });
-
-        logger.debug("added tab {}", ident);
-    }
-
     public void createCustomExpressionLogPanel(String ident) {
         //collect events matching the rule from all of the tabs
         try {
@@ -666,7 +593,7 @@ public class LogUI extends JFrame {
                 }
             }
 
-            buildLogPanel(true, ident, null);
+            logUIPanelBuilder.buildLogPanel(true, ident, null);
         } catch (IllegalArgumentException iae) {
             statusBar.setMessage(
                 "Unable to add tab using expression: " + ident + ", reason: "
@@ -678,7 +605,7 @@ public class LogUI extends JFrame {
 
     public void addReceiver(ChainsawReceiver rx) {
         receivers.add(rx);
-        buildLogPanel(false, rx.getName(), rx);
+        logUIPanelBuilder.buildLogPanel(false, rx.getName(), rx);
 
         for (ReceiverEventListener listen : receiverListeners) {
             listen.receiverAdded(rx);
