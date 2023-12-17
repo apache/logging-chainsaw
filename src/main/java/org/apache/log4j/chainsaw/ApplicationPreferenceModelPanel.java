@@ -49,7 +49,7 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
     private AbstractConfiguration m_globalConfiguration;
     private SettingsManager settingsManager;
 
-    ApplicationPreferenceModelPanel(SettingsManager settingsManager) {
+    public ApplicationPreferenceModelPanel(SettingsManager settingsManager) {
         this.m_globalConfiguration = settingsManager.getGlobalConfiguration();
         this.settingsManager = settingsManager;
         initComponents();

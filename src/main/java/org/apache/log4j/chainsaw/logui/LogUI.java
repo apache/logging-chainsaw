@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.log4j.chainsaw;
+package org.apache.log4j.chainsaw.logui;
 
 import org.apache.commons.configuration2.AbstractConfiguration;
 import org.apache.commons.configuration2.event.ConfigurationEvent;
+import org.apache.log4j.chainsaw.*;
 import org.apache.log4j.chainsaw.color.RuleColorizer;
 import org.apache.log4j.chainsaw.components.elements.SmallButton;
 import org.apache.log4j.chainsaw.components.elements.TabIconHandler;
@@ -531,7 +532,7 @@ public class LogUI extends JFrame {
         return shutdownManager.shutdown();
     }
 
-    void addWelcomePanel() {
+    public void addWelcomePanel() {
         getTabbedPane().insertTab(
             ChainsawTabbedPane.WELCOME_TAB, new ImageIcon(ChainsawIcons.ABOUT), welcomePanel,
             "Welcome/Help", 0);
@@ -539,7 +540,7 @@ public class LogUI extends JFrame {
         panelMap.put(ChainsawTabbedPane.WELCOME_TAB, welcomePanel);
     }
 
-    void removeWelcomePanel() {
+    public void removeWelcomePanel() {
         EventQueue.invokeLater(() -> {
             if (getTabbedPane().containsWelcomePanel()) {
                 getTabbedPane().remove(
@@ -548,7 +549,7 @@ public class LogUI extends JFrame {
         });
     }
 
-    ChainsawStatusBar getStatusBar() {
+    public ChainsawStatusBar getStatusBar() {
         return statusBar;
     }
 
@@ -647,7 +648,7 @@ public class LogUI extends JFrame {
             () -> statusBar.setVisible(visible));
     }
 
-    boolean isStatusBarVisible() {
+    public boolean isStatusBarVisible() {
         return statusBar.isVisible();
     }
 

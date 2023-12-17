@@ -16,6 +16,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.util.List;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.log4j.chainsaw.logui.LogUI;
 
 public class CopyEventsToClipboardAction extends AbstractAction {
 

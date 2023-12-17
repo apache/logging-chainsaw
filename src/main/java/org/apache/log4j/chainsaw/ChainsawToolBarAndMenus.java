@@ -26,6 +26,7 @@ import org.apache.log4j.chainsaw.file.FileMenu;
 import org.apache.log4j.chainsaw.filter.FilterModel;
 import org.apache.log4j.chainsaw.help.HelpManager;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
+import org.apache.log4j.chainsaw.logui.LogUI;
 import org.apache.log4j.chainsaw.osx.OSXIntegration;
 
 import javax.swing.*;
@@ -46,7 +47,7 @@ import java.util.List;
  * @author Paul Smith &lt;psmith@apache.org&gt;
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
-class ChainsawToolBarAndMenus implements ChangeListener {
+public class ChainsawToolBarAndMenus implements ChangeListener {
     private final SmallToggleButton showReceiversButton;
     private final Action changeModelAction;
     private final Action clearAction;
@@ -99,7 +100,7 @@ class ChainsawToolBarAndMenus implements ChangeListener {
     private final Action[] logPanelSpecificActions;
     private final JMenu activeTabMenu = new JMenu("Current tab");
 
-    ChainsawToolBarAndMenus(final LogUI logui, AbstractConfiguration configuration) {
+    public ChainsawToolBarAndMenus(final LogUI logui, AbstractConfiguration configuration) {
         this.logui = logui;
         this.configuration = configuration;
         toolbar = new JToolBar(SwingConstants.HORIZONTAL);
@@ -333,11 +334,11 @@ class ChainsawToolBarAndMenus implements ChangeListener {
         scanState();
     }
 
-    JMenuBar getMenubar() {
+    public JMenuBar getMenubar() {
         return menuBar;
     }
 
-    JToolBar getToolbar() {
+    public  JToolBar getToolbar() {
         return toolbar;
     }
 

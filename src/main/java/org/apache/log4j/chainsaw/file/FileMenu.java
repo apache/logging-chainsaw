@@ -21,12 +21,9 @@
  */
 package org.apache.log4j.chainsaw.file;
 
-import org.apache.log4j.chainsaw.LogUI;
-import org.apache.log4j.chainsaw.icons.ChainsawIcons;
+import org.apache.log4j.chainsaw.logui.LogUI;
 import org.apache.log4j.chainsaw.osx.OSXIntegration;
 import org.apache.log4j.chainsaw.prefs.MRUFileList;
-import org.apache.log4j.xml.UtilLoggingXMLDecoder;
-import org.apache.log4j.xml.XMLDecoder;
 
 import javax.swing.*;
 import java.awt.*;

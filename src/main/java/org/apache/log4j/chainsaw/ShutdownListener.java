@@ -16,6 +16,8 @@
  */
 package org.apache.log4j.chainsaw;
 
+import org.apache.log4j.chainsaw.logui.LogUI;
+
 import java.util.EventListener;
 
 /**

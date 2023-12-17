@@ -1,7 +1,8 @@
-package org.apache.log4j.chainsaw;
+package org.apache.log4j.chainsaw.logui;
 
 import org.apache.commons.configuration2.AbstractConfiguration;
 import org.apache.commons.configuration2.event.ConfigurationEvent;
+import org.apache.log4j.chainsaw.ChainsawStatusBar;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.chainsaw.receiver.ChainsawReceiver;
 import org.apache.log4j.chainsaw.receivers.ReceiversPanel;

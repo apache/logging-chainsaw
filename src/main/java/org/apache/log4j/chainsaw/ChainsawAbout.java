@@ -21,6 +21,8 @@ import org.apache.log4j.chainsaw.help.HelpManager;
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
+
+import org.apache.log4j.chainsaw.logui.LogUI;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,7 +31,7 @@ import org.apache.logging.log4j.Logger;
  *
  * @author Paul Smith &lt;psmith@apache.org&gt;
  */
-class ChainsawAbout extends JDialog {
+public class ChainsawAbout extends JDialog {
     private static final Logger LOG = LogManager.getLogger();
 
     private final JEditorPane editPane = new JEditorPane("text/html", "");
@@ -45,7 +47,7 @@ class ChainsawAbout extends JDialog {
 
     private final Object guard = new Object();
 
-    ChainsawAbout(LogUI logUI) {
+    public ChainsawAbout(LogUI logUI) {
         super(logUI, "About Chainsaw v2", true);
         // setResizable(false);
         setBackground(Color.white);

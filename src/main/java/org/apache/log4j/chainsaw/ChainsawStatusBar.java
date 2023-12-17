@@ -18,6 +18,7 @@
 package org.apache.log4j.chainsaw;
 
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
+import org.apache.log4j.chainsaw.logui.LogUI;
 
 import javax.swing.*;
 import javax.swing.border.Border;

@@ -1,4 +1,4 @@
-package org.apache.log4j.chainsaw;
+package org.apache.log4j.chainsaw.logui;
 
 import org.apache.log4j.chainsaw.components.tabbedpane.ChainsawTabbedPane;
 

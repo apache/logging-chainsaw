@@ -20,7 +20,7 @@ package org.apache.log4j.chainsaw.receivers;
 import org.apache.log4j.chainsaw.receiver.ChainsawReceiver;
 import org.apache.log4j.chainsaw.receiver.ChainsawReceiverFactory;
 import org.apache.log4j.chainsaw.ChainsawStatusBar;
-import org.apache.log4j.chainsaw.LogUI;
+import org.apache.log4j.chainsaw.logui.LogUI;
 import org.apache.log4j.chainsaw.PopupListener;
 import org.apache.log4j.chainsaw.components.elements.SmallButton;
 import org.apache.log4j.chainsaw.help.HelpManager;
