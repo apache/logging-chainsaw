@@ -21,6 +21,7 @@ import org.apache.log4j.chainsaw.help.HelpManager;
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
+import java.io.IOException;
 
 import org.apache.log4j.chainsaw.logui.LogUI;
 import org.apache.logging.log4j.LogManager;
@@ -40,16 +41,12 @@ public class ChainsawAbout extends JDialog {
         ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
         ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
-    private final String url = ChainsawAbout.class.getName().replace('.', '/')
-        + ".html";
-
     private boolean sleep = false;
 
     private final Object guard = new Object();
 
     public ChainsawAbout(LogUI logUI) {
         super(logUI, "About Chainsaw v2", true);
-        // setResizable(false);
         setBackground(Color.white);
         getContentPane().setLayout(new BorderLayout());
 
@@ -58,12 +55,15 @@ public class ChainsawAbout extends JDialog {
         closeButton.setDefaultCapable(true);
 
         try {
+            String url = ChainsawAbout.class.getName().replace('.', '/') + ".html";
             editPane.setPage(this.getClass().getClassLoader().getResource(url));
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new RuntimeException("Failed to find the About panel HTML", e);
         }
+
         getContentPane().add(scrollPane, BorderLayout.CENTER);
         getContentPane().add(closeButton, BorderLayout.SOUTH);
+
         JTextComponentFormatter.applySystemFontAndSize(editPane);
 
         editPane.setEditable(false);
@@ -106,6 +106,7 @@ public class ChainsawAbout extends JDialog {
         }
     }
 
+    @Override
     public void setVisible(boolean visible) {
         super.setVisible(visible);
         sleep = !visible;
