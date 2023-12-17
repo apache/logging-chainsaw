@@ -436,6 +436,29 @@ public class LogUI extends JFrame {
         });
     }
 
+    public void showAboutBox() {
+        if (aboutBox == null) {
+            aboutBox = new ChainsawAbout(this);
+        }
+
+        aboutBox.setVisible(true);
+    }
+
+    void displayPanel(String panelName, boolean display) {
+        Component p = panelMap.get(panelName);
+
+        int index = tabbedPane.indexOfTab(panelName);
+
+        if ((index == -1) && display) {
+            tabbedPane.addTab(panelName, p);
+        }
+
+        if ((index > -1) && !display) {
+            tabbedPane.removeTabAt(index);
+        }
+    }
+
+
     public ChainsawStatusBar getStatusBar() {
         return statusBar;
     }
@@ -476,14 +499,6 @@ public class LogUI extends JFrame {
         SwingUtilities.invokeLater(r);
     }
 
-    public void showAboutBox() {
-        if (aboutBox == null) {
-            aboutBox = new ChainsawAbout(this);
-        }
-
-        aboutBox.setVisible(true);
-    }
-
     Map<String, Boolean> getPanels() {
         Map<String, Boolean> result = new HashMap<>();
         Set<Map.Entry<String, Component>> panelSet = panelMap.entrySet();
@@ -497,19 +512,6 @@ public class LogUI extends JFrame {
         return result;
     }
 
-    void displayPanel(String panelName, boolean display) {
-        Component p = panelMap.get(panelName);
-
-        int index = tabbedPane.indexOfTab(panelName);
-
-        if ((index == -1) && display) {
-            tabbedPane.addTab(panelName, p);
-        }
-
-        if ((index > -1) && !display) {
-            tabbedPane.removeTabAt(index);
-        }
-    }
 
     /**
      * Returns the currently selected LogPanel, if there is one, otherwise null
