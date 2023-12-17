@@ -386,111 +386,6 @@ public class LogUI extends JFrame {
         getContentPane().add(logUiReceiversPanel.getMainReceiverSplitPane(), BorderLayout.CENTER);
     }
 
-    private MouseAdapter createMouseAdapter() {
-        MouseAdapter mouseAdapter = new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-
-                if (
-                    (e.getClickCount() > 1)
-                        && ((e.getModifiers() & InputEvent.BUTTON1_MASK) > 0)) {
-                    int tabIndex = getTabbedPane().getSelectedIndex();
-
-                    if (
-                        (tabIndex != -1)
-                            && (tabIndex == getTabbedPane().getSelectedIndex())) {
-                        LogPanel logPanel = getCurrentLogPanel();
-
-                        if (logPanel != null) {
-                            logPanel.undock();
-                        }
-                    }
-                }
-            }
-        };
-        return mouseAdapter;
-    }
-
-    private Action ceateHideCurrentTabAction() {
-        final Action hideCurrentTabAction =
-            new AbstractAction("Hide") {
-                public void actionPerformed(ActionEvent e) {
-                    Component selectedComp = getTabbedPane().getSelectedComponent();
-                    if (selectedComp instanceof LogPanel) {
-                        displayPanel(getCurrentLogPanel().getIdentifier(), false);
-                        chainsawToolBarAndMenus.stateChange();
-                    } else {
-                        getTabbedPane().remove(selectedComp);
-                    }
-                }
-            };
-        return hideCurrentTabAction;
-    }
-
-    private Action createHideOtherTabsAction() {
-        final Action hideOtherTabsAction =
-            new AbstractAction("Hide Others") {
-                public void actionPerformed(ActionEvent e) {
-                    Component selectedComp = getTabbedPane().getSelectedComponent();
-                    String currentName;
-                    if (selectedComp instanceof LogPanel) {
-                        currentName = getCurrentLogPanel().getIdentifier();
-                    } else if (selectedComp instanceof WelcomePanel) {
-                        currentName = ChainsawTabbedPane.WELCOME_TAB;
-                    } else {
-                        currentName = ChainsawTabbedPane.ZEROCONF;
-                    }
-
-                    int count = getTabbedPane().getTabCount();
-                    int index = 0;
-
-                    for (int i = 0; i < count; i++) {
-                        String name = getTabbedPane().getTitleAt(index);
-
-                        if (
-                            panelMap.containsKey(name) && !name.equals(currentName)) {
-                            displayPanel(name, false);
-                            chainsawToolBarAndMenus.stateChange();
-                        } else {
-                            index++;
-                        }
-                    }
-                }
-            };
-        return hideOtherTabsAction;
-    }
-
-    private Action createShowHiddenTabsAction() {
-        Action showHiddenTabsAction =
-            new AbstractAction("Show All Hidden") {
-                public void actionPerformed(ActionEvent e) {
-
-                    for (Map.Entry<String, Boolean> entry : getPanels().entrySet()) {
-                        Boolean docked = entry.getValue();
-                        if (Boolean.TRUE.equals(docked)) {
-                            String identifier = entry.getKey();
-                            int count = getTabbedPane().getTabCount();
-                            boolean found = false;
-
-                            for (int i = 0; i < count; i++) {
-                                String name = getTabbedPane().getTitleAt(i);
-
-                                if (name.equals(identifier)) {
-                                    found = true;
-                                    break;
-                                }
-                            }
-
-                            if (!found) {
-                                displayPanel(identifier, true);
-                                chainsawToolBarAndMenus.stateChange();
-                            }
-                        }
-                    }
-                }
-            };
-        return showHiddenTabsAction;
-    }
 
     private void initPrefModelListeners() {
         int tooltipDisplayMillis = configuration.getInt("tooltipDisplayMillis", 4000);
@@ -796,5 +691,105 @@ public class LogUI extends JFrame {
 
     public List<ChainsawReceiver> getAllReceivers() {
         return receivers;
+    }
+
+    private MouseAdapter createMouseAdapter() {
+        return new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+
+                if (
+                    (e.getClickCount() > 1)
+                        && ((e.getModifiers() & InputEvent.BUTTON1_MASK) > 0)) {
+                    int tabIndex = getTabbedPane().getSelectedIndex();
+
+                    if (
+                        (tabIndex != -1)
+                            && (tabIndex == getTabbedPane().getSelectedIndex())) {
+                        LogPanel logPanel = getCurrentLogPanel();
+
+                        if (logPanel != null) {
+                            logPanel.undock();
+                        }
+                    }
+                }
+            }
+        };
+    }
+
+    private Action ceateHideCurrentTabAction() {
+        return new AbstractAction("Hide") {
+            public void actionPerformed(ActionEvent e) {
+                Component selectedComp = getTabbedPane().getSelectedComponent();
+                if (selectedComp instanceof LogPanel) {
+                    displayPanel(getCurrentLogPanel().getIdentifier(), false);
+                    chainsawToolBarAndMenus.stateChange();
+                } else {
+                    getTabbedPane().remove(selectedComp);
+                }
+            }
+        };
+    }
+
+    private Action createHideOtherTabsAction() {
+        return new AbstractAction("Hide Others") {
+            public void actionPerformed(ActionEvent e) {
+                Component selectedComp = getTabbedPane().getSelectedComponent();
+                String currentName;
+                if (selectedComp instanceof LogPanel) {
+                    currentName = getCurrentLogPanel().getIdentifier();
+                } else if (selectedComp instanceof WelcomePanel) {
+                    currentName = ChainsawTabbedPane.WELCOME_TAB;
+                } else {
+                    currentName = ChainsawTabbedPane.ZEROCONF;
+                }
+
+                int count = getTabbedPane().getTabCount();
+                int index = 0;
+
+                for (int i = 0; i < count; i++) {
+                    String name = getTabbedPane().getTitleAt(index);
+
+                    if (
+                        panelMap.containsKey(name) && !name.equals(currentName)) {
+                        displayPanel(name, false);
+                        chainsawToolBarAndMenus.stateChange();
+                    } else {
+                        index++;
+                    }
+                }
+            }
+        };
+    }
+
+    private Action createShowHiddenTabsAction() {
+        return new AbstractAction("Show All Hidden") {
+            public void actionPerformed(ActionEvent e) {
+
+                for (Map.Entry<String, Boolean> entry : getPanels().entrySet()) {
+                    Boolean docked = entry.getValue();
+                    if (Boolean.TRUE.equals(docked)) {
+                        String identifier = entry.getKey();
+                        int count = getTabbedPane().getTabCount();
+                        boolean found = false;
+
+                        for (int i = 0; i < count; i++) {
+                            String name = getTabbedPane().getTitleAt(i);
+
+                            if (name.equals(identifier)) {
+                                found = true;
+                                break;
+                            }
+                        }
+
+                        if (!found) {
+                            displayPanel(identifier, true);
+                            chainsawToolBarAndMenus.stateChange();
+                        }
+                    }
+                }
+            }
+        };
     }
 }
