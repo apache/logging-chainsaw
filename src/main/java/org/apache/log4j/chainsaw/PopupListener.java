@@ -14,13 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.chainsaw;
 
 import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
 
 /**
  * Ensures that a specific popupMenu is displayed when the relevant
@@ -36,14 +34,17 @@ public class PopupListener extends MouseAdapter {
         this.popupMenu = popupMenu;
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
         checkPopup(e);
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         checkPopup(e);
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
         checkPopup(e);
     }
