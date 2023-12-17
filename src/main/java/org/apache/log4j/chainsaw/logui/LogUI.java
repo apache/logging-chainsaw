@@ -248,10 +248,10 @@ public class LogUI extends JFrame {
 
     private void ensureWelcomePanelVisible() {
         // ensure that the Welcome Panel is made visible
-        if (!getTabbedPane().containsWelcomePanel()) {
+        if (!tabbedPane.containsWelcomePanel()) {
             addWelcomePanel();
         }
-        getTabbedPane().setSelectedComponent(welcomePanel);
+        tabbedPane.setSelectedComponent(welcomePanel);
     }
 
     /**
@@ -294,8 +294,8 @@ public class LogUI extends JFrame {
 
         getContentPane().setLayout(new BorderLayout());
 
-        getTabbedPane().addChangeListener(chainsawToolBarAndMenus);
-        getTabbedPane().addChangeListener(e -> {
+        tabbedPane.addChangeListener(chainsawToolBarAndMenus);
+        tabbedPane.addChangeListener(e -> {
             LogPanel thisLogPanel = getCurrentLogPanel();
             if (thisLogPanel != null) {
                 thisLogPanel.updateStatusBar();
@@ -311,9 +311,9 @@ public class LogUI extends JFrame {
          * the mouse event location matches the currently selected tab
          */
         MouseAdapter mouseAdapter = createMouseAdapter();
-        getTabbedPane().addMouseListener(mouseAdapter);
+        tabbedPane.addMouseListener(mouseAdapter);
 
-        panePanel.add(getTabbedPane());
+        panePanel.add(tabbedPane);
         addWelcomePanel();
 
         getContentPane().add(toolbar, BorderLayout.NORTH);
@@ -354,7 +354,7 @@ public class LogUI extends JFrame {
         tabPopup.add(showHiddenTabsAction);
 
         final PopupListener tabPopupListener = new PopupListener(tabPopup);
-        getTabbedPane().addMouseListener(tabPopupListener);
+        tabbedPane.addMouseListener(tabPopupListener);
 
         initPrefModelListeners();
         setVisible(true);
@@ -421,18 +421,18 @@ public class LogUI extends JFrame {
     }
 
     public void addWelcomePanel() {
-        getTabbedPane().insertTab(
+        tabbedPane.insertTab(
             ChainsawTabbedPane.WELCOME_TAB, new ImageIcon(ChainsawIcons.ABOUT), welcomePanel,
             "Welcome/Help", 0);
-        getTabbedPane().setSelectedComponent(welcomePanel);
+        tabbedPane.setSelectedComponent(welcomePanel);
         panelMap.put(ChainsawTabbedPane.WELCOME_TAB, welcomePanel);
     }
 
     public void removeWelcomePanel() {
         EventQueue.invokeLater(() -> {
-            if (getTabbedPane().containsWelcomePanel()) {
-                getTabbedPane().remove(
-                    getTabbedPane().getComponentAt(getTabbedPane().indexOfTab(ChainsawTabbedPane.WELCOME_TAB)));
+            if (tabbedPane.containsWelcomePanel()) {
+                tabbedPane.remove(
+                    tabbedPane.getComponentAt(tabbedPane.indexOfTab(ChainsawTabbedPane.WELCOME_TAB)));
             }
         });
     }
@@ -501,14 +501,14 @@ public class LogUI extends JFrame {
     void displayPanel(String panelName, boolean display) {
         Component p = panelMap.get(panelName);
 
-        int index = getTabbedPane().indexOfTab(panelName);
+        int index = tabbedPane.indexOfTab(panelName);
 
         if ((index == -1) && display) {
-            getTabbedPane().addTab(panelName, p);
+            tabbedPane.addTab(panelName, p);
         }
 
         if ((index > -1) && !display) {
-            getTabbedPane().removeTabAt(index);
+            tabbedPane.removeTabAt(index);
         }
     }
 
@@ -518,7 +518,7 @@ public class LogUI extends JFrame {
      * @return current log panel
      */
     public LogPanel getCurrentLogPanel() {
-        Component selectedTab = getTabbedPane().getSelectedComponent();
+        Component selectedTab = tabbedPane.getSelectedComponent();
 
         if (selectedTab instanceof LogPanel) {
             return (LogPanel) selectedTab;
@@ -546,12 +546,12 @@ public class LogUI extends JFrame {
      * @return DOCUMENT ME!
      */
     public String getActiveTabName() {
-        int index = getTabbedPane().getSelectedIndex();
+        int index = tabbedPane.getSelectedIndex();
 
         if (index == -1) {
             return null;
         } else {
-            return getTabbedPane().getTitleAt(index);
+            return tabbedPane.getTitleAt(index);
         }
     }
 
@@ -564,11 +564,7 @@ public class LogUI extends JFrame {
         return getCurrentLogPanel() != null && getCurrentLogPanel().isLogTreeVisible();
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
+    /** @deprecated */
     public ChainsawTabbedPane getTabbedPane() {
         return tabbedPane;
     }
@@ -621,11 +617,11 @@ public class LogUI extends JFrame {
                 if (
                     (e.getClickCount() > 1)
                         && ((e.getModifiers() & InputEvent.BUTTON1_MASK) > 0)) {
-                    int tabIndex = getTabbedPane().getSelectedIndex();
+                    int tabIndex = tabbedPane.getSelectedIndex();
 
                     if (
                         (tabIndex != -1)
-                            && (tabIndex == getTabbedPane().getSelectedIndex())) {
+                            && (tabIndex == tabbedPane.getSelectedIndex())) {
                         LogPanel logPanel = getCurrentLogPanel();
 
                         if (logPanel != null) {
@@ -640,12 +636,12 @@ public class LogUI extends JFrame {
     private Action ceateHideCurrentTabAction() {
         return new AbstractAction("Hide") {
             public void actionPerformed(ActionEvent e) {
-                Component selectedComp = getTabbedPane().getSelectedComponent();
+                Component selectedComp = tabbedPane.getSelectedComponent();
                 if (selectedComp instanceof LogPanel) {
                     displayPanel(getCurrentLogPanel().getIdentifier(), false);
                     chainsawToolBarAndMenus.stateChange();
                 } else {
-                    getTabbedPane().remove(selectedComp);
+                    tabbedPane.remove(selectedComp);
                 }
             }
         };
@@ -654,7 +650,7 @@ public class LogUI extends JFrame {
     private Action createHideOtherTabsAction() {
         return new AbstractAction("Hide Others") {
             public void actionPerformed(ActionEvent e) {
-                Component selectedComp = getTabbedPane().getSelectedComponent();
+                Component selectedComp = tabbedPane.getSelectedComponent();
                 String currentName;
                 if (selectedComp instanceof LogPanel) {
                     currentName = getCurrentLogPanel().getIdentifier();
@@ -664,11 +660,11 @@ public class LogUI extends JFrame {
                     currentName = ChainsawTabbedPane.ZEROCONF;
                 }
 
-                int count = getTabbedPane().getTabCount();
+                int count = tabbedPane.getTabCount();
                 int index = 0;
 
                 for (int i = 0; i < count; i++) {
-                    String name = getTabbedPane().getTitleAt(index);
+                    String name = tabbedPane.getTitleAt(index);
 
                     if (
                         panelMap.containsKey(name) && !name.equals(currentName)) {
@@ -690,11 +686,11 @@ public class LogUI extends JFrame {
                     Boolean docked = entry.getValue();
                     if (Boolean.TRUE.equals(docked)) {
                         String identifier = entry.getKey();
-                        int count = getTabbedPane().getTabCount();
+                        int count = tabbedPane.getTabCount();
                         boolean found = false;
 
                         for (int i = 0; i < count; i++) {
-                            String name = getTabbedPane().getTitleAt(i);
+                            String name = tabbedPane.getTitleAt(i);
 
                             if (name.equals(identifier)) {
                                 found = true;
