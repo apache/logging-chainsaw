@@ -276,10 +276,6 @@ public class LogUI extends JFrame {
         chainsawToolBarAndMenus.stateChange();
     }
 
-    public void buildChainsawLogPanel() {
-        logUIPanelBuilder.buildLogPanel(false, "Chainsaw", chainsawAppender.getReceiver());
-    }
-
     /**
      * Activates itself as a viewer by configuring Size, and location of itself,
      * and configures the default Tabbed Pane elements with the correct layout,
@@ -379,6 +375,29 @@ public class LogUI extends JFrame {
         getContentPane().add(logUiReceiversPanel.getMainReceiverSplitPane(), BorderLayout.CENTER);
     }
 
+    public void createCustomExpressionLogPanel(String ident) {
+        //collect events matching the rule from all of the tabs
+        try {
+            List<ChainsawLoggingEvent> list = new ArrayList<>();
+            Rule rule = ExpressionRule.getRule(ident);
+
+            for (LogPanel identifierPanel : identifierPanels) {
+                for (LoggingEventWrapper e : identifierPanel.getMatchingEvents(rule)) {
+                    list.add(e.getLoggingEvent());
+                }
+            }
+
+            logUIPanelBuilder.buildLogPanel(true, ident, null);
+        } catch (IllegalArgumentException iae) {
+            statusBar.setMessage(
+                "Unable to add tab using expression: " + ident + ", reason: "
+                    + iae.getMessage());
+        }
+    }
+
+    public void buildChainsawLogPanel() {
+        logUIPanelBuilder.buildLogPanel(false, "Chainsaw", chainsawAppender.getReceiver());
+    }
 
     private void initPrefModelListeners() {
         int tooltipDisplayMillis = configuration.getInt("tooltipDisplayMillis", 4000);
@@ -568,28 +587,6 @@ public class LogUI extends JFrame {
     public ChainsawTabbedPane getTabbedPane() {
         return tabbedPane;
     }
-
-    public void createCustomExpressionLogPanel(String ident) {
-        //collect events matching the rule from all of the tabs
-        try {
-            List<ChainsawLoggingEvent> list = new ArrayList<>();
-            Rule rule = ExpressionRule.getRule(ident);
-
-            for (LogPanel identifierPanel : identifierPanels) {
-                for (LoggingEventWrapper e : identifierPanel.getMatchingEvents(rule)) {
-                    list.add(e.getLoggingEvent());
-                }
-            }
-
-            logUIPanelBuilder.buildLogPanel(true, ident, null);
-        } catch (IllegalArgumentException iae) {
-            statusBar.setMessage(
-                "Unable to add tab using expression: " + ident + ", reason: "
-                    + iae.getMessage());
-        }
-    }
-
-
 
     public void addReceiver(ChainsawReceiver rx) {
         receivers.add(rx);
