@@ -106,9 +106,6 @@ public class LogUI extends JFrame {
      */
     private EventListenerList shutdownListenerList = new EventListenerList();
 
-    //map of tab names to rulecolorizers
-    private Map<String, RuleColorizer> allColorizers = new HashMap<>();
-    private RuleColorizer globalRuleColorizer = new RuleColorizer(settingsManager, true);
     private AbstractConfiguration configuration;
 
     private ShutdownManager shutdownManager;
@@ -125,9 +122,6 @@ public class LogUI extends JFrame {
         this.configuration = settingsManager.getGlobalConfiguration();
 
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-
-        globalRuleColorizer.setConfiguration(configuration);
-        globalRuleColorizer.loadColorSettings();
 
         if (ChainsawIcons.WINDOW_ICON != null) {
             setIconImage(new ImageIcon(ChainsawIcons.WINDOW_ICON).getImage());
@@ -280,8 +274,6 @@ public class LogUI extends JFrame {
         }
 
         chainsawToolBarAndMenus.stateChange();
-        RuleColorizer colorizer = new RuleColorizer(settingsManager);
-        allColorizers.put(ChainsawConstants.DEFAULT_COLOR_RULE_NAME, colorizer);
     }
 
     public void buildChainsawLogPanel() {
