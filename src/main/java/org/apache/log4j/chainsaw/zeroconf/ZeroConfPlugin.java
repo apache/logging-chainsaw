@@ -57,7 +57,7 @@ import java.util.Set;
  */
 public class ZeroConfPlugin extends DockablePanel {
 
-    private static final Logger LOG = LogManager.getLogger();
+    private static final Logger LOG = LogManager.getLogger(ZeroConfPlugin.class);
 
     private final ZeroConfDeviceModel discoveredDevices = new ZeroConfDeviceModel();
 
@@ -85,11 +85,9 @@ public class ZeroConfPlugin extends DockablePanel {
     private static final String NEW_UDP_APPENDER_SERVICE_NAME = "_log4j._udp.local.";
 
     private JmDNS jmDNS;
-    private SettingsManager settingsManager;
-
-    public ZeroConfPlugin(SettingsManager settingsManager) {
+    
+    public ZeroConfPlugin() {
         setName("Zeroconf");
-        this.settingsManager = settingsManager;
         deviceTable.setRowHeight(ChainsawConstants.DEFAULT_ROW_HEIGHT);
         try{
             activateOptions();

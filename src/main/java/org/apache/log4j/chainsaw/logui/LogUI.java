@@ -95,7 +95,7 @@ public class LogUI extends JFrame {
     private SettingsManager settingsManager;
     private final List<ChainsawReceiver> receivers = new ArrayList<>();
     private final List<ReceiverEventListener> receiverListeners = new ArrayList<>();
-    private final ZeroConfPlugin zeroConf = new ZeroConfPlugin(settingsManager);
+    private final ZeroConfPlugin zeroConf = new ZeroConfPlugin();
 
     /**
      * Clients can register a ShutdownListener to be notified when the user has
