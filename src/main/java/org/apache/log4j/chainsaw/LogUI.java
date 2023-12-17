@@ -34,7 +34,6 @@ import org.apache.log4j.chainsaw.osx.OSXIntegration;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.chainsaw.receiver.ChainsawReceiver;
 import org.apache.log4j.chainsaw.receiver.ChainsawReceiverFactory;
-import org.apache.log4j.chainsaw.receivers.ReceiversPanel;
 import org.apache.log4j.chainsaw.zeroconf.ZeroConfPlugin;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
@@ -90,7 +89,6 @@ public class LogUI extends JFrame {
     private ChainsawAbout aboutBox;
     public TutorialFrame tutorialFrame;
     private final List<LogPanel> identifierPanels = new ArrayList<>();
-    private LogUiReceiversPanel logUiReceiversPanel;
 
     private JToolBar toolbar;
     private ChainsawToolBarAndMenus chainsawToolBarAndMenus;
@@ -327,8 +325,7 @@ public class LogUI extends JFrame {
         getContentPane().add(toolbar, BorderLayout.NORTH);
         getContentPane().add(statusBar, BorderLayout.SOUTH);
 
-        logUiReceiversPanel = new LogUiReceiversPanel(settingsManager, receivers, this, statusBar, panePanel);
-        getContentPane().add(logUiReceiversPanel.getMainReceiverSplitPane(), BorderLayout.CENTER);
+        createReceiversPanel(panePanel);
 
         addWindowListener(
             new WindowAdapter() {
@@ -368,11 +365,6 @@ public class LogUI extends JFrame {
         initPrefModelListeners();
         setVisible(true);
 
-        if (configuration.getBoolean("showReceivers", false)) {
-            logUiReceiversPanel.showReceiverPanel();
-        } else {
-            logUiReceiversPanel.hideReceiverPanel();
-        }
 
         /*
          * loads the saved tab settings and if there are hidden tabs,
@@ -386,6 +378,11 @@ public class LogUI extends JFrame {
             displayPanel(ChainsawTabbedPane.ZEROCONF, false);
         }
         chainsawToolBarAndMenus.stateChange();
+    }
+
+    private void createReceiversPanel(JPanel panePanel) {
+        LogUiReceiversPanel logUiReceiversPanel = new LogUiReceiversPanel(settingsManager, receivers, this, statusBar, panePanel);
+        getContentPane().add(logUiReceiversPanel.getMainReceiverSplitPane(), BorderLayout.CENTER);
     }
 
     private MouseAdapter createMouseAdapter() {
@@ -508,25 +505,6 @@ public class LogUI extends JFrame {
             });
         boolean showStatusBar = configuration.getBoolean("statusBar", true);
         setStatusBarVisible(showStatusBar);
-
-        configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
-            evt -> {
-                if (evt.getPropertyName().equals("showReceivers")) {
-                    boolean value = (Boolean) evt.getPropertyValue();
-                    if (value) {
-                        logUiReceiversPanel.showReceiverPanel();
-                    } else {
-                        logUiReceiversPanel.hideReceiverPanel();
-                    }
-                }
-            });
-        boolean showReceivers = configuration.getBoolean("showReceivers", false);
-        setStatusBarVisible(showStatusBar);
-        if (showReceivers) {
-            logUiReceiversPanel.showReceiverPanel();
-        } else {
-            logUiReceiversPanel.hideReceiverPanel();
-        }
 
         configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
             evt -> {
