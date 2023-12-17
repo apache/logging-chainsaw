@@ -352,7 +352,7 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
 
     @Override
     public void sortColumn(int col, boolean ascending) {
-        logger.debug("request to sort col=" + col);
+        logger.debug("request to sort col={}", col);
         currentSortAscending = ascending;
         currentSortColumn = col;
         sortEnabled = true;
@@ -856,7 +856,7 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
                                 monitor.setMillisToDecideToPopup(250);
                                 monitor.setMillisToPopup(100);
                                 logger.debug(
-                                    "Changing Model, isCyclic is now " + cyclic);
+                                    "Changing Model, isCyclic is now {}", cyclic);
 
                                 List newUnfilteredList;
                                 List newFilteredList;
@@ -868,8 +868,6 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
                                     newUnfilteredList = new ArrayList(cyclicBufferSize);
                                     newFilteredList = new ArrayList(cyclicBufferSize);
                                 }
-
-                                int increment = 0;
 
                                 for (Object anUnfilteredList : unfilteredList) {
                                     LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) anUnfilteredList;
