@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.chainsaw;
 
 import org.apache.commons.configuration2.AbstractConfiguration;
@@ -36,10 +35,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 
 /**
  * Encapsulates the full Toolbar, and menus and all the actions that can be performed from it.
@@ -61,7 +56,6 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
     private final Action pauseAction;
     private final Action showPreferencesAction;
     private final Action showColorPanelAction;
-    private final Action showReceiversAction;
     private final Action toggleLogTreeAction;
     private final Action toggleScrollToBottomAction;
     private final Action scrollToTopAction;
@@ -69,27 +63,20 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
     private final Action toggleToolbarAction;
     private final Action undockAction;
     private final Action customExpressionPanelAction;
-    private final JCheckBoxMenuItem toggleShowReceiversCheck =
-        new JCheckBoxMenuItem();
-    private final JCheckBoxMenuItem toggleShowToolbarCheck =
-            new JCheckBoxMenuItem();
-    private final JCheckBoxMenuItem toggleLogTreeMenuItem =
-        new JCheckBoxMenuItem();
-    private final JCheckBoxMenuItem toggleScrollToBottomMenuItem =
-        new JCheckBoxMenuItem();
-    private final JCheckBoxMenuItem toggleDetailMenuItem =
-        new JCheckBoxMenuItem();
-    private final JCheckBoxMenuItem toggleCyclicMenuItem =
-        new JCheckBoxMenuItem();
+    private final JCheckBoxMenuItem toggleShowReceiversCheck = new JCheckBoxMenuItem();
+    private final JCheckBoxMenuItem toggleShowToolbarCheck = new JCheckBoxMenuItem();
+    private final JCheckBoxMenuItem toggleLogTreeMenuItem = new JCheckBoxMenuItem();
+    private final JCheckBoxMenuItem toggleScrollToBottomMenuItem = new JCheckBoxMenuItem();
+    private final JCheckBoxMenuItem toggleDetailMenuItem = new JCheckBoxMenuItem();
+    private final JCheckBoxMenuItem toggleCyclicMenuItem = new JCheckBoxMenuItem();
     private final FileMenu fileMenu;
-    private final JCheckBoxMenuItem toggleStatusBarCheck =
-        new JCheckBoxMenuItem();
+    private final JCheckBoxMenuItem toggleStatusBarCheck = new JCheckBoxMenuItem();
     private final JMenu viewMenu = new JMenu("View");
     private final JMenuBar menuBar;
     private final JCheckBoxMenuItem menuShowWelcome = new JCheckBoxMenuItem();
     private final JToolBar toolbar;
     private final LogUI logui;
-    private AbstractConfiguration configuration;
+    private final AbstractConfiguration configuration;
     private final SmallButton clearButton = new SmallButton();
     private final SmallToggleButton detailPaneButton = new SmallToggleButton();
     private final SmallToggleButton logTreePaneButton = new SmallToggleButton();
@@ -123,7 +110,7 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
         pauseAction = createPauseAction();
         clearAction = createClearAction();
         undockAction = createUndockAction();
-        showReceiversAction = createShowReceiversAction();
+        Action showReceiversAction = createShowReceiversAction();
         showReceiversButton = new SmallToggleButton(showReceiversAction);
 
         toggleDetailPaneAction = createToggleDetailPaneAction();
@@ -168,9 +155,6 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
             });
     }
 
-    /**
-     * @return
-     */
     private Action createChangeModelAction() {
         Action action =
             new AbstractAction("Use Cyclic", new ImageIcon(ChainsawIcons.REFRESH)) {
@@ -187,9 +171,6 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
         return action;
     }
 
-    /**
-     * @return
-     */
     private Action createToggleLogTreeAction() {
         Action action =
             new AbstractAction("Toggle the Logger Tree Pane") {
@@ -212,9 +193,6 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
         return action;
     }
 
-    /**
-     * @return
-     */
     private Action createScrollToBottomAction() {
         Action action =
             new AbstractAction("Toggle Scroll to Bottom") {
@@ -304,7 +282,8 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
         action.putValue(Action.SHORT_DESCRIPTION, "Toggle marker for selected row");
         action.putValue("enabled", Boolean.TRUE);
         action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_T);
-        action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F2, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        action.putValue(Action.ACCELERATOR_KEY,
+            KeyStroke.getKeyStroke(KeyEvent.VK_F2, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 
         return action;
     }
@@ -322,23 +301,16 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
         action.putValue(Action.SHORT_DESCRIPTION, "Removes all markers");
         action.putValue("enabled", Boolean.TRUE);
         action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_R);
-        action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F2, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | InputEvent.SHIFT_MASK));
+        action.putValue(Action.ACCELERATOR_KEY,
+            KeyStroke.getKeyStroke(KeyEvent.VK_F2, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | InputEvent.SHIFT_MASK));
 
         return action;
     }
 
-    /**
-     * DOCUMENT ME!
-     */
     public void stateChange() {
         scanState();
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param e DOCUMENT ME!
-     */
     public void stateChanged(ChangeEvent e) {
         scanState();
     }
@@ -369,8 +341,7 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
         action.putValue(
             Action.ACCELERATOR_KEY,
             KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        action.putValue(
-            Action.SHORT_DESCRIPTION, "Removes all the events from the current view");
+        action.putValue(Action.SHORT_DESCRIPTION, "Removes all the events from the current view");
         action.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.DELETE));
 
         return action;
@@ -390,8 +361,6 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
             };
 
         action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F1"));
-
-        //    action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.ALT_MASK));
         action.putValue(Action.SHORT_DESCRIPTION, "Toggles the Welcome tab");
         action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_C);
         action.putValue(Action.NAME, "Welcome tab");
@@ -414,13 +383,10 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
 
         JCheckBoxMenuItem pause = new JCheckBoxMenuItem(pauseAction);
         JMenuItem menuPrefs = new JMenuItem(showPreferencesAction);
-        menuPrefs.setText(
-            showPreferencesAction.getValue(Action.SHORT_DESCRIPTION).toString());
+        menuPrefs.setText(showPreferencesAction.getValue(Action.SHORT_DESCRIPTION).toString());
 
-        JMenuItem menuCustomExpressionPanel =
-            new JMenuItem(customExpressionPanelAction);
-        menuCustomExpressionPanel.setText(
-            customExpressionPanelAction.getValue(Action.SHORT_DESCRIPTION).toString());
+        JMenuItem menuCustomExpressionPanel =new JMenuItem(customExpressionPanelAction);
+        menuCustomExpressionPanel.setText(customExpressionPanelAction.getValue(Action.SHORT_DESCRIPTION).toString());
 
         JMenuItem menuShowColor = new JMenuItem(showColorPanelAction);
         menuShowColor.setText(
@@ -431,8 +397,7 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
         JMenuItem showAppPrefs =
             new JMenuItem("Show Application-wide Preferences...");
 
-        showAppPrefs.addActionListener(
-            e -> logui.showApplicationPreferences());
+        showAppPrefs.addActionListener(e -> logui.showApplicationPreferences());
 
         toggleDetailMenuItem.setAction(toggleDetailPaneAction);
         toggleDetailMenuItem.setSelected(true);
@@ -454,11 +419,9 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
                 }
             };
 
-        toggleStatusBarAction.putValue(
-            Action.MNEMONIC_KEY, KeyEvent.VK_B);
+        toggleStatusBarAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_B);
         toggleStatusBarCheck.setAction(toggleStatusBarAction);
-        toggleStatusBarCheck.setSelected(
-            configuration.getBoolean("statusBar", true));
+        toggleStatusBarCheck.setSelected(configuration.getBoolean("statusBar", true));
 
         activeTabMenu.add(pause);
         activeTabMenu.add(toggleCyclicMenuItem);
@@ -505,8 +468,7 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
 
         JMenuItem about = new JMenuItem("About Chainsaw v2...");
         about.setMnemonic('A');
-        about.addActionListener(
-            e -> logui.showAboutBox());
+        about.addActionListener(e -> logui.showAboutBox());
 
         Action startTutorial =
             new AbstractAction("Tutorial...", new ImageIcon(ChainsawIcons.HELP)) {
@@ -519,26 +481,14 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
             Action.SHORT_DESCRIPTION, "Starts the tutorial process");
         helpMenu.add(startTutorial);
 
-        List knownReceivers = new ArrayList();
         JMenu receiverHelp = new JMenu("Receiver JavaDoc");
 
-        for (Object knownReceiver : knownReceivers) {
-            final Class clazz = (Class) knownReceiver;
-            receiverHelp.add(
-                new AbstractAction(clazz.getName()) {
-                    public void actionPerformed(ActionEvent arg0) {
-                        HelpManager.getInstance().showHelpForClass(clazz);
-                    }
-                });
-        }
-
         helpMenu.add(receiverHelp);
-
         helpMenu.addSeparator();
+
         helpMenu.add(new AbstractAction("Release Notes") {
             public void actionPerformed(ActionEvent e) {
                 HelpManager.getInstance().setHelpURL(ChainsawConstants.RELEASE_NOTES_URL);
-
             }
         });
         helpMenu.add(about);
@@ -586,8 +536,7 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
                 }
             };
 
-        showPreferences.putValue(
-            Action.SHORT_DESCRIPTION, "Tab Preferences...");
+        showPreferences.putValue(Action.SHORT_DESCRIPTION, "Tab Preferences...");
 
         // TODO think of good mnemonics and HotKey for this action
         return showPreferences;
@@ -606,8 +555,7 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
                 }
             };
 
-        createExpressionPanel.putValue(
-            Action.SHORT_DESCRIPTION, "Create tab from expression...   ");
+        createExpressionPanel.putValue(Action.SHORT_DESCRIPTION, "Create tab from expression...   ");
 
         // TODO think of good mnemonics and HotKey for this action
         return createExpressionPanel;
@@ -625,16 +573,12 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
                 }
             };
 
-        showColorPanel.putValue(
-            Action.SHORT_DESCRIPTION, "Color settings...");
+        showColorPanel.putValue(Action.SHORT_DESCRIPTION, "Color settings...");
 
         // TODO think of good mnemonics and HotKey for this action
         return showColorPanel;
     }
 
-    /**
-     * @return
-     */
     private Action createShowReceiversAction() {
         final Action action =
             new AbstractAction("Show Receivers") {
@@ -720,7 +664,6 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
         pauseButton.setAction(pauseAction);
         pauseButton.setText("");
 
-        //		pauseButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("F12"),pauseAction.getValue(Action.NAME) );
         pauseButton.getActionMap().put(
             pauseAction.getValue(Action.NAME), pauseAction);
 
@@ -924,7 +867,6 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
                 }
             });
 
-        //String expression = JOptionPane.showInputDialog(logui, "Enter expression", "Create custom expression LogPanel", JOptionPane.PLAIN_MESSAGE);
         return panel;
     }
 }
