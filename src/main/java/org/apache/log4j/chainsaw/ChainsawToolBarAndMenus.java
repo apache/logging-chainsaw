@@ -131,6 +131,16 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
         createMenuBar();
         createToolbar();
 
+        configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
+            evt -> {
+                if (evt.getPropertyName().equals("toolbar")) {
+                    boolean value = (Boolean) evt.getPropertyValue();
+                    toolbar.setVisible(value);
+                }
+            });
+        boolean showToolbar = configuration.getBoolean("toolbar", true);
+        toolbar.setVisible(showToolbar);
+
         logPanelSpecificActions =
             new Action[]{
                 pauseAction, findNextColorizedEventAction, findPreviousColorizedEventAction,

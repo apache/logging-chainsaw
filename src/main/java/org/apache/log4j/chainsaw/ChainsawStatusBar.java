@@ -17,6 +17,8 @@
 
 package org.apache.log4j.chainsaw;
 
+import org.apache.commons.configuration2.AbstractConfiguration;
+import org.apache.commons.configuration2.event.ConfigurationEvent;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.chainsaw.logui.LogUI;
 
@@ -51,9 +53,18 @@ public class ChainsawStatusBar extends JPanel {
         BorderFactory.createLineBorder(statusMsg.getBackground().darker());
     private final LogUI logUI;
 
-    public ChainsawStatusBar(LogUI logUI) {
+    public ChainsawStatusBar(LogUI logUI, AbstractConfiguration configuration) {
         setLayout(new GridBagLayout());
         this.logUI = logUI;
+
+        configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
+            evt -> {
+                if (evt.getPropertyName().equals("statusBar")) {
+                    boolean value = (Boolean) evt.getPropertyValue();
+                    setVisible(value);
+                }
+            });
+
         nf.setMaximumFractionDigits(0);
         nf.setMinimumFractionDigits(0);
         nf.setGroupingUsed(false);

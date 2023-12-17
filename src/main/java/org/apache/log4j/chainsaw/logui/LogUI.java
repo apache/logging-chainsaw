@@ -147,7 +147,10 @@ public class LogUI extends JFrame {
     private void initGUI() {
 
         setupHelpSystem();
-        statusBar = new ChainsawStatusBar(this);
+        statusBar = new ChainsawStatusBar(this, configuration);
+
+        boolean showStatusBar = configuration.getBoolean("statusBar", true);
+        setStatusBarVisible(showStatusBar);
 
         this.chainsawToolBarAndMenus = new ChainsawToolBarAndMenus(this, configuration);
         toolbar = chainsawToolBarAndMenus.getToolbar();
@@ -352,9 +355,13 @@ public class LogUI extends JFrame {
         final PopupListener tabPopupListener = new PopupListener(tabPopup);
         tabbedPane.addMouseListener(tabPopupListener);
 
-        initPrefModelListeners();
-        setVisible(true);
+        int tooltipDisplayMillis = configuration.getInt("tooltipDisplayMillis", 4000);
+        ToolTipManager.sharedInstance().setDismissDelay(tooltipDisplayMillis);
 
+        boolean showToolbar = configuration.getBoolean("toolbar", true);
+        toolbar.setVisible(showToolbar);
+
+        setVisible(true);
 
         /*
          * loads the saved tab settings and if there are hidden tabs,
@@ -397,33 +404,6 @@ public class LogUI extends JFrame {
 
     public void buildChainsawLogPanel() {
         logUIPanelBuilder.buildLogPanel(false, "Chainsaw", chainsawAppender.getReceiver());
-    }
-
-    private void initPrefModelListeners() {
-        int tooltipDisplayMillis = configuration.getInt("tooltipDisplayMillis", 4000);
-
-        ToolTipManager.sharedInstance().setDismissDelay(tooltipDisplayMillis);
-
-        configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
-            evt -> {
-                if (evt.getPropertyName().equals("statusBar")) {
-                    boolean value = (Boolean) evt.getPropertyValue();
-                    statusBar.setVisible(value);
-                }
-            });
-        boolean showStatusBar = configuration.getBoolean("statusBar", true);
-        setStatusBarVisible(showStatusBar);
-
-        configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
-            evt -> {
-                if (evt.getPropertyName().equals("toolbar")) {
-                    boolean value = (Boolean) evt.getPropertyValue();
-                    toolbar.setVisible(value);
-                }
-            });
-        boolean showToolbar = configuration.getBoolean("toolbar", true);
-        toolbar.setVisible(showToolbar);
-
     }
 
     /**
