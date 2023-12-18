@@ -14,14 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.log4j.chainsaw;
+package org.apache.log4j.chainsaw.components.about;
 
+import org.apache.log4j.chainsaw.JTextComponentFormatter;
 import org.apache.log4j.chainsaw.help.HelpManager;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
 import java.io.IOException;
+import java.net.URL;
 
 import org.apache.log4j.chainsaw.logui.LogUI;
 import org.apache.logging.log4j.LogManager;
@@ -33,20 +35,13 @@ import org.apache.logging.log4j.Logger;
  * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 public class ChainsawAbout extends JDialog {
-    private static final Logger LOG = LogManager.getLogger();
+    private static final Logger LOG = LogManager.getLogger(ChainsawAbout.class);
 
-    private final JEditorPane editPane = new JEditorPane("text/html", "");
-
-    private final JScrollPane scrollPane = new JScrollPane(editPane,
-        ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
-        ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
-    private boolean sleep = false;
-
-    private final Object guard = new Object();
+    private final LogUI logUI;
 
     public ChainsawAbout(LogUI logUI) {
         super(logUI, "About Chainsaw v2", true);
+        this.logUI = logUI;
         setBackground(Color.white);
         getContentPane().setLayout(new BorderLayout());
 
@@ -54,17 +49,21 @@ public class ChainsawAbout extends JDialog {
         closeButton.addActionListener(e -> setVisible(false));
         closeButton.setDefaultCapable(true);
 
+        JEditorPane editPane = new JEditorPane("text/html", "");
         try {
-            String url = ChainsawAbout.class.getName().replace('.', '/') + ".html";
-            editPane.setPage(this.getClass().getClassLoader().getResource(url));
+            URL url = ClassLoader.getSystemResource("pages/about.html");
+            editPane.setPage(url);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to find the About panel HTML", e);
+            throw new RuntimeException("Failed to find the about panel HTML", e);
         }
+
+        JScrollPane scrollPane = new JScrollPane(
+            editPane,
+            ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         getContentPane().add(scrollPane, BorderLayout.CENTER);
         getContentPane().add(closeButton, BorderLayout.SOUTH);
-
-        JTextComponentFormatter.applySystemFontAndSize(editPane);
 
         editPane.setEditable(false);
         editPane.addHyperlinkListener(
@@ -74,44 +73,27 @@ public class ChainsawAbout extends JDialog {
                 }
             });
 
-        setSize(320, 240);
-        new Thread(new Scroller()).start();
+        calculateDimentions();
         scrollPane.getViewport().setViewPosition(new Point(0, 0));
-
         setLocationRelativeTo(logUI);
     }
 
-    private class Scroller implements Runnable {
-
-        public void run() {
-            while (true) {
-                try {
-                    if (sleep) {
-                        synchronized (guard) {
-                            guard.wait();
-                        }
-                        SwingUtilities.invokeLater(() -> scrollPane.getViewport().setViewPosition(
-                            new Point(0, 0)));
-                        continue;
-                    }
-                    SwingUtilities.invokeLater(() -> scrollPane.getViewport().setViewPosition(
-                        new Point(0, scrollPane.getViewport()
-                            .getViewPosition().y + 1)));
-                    Thread.sleep(100);
-                } catch (Exception e) {
-                    LOG.error("Error during scrolling", e);
-                }
-
-            }
+    /**
+     * Calculates the dimensions of the about panel based on the parents component (logUI).
+     * The default dimensions are 10% smaller than the parent component, except the height/width
+     * are 400 or below. In that case the same dimensions of the parent component are taken.
+     */
+    public void calculateDimentions() {
+        Dimension size = logUI.getSize();
+        double height = size.getHeight();
+        double width = size.getWidth();
+        if (height > 400) {
+            height = height - (height * 0.10);
         }
-    }
-
-    @Override
-    public void setVisible(boolean visible) {
-        super.setVisible(visible);
-        sleep = !visible;
-        synchronized (guard) {
-            guard.notifyAll();
+        if (width > 400) {
+            width = width - (width * 0.10);
         }
+        setSize((int)width, (int)height);
+
     }
 }

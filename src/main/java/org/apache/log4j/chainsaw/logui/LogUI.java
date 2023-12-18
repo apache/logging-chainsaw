@@ -19,6 +19,7 @@ package org.apache.log4j.chainsaw.logui;
 
 import org.apache.commons.configuration2.AbstractConfiguration;
 import org.apache.log4j.chainsaw.*;
+import org.apache.log4j.chainsaw.components.about.ChainsawAbout;
 import org.apache.log4j.chainsaw.components.elements.SmallButton;
 import org.apache.log4j.chainsaw.components.logpanel.LogPanel;
 import org.apache.log4j.chainsaw.components.tabbedpane.ChainsawTabbedPane;
@@ -413,6 +414,8 @@ public class LogUI extends JFrame {
     public void showAboutBox() {
         if (aboutBox == null) {
             aboutBox = new ChainsawAbout(this);
+        } else {
+            aboutBox.calculateDimentions();
         }
 
         aboutBox.setVisible(true);
