@@ -32,13 +32,13 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TimeZone;
+import java.util.*;
+
 import org.apache.commons.configuration2.AbstractConfiguration;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 
@@ -181,7 +181,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
 
         JComponent component;
         switch (colIndex) {
-            case ChainsawColumns.INDEX_THROWABLE_COL_NAME:
+/*            case ChainsawColumns.INDEX_THROWABLE_COL_NAME:
                 if (value instanceof String[] && ((String[]) value).length > 0) {
                     Style tabStyle = singleLineTextPane.getLogicalStyle();
                     StyleConstants.setTabSet(tabStyle, tabs);
@@ -200,7 +200,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
                 }
                 layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
                 component = generalPanel;
-                break;
+                break;*/
             case ChainsawColumns.INDEX_LOGGER_COL_NAME:
                 String logger = value.toString();
                 int startPos = -1;
@@ -222,7 +222,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
                 layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
                 component = generalPanel;
                 break;
-            case ChainsawColumns.INDEX_CLASS_COL_NAME:
+/*            case ChainsawColumns.INDEX_CLASS_COL_NAME:
                 singleLineTextPane.setText(value.toString());
                 setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.CLASS_FIELD), (StyledDocument) singleLineTextPane.getDocument());
                 layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
@@ -251,7 +251,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
                 setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.THREAD_FIELD), (StyledDocument) singleLineTextPane.getDocument());
                 layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
                 component = generalPanel;
-                break;
+                break;*/
             case ChainsawColumns.INDEX_TIMESTAMP_COL_NAME:
                 //timestamp matches contain the millis..not the display text..just highlight if we have a match for the timestamp field
                 Set timestampMatches = (Set) matches.get(LoggingEventFieldResolver.TIMESTAMP_FIELD);
@@ -264,12 +264,12 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
                 layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
                 component = generalPanel;
                 break;
-            case ChainsawColumns.INDEX_METHOD_COL_NAME:
+/*            case ChainsawColumns.INDEX_METHOD_COL_NAME:
                 singleLineTextPane.setText(value.toString());
                 setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.METHOD_FIELD), (StyledDocument) singleLineTextPane.getDocument());
                 layoutRenderingPanel(generalPanel, singleLineTextPane, delta, isSelected, width, col, table);
                 component = generalPanel;
-                break;
+                break;*/
             case ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME:
             case ChainsawColumns.INDEX_MESSAGE_COL_NAME:
                 String thisString = value.toString().trim();
@@ -546,20 +546,20 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
      * @return formatted object
      */
     private Object formatField(Object field, LoggingEventWrapper loggingEventWrapper) {
-        if (!(field instanceof ZonedDateTime)) {
+        if (!(field instanceof Instant)) {
             return (field == null ? "" : field);
         }
 
         //handle date field
         if (useRelativeTimesToFixedTime) {
-            ZonedDateTime dt = (ZonedDateTime)field;
+            ZonedDateTime dt = ((Instant) field).atZone(ZoneOffset.UTC);
             return "" + ChronoUnit.MILLIS.between(dt, relativeTimestampBase);
         }
         if (useRelativeTimesToPrevious) {
             return loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
         }
 
-        return ((ZonedDateTime)field).format(DateTimeFormatter.ISO_DATE);
+        return dateFormatInUse.format(Date.from((Instant)field));
     }
 
     /**

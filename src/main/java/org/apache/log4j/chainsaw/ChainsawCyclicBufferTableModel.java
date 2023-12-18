@@ -558,9 +558,11 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
             case ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME:
                 return event.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME);
 
+/*
             case ChainsawColumns.INDEX_MILLIS_DELTA_COL_NAME:
                 return event.getProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
 
+*/
             case ChainsawColumns.INDEX_LOGGER_COL_NAME:
                 return event.m_logger;
 
@@ -570,6 +572,7 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
             case ChainsawColumns.INDEX_MESSAGE_COL_NAME:
                 return event.m_message;
 
+/*
             case ChainsawColumns.INDEX_NDC_COL_NAME:
                 return event.m_ndc;
 
@@ -590,6 +593,7 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
 
             case ChainsawColumns.INDEX_METHOD_COL_NAME:
                 return info == null ? "" : info.methodName;
+*/
 
             default:
 

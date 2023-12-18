@@ -17,6 +17,8 @@
 
 package org.apache.log4j.chainsaw.components.logpanel;
 
+import org.apache.commons.configuration2.event.Event;
+import org.apache.commons.configuration2.event.EventListener;
 import org.apache.log4j.chainsaw.*;
 import org.apache.log4j.chainsaw.color.ColorPanel;
 import org.apache.log4j.chainsaw.color.RuleColorizer;
@@ -286,13 +288,14 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             new JRadioButtonMenuItem(
                 new AbstractAction("Use ISO8601Format") {
                     public void actionPerformed(ActionEvent e) {
-
+                        logPanelPreferenceModel.setDateFormatPattern("ISO8601");
                     }
                 });
         final JRadioButtonMenuItem simpleTimeButton =
             new JRadioButtonMenuItem(
                 new AbstractAction("Use simple time") {
                     public void actionPerformed(ActionEvent e) {
+                        logPanelPreferenceModel.setDateFormatPattern("HH:mm:ss");
                     }
                 });
 
@@ -394,30 +397,28 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         logPanelPreferenceModel.addEventListener(
             evt -> {
             if (evt.getPropertyName().equals(LogPanelPreferenceModel.DATE_FORMAT_TIME_ZONE)) {
-                LogPanelPreferenceModel model = (LogPanelPreferenceModel) evt.getSource();
+                isoButton.setSelected(logPanelPreferenceModel.isUseISO8601Format());
+                simpleTimeButton.setSelected(!logPanelPreferenceModel.isUseISO8601Format() && !logPanelPreferenceModel.isCustomDateFormat());
 
-                isoButton.setSelected(model.isUseISO8601Format());
-                simpleTimeButton.setSelected(!model.isUseISO8601Format() && !model.isCustomDateFormat());
-
-                if (model.getDateFormatTimeZone() != null) {
-                    renderer.setTimeZone(model.getDateFormatTimeZone());
-                    searchRenderer.setTimeZone(model.getDateFormatTimeZone());
+                if (logPanelPreferenceModel.getDateFormatTimeZone() != null) {
+                    renderer.setTimeZone(logPanelPreferenceModel.getDateFormatTimeZone());
+                    searchRenderer.setTimeZone(logPanelPreferenceModel.getDateFormatTimeZone());
                 }
 
-                if (model.isUseISO8601Format()) {
+                if (logPanelPreferenceModel.isUseISO8601Format()) {
                     renderer.setDateFormatter(new SimpleDateFormat(Constants.ISO8601_PATTERN));
                     searchRenderer.setDateFormatter(new SimpleDateFormat(Constants.ISO8601_PATTERN));
                 } else {
                     try {
-                        renderer.setDateFormatter(new SimpleDateFormat(model.getDateFormatPattern()));
+                        renderer.setDateFormatter(new SimpleDateFormat(logPanelPreferenceModel.getDateFormatPattern()));
                     } catch (IllegalArgumentException iae) {
-                        model.setDefaultDatePatternFormat();
+                        logPanelPreferenceModel.setDefaultDatePatternFormat();
                         renderer.setDateFormatter(new SimpleDateFormat(Constants.ISO8601_PATTERN));
                     }
                     try {
-                        searchRenderer.setDateFormatter(new SimpleDateFormat(model.getDateFormatPattern()));
+                        searchRenderer.setDateFormatter(new SimpleDateFormat(logPanelPreferenceModel.getDateFormatPattern()));
                     } catch (IllegalArgumentException iae) {
-                        model.setDefaultDatePatternFormat();
+                        logPanelPreferenceModel.setDefaultDatePatternFormat();
                         searchRenderer.setDateFormatter(new SimpleDateFormat(Constants.ISO8601_PATTERN));
                     }
                 }
@@ -430,8 +431,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         logPanelPreferenceModel.addEventListener(
             evt -> {
                 if (evt.getPropertyName().equals(LogPanelPreferenceModel.CLEAR_TABLE_EXPRESSION)) {
-                    LogPanelPreferenceModel model = (LogPanelPreferenceModel) evt.getSource();
-                    String expression = model.getClearTableExpression();
+                    String expression = evt.getPropertyValue().toString();
                     try {
                         clearTableExpressionRule = ExpressionRule.getRule(expression);
                         logger.info("clearTableExpressionRule set to: " + expression);
@@ -442,15 +442,47 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
                 }
             });
 
+        logPanelPreferenceModel.addEventListener(evt -> {
+                if (!evt.isBeforeUpdate() && evt.getPropertyName().equals(LogPanelPreferenceModel.DATE_FORMAT_PATTERN) ||
+                    evt.getPropertyName().equals(LogPanelPreferenceModel.DATE_FORMAT_TIME_ZONE)) {
+
+            isoButton.setSelected(logPanelPreferenceModel.isUseISO8601Format());
+            simpleTimeButton.setSelected(!logPanelPreferenceModel.isUseISO8601Format() && !logPanelPreferenceModel.isCustomDateFormat());
+
+            if (logPanelPreferenceModel.getDateFormatTimeZone() != null && !logPanelPreferenceModel.getDateFormatTimeZone().isEmpty()) {
+                renderer.setTimeZone(logPanelPreferenceModel.getDateFormatTimeZone());
+                searchRenderer.setTimeZone(logPanelPreferenceModel.getDateFormatTimeZone());
+            }
+
+            if (logPanelPreferenceModel.isUseISO8601Format()) {
+                renderer.setDateFormatter(new SimpleDateFormat(Constants.ISO8601_PATTERN));
+                searchRenderer.setDateFormatter(new SimpleDateFormat(Constants.ISO8601_PATTERN));
+            } else {
+                try {
+                    renderer.setDateFormatter(new SimpleDateFormat(logPanelPreferenceModel.getDateFormatPattern()));
+                } catch (IllegalArgumentException iae) {
+                    logPanelPreferenceModel.setDefaultDatePatternFormat();
+                    renderer.setDateFormatter(new SimpleDateFormat(Constants.ISO8601_PATTERN));
+                }
+                try {
+                    searchRenderer.setDateFormatter(new SimpleDateFormat(logPanelPreferenceModel.getDateFormatPattern()));
+                } catch (IllegalArgumentException iae) {
+                    logPanelPreferenceModel.setDefaultDatePatternFormat();
+                    searchRenderer.setDateFormatter(new SimpleDateFormat(Constants.ISO8601_PATTERN));
+                }
+            }
+
+            table.tableChanged(new TableModelEvent(tableModel));
+            searchTable.tableChanged(new TableModelEvent(searchModel));
+        }});
+
         logPanelPreferenceModel.addEventListener(
             evt -> {
                 if (evt.getPropertyName().equals(LogPanelPreferenceModel.LOGGER_PRECISION)) {
-                    LogPanelPreferenceModel model = (LogPanelPreferenceModel) evt.getSource();
-
-                    renderer.setLoggerPrecision(model.getLoggerPrecision());
+                    renderer.setLoggerPrecision(logPanelPreferenceModel.getLoggerPrecision());
                     table.tableChanged(new TableModelEvent(tableModel));
 
-                    searchRenderer.setLoggerPrecision(model.getLoggerPrecision());
+                    searchRenderer.setLoggerPrecision(logPanelPreferenceModel.getLoggerPrecision());
                     searchTable.tableChanged(new TableModelEvent(searchModel));
                 }
             });
@@ -3304,12 +3336,14 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         }
 
         public void mouseClicked(MouseEvent e) {
+/*
             TableColumn column = throwableTable.getColumnModel().getColumn(throwableTable.columnAtPoint(e.getPoint()));
             if (!column.getHeaderValue().toString().toUpperCase().equals(ChainsawColumns.getColumnName(ChainsawColumns.INDEX_THROWABLE_COL_NAME))) {
                 return;
             }
 
             LoggingEventWrapper loggingEventWrapper = throwableEventContainer.getRow(throwableTable.getSelectedRow());
+*/
 
             //throwable string representation may be a length-one empty array
 //            String[] ti = loggingEventWrapper.getLoggingEvent().getThrowableStrRep();

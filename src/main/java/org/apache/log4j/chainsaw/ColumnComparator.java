@@ -67,7 +67,7 @@ public class ColumnComparator implements Comparator {
 
                     break;
 
-                case ChainsawColumns.INDEX_NDC_COL_NAME:
+/*                case ChainsawColumns.INDEX_NDC_COL_NAME:
                     if (e1.m_ndc != null && e2.m_ndc != null) {
                         sort =
                             e1.m_ndc.compareToIgnoreCase(
@@ -116,15 +116,17 @@ public class ColumnComparator implements Comparator {
                                 e2.m_locationInfo.methodName);
                     }
 
-                    break;
+                    break;*/
 
                 case ChainsawColumns.INDEX_TIMESTAMP_COL_NAME:
                     sort = e1.m_timestamp.compareTo(e2.m_timestamp);
                     break;
 
+/*
                 case ChainsawColumns.INDEX_THREAD_COL_NAME:
                     sort = e1.m_threadName.compareToIgnoreCase(e2.m_threadName);
                     break;
+*/
 
                 case ChainsawColumns.INDEX_ID_COL_NAME:
                     int id1 = Integer.parseInt(e1.getProperty(Constants.LOG4J_ID_KEY));
@@ -132,6 +134,7 @@ public class ColumnComparator implements Comparator {
                     sort = Integer.compare(id2, id1);
                     break;
 
+/*
                 case ChainsawColumns.INDEX_THROWABLE_COL_NAME:
 //                    if (e1.getThrowableStrRep() != null && e2.getThrowableStrRep() != null) {
 //                        String[] s1 = e1.getThrowableStrRep();
@@ -154,6 +157,7 @@ public class ColumnComparator implements Comparator {
                         sort = e1.m_locationInfo.lineNumber - e2.m_locationInfo.lineNumber;
                     }
                     break;
+*/
 
                 //other columns may be Property values - see if there is an Property value matching column name
                 default:
