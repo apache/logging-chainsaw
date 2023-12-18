@@ -897,7 +897,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
 
             }
         });
-        findMarkerRule = ExpressionRule.getRule("prop." + ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE + " exists");
+        findMarkerRule = ExpressionRule.getRule("prop." + ChainsawConstants.LOG4J_MARKER_COL_NAME + " exists");
 
         tableModel.addTableModelListener(e -> {
             int currentRow = table.getSelectedRow();
@@ -2687,6 +2687,10 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
 
         for (int i = 0; i < columnModel.getColumnCount(); i++) {
             TableColumn thisColumn = columnModel.getColumn(i);
+            if (thisColumn.getHeaderValue().toString().equalsIgnoreCase(ChainsawConstants.LOG4J_MARKER_COL_NAME)) {
+                thisColumn.setCellEditor(markerCellEditor);
+            }
+
             columnNameMap.put(table.getColumnName(i).toUpperCase(), thisColumn);
         }
 
@@ -2795,7 +2799,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
 
     public void clearAllMarkers() {
         //this will get the properties to be removed from both tables..but
-        tableModel.removePropertyFromEvents(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
+        tableModel.removePropertyFromEvents(ChainsawConstants.LOG4J_MARKER_COL_NAME);
     }
 
     public void toggleMarker() {
@@ -2803,11 +2807,11 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         if (row != -1) {
             LoggingEventWrapper loggingEventWrapper = tableModel.getRow(row);
             if (loggingEventWrapper != null) {
-                Object marker = loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
+                Object marker = loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME);
                 if (marker == null) {
-                    loggingEventWrapper.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE, "set");
+                    loggingEventWrapper.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME, "set");
                 } else {
-                    loggingEventWrapper.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
+                    loggingEventWrapper.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME);
                 }
                 //if marker -was- null, it no longer is (may need to add the column)
                 tableModel.fireRowUpdated(row, (marker == null));
@@ -3077,11 +3081,11 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
                 if (row != -1) {
                     LoggingEventWrapper loggingEventWrapper = markerEventContainer.getRow(row);
                     if (loggingEventWrapper != null) {
-                        Object marker = loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
+                        Object marker = loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME);
                         if (marker == null) {
-                            loggingEventWrapper.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE, "set");
+                            loggingEventWrapper.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME, "set");
                         } else {
-                            loggingEventWrapper.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
+                            loggingEventWrapper.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME);
                         }
                         //if marker -was- null, it no longer is (may need to add the column)
                         markerEventContainer.fireRowUpdated(row, (marker == null));
@@ -3347,9 +3351,9 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
 
         public boolean stopCellEditing() {
             if (textField.getText().trim().isEmpty()) {
-                currentLoggingEventWrapper.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
+                currentLoggingEventWrapper.removeProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME);
             } else {
-                currentLoggingEventWrapper.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE, textField.getText());
+                currentLoggingEventWrapper.setProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME, textField.getText());
             }
             //row should always exist in the main table if it is being edited
             tableModel.fireRowUpdated(tableModel.getRowIndex(currentLoggingEventWrapper), true);
@@ -3405,7 +3409,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             currentTableMarkerCell = table;
             currentLoggingEventWrapper = ((EventContainer) table.getModel()).getRow(row);
             if (currentLoggingEventWrapper != null) {
-                textField.setText(currentLoggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE));
+                textField.setText(currentLoggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME));
                 textField.selectAll();
             } else {
                 textField.setText("");
@@ -3550,7 +3554,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             for (Object aPrimaryList1 : primaryList) {
                 ThumbnailLoggingEventWrapper wrapper = (ThumbnailLoggingEventWrapper) aPrimaryList1;
                 if (!wrapper.loggingEventWrapper.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
-                    if (wrapper.loggingEventWrapper.getLoggingEvent().m_level.ordinal() < Level.WARN.ordinal() && wrapper.loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE) == null) {
+                    if (wrapper.loggingEventWrapper.getLoggingEvent().m_level.ordinal() < Level.WARN.ordinal() && wrapper.loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME) == null) {
                         float ratio = (wrapper.rowNum / (float) rowCount);
                         //                System.out.println("error - ratio: " + ratio + ", component height: " + componentHeight);
                         int verticalLocation = (int) (componentHeight * ratio);
@@ -3568,7 +3572,7 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
             for (Object aPrimaryList : primaryList) {
                 ThumbnailLoggingEventWrapper wrapper = (ThumbnailLoggingEventWrapper) aPrimaryList;
                 if (!wrapper.loggingEventWrapper.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)) {
-                    if (wrapper.loggingEventWrapper.getLoggingEvent().m_level.ordinal() >= Level.WARN.ordinal() || wrapper.loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE) != null) {
+                    if (wrapper.loggingEventWrapper.getLoggingEvent().m_level.ordinal() >= Level.WARN.ordinal() || wrapper.loggingEventWrapper.getLoggingEvent().getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME) != null) {
                         float ratio = (wrapper.rowNum / (float) rowCount);
                         //                System.out.println("error - ratio: " + ratio + ", component height: " + componentHeight);
                         int verticalLocation = (int) (componentHeight * ratio);

@@ -39,7 +39,7 @@ public class ColumnNameKeywordMapper {
         columnNameKeywordMap.put(ChainsawConstants.THROWABLE_COL_NAME, LoggingEventFieldResolver.EXCEPTION_FIELD);
         columnNameKeywordMap.put(ChainsawConstants.TIMESTAMP_COL_NAME, LoggingEventFieldResolver.TIMESTAMP_FIELD);
         columnNameKeywordMap.put(ChainsawConstants.ID_COL_NAME.toUpperCase(), LoggingEventFieldResolver.PROP_FIELD + Constants.LOG4J_ID_KEY);
-        columnNameKeywordMap.put(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE.toUpperCase(), LoggingEventFieldResolver.PROP_FIELD + ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
+        columnNameKeywordMap.put(ChainsawConstants.LOG4J_MARKER_COL_NAME, LoggingEventFieldResolver.PROP_FIELD + ChainsawConstants.LOG4J_MARKER_COL_NAME);
         columnNameKeywordMap.put(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE.toUpperCase(), LoggingEventFieldResolver.PROP_FIELD + ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
     }
 

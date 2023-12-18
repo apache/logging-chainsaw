@@ -31,7 +31,6 @@ import javax.swing.table.AbstractTableModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.time.ZoneId;
 import java.util.*;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
@@ -557,7 +556,7 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
                 return event.m_level;
 
             case ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME:
-                return event.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE);
+                return event.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME);
 
             case ChainsawColumns.INDEX_MILLIS_DELTA_COL_NAME:
                 return event.getProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
@@ -784,7 +783,7 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
      */
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        if (getColumnName(columnIndex).equalsIgnoreCase(ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE)) {
+        if (getColumnName(columnIndex).equalsIgnoreCase(ChainsawConstants.LOG4J_MARKER_COL_NAME)) {
             return true;
         }
 

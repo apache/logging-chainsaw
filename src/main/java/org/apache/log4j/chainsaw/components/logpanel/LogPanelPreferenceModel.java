@@ -82,12 +82,12 @@ public class LogPanelPreferenceModel {
     private static final String conversionPatternDefault = DefaultLayoutFactory.getDefaultPatternLayout();
 
     private static final List<String> defaultOrderedColumnNames = List.of(ChainsawConstants.ID_COL_NAME,
-        ChainsawConstants.TIMESTAMP_COL_NAME, ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE.toUpperCase(),
+        ChainsawConstants.TIMESTAMP_COL_NAME, ChainsawConstants.LOG4J_MARKER_COL_NAME,
         ChainsawConstants.LEVEL_COL_NAME, ChainsawConstants.LOGGER_COL_NAME, ChainsawConstants.MESSAGE_COL_NAME);
 
     private static final Map<String, Integer> defaultOrderedColumnNamesAndWidths =
         Map.of(ChainsawConstants.ID_COL_NAME, 75, ChainsawConstants.TIMESTAMP_COL_NAME, 100,
-            ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE.toUpperCase(), 120, ChainsawConstants.LEVEL_COL_NAME, 75,
+            ChainsawConstants.LOG4J_MARKER_COL_NAME, 120, ChainsawConstants.LEVEL_COL_NAME, 75,
             ChainsawConstants.LOGGER_COL_NAME, 125, ChainsawConstants.MESSAGE_COL_NAME, 650);
 
     public LogPanelPreferenceModel(AbstractConfiguration tabConfig) {

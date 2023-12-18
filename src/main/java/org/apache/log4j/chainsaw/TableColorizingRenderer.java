@@ -279,7 +279,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
 
                 if (colIndex == ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME) {
                     //property keys are set as all uppercase
-                    setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.PROP_FIELD + ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE.toUpperCase()), (StyledDocument) textPane.getDocument());
+                    setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.PROP_FIELD + ChainsawConstants.LOG4J_MARKER_COL_NAME), (StyledDocument) textPane.getDocument());
                 } else {
                     setHighlightAttributesInternal(matches.get(LoggingEventFieldResolver.MSG_FIELD), (StyledDocument) textPane.getDocument());
                 }
