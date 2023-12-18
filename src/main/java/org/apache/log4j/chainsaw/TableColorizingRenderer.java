@@ -92,7 +92,7 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
      */
     public TableColorizingRenderer(SettingsManager settingsManager, RuleColorizer colorizer,
                                    EventContainer eventContainer, LogPanelPreferenceModel logPanelPreferenceModel,
-                                   boolean colorizeSearch) {
+                                   ApplicationPreferenceModel applicationPreferenceModel, boolean colorizeSearch) {
         this.settingsManager = settingsManager;
         this.applicationPreferenceModel = applicationPreferenceModel;
         this.logPanelPreferenceModel = logPanelPreferenceModel;
@@ -533,14 +533,10 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
     /**
      * Changes the Logger precision.
      *
-     * @param loggerPrecisionText
+     * @param loggerPrecision
      */
-    public void setLoggerPrecision(String loggerPrecisionText) {
-        try {
-            loggerPrecision = Integer.parseInt(loggerPrecisionText);
-        } catch (NumberFormatException nfe) {
-            loggerPrecision = 0;
-        }
+    public void setLoggerPrecision(int loggerPrecision) {
+        this.loggerPrecision = loggerPrecision;
     }
 
     /**

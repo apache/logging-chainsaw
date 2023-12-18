@@ -76,7 +76,6 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
     private final JCheckBoxMenuItem menuShowWelcome = new JCheckBoxMenuItem();
     private final JToolBar toolbar;
     private final LogUI logui;
-    private final AbstractConfiguration configuration;
     private final SmallButton clearButton = new SmallButton();
     private final SmallToggleButton detailPaneButton = new SmallToggleButton();
     private final SmallToggleButton logTreePaneButton = new SmallToggleButton();
@@ -85,10 +84,11 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
     private final SmallToggleButton toggleCyclicButton = new SmallToggleButton();
     private final Action[] logPanelSpecificActions;
     private final JMenu activeTabMenu = new JMenu("Current tab");
+    private final ApplicationPreferenceModel applicationPreferenceModel;
 
-    public ChainsawToolBarAndMenus(final LogUI logui, AbstractConfiguration configuration) {
+    public ChainsawToolBarAndMenus(final LogUI logui, ApplicationPreferenceModel applicationPreferenceModel) {
         this.logui = logui;
-        this.configuration = configuration;
+        this.applicationPreferenceModel = applicationPreferenceModel;
         toolbar = new JToolBar(SwingConstants.HORIZONTAL);
         menuBar = new JMenuBar();
         fileMenu = new FileMenu(logui);
@@ -117,14 +117,14 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
         createMenuBar();
         createToolbar();
 
-        configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
+        applicationPreferenceModel.addEventListener(
             evt -> {
-                if (evt.getPropertyName().equals("toolbar")) {
+                if (evt.getPropertyName().equals(ApplicationPreferenceModel.TOOLBAR_VISIBLE)) {
                     boolean value = (Boolean) evt.getPropertyValue();
                     toolbar.setVisible(value);
                 }
             });
-        boolean showToolbar = configuration.getBoolean("toolbar", true);
+        boolean showToolbar = applicationPreferenceModel.isToolbarVisible();
         toolbar.setVisible(showToolbar);
 
         logPanelSpecificActions =
@@ -137,17 +137,17 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
                 toggleLogTreeAction, toggleScrollToBottomAction, changeModelAction,
             };
 
-            configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
+            applicationPreferenceModel.addEventListener(
             evt -> {
-                if( evt.getPropertyName().equals( "statusBar" ) ){
+                if( evt.getPropertyName().equals(ApplicationPreferenceModel.STATUS_BAR_VISIBLE) ){
                     boolean value = (Boolean) evt.getPropertyValue();
                     toggleStatusBarCheck.setSelected(value);
                 }
             });
 
-            configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
+        applicationPreferenceModel.addEventListener(
             evt -> {
-                if( evt.getPropertyName().equals( "showReceivers" ) ){
+                if( evt.getPropertyName().equals(ApplicationPreferenceModel.RECEIVERS_VISIBLE) ){
                     boolean value = (Boolean) evt.getPropertyValue();
                     showReceiversButton.setSelected(value);
                     toggleShowReceiversCheck.setSelected(value);
@@ -377,7 +377,7 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
         viewMenu.setMnemonic('V');
 
         toggleShowToolbarCheck.setAction(toggleToolbarAction);
-        toggleShowToolbarCheck.setSelected(configuration.getBoolean("toolbar", true));
+        toggleShowToolbarCheck.setSelected(applicationPreferenceModel.isToolbarVisible());
 
         menuShowWelcome.setAction(toggleWelcomeVisibleAction);
 
@@ -415,13 +415,13 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
             new AbstractAction("Show Status bar") {
                 public void actionPerformed(ActionEvent arg0) {
                     boolean isSelected = toggleStatusBarCheck.isSelected();
-                    configuration.setProperty("statusBar", isSelected);
+                    applicationPreferenceModel.setStatusBarVisible(isSelected);
                 }
             };
 
         toggleStatusBarAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_B);
         toggleStatusBarCheck.setAction(toggleStatusBarAction);
-        toggleStatusBarCheck.setSelected(configuration.getBoolean("statusBar", true));
+        toggleStatusBarCheck.setSelected(applicationPreferenceModel.isStatusBarVisible());
 
         activeTabMenu.add(pause);
         activeTabMenu.add(toggleCyclicMenuItem);
@@ -585,8 +585,8 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
                 public void actionPerformed(ActionEvent arg0) {
                     // Since this action can be triggered from either a button
                     // or a check box, get the current value and invert it.
-                    boolean currentValue = configuration.getBoolean("showReceivers", false);
-                    configuration.setProperty("showReceivers", !currentValue);
+                    boolean currentValue = applicationPreferenceModel.isReceiversVisible();
+                    applicationPreferenceModel.setReceiversVisible(!currentValue);
                 }
             };
 
@@ -634,7 +634,7 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
             new AbstractAction("Show Toolbar") {
                 public void actionPerformed(ActionEvent e) {
                     boolean isSelected = toggleShowToolbarCheck.isSelected();
-                    configuration.setProperty("toolbar", isSelected);
+                    applicationPreferenceModel.setToolbarVisible(isSelected);
                 }
             };
 
@@ -743,7 +743,7 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
     }
 
     private void scanState() {
-        boolean showReceiversByDefault = configuration.getBoolean("showReceivers", false);
+        boolean showReceiversByDefault = applicationPreferenceModel.isReceiversVisible();
 
         toggleStatusBarCheck.setSelected(logui.isStatusBarVisible());
         toggleShowReceiversCheck.setSelected(

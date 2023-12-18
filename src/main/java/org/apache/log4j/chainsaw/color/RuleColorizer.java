@@ -51,8 +51,6 @@ public class RuleColorizer implements Colorizer {
 
     private Rule findRule;
     private Rule loggerRule;
-    private AbstractConfiguration configuration;
-    private final boolean isGlobal;
 
     private static final Color WARN_DEFAULT_COLOR = new Color(255, 255, 153);
     private static final Color FATAL_OR_ERROR_DEFAULT_COLOR = new Color(255, 153, 153);
@@ -61,7 +59,6 @@ public class RuleColorizer implements Colorizer {
     private static final String DEFAULT_WARN_EXPRESSION = "level == WARN";
     private static final String DEFAULT_FATAL_ERROR_EXCEPTION_EXPRESSION = "level == FATAL || level == ERROR || exception exists";
     private static final String DEFAULT_MARKER_EXPRESSION = "prop.marker exists";
-    private SettingsManager settingsManager;
 
     public static List<ColorRule> defaultRules(){
         List<ColorRule> rulesList = new ArrayList<>();
@@ -86,16 +83,8 @@ public class RuleColorizer implements Colorizer {
         return rulesList;
     }
 
-    public RuleColorizer(SettingsManager settingsManager) {
-        this.settingsManager = settingsManager;
+    public RuleColorizer() {
         this.rules = defaultRules();
-        isGlobal = false;
-    }
-
-    public RuleColorizer(SettingsManager settingsManager, boolean isGlobal){
-        this.settingsManager = settingsManager;
-        this.rules = defaultRules();
-        this.isGlobal = isGlobal;
     }
 
     public void setLoggerRule(Rule loggerRule) {
@@ -120,8 +109,6 @@ public class RuleColorizer implements Colorizer {
         this.rules.clear();
         this.rules.addAll(rules);
         colorChangeSupport.firePropertyChange(PROPERTY_CHANGED_COLORRULE, false, true);
-
-        saveColorSettings();
     }
 
     public List<ColorRule> getRules() {
@@ -132,8 +119,6 @@ public class RuleColorizer implements Colorizer {
         rules.add(rule);
 
         colorChangeSupport.firePropertyChange(PROPERTY_CHANGED_COLORRULE, false, true);
-
-        saveColorSettings();
     }
 
     /**
@@ -170,10 +155,6 @@ public class RuleColorizer implements Colorizer {
         colorChangeSupport.addPropertyChangeListener(listener);
     }
 
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        colorChangeSupport.removePropertyChangeListener(listener);
-    }
-
     /**
      * @param propertyName
      * @param listener
@@ -183,93 +164,11 @@ public class RuleColorizer implements Colorizer {
         colorChangeSupport.addPropertyChangeListener(propertyName, listener);
     }
 
-    public void setConfiguration(AbstractConfiguration configuration){
-        this.configuration = configuration;
-    }
-
-    public void setUseDefaultSettings(boolean useDefaultSettings){
-        if( configuration == settingsManager.getGlobalConfiguration() ){
-            return;
-        }
-
-        configuration.setProperty( "color.rules.default", useDefaultSettings );
-    }
-
     public static String colorToRGBString( Color c ){
         return String.format( "#%02x%02x%02x",
                 c.getRed(),
                 c.getGreen(),
                 c.getBlue());
-    }
-
-    private void saveColorSettings(){
-        if( configuration == null ){
-            return;
-        }
-
-        DataConfiguration data = new DataConfiguration(configuration);
-
-        if( !isGlobal && configuration.getBoolean( "color.rules.default", true ) ){
-            // No need to save, using the default rules
-            return;
-        }
-
-        for( int x = 0; x < 32; x++ ){
-            String baseConfigKey = "color.rules(" + x + ")";
-
-            if( rules.size() <= x ){
-                break;
-            }
-            
-            ColorRule rule = rules.get(x);
-            
-            logger.debug( "Saving rule {}.  Expression: {}", x, rule.getExpression() );
-
-            configuration.setProperty( baseConfigKey + ".expression", rule.getExpression() );
-            String bgColorString = colorToRGBString(rule.getBackgroundColor());
-            String fgColorString = colorToRGBString(rule.getForegroundColor());
-            data.setProperty( baseConfigKey + ".backgroundColor", bgColorString );
-            data.setProperty( baseConfigKey + ".foregroundColor", fgColorString );
-        }
-
-        logger.debug( "all keys for {}:", configuration);
-        java.util.Iterator<String> s = configuration.getKeys();
-        while( s.hasNext() ){
-            logger.debug( "found key: {}", s.next() );
-        }
-    }
-    
-    public void loadColorSettings() {
-        // When we save/load the rule, we really need to load a map of rules
-        // There's no real good way to do this, so we will do this the somewhat
-        // dumb way and just load up to 32 color rules, since that seems like
-        // a good number
-        List<ColorRule> newRules = new ArrayList<>();
-
-        DataConfiguration data = new DataConfiguration(configuration);
-
-        for( int x = 0; x < 32; x++ ){
-            String baseConfigKey = "color.rules(" + x + ")";
-            String expression;
-            Color backgroundColor;
-            Color foregroundColor;
-
-            expression = configuration.getString( baseConfigKey + ".expression" );
-            backgroundColor = data.getColor( baseConfigKey + ".backgroundColor" );
-            foregroundColor = data.getColor( baseConfigKey + ".foregroundColor" );
-
-            if( expression == null ||
-                    backgroundColor == null ||
-                    foregroundColor == null ){
-                continue;
-            }
-
-            Rule simpleRule = ExpressionRule.getRule(expression);
-            ColorRule rule = new ColorRule( expression, simpleRule, backgroundColor, foregroundColor );
-            newRules.add( rule );
-        }
-
-        setRules(newRules);
     }
 
     public static List<Color> getDefaultColors() {

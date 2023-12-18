@@ -50,7 +50,7 @@ import java.util.ServiceLoader;
 public final class SettingsManager {
     private static final Logger logger = LogManager.getLogger(SettingsManager.class);
 
-    private static final String GLOBAL_SETTINGS_FILE_NAME = "chainsaw.settings.properties";
+    private static final String GLOBAL_SETTINGS_FILE_NAME = "chainsaw.global.properties";
 
     private static class TabSettingsData {
         FileBasedConfigurationBuilder<PropertiesConfiguration> file;

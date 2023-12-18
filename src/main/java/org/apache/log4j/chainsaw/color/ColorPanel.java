@@ -229,7 +229,7 @@ public class ColorPanel extends JPanel {
                 Object selectedItem = loadPanelColorizersComboBox.getSelectedItem();
                 if (selectedItem != null) {
                     RuleColorizer sourceColorizer = allLogPanelColorizers.get(selectedItem.toString());
-                    RuleColorizer newColorizer = new RuleColorizer(settingsManager);
+                    RuleColorizer newColorizer = new RuleColorizer();
                     newColorizer.setRules(sourceColorizer.getRules());
                     parent.setRuleColorizer(newColorizer);
                     updateColors();
@@ -543,7 +543,7 @@ public class ColorPanel extends JPanel {
                         if( globalRulesCheckbox.isSelected() ){
                             parentLogPanel.setRuleColorizer(globalColorizer);
                         }else{
-                            parentLogPanel.setRuleColorizer(new RuleColorizer(settingsManager));
+                            parentLogPanel.setRuleColorizer(new RuleColorizer());
                         }
                         componentChanged();
                         parentLogPanel.getCurrentRuleColorizer().addPropertyChangeListener(

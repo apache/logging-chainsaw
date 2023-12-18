@@ -17,10 +17,8 @@
 package org.apache.log4j.chainsaw.components.logpanel;
 
 import org.apache.commons.configuration2.AbstractConfiguration;
-import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.event.ConfigurationEvent;
 import org.apache.log4j.chainsaw.AbstractPreferencePanel;
-import org.apache.log4j.chainsaw.ApplicationPreferenceModel;
 import org.apache.log4j.chainsaw.BasicPrefPanel;
 import org.apache.log4j.chainsaw.CheckListCellRenderer;
 import org.apache.log4j.chainsaw.JTextComponentFormatter;
@@ -32,7 +30,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -48,15 +45,16 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel {
     //~ Instance fields =========================================================
 
     private final ModifiableListModel columnListModel = new ModifiableListModel();
-    private ApplicationPreferenceModel appPreferenceModel;
+    private final LogPanelPreferenceModel logPanelPreferenceModel;
     private SettingsManager settingsManager;
-    private final String m_panelIdentifier;
+    private final String tabIdentifier;
 
     //~ Constructors ============================================================
 
-    public LogPanelPreferencePanel(SettingsManager settingsManager, String panelIdent) {
+    public LogPanelPreferencePanel(SettingsManager settingsManager, String panelIdent, LogPanelPreferenceModel logPanelPreferenceModel) {
         this.settingsManager = settingsManager;
-        m_panelIdentifier = panelIdent;
+        tabIdentifier = panelIdent;
+        this.logPanelPreferenceModel = logPanelPreferenceModel;
         initComponents();
 
         getOkButton().addActionListener(e -> hidePanel());
@@ -111,10 +109,10 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel {
             final JList columnList = new JList();
             columnList.setVisibleRowCount(17);
 
-            AbstractConfiguration mergedConfig = settingsManager.getCombinedSettingsForRecevierTab(m_panelIdentifier);
+            AbstractConfiguration readOnlyCombinedConfig = settingsManager.getCombinedSettingsForRecevierTab(tabIdentifier);
 
-            String[] columnsOrder = mergedConfig.getStringArray( "table.columns.order" );
-
+//            String[] columnsOrder = readOnlyCombinedConfig.getStringArray( "table.columns.order" );
+//
 //            for (Object o : preferenceModel.getColumns()) {
 //                TableColumn col = (TableColumn) o;
 //                Enumeration enumeration = columnListModel.elements();
@@ -199,7 +197,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel {
         private void initComponents() {
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-            AbstractConfiguration config = settingsManager.getCombinedSettingsForRecevierTab(m_panelIdentifier);
+            AbstractConfiguration config = settingsManager.getCombinedSettingsForRecevierTab(tabIdentifier);
 
 
             JPanel dateFormatPanel = new JPanel();
@@ -284,7 +282,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel {
             bgLevel.add(rdLevelIcons);
             bgLevel.add(rdLevelText);
 
-            rdLevelIcons.setSelected(config.getBoolean("logpanel.levelIcons"));
+            rdLevelIcons.setSelected(logPanelPreferenceModel.isLevelIconsDisplayed());
 
             levelFormatPanel.add(rdLevelIcons);
             levelFormatPanel.add(rdLevelText);
@@ -447,7 +445,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel {
          * DOCUMENT ME!
          */
         private void initPanelComponents() {
-            AbstractConfiguration config = settingsManager.getCombinedSettingsForRecevierTab(m_panelIdentifier);
+            AbstractConfiguration updatableTabConfig = settingsManager.getSettingsForReceiverTab(tabIdentifier);
 
             JTextComponentFormatter.applySystemFontAndSize(clearTableExpression);
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -469,111 +467,103 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel {
             JPanel clearPanel = new JPanel(new BorderLayout());
             clearPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
             clearPanel.add(new JLabel("Clear all events if expression matches"), BorderLayout.NORTH);
-            clearTableExpression.setText(config.getString("logpanel.clearTableExpression"));
             clearTableExpression.setPreferredSize(new Dimension(300, 50));
             JPanel clearTableScrollPanel = new JPanel(new BorderLayout());
             clearTableScrollPanel.add(new JScrollPane(clearTableExpression), BorderLayout.NORTH);
             clearPanel.add(clearTableScrollPanel, BorderLayout.CENTER);
             add(clearPanel);
 
-            toolTips.setSelected(config.getBoolean("logpanel.toolTips"));
-            thumbnailBarToolTips.setSelected(config.getBoolean("logpanel.thumbnailBarToolTips"));
-            detailPanelVisible.setSelected(config.getBoolean("logpanel.detailColumnVisible"));
-            searchResultsVisible.setSelected(config.getBoolean("logpanel.searchResultsVisible"));
-            loggerTreePanel.setSelected(config.getBoolean("logpanel.logTreePanelVisible"));
+            clearTableExpression.setText(logPanelPreferenceModel.getClearTableExpression());
+            toolTips.setSelected(logPanelPreferenceModel.isToolTipsVisible());
+            thumbnailBarToolTips.setSelected(logPanelPreferenceModel.isThumbnailBarToolTipsVisible());
+            detailPanelVisible.setSelected(logPanelPreferenceModel.isDetailPaneVisible());
+            searchResultsVisible.setSelected(logPanelPreferenceModel.isSearchResultsVisible());
+            loggerTreePanel.setSelected(logPanelPreferenceModel.isLogTreePanelVisible());
         }
 
         /**
          * DOCUMENT ME!
          */
         private void setupListeners() {
-            Configuration config = settingsManager.getCombinedSettingsForRecevierTab(m_panelIdentifier).getConfiguration(0);
-            AbstractConfiguration tabConfig = settingsManager.getSettingsForReceiverTab(m_panelIdentifier);
+            AbstractConfiguration tabConfig = settingsManager.getSettingsForReceiverTab(tabIdentifier);
 
-            ActionListener wrapMessageListener = e -> config.setProperty("logpanel.wrapMsg", wrapMessage.isSelected());
+            wrapMessage.addActionListener(e -> logPanelPreferenceModel.setWrapMessage(wrapMessage.isSelected()));
 
-            wrapMessage.addActionListener(wrapMessageListener);
+            searchResultsVisible.addActionListener(e -> logPanelPreferenceModel.setSearchResultsVisible(searchResultsVisible.isSelected()));
 
-            ActionListener searchResultsVisibleListener = e -> config.setProperty("logpanel.searchResultsVisible", searchResultsVisible.isSelected());
-
-            searchResultsVisible.addActionListener(searchResultsVisibleListener);
-
-            ActionListener highlightSearchMatchTextListener = e -> config.setProperty("logpanel.highlightSearchMatchText", highlightSearchMatchText.isSelected());
-
-            highlightSearchMatchText.addActionListener(highlightSearchMatchTextListener);
+            highlightSearchMatchText.addActionListener(e -> logPanelPreferenceModel.setHighlightSearchMatchText(highlightSearchMatchText.isSelected()));
 
             tabConfig.addEventListener(ConfigurationEvent.SET_PROPERTY,
                 evt -> {
-                    if(!evt.getPropertyName().equals("logpanel.wrapMsg")) return;
+                    if(!evt.getPropertyName().equals(LogPanelPreferenceModel.WRAP_MSG)) return;
                     boolean value = (Boolean) evt.getPropertyValue();
                     wrapMessage.setSelected(value);
                 });
 
-            tabConfig.addEventListener(ConfigurationEvent.SET_PROPERTY,
-                evt -> {
-                    if(!evt.getPropertyName().equals("logpanel.searchResultsVisible")) return;
-                    boolean value = (Boolean) evt.getPropertyValue();
-                    searchResultsVisible.setSelected(value);
-                });
+            tabConfig.addEventListener(ConfigurationEvent.SET_PROPERTY, evt -> {
+                if (!evt.getPropertyName().equals(LogPanelPreferenceModel.SEARCH_RESULTS_VISIBLE)) return;
+                boolean value = (Boolean) evt.getPropertyValue();
+                searchResultsVisible.setSelected(value);
+            });
 
             tabConfig.addEventListener(ConfigurationEvent.SET_PROPERTY,
                 evt -> {
-                    if(!evt.getPropertyName().equals("logpanel.highlightSearchMatchText")) return;
+                    if(!evt.getPropertyName().equals(LogPanelPreferenceModel.HIGHLIGHT_SEARCH_MATCH_TEXT)) return;
                     boolean value = (Boolean) evt.getPropertyValue();
                     highlightSearchMatchText.setSelected(value);
                 });
 
-            toolTips.addActionListener(e -> config.setProperty("logpanel.toolTips", toolTips.isSelected()));
+            toolTips.addActionListener(e -> logPanelPreferenceModel.setToolTipsVisible(toolTips.isSelected()));
 
-            thumbnailBarToolTips.addActionListener(e -> config.setProperty("logpanel.thumbnailBarToolTips", thumbnailBarToolTips.isSelected()));
+            thumbnailBarToolTips.addActionListener(e -> logPanelPreferenceModel.setThumbnailBarToolTipsVisible(thumbnailBarToolTips.isSelected()));
 
-            getOkButton().addActionListener(e -> config.setProperty("logpanel.clearTableExpression", clearTableExpression.getText().trim()));
+            getOkButton().addActionListener(e -> logPanelPreferenceModel.setClearTableExpression(clearTableExpression.getText().trim()));
 
             tabConfig.addEventListener(ConfigurationEvent.SET_PROPERTY,
                 evt -> {
-                    if(!evt.getPropertyName().equals("logpanel.toolTips")) return;
+                    if(!evt.getPropertyName().equals(LogPanelPreferenceModel.TOOL_TIPS_VISIBLE)) return;
                     boolean value = (Boolean) evt.getPropertyValue();
                     toolTips.setSelected(value);
                 });
 
             tabConfig.addEventListener(ConfigurationEvent.SET_PROPERTY,
                 evt -> {
-                    if(!evt.getPropertyName().equals("logpanel.thumbnailBarToolTips")) return;
+                    if(!evt.getPropertyName().equals(LogPanelPreferenceModel.THUMBNAIL_BAR_TOOL_TIPS_VISIBLE)) return;
                     boolean value = (Boolean) evt.getPropertyValue();
                     thumbnailBarToolTips.setSelected(value);
                 });
 
-            detailPanelVisible.addActionListener(e -> config.setProperty("logpanel.detailColumnVisible", detailPanelVisible.isSelected()));
+            detailPanelVisible.addActionListener(e -> logPanelPreferenceModel.setDetailPaneVisible(detailPanelVisible.isSelected()));
 
             tabConfig.addEventListener(ConfigurationEvent.SET_PROPERTY,
                 evt -> {
-                    if(!evt.getPropertyName().equals("logpanel.detailColumnVisible")) return;
+                    if(!evt.getPropertyName().equals(LogPanelPreferenceModel.DETAIL_PANE_VISIBLE)) return;
                     boolean value = (Boolean) evt.getPropertyValue();
                     detailPanelVisible.setSelected(value);
                 });
 
-            scrollToBottom.addActionListener(e -> config.setProperty("logpanel.scrollToBottom", scrollToBottom.isSelected()));
+            scrollToBottom.addActionListener(e -> logPanelPreferenceModel.setScrollToBottom(scrollToBottom.isSelected()));
 
-            showMillisDeltaAsGap.addActionListener(e -> config.setProperty("logpanel.showMillisDeltaAsGap", showMillisDeltaAsGap.isSelected()));
+            showMillisDeltaAsGap.addActionListener(e -> logPanelPreferenceModel.setShowMillisDeltaAsGap(showMillisDeltaAsGap.isSelected()));
 
             tabConfig.addEventListener(ConfigurationEvent.SET_PROPERTY,
                 evt -> {
-                if(!evt.getPropertyName().equals("logpanel.showMillisDeltaAsGap")) return;
+                if(!evt.getPropertyName().equals(LogPanelPreferenceModel.SHOW_MILLIS_DELTA_AS_GAP)) return;
                 boolean value = (Boolean) evt.getPropertyValue();
                 showMillisDeltaAsGap.setSelected(value);
             });
             tabConfig.addEventListener(ConfigurationEvent.SET_PROPERTY,
                 evt -> {
-                    if(!evt.getPropertyName().equals("logpanel.scrollToBottom")) return;
+                    if(!evt.getPropertyName().equals(LogPanelPreferenceModel.SCROLL_TO_BOTTOM)) return;
                     boolean value = (Boolean) evt.getPropertyValue();
                     scrollToBottom.setSelected(value);
                 });
 
-            loggerTreePanel.addActionListener(e -> config.setProperty("logpanel.logTreePanelVisible", loggerTreePanel.isSelected()));
+            loggerTreePanel.addActionListener(e -> logPanelPreferenceModel.setLogTreePanelVisible(loggerTreePanel.isSelected()));
 
             tabConfig.addEventListener(ConfigurationEvent.SET_PROPERTY,
                 evt -> {
-                    if(!evt.getPropertyName().equals("logpanel.logTreePanelVisible")) return;
+                    if(!evt.getPropertyName().equals(LogPanelPreferenceModel.LOG_TREE_PANEL_VISIBLE)) return;
                     boolean value = (Boolean) evt.getPropertyValue();
                     loggerTreePanel.setSelected(value);
                 });
@@ -602,7 +592,7 @@ public class LogPanelPreferencePanel extends AbstractPreferencePanel {
 
             tabConfig.addEventListener(ConfigurationEvent.SET_PROPERTY,
                 evt -> {
-                    if(!evt.getPropertyName().equals("logpanel.clearTableExpression")) return;
+                    if(!evt.getPropertyName().equals(LogPanelPreferenceModel.CLEAR_TABLE_EXPRESSION)) return;
                     clearTableExpression.setText(evt.getPropertyValue().toString());
                 });
         }

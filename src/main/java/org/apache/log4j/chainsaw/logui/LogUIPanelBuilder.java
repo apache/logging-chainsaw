@@ -17,6 +17,7 @@
 
 package org.apache.log4j.chainsaw.logui;
 
+import org.apache.log4j.chainsaw.ApplicationPreferenceModel;
 import org.apache.log4j.chainsaw.ChainsawConstants;
 import org.apache.log4j.chainsaw.ChainsawStatusBar;
 import org.apache.log4j.chainsaw.ChainsawToolBarAndMenus;
@@ -40,6 +41,7 @@ import java.util.Map;
 
 public class LogUIPanelBuilder {
     private static Logger logger = LogManager.getLogger(LogUIPanelBuilder.class);
+    private final ApplicationPreferenceModel applicationPreferenceModel;
 
     ChainsawTabbedPane tabbedPane;
     List<LogPanel> identifierPanels;
@@ -51,11 +53,12 @@ public class LogUIPanelBuilder {
     private ZeroConfPlugin zeroConfPlugin;
 
     private Map<String, RuleColorizer> allColorizers = new HashMap<>();
-    private RuleColorizer globalRuleColorizer = new RuleColorizer(settingsManager, true);
+    private RuleColorizer globalRuleColorizer = new RuleColorizer();
 
     public LogUIPanelBuilder(ChainsawTabbedPane tabbedPane, List<LogPanel> identifierPanels,
                              ChainsawToolBarAndMenus chainsawToolBarAndMenus, Map<String, Component> panelMap,
-                             SettingsManager settingsManager, ChainsawStatusBar chainsawStatusBar, ZeroConfPlugin zeroConfPlugin) {
+                             SettingsManager settingsManager, ApplicationPreferenceModel applicationPreferenceModel,
+                             ChainsawStatusBar chainsawStatusBar, ZeroConfPlugin zeroConfPlugin) {
         this.tabbedPane = tabbedPane;
         this.identifierPanels = identifierPanels;
         this.chainsawToolBarAndMenus = chainsawToolBarAndMenus;
@@ -63,16 +66,15 @@ public class LogUIPanelBuilder {
         this.settingsManager = settingsManager;
         this.chainsawStatusBar = chainsawStatusBar;
         this.zeroConfPlugin = zeroConfPlugin;
+        this.applicationPreferenceModel = applicationPreferenceModel;
 
-        RuleColorizer colorizer = new RuleColorizer(settingsManager);
+        RuleColorizer colorizer = new RuleColorizer();
         allColorizers.put(ChainsawConstants.DEFAULT_COLOR_RULE_NAME, colorizer);
-        globalRuleColorizer.setConfiguration(settingsManager.getGlobalConfiguration());
-        globalRuleColorizer.loadColorSettings();
     }
 
     void buildLogPanel(boolean customExpression, final String ident, final ChainsawReceiver rx)
         throws IllegalArgumentException {
-        final LogPanel thisPanel = new LogPanel(settingsManager, chainsawStatusBar, ident, allColorizers, globalRuleColorizer);
+        final LogPanel thisPanel = new LogPanel(settingsManager, applicationPreferenceModel, chainsawStatusBar, ident, allColorizers, globalRuleColorizer);
 
         if (!customExpression && rx != null) {
             thisPanel.setReceiver(rx);
@@ -95,7 +97,7 @@ public class LogUIPanelBuilder {
             evt -> chainsawToolBarAndMenus.stateChange();
 
         thisPanel.addPropertyChangeListener(toolbarMenuUpdateListener);
-        thisPanel.addPreferencePropertyChangeListener(toolbarMenuUpdateListener);
+        thisPanel.addPropertyChangeListener(toolbarMenuUpdateListener);
 
         thisPanel.addPropertyChangeListener(
             "docked",

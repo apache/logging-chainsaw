@@ -16,13 +16,15 @@
  */
 package org.apache.log4j.chainsaw;
 
+import org.apache.commons.configuration2.AbstractConfiguration;
+import org.apache.commons.configuration2.event.ConfigurationEvent;
+import org.apache.commons.configuration2.event.EventListener;
+import org.apache.log4j.varia.LogFilePatternReceiver;
+
 import javax.swing.*;
 import java.awt.*;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Vector;
 
 /**
  * Encapsulates the Chainsaw Application wide properties
@@ -31,158 +33,94 @@ import java.util.Vector;
  */
 public class ApplicationPreferenceModel {
 
-    private boolean showNoReceiverWarning = true;
-    private boolean statusBar = true;
-    private boolean toolbar = true;
-    private boolean receivers = false; //setting this to true will cause the receivers panel to be displayed by default
-    private boolean confirmExit = true;
-    private boolean showSplash = true;
-    private String lookAndFeelClassName = "";
-    private int toolTipDisplayMillis = 4000;
-    private int cyclicBufferSize = 50000;
-    private String lastUsedVersion = "";
-    private int responsiveness = 3;
-    private Color searchBackgroundColor = ChainsawConstants.FIND_LOGGER_BACKGROUND;
-    private Color searchForegroundColor = ChainsawConstants.FIND_LOGGER_FOREGROUND;
-    private Color alternatingColorForegroundColor = ChainsawConstants.COLOR_ODD_ROW_FOREGROUND;
-    private Color alternatingColorBackgroundColor = ChainsawConstants.COLOR_ODD_ROW_BACKGROUND;
+    public static final String SHOW_NO_RECEIVER_WARNING = "showNoReceiverWarning";
+    public static final String IDENTIFIER_EXPRESSION = "identifierExpression";
+    public static final String CYCLIC_BUFFER_SIZE = "cyclicBufferSize";
+    public static final String TOOL_TIP_DISPLAY_MILLIS = "toolTipDisplayMillis";
+    public static final String RESPONSIVENESS = "responsiveness";
+    public static final String TAB_PLACEMENT = "tabPlacement";
+    public static final String STATUS_BAR_VISIBLE = "statusBarVisible";
+    public static final String ALTERNATING_FOREGROUND_COLOR = "alternatingForegroundColor";
+    public static final String ALTERNATING_BACKGROUND_COLOR = "alternatingBackgroundColor";
+    public static final String SEARCH_FOREGROUND_COLOR = "searchForegroundColor";
+    public static final String SEARCH_BACKGROUND_COLOR = "searchBackgroundColor";
+    public static final String RECEIVERS_VISIBLE = "receiversVisible";
+    public static final String TOOLBAR_VISIBLE = "toolbarVisible";
+    public static final String LOOK_AND_FEEL_CLASS_NAME = "lookAndFeelClassName";
+    public static final String CONFIRM_EXIT = "confirmExit";
+    public static final String SHOW_SPLASH = "showSplash";
+    public static final String CONFIGURATION_URL = "configurationURL";
+    public static final String BYPASS_CONFIGURATION_URL = "bypassConfigurationURL";
+    public static final String DEFAULT_COLUMN_NAMES = "defaultColumnNames";
+    public static final String BYPASS_SEARCH_COLORS = "bypassSearchColors";
+    private final AbstractConfiguration globalConfiguration;
+    private final int toolTipDisplayMillisDefault = 4000;
+    private final int cyclicBufferSizeDefault = 50000;
+    private final int responsivenessDefault = 3;
+    private final Color searchBackgroundColorDefault = ChainsawConstants.FIND_LOGGER_BACKGROUND;
+    private final Color searchForegroundColorDefault = ChainsawConstants.FIND_LOGGER_FOREGROUND;
+    private final Color alternatingForegroundColorDefault = ChainsawConstants.COLOR_ODD_ROW_FOREGROUND;
+    private final Color alternatingBackgroundColorDefault = ChainsawConstants.COLOR_ODD_ROW_BACKGROUND;
 
-    private String identifierExpression = "PROP.hostname - PROP.application";
+    private final String identifierExpressionDefault = "PROP.hostname - PROP.application";
 
-    private transient final PropertyChangeSupport propertySupport =
-        new PropertyChangeSupport(this);
+    private final int tabPlacementDefault = 3;
 
-    private int tabPlacement = 3;
+    private final boolean bypassSearchColorsDefault = false;
+    private final boolean statusBarVisibleDefault = true;
+    private final boolean receiversDefault = false;
+    private final boolean showNoReceiverWarningDefault = true;
+    private final boolean isToolbarDefault = true;
+    private final boolean confirmExitDefault = true;
+    private final boolean showSplashDefault = true;
+    private List<String> defaultColumns = List.of("LOGGER","MARKER","TIMESTAMP","LEVEL","MESSAGE");
 
-    /**
-     * If not 'empty', this property will be used as the URL to load log4j configuration at startup
-     */
-    private Vector<String> configurationURLs = new Vector<>();
 
-    private String configurationURL = "";
-
-    /**
-     * Remember current config if provided via means other than configurationURL (command line arg, etc)
-     */
-    private transient String bypassConfigurationURL = null;
-    /**
-     * this means for Receivers that require optional jars that can't be delivered
-     * by the Web start classloader, we need to be able to remove the SecurityManager in place
-     */
-    private boolean okToRemoveSecurityManager = false;
-    private static final int CONFIGURATION_URL_ENTRY_COUNT = 10;
-    private List defaultColumnNames = new ArrayList();
-    private boolean defaultColumnsSet;
-    private boolean bypassSearchColors = false;
-
-    /**
-     * @param listener
-     */
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        propertySupport.addPropertyChangeListener(listener);
+    public ApplicationPreferenceModel(AbstractConfiguration globalConfiguration) {
+        this.globalConfiguration = globalConfiguration;
     }
 
-    /**
-     * @param propertyName
-     * @param listener
-     */
-    public void addPropertyChangeListener(String propertyName,
-                                          PropertyChangeListener listener) {
-        propertySupport.addPropertyChangeListener(propertyName, listener);
-    }
-
-    /**
-     * @param propertyName
-     * @param oldValue
-     * @param newValue
-     */
-    private void firePropertyChange(String propertyName, boolean oldValue,
-                                    boolean newValue) {
-        propertySupport.firePropertyChange(propertyName, oldValue, newValue);
-    }
-
-    /**
-     * @param propertyName
-     * @param oldValue
-     * @param newValue
-     */
-    private void firePropertyChange(String propertyName, int oldValue,
-                                    int newValue) {
-        propertySupport.firePropertyChange(propertyName, oldValue, newValue);
-    }
-
-    /**
-     * @param propertyName
-     * @param oldValue
-     * @param newValue
-     */
-    private void firePropertyChange(String propertyName, Object oldValue,
-                                    Object newValue) {
-        propertySupport.firePropertyChange(propertyName, oldValue, newValue);
-    }
-
-    /**
-     * @param propertyName
-     * @return listeners flag
-     */
-    public boolean hasListeners(String propertyName) {
-        return propertySupport.hasListeners(propertyName);
-    }
-
-    /**
-     * @param listener
-     */
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        propertySupport.removePropertyChangeListener(listener);
+    public void addEventListener(EventListener<ConfigurationEvent> listener) {
+        globalConfiguration.addEventListener(ConfigurationEvent.SET_PROPERTY, listener);
     }
 
     /**
      * @return Returns the showNoReceiverWarning.
      */
     public final boolean isShowNoReceiverWarning() {
-
-        return showNoReceiverWarning;
+        return globalConfiguration.getBoolean(SHOW_NO_RECEIVER_WARNING, showNoReceiverWarningDefault);
     }
 
     public final String getIdentifierExpression() {
-        return identifierExpression;
+        return globalConfiguration.getString(IDENTIFIER_EXPRESSION, identifierExpressionDefault);
     }
 
     public final void setCyclicBufferSize(int newCyclicBufferSize) {
-        int oldCyclicBufferSize = cyclicBufferSize;
-        cyclicBufferSize = newCyclicBufferSize;
-        firePropertyChange("cyclicBufferSize", oldCyclicBufferSize, newCyclicBufferSize);
+        globalConfiguration.setProperty(CYCLIC_BUFFER_SIZE, newCyclicBufferSize);
     }
 
     public final int getCyclicBufferSize() {
-        return cyclicBufferSize;
+        return globalConfiguration.getInt(CYCLIC_BUFFER_SIZE, cyclicBufferSizeDefault);
     }
 
     public final void setToolTipDisplayMillis(int newToolTipDisplayMillis) {
-        int oldToolTipDisplayMillis = toolTipDisplayMillis;
-        toolTipDisplayMillis = newToolTipDisplayMillis;
-        firePropertyChange("toolTipDisplayMillis", oldToolTipDisplayMillis, newToolTipDisplayMillis);
+        globalConfiguration.setProperty(TOOL_TIP_DISPLAY_MILLIS, newToolTipDisplayMillis);
     }
 
     public final int getToolTipDisplayMillis() {
-        return toolTipDisplayMillis;
+        return globalConfiguration.getInt(TOOL_TIP_DISPLAY_MILLIS, toolTipDisplayMillisDefault);
     }
 
     public final void setIdentifierExpression(String newIdentifierExpression) {
-        String oldIdentifierExpression = identifierExpression;
-        this.identifierExpression = newIdentifierExpression;
-        firePropertyChange("identifierExpression", oldIdentifierExpression, newIdentifierExpression);
+        globalConfiguration.setProperty(IDENTIFIER_EXPRESSION, newIdentifierExpression);
     }
 
     /**
      * @param newShowNoReceiverWarning The showNoReceiverWarning to set.
      */
     public final void setShowNoReceiverWarning(boolean newShowNoReceiverWarning) {
-        boolean oldShowNoReceiverWarning = showNoReceiverWarning;
-        this.showNoReceiverWarning = newShowNoReceiverWarning;
-        firePropertyChange("showNoReceiverWarning", oldShowNoReceiverWarning, newShowNoReceiverWarning);
+        globalConfiguration.setProperty(SHOW_NO_RECEIVER_WARNING, newShowNoReceiverWarning);
     }
-
 
     /**
      * Takes another model and copies all the values into this model
@@ -194,9 +132,9 @@ public class ApplicationPreferenceModel {
         setShowNoReceiverWarning(model.isShowNoReceiverWarning() || (model.getConfigurationURL() == null || model.getConfigurationURL().trim().isEmpty()));
         setResponsiveness(model.getResponsiveness());
         setTabPlacement(model.getTabPlacement());
-        setStatusBar(model.isStatusBar());
-        setToolbar(model.isToolbar());
-        setReceivers(model.isReceivers());
+        setStatusBarVisible(model.isStatusBarVisible());
+        setToolbarVisible(model.isToolbarVisible());
+        setReceiversVisible(model.isReceiversVisible());
         if (model.getLookAndFeelClassName() != null && !model.getLookAndFeelClassName().trim().isEmpty()) {
             setLookAndFeelClassName(model.getLookAndFeelClassName());
         } else {
@@ -207,16 +145,10 @@ public class ApplicationPreferenceModel {
         setShowSplash(model.isShowSplash());
         setToolTipDisplayMillis(model.getToolTipDisplayMillis());
         setCyclicBufferSize(model.getCyclicBufferSize());
-        Vector<String> configurationURLs = model.getConfigurationURLs();
-        if (configurationURLs != null) {
-            setConfigurationURLs(configurationURLs);
-        }
         //only set current config URL if bypass is null
         if (model.getBypassConfigurationURL() == null) {
             setConfigurationURL(model.getConfigurationURL());
         }
-        setLastUsedVersion(model.getLastUsedVersion());
-        setOkToRemoveSecurityManager(model.isOkToRemoveSecurityManager());
         Color searchForeground = model.getSearchForegroundColor();
         Color searchBackground = model.getSearchBackgroundColor();
         if (searchForeground != null && searchBackground != null) {
@@ -224,13 +156,13 @@ public class ApplicationPreferenceModel {
             setSearchForegroundColor(searchForeground);
         }
 
-        Color alternatingForeground = model.getAlternatingColorForegroundColor();
-        Color alternatingBackground = model.getAlternatingColorBackgroundColor();
+        Color alternatingForeground = model.getAlternatingForegroundColor();
+        Color alternatingBackground = model.getAlternatingBackgroundColor();
         if (alternatingForeground != null && alternatingBackground != null) {
             setAlternatingBackgroundColor(alternatingBackground);
             setAlternatingForegroundColor(alternatingForeground);
         }
-        if (model.isDefaultColumnsSet()) {
+        if (!model.getDefaultColumnNames().isEmpty()) {
             setDefaultColumnNames(model.getDefaultColumnNames());
         }
         setBypassSearchColors(model.isBypassSearchColors());
@@ -255,277 +187,185 @@ public class ApplicationPreferenceModel {
      * @return Returns the responsiveness.
      */
     public final int getResponsiveness() {
-        return responsiveness;
+        return globalConfiguration.getInt(RESPONSIVENESS, responsivenessDefault);
     }
 
     /**
      * @param newValue The responsiveness to set.
      */
     public final void setResponsiveness(int newValue) {
-        int oldvalue = responsiveness;
-
-        if (newValue >= 1000) {
-            responsiveness = (newValue - 750) / 1000;
-        } else {
-            responsiveness = newValue;
-        }
-        firePropertyChange("responsiveness", oldvalue, responsiveness);
+        globalConfiguration.setProperty(RESPONSIVENESS, newValue);
     }
 
     /**
      * @param i
      */
     public void setTabPlacement(int i) {
-        int oldValue = this.tabPlacement;
-        this.tabPlacement = i;
-        firePropertyChange("tabPlacement", oldValue, this.tabPlacement);
+        globalConfiguration.setProperty(TAB_PLACEMENT, i);
     }
 
     /**
      * @return Returns the tabPlacement.
      */
     public final int getTabPlacement() {
-        return tabPlacement;
+        return globalConfiguration.getInt(TAB_PLACEMENT, tabPlacementDefault);
     }
 
     /**
      * @return Returns the statusBar.
      */
-    public final boolean isStatusBar() {
-        return statusBar;
-    }
-
-    public Vector<String> getConfigurationURLs() {
-        return configurationURLs;
-    }
-
-    public void setConfigurationURLs(Vector<String> urls) {
-        if (urls != null) {
-            configurationURLs = urls;
-        }
+    public final boolean isStatusBarVisible() {
+        return globalConfiguration.getBoolean(STATUS_BAR_VISIBLE, statusBarVisibleDefault);
     }
 
     /**
-     * @param statusBar The statusBar to set.
+     * @param statusBarVisible The statusBarVisible to set.
      */
-    public final void setStatusBar(boolean statusBar) {
-        boolean oldValue = this.statusBar;
-        this.statusBar = statusBar;
-        firePropertyChange("statusBar", oldValue, this.statusBar);
+    public final void setStatusBarVisible(boolean statusBarVisible) {
+        globalConfiguration.setProperty(STATUS_BAR_VISIBLE, statusBarVisible);
     }
 
     public void setAlternatingForegroundColor(Color alternatingColorForegroundColor) {
-        this.alternatingColorForegroundColor = alternatingColorForegroundColor;
-        firePropertyChange("alternatingColor", true, false);
+        globalConfiguration.setProperty(ALTERNATING_FOREGROUND_COLOR, alternatingColorForegroundColor);
     }
 
     public void setAlternatingBackgroundColor(Color alternatingColorBackgroundColor) {
-        this.alternatingColorBackgroundColor = alternatingColorBackgroundColor;
-        firePropertyChange("alternatingColor", true, false);
+        globalConfiguration.setProperty(ALTERNATING_BACKGROUND_COLOR, alternatingColorBackgroundColor);
     }
 
     public void setSearchForegroundColor(Color searchForegroundColor) {
-        this.searchForegroundColor = searchForegroundColor;
-        firePropertyChange("searchColor", true, false);
+        globalConfiguration.setProperty(SEARCH_FOREGROUND_COLOR, searchForegroundColor);
     }
 
     public void setSearchBackgroundColor(Color searchBackgroundColor) {
-        this.searchBackgroundColor = searchBackgroundColor;
-        firePropertyChange("searchColor", true, false);
+        globalConfiguration.setProperty(SEARCH_BACKGROUND_COLOR, searchBackgroundColor);
     }
 
-    public Color getAlternatingColorBackgroundColor() {
-        return alternatingColorBackgroundColor;
+    public Color getAlternatingBackgroundColor() {
+        return globalConfiguration.get(Color.class, ALTERNATING_BACKGROUND_COLOR, alternatingBackgroundColorDefault);
     }
 
-    public Color getAlternatingColorForegroundColor() {
-        return alternatingColorForegroundColor;
+    public Color getAlternatingForegroundColor() {
+        return globalConfiguration.get(Color.class, ALTERNATING_FOREGROUND_COLOR, alternatingForegroundColorDefault);
     }
+
 
     public Color getSearchBackgroundColor() {
-        return searchBackgroundColor;
+        return globalConfiguration.get(Color.class, SEARCH_BACKGROUND_COLOR, searchBackgroundColorDefault);
     }
 
     public Color getSearchForegroundColor() {
-        return searchForegroundColor;
+        return globalConfiguration.get(Color.class, SEARCH_FOREGROUND_COLOR, searchForegroundColorDefault);
     }
 
     /**
      * @return Returns the receivers.
      */
-    public final boolean isReceivers() {
-        return receivers;
+    public final boolean isReceiversVisible() {
+        return globalConfiguration.getBoolean(RECEIVERS_VISIBLE, receiversDefault);
     }
 
     /**
-     * @param receivers The receivers to set.
+     * @param receiversVisible The receiversVisible to set.
      */
-    public final void setReceivers(boolean receivers) {
-        boolean oldValue = this.receivers;
-        this.receivers = receivers;
-        firePropertyChange("receivers", oldValue, this.receivers);
+    public final void setReceiversVisible(boolean receiversVisible) {
+        globalConfiguration.setProperty(RECEIVERS_VISIBLE, receiversVisible);
     }
 
     /**
      * @return Returns the toolbar.
      */
-    public final boolean isToolbar() {
-        return toolbar;
+    public final boolean isToolbarVisible() {
+        return globalConfiguration.getBoolean(TOOLBAR_VISIBLE, isToolbarDefault);
     }
 
     /**
-     * @param toolbar The toolbar to set.
+     * @param toolbarVisible The toolbarVisible to set.
      */
-    public final void setToolbar(boolean toolbar) {
-        boolean oldValue = this.toolbar;
-        this.toolbar = toolbar;
-        firePropertyChange("toolbar", oldValue, this.toolbar);
+    public final void setToolbarVisible(boolean toolbarVisible) {
+        globalConfiguration.setProperty(TOOLBAR_VISIBLE, toolbarVisible);
     }
 
     /**
      * @return Returns the lookAndFeelClassName.
      */
     public final String getLookAndFeelClassName() {
-        return lookAndFeelClassName;
+        return globalConfiguration.getString(LOOK_AND_FEEL_CLASS_NAME, "");
     }
 
     /**
      * @param lookAndFeelClassName The lookAndFeelClassName to set.
      */
     public final void setLookAndFeelClassName(String lookAndFeelClassName) {
-        String oldValue = this.lookAndFeelClassName;
-        this.lookAndFeelClassName = lookAndFeelClassName;
-        firePropertyChange("lookAndFeelClassName", oldValue, this.lookAndFeelClassName);
+        globalConfiguration.setProperty(LOOK_AND_FEEL_CLASS_NAME, lookAndFeelClassName);
     }
 
     /**
      * @return Returns the confirmExit.
      */
     public final boolean isConfirmExit() {
-        return confirmExit;
+        return globalConfiguration.getBoolean(CONFIRM_EXIT, confirmExitDefault);
     }
 
     /**
      * @param confirmExit The confirmExit to set.
      */
     public final void setConfirmExit(boolean confirmExit) {
-        boolean oldValue = this.confirmExit;
-        this.confirmExit = confirmExit;
-        firePropertyChange("confirmExit", oldValue, this.confirmExit);
+        globalConfiguration.setProperty(CONFIRM_EXIT, confirmExit);
     }
 
     /**
      * @return Returns the showSplash.
      */
     public final boolean isShowSplash() {
-        return showSplash;
+        return globalConfiguration.getBoolean(SHOW_SPLASH, showSplashDefault);
     }
 
     /**
      * @param showSplash The showSplash to set.
      */
     public final void setShowSplash(boolean showSplash) {
-        boolean oldValue = this.showSplash;
-        this.showSplash = showSplash;
-        firePropertyChange("showSplash", oldValue, this.showSplash);
+        globalConfiguration.setProperty(SHOW_SPLASH, showSplash);
     }
 
     /**
      * @return Returns the configurationURL.
      */
     public final String getConfigurationURL() {
-        return this.configurationURL;
+        return globalConfiguration.getString(CONFIGURATION_URL, "");
     }
 
     public final String getBypassConfigurationURL() {
-        return bypassConfigurationURL;
+        return globalConfiguration.getString(BYPASS_CONFIGURATION_URL, "");
     }
 
     /*
       Set to null to un-bypass
      */
     public void setBypassConfigurationURL(String bypassConfigurationURL) {
-        //don't change configuration URL..configurationURL is persisted on app exit
-        if (bypassConfigurationURL != null && bypassConfigurationURL.trim().isEmpty()) {
-            this.bypassConfigurationURL = null;
-        }
-        this.bypassConfigurationURL = bypassConfigurationURL;
+        globalConfiguration.setProperty(BYPASS_CONFIGURATION_URL, bypassConfigurationURL);
     }
 
     /**
      * @param configurationURL The configurationURL to set.
      */
     public final void setConfigurationURL(String configurationURL) {
-        //don't add empty entries, but allow the current configuration URL to be set to an empty string
-        Object oldValue = this.bypassConfigurationURL != null ? this.bypassConfigurationURL : this.configurationURL;
-        bypassConfigurationURL = null;
-        if (configurationURL == null || configurationURL.trim().isEmpty()) {
-            this.configurationURL = "";
-            firePropertyChange("configurationURL", oldValue, this.configurationURL);
-            return;
-        }
-        //add entry to MRU list
-        if (!configurationURLs.contains(configurationURL)) {
-            if (configurationURLs.size() == CONFIGURATION_URL_ENTRY_COUNT) {
-                configurationURLs.remove(CONFIGURATION_URL_ENTRY_COUNT - 1);
-            }
-            configurationURLs.add(0, configurationURL);
-        }
-        this.configurationURL = configurationURL;
-        firePropertyChange("configurationURL", oldValue, this.configurationURL);
+        globalConfiguration.setProperty(CONFIGURATION_URL, configurationURL);
     }
 
-    /**
-     * @return Returns the lastUsedVersion.
-     */
-    public final String getLastUsedVersion() {
-        return this.lastUsedVersion;
+    public void setDefaultColumnNames(List<String> defaultColumnNames) {
+        globalConfiguration.setProperty(DEFAULT_COLUMN_NAMES, defaultColumnNames);
     }
 
-    /**
-     * @param lastUsedVersion The lastUsedVersion to set.
-     */
-    public final void setLastUsedVersion(String lastUsedVersion) {
-        String oldValue = this.lastUsedVersion;
-        this.lastUsedVersion = lastUsedVersion;
-        firePropertyChange("lastUsedVersion", oldValue, this.lastUsedVersion);
-    }
-
-    /**
-     * @return ok to remove security manager flag
-     */
-    public final boolean isOkToRemoveSecurityManager() {
-        return this.okToRemoveSecurityManager;
-    }
-
-    /**
-     * @param okToRemoveSecurityManager The okToRemoveSecurityManager to set.
-     */
-    public final void setOkToRemoveSecurityManager(boolean okToRemoveSecurityManager) {
-        boolean oldValue = this.okToRemoveSecurityManager;
-        this.okToRemoveSecurityManager = okToRemoveSecurityManager;
-        firePropertyChange("okToRemoveSecurityManager", oldValue, this.okToRemoveSecurityManager);
-    }
-
-    public void setDefaultColumnNames(List defaultColumnNames) {
-        defaultColumnsSet = true;
-        this.defaultColumnNames.clear();
-        this.defaultColumnNames.addAll(defaultColumnNames);
-    }
-
-    public boolean isDefaultColumnsSet() {
-        return defaultColumnsSet;
-    }
-
-    public List getDefaultColumnNames() {
-        return defaultColumnNames;
+    public List<String> getDefaultColumnNames() {
+        return globalConfiguration.getList(String.class, DEFAULT_COLUMN_NAMES, defaultColumns);
     }
 
     public void setBypassSearchColors(boolean bypassSearchColors) {
-        this.bypassSearchColors = bypassSearchColors;
+        globalConfiguration.setProperty(BYPASS_SEARCH_COLORS, bypassSearchColors);
     }
 
     public boolean isBypassSearchColors() {
-        return bypassSearchColors;
+        return globalConfiguration.getBoolean(BYPASS_SEARCH_COLORS, bypassSearchColorsDefault);
     }
 }

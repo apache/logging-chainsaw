@@ -50,12 +50,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.Set;
 
 /**
  * The main entry point for Chainsaw, this class represents the first frame
@@ -107,6 +103,7 @@ public class LogUI extends JFrame {
 
     private final ShutdownManager shutdownManager;
     private LogUIPanelBuilder logUIPanelBuilder;
+    private final ApplicationPreferenceModel applicationPreferenceModel;
 
     /**
      * Constructor which builds up all the visual elements of the frame including
@@ -117,6 +114,7 @@ public class LogUI extends JFrame {
 
         this.settingsManager = settingsManager;
         this.configuration = settingsManager.getGlobalConfiguration();
+        applicationPreferenceModel = new ApplicationPreferenceModel(settingsManager.getGlobalConfiguration());
 
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
@@ -133,12 +131,11 @@ public class LogUI extends JFrame {
      */
     private void initGUI() {
         setupHelpSystem();
-        statusBar = new ChainsawStatusBar(this, configuration);
+        statusBar = new ChainsawStatusBar(this, applicationPreferenceModel);
 
-        boolean showStatusBar = configuration.getBoolean("statusBar", true);
-        setStatusBarVisible(showStatusBar);
+        setStatusBarVisible(applicationPreferenceModel.isStatusBarVisible());
 
-        chainsawToolBarAndMenus = new ChainsawToolBarAndMenus(this, configuration);
+        chainsawToolBarAndMenus = new ChainsawToolBarAndMenus(this, applicationPreferenceModel);
         toolbar = chainsawToolBarAndMenus.getToolbar();
         setJMenuBar(chainsawToolBarAndMenus.getMenubar());
 
@@ -146,7 +143,7 @@ public class LogUI extends JFrame {
 
         createDragAndDrop();
 
-        applicationPreferenceModelPanel = new ApplicationPreferenceModelPanel(settingsManager);
+        applicationPreferenceModelPanel = new ApplicationPreferenceModelPanel(settingsManager, applicationPreferenceModel);
 
         applicationPreferenceModelPanel.setOkCancelActionListener(e -> preferencesFrame.setVisible(false));
 
@@ -160,7 +157,7 @@ public class LogUI extends JFrame {
         preferencesFrame.getRootPane().
             getActionMap().put("ESCAPE", closeAction);
 
-        logUIPanelBuilder = new LogUIPanelBuilder(tabbedPane, identifierPanels, chainsawToolBarAndMenus, panelMap, settingsManager, statusBar, zeroConf);
+        logUIPanelBuilder = new LogUIPanelBuilder(tabbedPane, identifierPanels, chainsawToolBarAndMenus, panelMap, settingsManager, applicationPreferenceModel, statusBar, zeroConf);
 
         OSXIntegration.init(this);
     }
@@ -368,7 +365,7 @@ public class LogUI extends JFrame {
     }
 
     private void createReceiversPanel(JPanel panePanel) {
-        LogUiReceiversPanel logUiReceiversPanel = new LogUiReceiversPanel(settingsManager, receivers, this, statusBar, panePanel);
+        LogUiReceiversPanel logUiReceiversPanel = new LogUiReceiversPanel(settingsManager, applicationPreferenceModel, receivers, this, statusBar, panePanel);
         getContentPane().add(logUiReceiversPanel.getMainReceiverSplitPane(), BorderLayout.CENTER);
     }
 
@@ -457,6 +454,12 @@ public class LogUI extends JFrame {
             settingsManager.saveSettingsForReceiver(rx);
         }
 
+        for (Component comp :  panelMap.values()) {
+            if (comp instanceof LogPanel) {
+                ((LogPanel)comp).saveSettings();
+            }
+        }
+
         settingsManager.saveAllSettings();
         return shutdownManager.shutdown();
     }
@@ -513,7 +516,6 @@ public class LogUI extends JFrame {
      */
     public LogPanel getCurrentLogPanel() {
         Component selectedTab = tabbedPane.getSelectedComponent();
-
         if (selectedTab instanceof LogPanel) {
             return (LogPanel) selectedTab;
         }

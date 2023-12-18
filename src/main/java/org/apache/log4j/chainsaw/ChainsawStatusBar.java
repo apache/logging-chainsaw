@@ -53,13 +53,13 @@ public class ChainsawStatusBar extends JPanel {
         BorderFactory.createLineBorder(statusMsg.getBackground().darker());
     private final LogUI logUI;
 
-    public ChainsawStatusBar(LogUI logUI, AbstractConfiguration configuration) {
+    public ChainsawStatusBar(LogUI logUI, ApplicationPreferenceModel applicationPreferenceModel) {
         setLayout(new GridBagLayout());
         this.logUI = logUI;
 
-        configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
+        applicationPreferenceModel.addEventListener(
             evt -> {
-                if (evt.getPropertyName().equals("statusBar")) {
+                if (evt.getPropertyName().equals(ApplicationPreferenceModel.STATUS_BAR_VISIBLE)) {
                     boolean value = (Boolean) evt.getPropertyValue();
                     setVisible(value);
                 }

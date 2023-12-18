@@ -19,12 +19,14 @@
  */
 package org.apache.log4j.chainsaw.components.logpanel;
 
+import org.apache.commons.configuration2.AbstractConfiguration;
+import org.apache.commons.configuration2.event.ConfigurationEvent;
+import org.apache.commons.configuration2.event.EventListener;
+import org.apache.log4j.chainsaw.ChainsawConstants;
+import org.apache.log4j.chainsaw.layout.DefaultLayoutFactory;
 import org.apache.log4j.helpers.Constants;
 
 import javax.swing.table.TableColumn;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -32,77 +34,76 @@ import java.util.*;
  *
  * @author Paul Smith
  */
-public class LogPanelPreferenceModel implements Serializable {
+public class LogPanelPreferenceModel {
     public static final String ISO8601 = "ISO8601";
-    public static final Collection DATE_FORMATS;
+    public static final Collection<String> DATE_FORMATS = Collections.singletonList(ISO8601);
+    public static final String PAUSED = "logpanel.paused";
+    public static final String CLEAR_TABLE_EXPRESSION = "logpanel.clearTableExpression";
+    public static final String ALWAYS_DISPLAY_EXPRESSION = "logpanel.alwaysDisplayExpression";
+    public static final String HIDDEN_EXPRESSION = "logpanel.hiddenExpression";
+    public static final String DATE_FORMAT_TIME_ZONE = "logpanel.dateFormatTimeZone";
+    public static final String HIDDEN_LOGGERS = "logpanel.hiddenLoggers";
+    public static final String LOG_TREE_PANEL_VISIBLE = "logpanel.logTreePanelVisible";
+    public static final String TOOL_TIPS_VISIBLE = "logpanel.toolTipsVisible";
+    public static final String THUMBNAIL_BAR_TOOL_TIPS_VISIBLE = "logpanel.thumbnailBarToolTipsVisible";
+    public static final String SHOW_MILLIS_DELTA_AS_GAP = "logpanel.showMillisDeltaAsGap";
+    public static final String SCROLL_TO_BOTTOM = "logpanel.scrollToBottom";
+    public static final String DETAIL_PANE_VISIBLE = "logpanel.detailPaneVisible";
+    public static final String LOGGER_PRECISION = "logpanel.loggerPrecision";
+    public static final String SEARCH_RESULTS_VISIBLE = "logpanel.searchResultsVisible";
+    public static final String WRAP_MSG = "logpanel.wrapMsg";
+    public static final String VISIBLE_ORDERED_COLUMN_NAMES = "logpanel.visibleOrderedColumnNames";
+    public static final String LEVEL_ICONS_DISPLAYED = "logpanel.levelIconsDisplayed";
+    public static final String HIGHLIGHT_SEARCH_MATCH_TEXT = "logpanel.highlightSearchMatchText";
+    private static final String LOWER_PANEL_DIVIDER_LOCATION = "logpanel.lowerPanelDividerLocation";
+    private static final String LOG_TREE_DIVIDER_LOCATION = "logpanel.logTreeDividerLocation";
+    private static final String CONVERSION_PATTERN = "logpanel.conversionPattern";
+    public static final String DATE_FORMAT_PATTERN = "dateFormatPattern";
+    AbstractConfiguration tabConfig;
 
-    private static final long serialVersionUID = 7526472295622776147L;
+    private final String defaultDateFormatPattern = Constants.SIMPLE_TIME_PATTERN;
+    private Map<String, Integer> allColumnsAndWidths = new HashMap<>();
+    private List<String> visibleOrderedColumnNames = new ArrayList<>();
+    private final boolean pausedDefault = false;
+    private final boolean logTreePanelVisibleDefault = true;
+    private final boolean toolTipsVisibleDefault = false;
+    private final boolean thumbnailBarToolTipsVisibleDefault = false;
+    private final boolean showMillisDeltaAsGapDefault = false;
+    private final boolean scrollToBottomDefault = true;
+    private final int loggerPrecisionDefault = 0;
+    private final boolean searchResultsVisibleDefault = true;
+    private final boolean highlightSearchMatchTextDefault = true;
+    private final boolean wrapMsgDefault = true;
+    private final boolean levelIconsDisplayedDefault = false;
 
-    static {
-        Collection list = new ArrayList();
+    private static final int lowerPanelDividerLocationDefault = 700;
+    private static final int logTreeDividerLocationDefault = 230;
 
-        Properties properties = new Properties(); //SettingsManager.getInstance().getDefaultSettings();
+    private static final String conversionPatternDefault = DefaultLayoutFactory.getDefaultPatternLayout();
 
-        for (Map.Entry<Object, Object> objectObjectEntry : properties.entrySet()) {
-            Map.Entry<Object, Object> entry = objectObjectEntry;
+    private static final List<String> defaultOrderedColumnNames = List.of(ChainsawConstants.ID_COL_NAME,
+        ChainsawConstants.TIMESTAMP_COL_NAME, ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE.toUpperCase(),
+        ChainsawConstants.LEVEL_COL_NAME, ChainsawConstants.LOGGER_COL_NAME, ChainsawConstants.MESSAGE_COL_NAME);
 
-            if (entry.getKey().toString().startsWith("DateFormat")) {
-                list.add(entry.getValue());
-            }
-        }
+    private static final Map<String, Integer> defaultOrderedColumnNamesAndWidths =
+        Map.of(ChainsawConstants.ID_COL_NAME, 75, ChainsawConstants.TIMESTAMP_COL_NAME, 100,
+            ChainsawConstants.LOG4J_MARKER_COL_NAME_LOWERCASE.toUpperCase(), 120, ChainsawConstants.LEVEL_COL_NAME, 75,
+            ChainsawConstants.LOGGER_COL_NAME, 125, ChainsawConstants.MESSAGE_COL_NAME, 650);
 
-        DATE_FORMATS = Collections.unmodifiableCollection(list);
+    public LogPanelPreferenceModel(AbstractConfiguration tabConfig) {
+        this.tabConfig = tabConfig;
     }
 
-    private transient final PropertyChangeSupport propertySupport =
-        new PropertyChangeSupport(this);
-    private String dateFormatPattern = Constants.SIMPLE_TIME_PATTERN;
-    private boolean levelIcons;
-    private List allColumns = new ArrayList();
-    private List visibleColumns = new ArrayList();
-    private List visibleColumnOrder = new ArrayList();
-    //set to true to match default 'detailPaneVisible' setting
-    private boolean detailPaneVisible = true;
-    private boolean toolTips;
-    //default thumbnail bar tooltips to true
-    private boolean thumbnailBarToolTips = true;
-    private boolean scrollToBottom;
-    private boolean logTreePanelVisible;
-    private String loggerPrecision = "";
-
-    private Collection hiddenLoggers = new HashSet();
-    private String timeZone;
-    //default wrapMsg to true
-    private boolean wrapMsg = true;
-    private boolean highlightSearchMatchText;
-    private String hiddenExpression;
-    private String alwaysDisplayExpression;
-    private String clearTableExpression;
-    //default to cyclic mode off
-    private boolean cyclic = false;
-    private boolean showMillisDeltaAsGap;
-    //default search results to visible
-    private boolean searchResultsVisible = true;
-
-    /**
-     * Returns an <b>unmodifiable</b> list of the columns.
-     * <p>
-     * The reason it is unmodifiable is to enforce the requirement that
-     * the List is actually unique columns.  IT _could_ be a set,
-     * but we need to maintain the order of insertion.
-     *
-     * @return
-     */
-    public List getColumns() {
-        return Collections.unmodifiableList(allColumns);
+    public void addEventListener(EventListener<ConfigurationEvent> listener) {
+        tabConfig.addEventListener(ConfigurationEvent.SET_PROPERTY, listener);
     }
 
     public void setCyclic(boolean cyclic) {
-        this.cyclic = cyclic;
+        tabConfig.setProperty("cyclic", cyclic);
     }
 
     public boolean isCyclic() {
-        return cyclic;
+        return tabConfig.getBoolean("cyclic", false);
     }
 
     /**
@@ -112,54 +113,22 @@ public class LogPanelPreferenceModel implements Serializable {
      * the List is actually unique columns.  IT _could_ be a set,
      * but we need to maintain the order of insertion.
      *
-     * @return
      */
-    public List getVisibleColumns() {
-        return Collections.unmodifiableList(visibleColumns);
+    public List<String> getVisibleOrderedColumnNames() {
+        return defaultOrderedColumnNames;
     }
 
-    public void clearColumns() {
-        Object oldValue = this.allColumns;
-        allColumns = new ArrayList();
-        propertySupport.firePropertyChange("columns", oldValue, allColumns);
-    }
-
-    private TableColumn findColumnByHeader(List list, String header) {
-        for (Object aList : list) {
-            TableColumn c = (TableColumn) aList;
-            //columns may have changed - header may not exist
-            if (c != null && c.getHeaderValue() != null && c.getHeaderValue().equals(header)) {
-                return c;
-            }
-        }
-        return null;
-    }
-
-    public void setVisibleColumnOrder(List visibleColumnOrder) {
-        this.visibleColumnOrder = visibleColumnOrder;
-    }
-
-    public List getVisibleColumnOrder() {
-        return visibleColumnOrder;
+    public void setVisibleOrderedColumnNames(List<String> visibleOrderedColumNames) {
+        this.visibleOrderedColumnNames = visibleOrderedColumNames;
     }
 
     public boolean addColumn(TableColumn column) {
-        if (findColumnByHeader(allColumns, column.getHeaderValue().toString()) != null) {
+        if (allColumnsAndWidths.containsKey(column.getHeaderValue().toString())) {
             return false;
         }
 
-        Object oldValue = allColumns;
-        allColumns = new ArrayList(allColumns);
-        allColumns.add(column);
-
-        propertySupport.firePropertyChange("columns", oldValue, allColumns);
+        allColumnsAndWidths.put(column.getHeaderValue().toString(), column.getWidth());
         return true;
-    }
-
-    private void setColumns(List columns) {
-        Object oldValue = allColumns;
-        allColumns = new ArrayList(columns);
-        propertySupport.firePropertyChange("columns", oldValue, columns);
     }
 
     /**
@@ -168,41 +137,15 @@ public class LogPanelPreferenceModel implements Serializable {
      * @return date pattern
      */
     public final String getDateFormatPattern() {
-        return dateFormatPattern;
+        return tabConfig.getString(DATE_FORMAT_PATTERN, defaultDateFormatPattern);
     }
 
     public final void setDefaultDatePatternFormat() {
-        String oldVal = this.dateFormatPattern;
-        this.dateFormatPattern = Constants.SIMPLE_TIME_PATTERN;
-        propertySupport.firePropertyChange(
-            "dateFormatPattern", oldVal, this.dateFormatPattern);
+        tabConfig.setProperty(DATE_FORMAT_PATTERN, defaultDateFormatPattern);
     }
 
     public final void setDateFormatPattern(String dateFormatPattern) {
-        String oldVal = this.dateFormatPattern;
-        this.dateFormatPattern = dateFormatPattern;
-        propertySupport.firePropertyChange(
-            "dateFormatPattern", oldVal, this.dateFormatPattern);
-    }
-
-    public synchronized void addPropertyChangeListener(
-        PropertyChangeListener listener) {
-        propertySupport.addPropertyChangeListener(listener);
-    }
-
-    public synchronized void addPropertyChangeListener(
-        String propertyName, PropertyChangeListener listener) {
-        propertySupport.addPropertyChangeListener(propertyName, listener);
-    }
-
-    public synchronized void removePropertyChangeListener(
-        PropertyChangeListener listener) {
-        propertySupport.removePropertyChangeListener(listener);
-    }
-
-    public synchronized void removePropertyChangeListener(
-        String propertyName, PropertyChangeListener listener) {
-        propertySupport.removePropertyChangeListener(propertyName, listener);
+        tabConfig.setProperty(DATE_FORMAT_PATTERN, dateFormatPattern);
     }
 
     /**
@@ -215,21 +158,18 @@ public class LogPanelPreferenceModel implements Serializable {
         setCyclic(model.isCyclic());
         setLoggerPrecision(model.getLoggerPrecision());
         setDateFormatPattern(model.getDateFormatPattern());
-        setLevelIcons(model.isLevelIcons());
+        setLevelIconsDisplayed(model.isLevelIconsDisplayed());
         setWrapMessage(model.isWrapMessage());
         setHighlightSearchMatchText(model.isHighlightSearchMatchText());
-        setTimeZone(model.getTimeZone());
-        setToolTips(model.isToolTips());
-        setThumbnailBarToolTips((model.isThumbnailBarToolTips()));
+        setDateFormatTimeZone(model.getDateFormatTimeZone());
+        setToolTipsVisible(model.isToolTipsVisible());
+        setThumbnailBarToolTipsVisible((model.isThumbnailBarToolTipsVisible()));
         setScrollToBottom(model.isScrollToBottom());
         setDetailPaneVisible(model.isDetailPaneVisible());
         setLogTreePanelVisible(model.isLogTreePanelVisible());
-        setVisibleColumnOrder(model.getVisibleColumnOrder());
+        setVisibleOrderedColumnNames(model.getVisibleOrderedColumnNames());
         setSearchResultsVisible(model.isSearchResultsVisible());
-        // we have to copy the list, because getColumns() is unmodifiable
-        setColumns(model.getColumns());
-
-        setVisibleColumns(model.getVisibleColumns());
+        setVisibleOrderedColumnNames(model.getVisibleOrderedColumnNames());
         setHiddenLoggers(model.getHiddenLoggers());
         setHiddenExpression(model.getHiddenExpression());
         setAlwaysDisplayExpression(model.getAlwaysDisplayExpression());
@@ -250,51 +190,44 @@ public class LogPanelPreferenceModel implements Serializable {
     /**
      * @return level icons flag
      */
-    public boolean isLevelIcons() {
-        return levelIcons;
+    public boolean isLevelIconsDisplayed() {
+        return tabConfig.getBoolean(LEVEL_ICONS_DISPLAYED, levelIconsDisplayedDefault);
     }
 
     public boolean isWrapMessage() {
-        return wrapMsg;
+        return tabConfig.getBoolean(WRAP_MSG, wrapMsgDefault);
     }
 
     public boolean isHighlightSearchMatchText() {
-        return highlightSearchMatchText;
+        return tabConfig.getBoolean(HIGHLIGHT_SEARCH_MATCH_TEXT, highlightSearchMatchTextDefault);
     }
 
-    public void setLevelIcons(boolean levelIcons) {
-        this.levelIcons = levelIcons;
-        propertySupport.firePropertyChange("levelIcons", !levelIcons, levelIcons);
+    public void setLevelIconsDisplayed(boolean isLevelIconsDisplayed) {
+        tabConfig.setProperty(LEVEL_ICONS_DISPLAYED, isLevelIconsDisplayed);
     }
 
-    public void setSearchResultsVisible(boolean searchResultsVisible) {
-        boolean oldValue = this.searchResultsVisible;
-        this.searchResultsVisible = searchResultsVisible;
-        propertySupport.firePropertyChange("searchResultsVisible", oldValue, searchResultsVisible);
+    public void setSearchResultsVisible(boolean isSearchResultsVisible) {
+        tabConfig.setProperty(SEARCH_RESULTS_VISIBLE, isSearchResultsVisible);
     }
 
     public boolean isSearchResultsVisible() {
-        return searchResultsVisible;
+        return tabConfig.getBoolean(SEARCH_RESULTS_VISIBLE, searchResultsVisibleDefault);
     }
 
-    public void setWrapMessage(boolean wrapMsg) {
-        this.wrapMsg = wrapMsg;
-        propertySupport.firePropertyChange("wrapMessage", !wrapMsg, wrapMsg);
+    public void setWrapMessage(boolean isWrapMsg) {
+        tabConfig.setProperty(WRAP_MSG, isWrapMsg);
     }
 
     public void setHighlightSearchMatchText(boolean highlightSearchMatchText) {
-        this.highlightSearchMatchText = highlightSearchMatchText;
-        propertySupport.firePropertyChange("highlightSearchMatchText", !highlightSearchMatchText, highlightSearchMatchText);
+        tabConfig.setProperty(HIGHLIGHT_SEARCH_MATCH_TEXT, highlightSearchMatchText);
     }
 
     /**
      * @param loggerPrecision - an integer representing the number of packages to display,
-     *                        or an empty string representing 'display all packages'
+     *                        or zero, representing 'display all packages'
      */
-    public void setLoggerPrecision(String loggerPrecision) {
-        String oldVal = this.loggerPrecision;
-        this.loggerPrecision = loggerPrecision;
-        propertySupport.firePropertyChange("loggerPrecision", oldVal, this.loggerPrecision);
+    public void setLoggerPrecision(int loggerPrecision) {
+        tabConfig.setProperty(LOGGER_PRECISION, loggerPrecision);
     }
 
     /**
@@ -302,8 +235,8 @@ public class LogPanelPreferenceModel implements Serializable {
      *
      * @return logger precision
      */
-    public final String getLoggerPrecision() {
-        return loggerPrecision;
+    public final int getLoggerPrecision() {
+        return tabConfig.getInt(LOGGER_PRECISION, loggerPrecisionDefault);
     }
 
     /**
@@ -314,32 +247,18 @@ public class LogPanelPreferenceModel implements Serializable {
      * @return column visible flag
      */
     public boolean isColumnVisible(TableColumn column) {
-        return (findColumnByHeader(visibleColumns, column.getHeaderValue().toString()) != null);
-    }
-
-    private void setVisibleColumns(List visibleColumns) {
-        Object oldValue = new ArrayList();
-        this.visibleColumns = new ArrayList(visibleColumns);
-
-        propertySupport.firePropertyChange("visibleColumns", oldValue, this.visibleColumns);
+        return visibleOrderedColumnNames.contains(column.getHeaderValue().toString());
     }
 
     public void setColumnVisible(String columnName, boolean isVisible) {
-        boolean wasVisible = findColumnByHeader(visibleColumns, columnName) != null;
-
-        //because we're a list and not a set, ensure we keep at most
-        //one entry for a tablecolumn
-        Object col = findColumnByHeader(allColumns, columnName);
-        if (isVisible && !wasVisible) {
-            visibleColumns.add(col);
-            visibleColumnOrder.add(col);
-            propertySupport.firePropertyChange("visibleColumns", Boolean.valueOf(isVisible), Boolean.valueOf(wasVisible));
+        if (isVisible) {
+            if (!visibleOrderedColumnNames.contains(columnName)) {
+                visibleOrderedColumnNames.add(columnName);
+            }
+        } else {
+            visibleOrderedColumnNames.remove(columnName);
         }
-        if (!isVisible && wasVisible) {
-            visibleColumns.remove(col);
-            visibleColumnOrder.remove(col);
-            propertySupport.firePropertyChange("visibleColumns", Boolean.valueOf(isVisible), Boolean.valueOf(wasVisible));
-        }
+        tabConfig.setProperty(VISIBLE_ORDERED_COLUMN_NAMES, visibleOrderedColumnNames);
     }
 
     /**
@@ -355,77 +274,60 @@ public class LogPanelPreferenceModel implements Serializable {
      * @return detail pane visible flag
      */
     public final boolean isDetailPaneVisible() {
-        return detailPaneVisible;
+        return tabConfig.getBoolean(DETAIL_PANE_VISIBLE, true);
     }
 
     public final void setDetailPaneVisible(boolean detailPaneVisible) {
-        boolean oldValue = this.detailPaneVisible;
-        this.detailPaneVisible = detailPaneVisible;
-        propertySupport.firePropertyChange(
-            "detailPaneVisible", oldValue, this.detailPaneVisible);
+        tabConfig.setProperty(DETAIL_PANE_VISIBLE, detailPaneVisible);
     }
 
     /**
      * @return scroll to bottom flag
      */
     public final boolean isScrollToBottom() {
-        return scrollToBottom;
+        return tabConfig.getBoolean(SCROLL_TO_BOTTOM, scrollToBottomDefault);
     }
 
-
     public final boolean isShowMillisDeltaAsGap() {
-        return showMillisDeltaAsGap;
+        return tabConfig.getBoolean(SHOW_MILLIS_DELTA_AS_GAP, showMillisDeltaAsGapDefault);
     }
 
     public final void setScrollToBottom(boolean scrollToBottom) {
-        boolean oldValue = this.scrollToBottom;
-        this.scrollToBottom = scrollToBottom;
-        propertySupport.firePropertyChange(
-            "scrollToBottom", oldValue, this.scrollToBottom);
+        tabConfig.setProperty(SCROLL_TO_BOTTOM, scrollToBottom);
     }
 
     public final void setShowMillisDeltaAsGap(boolean showMillisDeltaAsGap) {
-        boolean oldValue = this.showMillisDeltaAsGap;
-        this.showMillisDeltaAsGap = showMillisDeltaAsGap;
-        propertySupport.firePropertyChange(
-            "showMillisDeltaAsGap", oldValue, this.showMillisDeltaAsGap);
+        tabConfig.setProperty(SHOW_MILLIS_DELTA_AS_GAP, showMillisDeltaAsGap);
     }
 
-    public final void setThumbnailBarToolTips(boolean thumbnailBarToolTips) {
-        boolean oldValue = this.thumbnailBarToolTips;
-        this.thumbnailBarToolTips = thumbnailBarToolTips;
-        propertySupport.firePropertyChange("thumbnailBarToolTips", oldValue, this.thumbnailBarToolTips);
+    public final void setThumbnailBarToolTipsVisible(boolean thumbnailBarToolTipsVisible) {
+        tabConfig.setProperty(THUMBNAIL_BAR_TOOL_TIPS_VISIBLE, thumbnailBarToolTipsVisible);
     }
 
-    public final boolean isThumbnailBarToolTips() {
-        return thumbnailBarToolTips;
+    public final boolean isThumbnailBarToolTipsVisible() {
+        return tabConfig.getBoolean(THUMBNAIL_BAR_TOOL_TIPS_VISIBLE, thumbnailBarToolTipsVisibleDefault);
     }
 
     /**
      * @return tool tips enabled flag
      */
-    public final boolean isToolTips() {
-        return toolTips;
+    public final boolean isToolTipsVisible() {
+        return tabConfig.getBoolean(TOOL_TIPS_VISIBLE, toolTipsVisibleDefault);
     }
 
-    public final void setToolTips(boolean toolTips) {
-        boolean oldValue = this.toolTips;
-        this.toolTips = toolTips;
-        propertySupport.firePropertyChange("toolTips", oldValue, this.toolTips);
+    public final void setToolTipsVisible(boolean toolTipsVisible) {
+        tabConfig.setProperty(TOOL_TIPS_VISIBLE, toolTipsVisible);
     }
 
     /**
      * @return log tree panel visible flag
      */
     public final boolean isLogTreePanelVisible() {
-        return logTreePanelVisible;
+        return tabConfig.getBoolean(LOG_TREE_PANEL_VISIBLE, logTreePanelVisibleDefault);
     }
 
     public final void setLogTreePanelVisible(boolean logTreePanelVisible) {
-        boolean oldValue = this.logTreePanelVisible;
-        this.logTreePanelVisible = logTreePanelVisible;
-        propertySupport.firePropertyChange(
-            "logTreePanelVisible", oldValue, this.logTreePanelVisible);
+        tabConfig.setProperty(LOG_TREE_PANEL_VISIBLE, logTreePanelVisible);
     }
 
     /**
@@ -435,57 +337,79 @@ public class LogPanelPreferenceModel implements Serializable {
         return !DATE_FORMATS.contains(getDateFormatPattern()) && !isUseISO8601Format();
     }
 
-    public void setHiddenLoggers(Collection hiddenSet) {
-        Object oldValue = this.hiddenLoggers;
-        this.hiddenLoggers = hiddenSet;
-        propertySupport.firePropertyChange("hiddenLoggers", oldValue, this.hiddenLoggers);
+    public void setHiddenLoggers(Collection<String> hiddenLoggers) {
+        tabConfig.setProperty(HIDDEN_LOGGERS, hiddenLoggers);
     }
 
-    public Collection getHiddenLoggers() {
-        return hiddenLoggers;
+    public Collection<String> getHiddenLoggers() {
+        return tabConfig.getList(String.class, HIDDEN_LOGGERS, Collections.emptyList());
     }
 
-    public String getTimeZone() {
-        return timeZone;
+    public String getDateFormatTimeZone() {
+        return tabConfig.getString(DATE_FORMAT_TIME_ZONE, "");
     }
 
-    public void setTimeZone(String timeZone) {
-        Object oldValue = this.timeZone;
-        this.timeZone = timeZone;
-        propertySupport.firePropertyChange("dateFormatTimeZone", oldValue, this.timeZone);
+    public void setDateFormatTimeZone(String dateFormatTimeZone) {
+        tabConfig.setProperty(DATE_FORMAT_TIME_ZONE, dateFormatTimeZone);
     }
 
     public void setHiddenExpression(String hiddenExpression) {
-        Object oldValue = this.hiddenExpression;
-        this.hiddenExpression = hiddenExpression;
-        propertySupport.firePropertyChange("hiddenExpression", oldValue, this.hiddenExpression);
+        tabConfig.setProperty(HIDDEN_EXPRESSION, hiddenExpression);
     }
 
     public String getHiddenExpression() {
-        return hiddenExpression;
+        return tabConfig.getString(HIDDEN_EXPRESSION, "");
     }
 
     public void setAlwaysDisplayExpression(String alwaysDisplayExpression) {
-        Object oldValue = this.hiddenExpression;
-        this.alwaysDisplayExpression = alwaysDisplayExpression;
-        propertySupport.firePropertyChange("alwaysDisplayExpression", oldValue, this.alwaysDisplayExpression);
+        tabConfig.setProperty(ALWAYS_DISPLAY_EXPRESSION, alwaysDisplayExpression);
     }
 
     public String getAlwaysDisplayExpression() {
-        return alwaysDisplayExpression;
+        return tabConfig.getString(ALWAYS_DISPLAY_EXPRESSION, "");
     }
 
     public void setClearTableExpression(String clearTableExpression) {
-        Object oldValue = this.clearTableExpression;
-        this.clearTableExpression = clearTableExpression;
-        //no propertychange if both null
-        if (oldValue == null && this.clearTableExpression == null) {
-            return;
-        }
-        propertySupport.firePropertyChange("clearTableExpression", oldValue, this.clearTableExpression);
+        tabConfig.setProperty(CLEAR_TABLE_EXPRESSION, clearTableExpression);
     }
 
     public String getClearTableExpression() {
-        return clearTableExpression;
+        return tabConfig.getString(CLEAR_TABLE_EXPRESSION, "");
+    }
+
+    public void setPaused(boolean paused) {
+        tabConfig.setProperty(PAUSED, paused);
+    }
+
+    public boolean isPaused() {
+        return tabConfig.getBoolean(PAUSED, pausedDefault);
+    }
+
+    public int getLowerPanelDividerLocation() {
+        return tabConfig.getInt(LOWER_PANEL_DIVIDER_LOCATION, lowerPanelDividerLocationDefault);
+    }
+
+    public void setLowerPanelDividerLocation(int lowerPanelDividerLocation) {
+        tabConfig.setProperty(LOWER_PANEL_DIVIDER_LOCATION, lowerPanelDividerLocation);
+    }
+
+    public int getLogTreeDividerLocation() {
+        return tabConfig.getInt(LOG_TREE_DIVIDER_LOCATION, logTreeDividerLocationDefault);
+    }
+
+    public void setLogTreeDividerLocation(int logTreeDividerLocation) {
+        tabConfig.setProperty(LOG_TREE_DIVIDER_LOCATION, logTreeDividerLocation);
+    }
+
+    public String getConversionPattern() {
+        return tabConfig.getString(CONVERSION_PATTERN, conversionPatternDefault);
+    }
+
+    public void setConversionPattern(String conversionPattern) {
+        tabConfig.setProperty(CONVERSION_PATTERN, conversionPatternDefault);
+    }
+
+    public Map<String, Integer> getAllColumnNamesAndWidths() {
+        return defaultOrderedColumnNamesAndWidths;
     }
 }

@@ -22,6 +22,7 @@ import org.apache.log4j.chainsaw.components.elements.SmallButton;
 import org.apache.log4j.chainsaw.components.elements.SmallToggleButton;
 import org.apache.log4j.chainsaw.components.logpanel.LogPanel;
 import org.apache.log4j.chainsaw.components.logpanel.LogPanelLoggerTreeModel;
+import org.apache.log4j.chainsaw.components.logpanel.LogPanelPreferenceModel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.log4j.chainsaw.color.RuleColorizer;
@@ -55,6 +56,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
     //~ Static fields/initializers ==============================================
 
     private static final int WARN_DEPTH = 4;
+    private final LogPanelPreferenceModel logPanelPreferenceModel;
 
     //~ Instance fields =========================================================
 
@@ -82,7 +84,6 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
     private final Set hiddenSet = new HashSet();
     private final Action hideAction;
     private final Action hideSubLoggersAction;
-    private final AbstractConfiguration m_panelConfig;
 
     private final JList ignoreList = new JList();
     private final JEditorPane ignoreExpressionEntryField = new JEditorPane();
@@ -123,14 +124,14 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
      * @param logTreeModel
      */
     public LoggerNameTreePanel(LogPanelLoggerTreeModel logTreeModel,
-            AbstractConfiguration panelConfiguration,
+            LogPanelPreferenceModel logPanelPreferenceModel,
             LogPanel logPanel,
             RuleColorizer colorizer,
             FilterModel filterModel) {
         super();
         this.logTreeModel = logTreeModel;
-        m_panelConfig = panelConfiguration;
         this.logPanel = logPanel;
+        this.logPanelPreferenceModel = logPanelPreferenceModel;
         this.colorizer = colorizer;
 
         setLayout(new BorderLayout());
@@ -679,7 +680,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
     private Action createCloseAction() {
         Action action = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                m_panelConfig.setProperty("logpanel.logTreePanelVisible", false);
+                logPanelPreferenceModel.setLogTreePanelVisible(false);
             }
         };
 

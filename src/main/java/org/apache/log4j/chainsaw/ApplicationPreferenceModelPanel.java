@@ -30,8 +30,6 @@ import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Locale;
-import org.apache.commons.configuration2.AbstractConfiguration;
-import org.apache.commons.configuration2.event.ConfigurationEvent;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 
 
@@ -42,16 +40,13 @@ import org.apache.log4j.chainsaw.prefs.SettingsManager;
  */
 public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
     private static final Logger logger = LogManager.getLogger(ApplicationPreferenceModelPanel.class);
-    
+    private final ApplicationPreferenceModel applicationPreferenceModel;
+
     private JTextField toolTipDisplayMillis;
     private JTextField cyclicBufferSize;
     private GeneralAllPrefPanel generalAllPrefPanel;
-    private AbstractConfiguration m_globalConfiguration;
-    private SettingsManager settingsManager;
-
-    public ApplicationPreferenceModelPanel(SettingsManager settingsManager) {
-        this.m_globalConfiguration = settingsManager.getGlobalConfiguration();
-        this.settingsManager = settingsManager;
+    public ApplicationPreferenceModelPanel(SettingsManager settingsManager, ApplicationPreferenceModel applicationPreferenceModel) {
+        this.applicationPreferenceModel = applicationPreferenceModel;
         initComponents();
         getOkButton().addActionListener(
             e -> {
@@ -122,21 +117,19 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
          *
          */
         private void setupListeners() {
-            final AbstractConfiguration config = settingsManager.getGlobalConfiguration();
-
             topPlacement.addActionListener(
-                e -> config.setProperty("tabPlacement", SwingConstants.TOP));
+                e -> applicationPreferenceModel.setTabPlacement(SwingConstants.TOP));
             bottomPlacement.addActionListener(
-                e -> config.setProperty("tabPlacement", SwingConstants.BOTTOM));
+                e -> applicationPreferenceModel.setTabPlacement(SwingConstants.BOTTOM));
 
             statusBar.addActionListener(
-                e -> config.setProperty("statusBar",statusBar.isSelected()));
+                e -> applicationPreferenceModel.setStatusBarVisible(statusBar.isSelected()));
 
             toolBar.addActionListener(
-                e -> config.setProperty("toolbar",toolBar.isSelected()));
+                e -> applicationPreferenceModel.setToolbarVisible(toolBar.isSelected()));
 
             receivers.addActionListener(
-                e -> config.setProperty("showReceivers",receivers.isSelected()));
+                e -> applicationPreferenceModel.setReceiversVisible(receivers.isSelected()));
 
 //            uncommittedPreferenceModel.addPropertyChangeListener(
 //                "tabPlacement",
@@ -215,14 +208,12 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
             JPanel lfPanel = new JPanel();
             lfPanel.setLayout(new BoxLayout(lfPanel, BoxLayout.Y_AXIS));
             lfPanel.setBorder(BorderFactory.createTitledBorder(" Look & Feel "));
-            final AbstractConfiguration configuration = settingsManager.getGlobalConfiguration();
 
             for (final UIManager.LookAndFeelInfo lfInfo : lookAndFeels) {
                 final JRadioButton lfItem = new JRadioButton(" " + lfInfo.getName() + " ");
                 lfItem.setName(lfInfo.getClassName());
                 lfItem.addActionListener(
-                    e -> configuration.setProperty("lookAndFeelClassName",
-                        lfInfo.getClassName()));
+                    e -> applicationPreferenceModel.setLookAndFeelClassName(lfInfo.getClassName()));
                 lookAndFeelGroup.add(lfItem);
                 lfPanel.add(lfItem);
             }
@@ -232,8 +223,7 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
                     Class.forName("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
                 final JRadioButton lfIGTK = new JRadioButton(" GTK+ 2.0 ");
                 lfIGTK.addActionListener(
-                    e -> configuration.setProperty("lookAndFeelClassName",
-                        gtkLF.getName()));
+                    e -> applicationPreferenceModel.setLookAndFeelClassName(gtkLF.getName()));
                 lookAndFeelGroup.add(lfIGTK);
                 lfPanel.add(lfIGTK);
             } catch (Exception e) {
@@ -266,16 +256,14 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
         }
 
         public void updateModel(){
-            AbstractConfiguration config = settingsManager.getGlobalConfiguration();
-
-            statusBar.setSelected(config.getBoolean("statusBar", false));
-            receivers.setSelected(config.getBoolean("showReceivers", false));
-            toolBar.setSelected(config.getBoolean("toolbar", false));
-            configureTabPlacement(config.getInt("tabPlacement", SwingConstants.TOP));
+            statusBar.setSelected(applicationPreferenceModel.isStatusBarVisible());
+            receivers.setSelected(applicationPreferenceModel.isReceiversVisible());
+            toolBar.setSelected(applicationPreferenceModel.isToolbarVisible());
+            configureTabPlacement(applicationPreferenceModel.getTabPlacement());
             Enumeration e = lookAndFeelGroup.getElements();
             while (e.hasMoreElements()) {
                 JRadioButton radioButton = (JRadioButton) e.nextElement();
-                if (radioButton.getText().equals(config.getString("lookAndFeelClassName"))) {
+                if (radioButton.getText().equals(applicationPreferenceModel.getLookAndFeelClassName())) {
                     radioButton.setSelected(true);
                     break;
                 }
@@ -359,17 +347,17 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
         }
 
         private void setupListeners() {
-            m_globalConfiguration.addEventListener(ConfigurationEvent.SET_PROPERTY,
+            applicationPreferenceModel.addEventListener(
                 evt -> {
-                    if( evt.getPropertyName().equals( "showSplash" ) ){
+                    if( evt.getPropertyName().equals(ApplicationPreferenceModel.SHOW_SPLASH) ){
                         boolean value = (Boolean) evt.getPropertyValue();
                         showSplash.setSelected(value);
                     }
                 });
 
-            m_globalConfiguration.addEventListener(ConfigurationEvent.SET_PROPERTY,
+            applicationPreferenceModel.addEventListener(
                 evt -> {
-                    if( evt.getPropertyName().equals( "responsiveness" ) ){
+                    if( evt.getPropertyName().equals(ApplicationPreferenceModel.RESPONSIVENESS) ){
                         int value = (Integer) evt.getPropertyValue();
                         if (value >= 1000) {
                             int newValue = (value - 750) / 1000;
@@ -381,29 +369,29 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
                     }
                 });
 
-            m_globalConfiguration.addEventListener(ConfigurationEvent.SET_PROPERTY,
+            applicationPreferenceModel.addEventListener(
                 evt -> {
-                    if( evt.getPropertyName().equals( "toolTipDisplayMillis" ) ){
+                    if( evt.getPropertyName().equals(ApplicationPreferenceModel.TOOL_TIP_DISPLAY_MILLIS) ){
                         toolTipDisplayMillis.setText(evt.getPropertyValue().toString());
                     }
                 });
 
-            m_globalConfiguration.addEventListener(ConfigurationEvent.SET_PROPERTY,
+            applicationPreferenceModel.addEventListener(
                 evt -> {
-                    if( evt.getPropertyName().equals( "cyclicBufferSize" ) ){
+                    if( evt.getPropertyName().equals(ApplicationPreferenceModel.CYCLIC_BUFFER_SIZE) ){
                         cyclicBufferSize.setText(evt.getPropertyValue().toString());
                     }
                 });
 
-            m_globalConfiguration.addEventListener(ConfigurationEvent.SET_PROPERTY,
+            applicationPreferenceModel.addEventListener(
                 evt -> {
-                    if( evt.getPropertyName().equals( "confirmExit" ) ){
+                    if( evt.getPropertyName().equals(ApplicationPreferenceModel.CONFIRM_EXIT) ){
                         boolean value = (Boolean) evt.getPropertyValue();
                         confirmExit.setSelected(value);
                     }
                 });
 
-            showSplash.addActionListener(e -> m_globalConfiguration.setProperty("showSplash", showSplash.isSelected()));
+            showSplash.addActionListener(e -> applicationPreferenceModel.setShowSplash(showSplash.isSelected()));
             responsiveSlider.getModel().addChangeListener(
                 e -> {
                     if (responsiveSlider.getValueIsAdjusting()) {
@@ -418,13 +406,12 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
                         }
 
                         logger.debug("Adjust responsiveness to {}", value);
-                        m_globalConfiguration.setProperty("responsiveness", value);
+                        applicationPreferenceModel.setResponsiveness(value);
                     }
                 });
 
             confirmExit.addActionListener(
-                e -> m_globalConfiguration.setProperty( "confirmExit",
-                    confirmExit.isSelected()));
+                e -> applicationPreferenceModel.setConfirmExit(confirmExit.isSelected()));
         }
 
         private void setupInitialValues() {
@@ -434,10 +421,10 @@ public class ApplicationPreferenceModelPanel extends AbstractPreferencePanel {
             sliderLabelMap.put(4, new JLabel(" Slow "));
 
 
-            confirmExit.setSelected(m_globalConfiguration.getBoolean("confirmExit", Boolean.TRUE));
-            showSplash.setSelected(m_globalConfiguration.getBoolean("showSplash", Boolean.TRUE));
-            toolTipDisplayMillis.setText(m_globalConfiguration.getInt( "toolTipDisplayMillis", 1000 ) + "");
-            cyclicBufferSize.setText(m_globalConfiguration.getInt( "cyclicBufferSize", 20000 ) + "");
+            confirmExit.setSelected(applicationPreferenceModel.isConfirmExit());
+            showSplash.setSelected(applicationPreferenceModel.isShowSplash());
+            toolTipDisplayMillis.setText(String.valueOf(applicationPreferenceModel.getToolTipDisplayMillis()));
+            cyclicBufferSize.setText(String.valueOf(applicationPreferenceModel.getCyclicBufferSize()));
         }
     }
 }

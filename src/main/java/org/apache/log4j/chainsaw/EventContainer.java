@@ -100,12 +100,12 @@ public interface EventContainer extends SortTableModel, LoggerNameModel {
     /**
      * Returns a copied list of all the event in the model.
      */
-    List getAllEvents();
+    List<LoggingEventWrapper> getAllEvents();
 
     /**
      * Returns a copied list containing the events in the model with filter applied
      */
-    List getFilteredEvents();
+    List<LoggingEventWrapper> getFilteredEvents();
 
     /**
      * Returns the total number of events currently in the model (all, not just filtered)

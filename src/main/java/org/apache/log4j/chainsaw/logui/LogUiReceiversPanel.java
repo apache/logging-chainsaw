@@ -16,8 +16,7 @@
  */
 package org.apache.log4j.chainsaw.logui;
 
-import org.apache.commons.configuration2.AbstractConfiguration;
-import org.apache.commons.configuration2.event.ConfigurationEvent;
+import org.apache.log4j.chainsaw.ApplicationPreferenceModel;
 import org.apache.log4j.chainsaw.ChainsawStatusBar;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.chainsaw.receiver.ChainsawReceiver;
@@ -34,7 +33,8 @@ public class LogUiReceiversPanel {
     private int dividerSize;
     private static final double DEFAULT_MAIN_RECEIVER_SPLIT_LOCATION = 0.85d;
     private double lastMainReceiverSplitLocation = DEFAULT_MAIN_RECEIVER_SPLIT_LOCATION;
-    public LogUiReceiversPanel(SettingsManager settingsManager, List<ChainsawReceiver> receivers, LogUI logUI, ChainsawStatusBar statusBar, JPanel panePanel) {
+    public LogUiReceiversPanel(SettingsManager settingsManager, ApplicationPreferenceModel applicationPreferenceModel,
+                               List<ChainsawReceiver> receivers, LogUI logUI, ChainsawStatusBar statusBar, JPanel panePanel) {
         receiversPanel = new ReceiversPanel(settingsManager, receivers, logUI, statusBar);
         mainReceiverSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panePanel, receiversPanel);
         mainReceiverSplitPane.setContinuousLayout(true);
@@ -42,12 +42,11 @@ public class LogUiReceiversPanel {
         mainReceiverSplitPane.setDividerLocation(-1);
         mainReceiverSplitPane.setResizeWeight(1.0);
 
-        AbstractConfiguration configuration = settingsManager.getGlobalConfiguration();
-        boolean showReceivers = configuration.getBoolean("showReceivers", false);
+        boolean showReceivers = applicationPreferenceModel.isReceiversVisible();
 
-        configuration.addEventListener(ConfigurationEvent.SET_PROPERTY,
+        applicationPreferenceModel.addEventListener(
             evt -> {
-                if (evt.getPropertyName().equals("showReceivers")) {
+                if (evt.getPropertyName().equals(ApplicationPreferenceModel.RECEIVERS_VISIBLE)) {
                     boolean value = (Boolean) evt.getPropertyValue();
                     if (value) {
                         showReceiverPanel();

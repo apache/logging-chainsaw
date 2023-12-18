@@ -93,7 +93,7 @@ public class ChainsawStarter {
         final LoggerContext ctx = (LoggerContext) org.apache.logging.log4j.LogManager.getContext(false);
         logUI.chainsawAppender = ctx.getConfiguration().getAppender("chainsaw");
 
-        if (configuration.getBoolean("slowSplash", true)) {
+        if (configuration.getBoolean("showSplash", true)) {
             splashViewer.showSplash(logUI);
         }
 
