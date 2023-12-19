@@ -17,13 +17,13 @@
 
 package org.apache.log4j.chainsaw;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.log4j.chainsaw.color.RuleColorizer;
 import org.apache.log4j.chainsaw.helper.SwingHelper;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.rule.Rule;
-import org.apache.log4j.chainsaw.logevents.LocationInfo;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
 import javax.swing.event.EventListenerList;
@@ -31,8 +31,13 @@ import javax.swing.table.AbstractTableModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.*;
-import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 
 /**
