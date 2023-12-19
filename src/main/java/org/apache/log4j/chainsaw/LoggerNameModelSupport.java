@@ -40,7 +40,7 @@ public class LoggerNameModelSupport implements LoggerNameModel {
     /* (non-Javadoc)
      * @see org.apache.log4j.chainsaw.LoggerNameModel#getLoggerNames()
      */
-    public Collection getLoggerNames() {
+    public Collection<String> getLoggerNames() {
         return Collections.unmodifiableSet(loggerNameSet);
     }
 

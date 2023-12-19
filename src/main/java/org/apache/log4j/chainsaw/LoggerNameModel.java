@@ -36,7 +36,7 @@ public interface LoggerNameModel {
      *
      * @return unmodifiable Collection of Logger name Strings
      */
-    Collection getLoggerNames();
+    Collection<String> getLoggerNames();
 
     /**
      * Attempts to add the loggerName to the model, and returns
