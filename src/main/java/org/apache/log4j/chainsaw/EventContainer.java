@@ -72,7 +72,7 @@ public interface EventContainer extends SortTableModel, LoggerNameModel {
      * This method should fire a property Change event if
      * it involves an actual change in the underlying model.
      * <p>
-     * This method does nothing if there is no change in proprty.
+     * This method does nothing if there is no change in property.
      *
      * @param cyclic
      */
