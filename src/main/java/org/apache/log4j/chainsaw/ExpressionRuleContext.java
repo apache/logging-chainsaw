@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.chainsaw;
 
 import org.apache.log4j.chainsaw.filter.FilterModel;
@@ -36,12 +35,12 @@ public class ExpressionRuleContext extends KeyAdapter {
     RuleFactory factory = RuleFactory.getInstance();
     LoggingEventFieldResolver resolver = LoggingEventFieldResolver.getInstance();
     JPopupMenu contextMenu = new JPopupMenu();
-    JList list = new JList();
+    JList<String> list = new JList<>();
     FilterModel filterModel;
     JScrollPane scrollPane = new JScrollPane(list);
     final JTextComponent textComponent;
-    private DefaultListModel<String> fieldModel = new DefaultListModel<>();
-    private DefaultListModel<String> operatorModel = new DefaultListModel();
+    private final DefaultListModel<String> fieldModel = new DefaultListModel<>();
+    private final DefaultListModel<String> operatorModel = new DefaultListModel<>();
 
     public ExpressionRuleContext(
         final FilterModel filterModel, final JTextComponent textComponent) {
@@ -84,7 +83,7 @@ public class ExpressionRuleContext extends KeyAdapter {
                 @Override
                 public void keyPressed(KeyEvent e) {
                     if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                        String value = list.getSelectedValue().toString();
+                        String value = list.getSelectedValue();
                         String contextKey = getContextKey();
                         if (contextKey != null && (!(contextKey.endsWith(".")))) {
                             value = "'" + value + "'";
@@ -101,7 +100,7 @@ public class ExpressionRuleContext extends KeyAdapter {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     if (e.getClickCount() == 2) {
-                        String value = list.getSelectedValue().toString();
+                        String value = list.getSelectedValue();
                         String contextKey = getContextKey();
                         if (contextKey != null && (!(contextKey.endsWith(".")))) {
                             value = "'" + value + "'";
@@ -117,19 +116,18 @@ public class ExpressionRuleContext extends KeyAdapter {
     }
 
     private void updateField(String value) {
-        if (textComponent.getSelectedText() == null) {
-            if (!(value.endsWith("."))) {
+        if (textComponent.getSelectedText() == null &&
+            !value.endsWith(".")) {
                 value = value + " ";
-            }
         }
 
         textComponent.replaceSelection(value);
     }
 
+    @Override
     public void keyPressed(KeyEvent e) {
-        if (
-            (e.getKeyCode() == KeyEvent.VK_SPACE)
-                && (e.getModifiers() == InputEvent.CTRL_MASK)) {
+        if (e.getKeyCode() == KeyEvent.VK_SPACE &&
+            e.getModifiersEx() == InputEvent.CTRL_DOWN_MASK) {
             displayContext();
         }
     }
@@ -137,19 +135,7 @@ public class ExpressionRuleContext extends KeyAdapter {
     public void displayContext() {
         String lastField = getContextKey();
 
-        if (lastField != null) {
-            ListModel model = filterModel.getContainer().getModel(lastField);
-            if (model == null) {
-                return;
-            }
-            list.setModel(model);
-            list.setSelectedIndex(0);
-
-            Point p = textComponent.getCaret().getMagicCaretPosition();
-            contextMenu.doLayout();
-            contextMenu.show(textComponent, p.x, (p.y + (textComponent.getHeight() - 5)));
-            list.requestFocus();
-        } else {
+        if (lastField == null) {
             if (isOperatorContextValid()) {
                 list.setModel(operatorModel);
                 list.setSelectedIndex(0);
@@ -163,25 +149,35 @@ public class ExpressionRuleContext extends KeyAdapter {
                 list.setSelectedIndex(0);
 
                 Point p = textComponent.getCaret().getMagicCaretPosition();
-
                 if (p == null) {
                     p = new Point(
                         textComponent.getLocation().x,
                         (textComponent.getLocation().y - textComponent.getHeight() + 5));
                 }
+
                 contextMenu.doLayout();
                 contextMenu.show(textComponent, p.x, (p.y + (textComponent.getHeight() - 5)));
                 list.requestFocus();
             }
+        } else {
+            ListModel model = filterModel.getContainer().getModel(lastField);
+            if (model == null) {
+                return;
+            }
+            list.setModel(model);
+            list.setSelectedIndex(0);
+
+            Point p = textComponent.getCaret().getMagicCaretPosition();
+            contextMenu.doLayout();
+            contextMenu.show(textComponent, p.x, (p.y + (textComponent.getHeight() - 5)));
+            list.requestFocus();
         }
     }
 
     private boolean isFieldContextValid() {
         String text = textComponent.getText();
         int currentPosition = textComponent.getSelectionStart();
-
-        return ((currentPosition == 0)
-            || (text.charAt(currentPosition - 1) == ' '));
+        return ((currentPosition == 0) || (text.charAt(currentPosition - 1) == ' '));
     }
 
     private String getContextKey() {
@@ -198,62 +194,51 @@ public class ExpressionRuleContext extends KeyAdapter {
         String text = textComponent.getText();
 
         int currentPosition = textComponent.getSelectionStart();
-
         if ((currentPosition < 1) || (text.charAt(currentPosition - 1) != ' ')) {
             return false;
         }
 
         int lastFieldPosition = text.lastIndexOf(" ", currentPosition - 1);
-
         if (lastFieldPosition == -1) {
             return false;
         }
 
-        int lastFieldStartPosition =
-            Math.max(0, text.lastIndexOf(" ", lastFieldPosition - 1));
-        String field =
-            text.substring(lastFieldStartPosition, lastFieldPosition).toUpperCase()
-                .trim();
+        int lastFieldStartPosition = Math.max(0, text.lastIndexOf(" ", lastFieldPosition - 1));
+        String field = text.substring(lastFieldStartPosition, lastFieldPosition).toUpperCase().trim();
 
         return resolver.isField(field);
-
     }
 
-    //returns the currently active field which can be used to display a context menu
-    //the field returned is the left hand portion of an expression (for example, logger == )
-    //logger is the field that is returned
+    /*
+     * Returns the currently active field which can be used to display a context menu
+     * the field returned is the left hand portion of an expression (for example, logger == )
+     * logger is the field that is returned
+     */
     private String getField() {
         String text = textComponent.getText();
 
         int currentPosition = textComponent.getSelectionStart();
-
         if ((currentPosition < 1) || (text.charAt(currentPosition - 1) != ' ')) {
             return null;
         }
 
         int symbolPosition = text.lastIndexOf(" ", currentPosition - 1);
-
         if (symbolPosition < 0) {
             return null;
         }
 
         int lastFieldPosition = text.lastIndexOf(" ", symbolPosition - 1);
-
         if (lastFieldPosition < 0) {
             return null;
         }
 
-        int lastFieldStartPosition =
-            Math.max(0, text.lastIndexOf(" ", lastFieldPosition - 1));
-        String lastSymbol =
-            text.substring(lastFieldPosition + 1, symbolPosition).trim();
+        int lastFieldStartPosition = Math.max(0, text.lastIndexOf(" ", lastFieldPosition - 1));
+        String lastSymbol = text.substring(lastFieldPosition + 1, symbolPosition).trim();
 
-        String lastField =
-            text.substring(lastFieldStartPosition, lastFieldPosition).trim();
+        String lastField = text.substring(lastFieldStartPosition, lastFieldPosition).trim();
 
-        if (
-            factory.isRule(lastSymbol)
-                && filterModel.getContainer().modelExists(lastField)) {
+        if (factory.isRule(lastSymbol) &&
+            filterModel.getContainer().modelExists(lastField)) {
             return lastField;
         }
 
@@ -273,13 +258,12 @@ public class ExpressionRuleContext extends KeyAdapter {
     }
 
     class PopupListener extends MouseAdapter {
-        PopupListener() {
-        }
-
+        @Override
         public void mousePressed(MouseEvent e) {
             checkPopup(e);
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
             checkPopup(e);
         }
