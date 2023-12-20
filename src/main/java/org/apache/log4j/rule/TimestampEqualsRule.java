@@ -62,7 +62,9 @@ public class TimestampEqualsRule extends AbstractRule {
     super();
     //expects value to be a timestamp value represented as a long
     try {
-        timeStamp = DATE_FORMAT.parse(value).getTime();
+        synchronized(this) {
+            timeStamp = DATE_FORMAT.parse(value).getTime();
+        }
     } catch (ParseException pe) {
         throw new IllegalArgumentException("Could not parse date: " + value);
     }

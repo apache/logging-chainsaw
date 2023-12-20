@@ -1753,7 +1753,9 @@ public class LogPanel extends DockablePanel implements ChainsawEventBatchListene
         Object o = currentTable.getValueAt(row, column);
 
         if (o instanceof Date) {
-            return TIMESTAMP_DATE_FORMAT.format((Date) o);
+            synchronized (this) {
+                return TIMESTAMP_DATE_FORMAT.format((Date) o);
+            }
         }
 
         if (o instanceof String) {
