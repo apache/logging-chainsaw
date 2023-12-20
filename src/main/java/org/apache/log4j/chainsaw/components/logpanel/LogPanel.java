@@ -17,14 +17,13 @@
 
 package org.apache.log4j.chainsaw.components.logpanel;
 
-import org.apache.commons.configuration2.event.Event;
-import org.apache.commons.configuration2.event.EventListener;
 import org.apache.log4j.chainsaw.*;
 import org.apache.log4j.chainsaw.color.ColorPanel;
 import org.apache.log4j.chainsaw.color.RuleColorizer;
 import org.apache.log4j.chainsaw.components.elements.sorttable.JSortTable;
 import org.apache.log4j.chainsaw.components.elements.SmallButton;
 import org.apache.log4j.chainsaw.components.elements.SmallToggleButton;
+import org.apache.log4j.chainsaw.components.loggernamepanel.LoggerNameTreePanel;
 import org.apache.log4j.chainsaw.filter.FilterModel;
 import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;

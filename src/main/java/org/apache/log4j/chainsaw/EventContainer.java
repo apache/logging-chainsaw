@@ -17,6 +17,7 @@
 
 package org.apache.log4j.chainsaw;
 
+import org.apache.log4j.chainsaw.components.loggernamepanel.LoggerNameModel;
 import org.apache.log4j.rule.Rule;
 
 import java.beans.PropertyChangeListener;

@@ -17,7 +17,7 @@
 
 /*
  */
-package org.apache.log4j.chainsaw;
+package org.apache.log4j.chainsaw.components.loggernamepanel;
 
 import java.util.Collection;
 

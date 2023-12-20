@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.log4j.chainsaw;
+package org.apache.log4j.chainsaw.components.loggernamepanel;
 
 import java.util.EventListener;
 

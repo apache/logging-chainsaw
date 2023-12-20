@@ -16,8 +16,12 @@
  */
 /*
  */
-package org.apache.log4j.chainsaw;
+package org.apache.log4j.chainsaw.components.loggernamepanel;
 
+import org.apache.log4j.chainsaw.ChainsawConstants;
+import org.apache.log4j.chainsaw.ExpressionRuleContext;
+import org.apache.log4j.chainsaw.JTextComponentFormatter;
+import org.apache.log4j.chainsaw.PopupListener;
 import org.apache.log4j.chainsaw.components.elements.SmallButton;
 import org.apache.log4j.chainsaw.components.elements.SmallToggleButton;
 import org.apache.log4j.chainsaw.components.logpanel.LogPanel;
@@ -41,7 +45,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.util.List;
-import org.apache.commons.configuration2.AbstractConfiguration;
+
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
 

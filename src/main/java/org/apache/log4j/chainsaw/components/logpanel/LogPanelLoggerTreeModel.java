@@ -19,7 +19,7 @@
  */
 package org.apache.log4j.chainsaw.components.logpanel;
 
-import org.apache.log4j.chainsaw.LoggerNameListener;
+import org.apache.log4j.chainsaw.components.loggernamepanel.LoggerNameListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -45,7 +45,7 @@ public class LogPanelLoggerTreeModel extends DefaultTreeModel
     }
 
     /* (non-Javadoc)
-     * @see org.apache.log4j.chainsaw.LoggerNameListener#loggerNameAdded(java.lang.String)
+     * @see org.apache.log4j.chainsaw.components.loggernamepanel.LoggerNameListener#loggerNameAdded(java.lang.String)
      */
     public void loggerNameAdded(final String loggerName) {
         //invoke later, not on current EDT

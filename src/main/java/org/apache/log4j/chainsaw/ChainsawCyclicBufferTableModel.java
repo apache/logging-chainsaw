@@ -18,6 +18,9 @@
 package org.apache.log4j.chainsaw;
 
 import org.apache.log4j.chainsaw.color.RuleColorizer;
+import org.apache.log4j.chainsaw.components.loggernamepanel.LoggerNameListener;
+import org.apache.log4j.chainsaw.components.loggernamepanel.LoggerNameModel;
+import org.apache.log4j.chainsaw.components.loggernamepanel.LoggerNameModelSupport;
 import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.helpers.Constants;

@@ -17,7 +17,7 @@
 
 /*
  */
-package org.apache.log4j.chainsaw;
+package org.apache.log4j.chainsaw.components.loggernamepanel;
 
 import javax.swing.event.EventListenerList;
 import java.util.Collection;
@@ -38,14 +38,14 @@ public class LoggerNameModelSupport implements LoggerNameModel {
 
 
     /* (non-Javadoc)
-     * @see org.apache.log4j.chainsaw.LoggerNameModel#getLoggerNames()
+     * @see org.apache.log4j.chainsaw.components.loggernamepanel.LoggerNameModel#getLoggerNames()
      */
     public Collection<String> getLoggerNames() {
         return Collections.unmodifiableSet(loggerNameSet);
     }
 
     /* (non-Javadoc)
-     * @see org.apache.log4j.chainsaw.LoggerNameModel#addLoggerName(java.lang.String)
+     * @see org.apache.log4j.chainsaw.components.loggernamepanel.LoggerNameModel#addLoggerName(java.lang.String)
      */
     public boolean addLoggerName(String loggerName) {
         boolean isNew = loggerNameSet.add(loggerName);
@@ -81,14 +81,14 @@ public class LoggerNameModelSupport implements LoggerNameModel {
     }
 
     /* (non-Javadoc)
-     * @see org.apache.log4j.chainsaw.LoggerNameModel#addLoggerNameListener(org.apache.log4j.chainsaw.LoggerNameListener)
+     * @see org.apache.log4j.chainsaw.components.loggernamepanel.LoggerNameModel#addLoggerNameListener(org.apache.log4j.chainsaw.components.loggernamepanel.LoggerNameListener)
      */
     public void addLoggerNameListener(LoggerNameListener l) {
         listenerList.add(LoggerNameListener.class, l);
     }
 
     /* (non-Javadoc)
-     * @see org.apache.log4j.chainsaw.LoggerNameModel#removeLoggerNameListener(org.apache.log4j.chainsaw.LoggerNameListener)
+     * @see org.apache.log4j.chainsaw.components.loggernamepanel.LoggerNameModel#removeLoggerNameListener(org.apache.log4j.chainsaw.components.loggernamepanel.LoggerNameListener)
      */
     public void removeLoggerNameListener(LoggerNameListener l) {
         listenerList.remove(LoggerNameListener.class, l);
