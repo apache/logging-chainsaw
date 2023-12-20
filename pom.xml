@@ -300,6 +300,7 @@
       </activation>
       <build>
         <plugins>
+          <!--
           <plugin>
             <groupId>de.perdian.maven.plugins</groupId>
             <artifactId>macosappbundler-maven-plugin</artifactId>
@@ -337,6 +338,7 @@
               </execution>
             </executions>
           </plugin>
+          -->
         </plugins>
       </build>
     </profile>
