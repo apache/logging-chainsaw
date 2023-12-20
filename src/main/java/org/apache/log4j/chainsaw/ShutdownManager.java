@@ -13,12 +13,12 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 
 public class ShutdownManager {
-    private static Logger logger = LogManager.getLogger(ShutdownManager.class);
+    private static final Logger logger = LogManager.getLogger(ShutdownManager.class);
 
-    private JFrame logUI;
-    private AbstractConfiguration configuration;
-    private List<ChainsawReceiver> receivers;
-    private EventListenerList shutdownListenerList;
+    private final JFrame logUI;
+    private final AbstractConfiguration configuration;
+    private final List<ChainsawReceiver> receivers;
+    private final EventListenerList shutdownListenerList;
 
     /**
      * The shutdownAction is called when the user requests to exit Chainsaw, and
@@ -54,7 +54,6 @@ public class ShutdownManager {
                     JOptionPane.INFORMATION_MESSAGE) != JOptionPane.YES_OPTION) {
                 return false;
             }
-
         }
 
         final JWindow progressWindow = new JWindow();
@@ -112,15 +111,12 @@ public class ShutdownManager {
      * Ensures all the registered ShutdownListeners are notified.
      */
     private void fireShutdownEvent() {
-        ShutdownListener[] listeners =
-            shutdownListenerList.getListeners(
-                ShutdownListener.class);
+        ShutdownListener[] listeners = shutdownListenerList.getListeners(ShutdownListener.class);
 
         for (ShutdownListener listener : listeners) {
             listener.shuttingDown();
         }
     }
-
 
     /**
      * Configures LogUI's with an action to execute when the user requests to
@@ -144,5 +140,4 @@ public class ShutdownManager {
         shutdownAction.actionPerformed(
             new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "Shutting Down"));
     }
-
 }
