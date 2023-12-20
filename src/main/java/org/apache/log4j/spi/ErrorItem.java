@@ -17,6 +17,9 @@
 
 package org.apache.log4j.spi;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.PrintStream;
 
 /**
@@ -28,6 +31,7 @@ import java.io.PrintStream;
  * @author Ceki Gulcu
  */
 public class ErrorItem {
+    private static Logger logger = LogManager.getLogger(ErrorItem.class);
     /**
      * Message.
      */
@@ -178,7 +182,7 @@ public class ErrorItem {
         ps.println(str);
 
         if (exception != null) {
-            exception.printStackTrace(ps);
+            logger.error(ps);
         }
     }
 }
