@@ -16,9 +16,12 @@
  */
 package org.apache.log4j.chainsaw;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.log4j.chainsaw.helper.SwingHelper;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.net.UDPReceiver;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
 import javax.swing.text.SimpleAttributeSet;
@@ -31,12 +34,9 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 import java.util.Locale;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -185,6 +185,7 @@ class ReceiverConfigurationPanel extends JPanel {
         updateEnabledState(log4jConfigReceiverRadioButton);
     }
 
+    @SuppressFBWarnings // TODO: loading files like this is dangerous - at least in web. see if we can do better
     private JPanel buildDontWarnAndOKPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
 
@@ -239,16 +240,19 @@ class ReceiverConfigurationPanel extends JPanel {
             }
         });
 
-        saveButton.addActionListener(e -> {
-            try {
-                URL url = browseFile("Choose a path and file name to save", false);
-                if (url != null) {
-                    File file = new File(url.toURI());
-                    panelModel.setSaveConfigFile(file);
+
+        saveButton.addActionListener(new ActionListener() {
+            @SuppressFBWarnings // TODO: loading files like this is dangerous - at least in web. see if we can do better
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    URL url = browseFile("Choose a path and file name to save", false);
+                    if (url != null) {
+                        File file = new File(url.toURI());
+                        panelModel.setSaveConfigFile(file);
+                    }
+                } catch (Exception ex) {
+                    logger.error("Error browsing for log file", ex);
                 }
-            } catch (Exception ex) {
-                logger.error(
-                    "Error browsing for log file", ex);
             }
         });
         return panel;
@@ -775,20 +779,6 @@ class ReceiverConfigurationPanel extends JPanel {
             logFileFormatComboBoxModel.removeElement(lastLogFormat);
             logFileFormatComboBoxModel.insertElementAt(lastLogFormat, 0);
             logFileFormatComboBox.setSelectedIndex(0);
-        }
-
-        public boolean isCancelled() {
-            return cancelled;
-        }
-
-        public File getLog4jConfigFile() {
-            try {
-                URL newConfigurationURL = new URL(log4jConfigURLTextField.getText());
-                return new File(newConfigurationURL.toURI());
-            } catch (URISyntaxException | MalformedURLException e) {
-                e.printStackTrace();
-            }
-            return null;
         }
     }
 }

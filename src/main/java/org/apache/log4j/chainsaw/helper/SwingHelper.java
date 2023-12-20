@@ -17,6 +17,8 @@
 
 package org.apache.log4j.chainsaw.helper;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -94,6 +96,7 @@ public final class SwingHelper {
         return result;
     }
 
+    @SuppressFBWarnings // TODO: loading files like this is dangerous - at least in web. see if we can do better
     public static File promptForFile(Container parent, String defaultPath, String title, boolean loadDialog) {
         if (SwingHelper.isMacOSX()) {
             //use filedialog on mac

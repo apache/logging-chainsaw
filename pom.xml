@@ -211,6 +211,11 @@
       <artifactId>commons-beanutils</artifactId>
       <version>1.9.4</version>
      </dependency>
+    <dependency>
+      <groupId>com.github.spotbugs</groupId>
+      <artifactId>spotbugs-annotations</artifactId>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 
   <reporting>

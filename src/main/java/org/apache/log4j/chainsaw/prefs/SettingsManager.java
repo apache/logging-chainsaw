@@ -16,6 +16,7 @@
  */
 package org.apache.log4j.chainsaw.prefs;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.configuration2.AbstractConfiguration;
 import org.apache.commons.configuration2.CombinedConfiguration;
 import org.apache.commons.configuration2.PropertiesConfiguration;
@@ -141,6 +142,7 @@ public final class SettingsManager {
         return combinedConfig;
     }
 
+    @SuppressFBWarnings // TODO: loading files like this is dangerous - at least in web. see if we can do better
     public AbstractConfiguration getSettingsForReceiverTab(String identifier) {
         if (tabSettings.containsKey(identifier)) {
             return tabSettings.get(identifier).tabSettings;

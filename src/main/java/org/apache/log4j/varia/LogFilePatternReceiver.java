@@ -18,6 +18,8 @@
 package org.apache.log4j.varia;
 
 import java.nio.charset.StandardCharsets;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
@@ -1039,6 +1041,7 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
         logger.info("activateOptions");
         active = true;
         Runnable runnable = new Runnable() {
+            @SuppressFBWarnings // TODO: loading files like this is dangerous - at least in web. see if we can do better
             public void run() {
                 initialize();
                 while (reader == null) {

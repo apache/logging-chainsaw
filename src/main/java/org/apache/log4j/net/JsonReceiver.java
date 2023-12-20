@@ -22,6 +22,8 @@ import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Iterator;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.log4j.chainsaw.receiver.ChainsawReceiverSkeleton;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
 import org.apache.logging.log4j.LogManager;
@@ -46,9 +48,6 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
      * The MulticastDNS zone advertised by an XMLSocketReceiver
      */
     public static final String ZONE = "_log4j_json_tcpaccept_receiver.local.";
-
-    public JsonReceiver() {
-    }
 
     @Override
     public void shutdown() {
@@ -105,6 +104,7 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
     }
 
     @Override
+    @SuppressFBWarnings
     public void run() {
         /**
          * Ensure we start fresh.

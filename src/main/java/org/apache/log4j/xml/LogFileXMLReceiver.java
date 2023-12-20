@@ -17,6 +17,7 @@
 
 package org.apache.log4j.xml;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
@@ -242,47 +243,53 @@ public class LogFileXMLReceiver extends ChainsawReceiverSkeleton {
 
     @Override
     public void start() {
-        Runnable runnable = () -> {
-            try {
-                URL url = new URL(fileURL);
-                host = url.getHost();
-                if (host != null && host.isEmpty()) {
-                    host = FILE_KEY;
-                }
-                path = url.getPath();
-            } catch (MalformedURLException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            }
+        Runnable runnable = new Runnable() {
+            @Override
+            @SuppressFBWarnings // TODO: loading files like this is dangerous - at least in web. see if we can do better
+            public void run() {
+                {
+                    try {
+                        URL url = new URL(fileURL);
+                        host = url.getHost();
+                        if (host != null && host.isEmpty()) {
+                            host = FILE_KEY;
+                        }
+                        path = url.getPath();
+                    } catch (MalformedURLException e1) {
+                        // TODO Auto-generated catch block
+                        e1.printStackTrace();
+                    }
 
-            try {
-                if (filterExpression != null) {
-                    expressionRule = ExpressionRule.getRule(filterExpression);
-                }
-            } catch (Exception e) {
-                logger.warn("Invalid filter expression: " + filterExpression, e);
-            }
+                    try {
+                        if (filterExpression != null) {
+                            expressionRule = ExpressionRule.getRule(filterExpression);
+                        }
+                    } catch (Exception e) {
+                        logger.warn("Invalid filter expression: " + filterExpression, e);
+                    }
 
-            Class c;
-            try {
-                c = Class.forName(decoder);
-                Object o = c.newInstance();
-                if (o instanceof Decoder) {
-                    decoderInstance = (Decoder) o;
-                }
-            } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+                    Class c;
+                    try {
+                        c = Class.forName(decoder);
+                        Object o = c.newInstance();
+                        if (o instanceof Decoder) {
+                            decoderInstance = (Decoder) o;
+                        }
+                    } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
 
-            try {
-                reader = new InputStreamReader(new URL(getFileURL()).openStream());
-                process(reader);
-            } catch (FileNotFoundException fnfe) {
-                logger.info("file not available");
-            } catch (IOException ioe) {
-                logger.warn("unable to load file", ioe);
-                return;
+                    try {
+                        reader = new InputStreamReader(new URL(getFileURL()).openStream());
+                        process(reader);
+                    } catch (FileNotFoundException fnfe) {
+                        logger.info("file not available");
+                    } catch (IOException ioe) {
+                        logger.warn("unable to load file", ioe);
+                        return;
+                    }
+                }
             }
         };
         if (useCurrentThread) {

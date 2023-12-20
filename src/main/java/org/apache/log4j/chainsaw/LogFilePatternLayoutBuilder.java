@@ -16,6 +16,7 @@
  */
 package org.apache.log4j.chainsaw;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -132,12 +133,14 @@ public class LogFilePatternLayoutBuilder {
         return result;
     }
 
+    @SuppressFBWarnings // TODO: loading files like this is dangerous - at least in web. see if we can do better
     private static Map<String, Map<String, String>> getXMLFileAppenderConfiguration(File file) throws IOException, ParserConfigurationException, SAXException {
         Map<String, Map<String, String>> result = new HashMap<>();
         try (InputStream stream = file.toURI().toURL().openStream()) {
             InputSource src = new InputSource(stream);
             src.setSystemId(file.toURI().toURL().toString());
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
             DocumentBuilder docBuilder = dbf.newDocumentBuilder();
 
 //            docBuilder.setErrorHandler(new SAXErrorHandler());

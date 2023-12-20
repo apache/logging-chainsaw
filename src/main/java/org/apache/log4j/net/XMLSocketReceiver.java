@@ -22,6 +22,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
 import java.util.Vector;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.log4j.chainsaw.receiver.ChainsawReceiverSkeleton;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.spi.Decoder;
@@ -161,6 +163,7 @@ public class XMLSocketReceiver extends ChainsawReceiverSkeleton implements Runna
     /**
      * Loop, accepting new socket connections.
      */
+    @SuppressFBWarnings // TODO: this hsould be a secure socket?
     public void run() {
         /**
          * Ensure we start fresh.
