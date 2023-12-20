@@ -19,7 +19,6 @@ package org.apache.log4j.chainsaw.components.loggernamepanel;
 
 import java.util.EventListener;
 
-
 /**
  * Implementations are notified when new Logger names
  * are added to the related LoggerNameModel instance.

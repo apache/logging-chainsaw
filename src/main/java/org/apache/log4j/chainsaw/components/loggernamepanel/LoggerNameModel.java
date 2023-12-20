@@ -21,7 +21,6 @@ package org.apache.log4j.chainsaw.components.loggernamepanel;
 
 import java.util.Collection;
 
-
 /**
  * Implementations of this model contain all the known Logger
  * names within it's model space.
@@ -42,11 +41,11 @@ public interface LoggerNameModel {
      * Attempts to add the loggerName to the model, and returns
      * true if it does, i.e that the loggerName is new, otherwise
      * it is ignored.
-     * <p>
+     * <p />
      * If the loggerName is new for this model, all the LoggerNameListeners
      * are notified using this thread.
      *
-     * @param loggerName
+     * @param loggerName the logger name to add
      */
     boolean addLoggerName(String loggerName);
 

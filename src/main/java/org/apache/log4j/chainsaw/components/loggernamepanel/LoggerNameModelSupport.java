@@ -25,17 +25,14 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-
 /**
  * An implementation of LoggerNameModel which can be used as a delegate
  *
  * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 public class LoggerNameModelSupport implements LoggerNameModel {
-
-    private Set<String> loggerNameSet = new HashSet<>();
-    private EventListenerList listenerList = new EventListenerList();
-
+    private final Set<String> loggerNameSet = new HashSet<>();
+    private final EventListenerList listenerList = new EventListenerList();
 
     /* (non-Javadoc)
      * @see org.apache.log4j.chainsaw.components.loggernamepanel.LoggerNameModel#getLoggerNames()

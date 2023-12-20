@@ -48,7 +48,6 @@ import java.util.List;
 
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 
-
 /**
  * A panel that encapsulates the Logger Name tree, with associated actions
  * and implements the Rule interface so that it can filter in/out events
@@ -57,15 +56,17 @@ import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
  * @author Paul Smith &lt;psmith@apache.org&gt;
  */
 public final class LoggerNameTreePanel extends JPanel implements LoggerNameListener {
-    //~ Static fields/initializers ==============================================
+    public static final String ACTION_NAME_CLOSE = " Close ";
+    public static final String ACTION_NAME_UNHIDE_ALL = " Unhide All ";
+    public static final String ACTION_NAME_CLEAR_IGNORE_LIST = "Clear Ignore list";
+    public static final String PROPERTY_HIDDEN_SET = "hiddenSet";
+    public static final String KEY_CHECKED = "checked";
+    private final Logger logger = LogManager.getLogger(LoggerNameTreePanel.class);
 
     private static final int WARN_DEPTH = 4;
     private final LogPanelPreferenceModel logPanelPreferenceModel;
 
-    //~ Instance fields =========================================================
-
-    private LoggerNameTreeCellRenderer cellRenderer =
-        new LoggerNameTreeCellRenderer();
+    private final LoggerNameTreeCellRenderer cellRenderer = new LoggerNameTreeCellRenderer();
     private final Action clearIgnoreListAction;
     private final Action closeAction;
     private final JButton closeButton = new SmallButton();
@@ -83,16 +84,13 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
     private final JButton expandButton = new SmallButton();
     private final Action focusOnAction;
     private final Action clearRefineFocusAction;
-    private final SmallToggleButton focusOnLoggerButton =
-        new SmallToggleButton();
-    private final Set hiddenSet = new HashSet();
+    private final SmallToggleButton focusOnLoggerButton = new SmallToggleButton();
+    private final Set<String> hiddenSet = new HashSet<>();
     private final Action hideAction;
     private final Action hideSubLoggersAction;
-
     private final JList ignoreList = new JList();
     private final JEditorPane ignoreExpressionEntryField = new JEditorPane();
     private final JEditorPane alwaysDisplayExpressionEntryField = new JEditorPane();
-    private final JScrollPane ignoreListScroll = new JScrollPane(ignoreList);
     private final JDialog ignoreDialog = new JDialog();
     private final JDialog ignoreExpressionDialog = new JDialog();
     private final JDialog alwaysDisplayExpressionDialog = new JDialog();
@@ -102,7 +100,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
     private final SmallToggleButton ignoreLoggerButton = new SmallToggleButton();
     private final EventListenerList listenerList = new EventListenerList();
     private final JTree logTree;
-    private final Logger logger = LogManager.getLogger(LoggerNameTreePanel.class);
+
 
     //  private final EventListenerList focusOnActionListeners =
     //    new EventListenerList();
@@ -119,8 +117,6 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
     private Rule alwaysDisplayExpressionRule;
     private boolean expandRootLatch = false;
     private String currentlySelectedLoggerName;
-
-    //~ Constructors ============================================================
 
     /**
      * Creates a new LoggerNameTreePanel object.
@@ -151,26 +147,29 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
         visibilityRuleDelegate = new VisibilityRuleDelegate();
         colorRuleDelegate =
             new AbstractRule() {
+                @Override
                 public boolean evaluate(ChainsawLoggingEvent e, Map matches) {
                     boolean hiddenLogger = e.m_logger != null && isHiddenLogger(e.m_logger);
                     boolean hiddenExpression = (ignoreExpressionRule != null && ignoreExpressionRule.evaluate(e, null));
                     boolean alwaysDisplayExpression = (alwaysDisplayExpressionRule != null && alwaysDisplayExpressionRule.evaluate(e, null));
                     boolean hidden = (!alwaysDisplayExpression) && (hiddenLogger || hiddenExpression);
-                    String currentlySelectedLoggerName = getCurrentlySelectedLoggerName();
 
-                    return !isFocusOnSelected() && !hidden && currentlySelectedLoggerName != null && !"".equals(currentlySelectedLoggerName) && (e.m_logger.startsWith(currentlySelectedLoggerName + ".") || e.m_logger.endsWith(currentlySelectedLoggerName));
+                    String selectedLoggerName = getCurrentlySelectedLoggerName();
+                    return !isFocusOnSelected() && !hidden && selectedLoggerName != null &&
+                           !"".equals(selectedLoggerName) &&
+                           (e.m_logger.startsWith(selectedLoggerName + ".") ||
+                           e.m_logger.endsWith(selectedLoggerName));
                 }
             };
 
-        logTree =
-            new JTree(logTreeModel) {
+        logTree = new JTree(logTreeModel) {
+                @Override
                 public String getToolTipText(MouseEvent ev) {
                     if (ev == null) {
                         return null;
                     }
 
                     TreePath path = logTree.getPathForLocation(ev.getX(), ev.getY());
-
                     String loggerName = getLoggerName(path);
 
                     if (hiddenSet.contains(loggerName)) {
@@ -186,9 +185,11 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
 
         //	============================================
         logTreeModel.addTreeModelListener(new TreeModelListener() {
+            @Override
             public void treeNodesChanged(TreeModelEvent e) {
             }
 
+            @Override
             public void treeNodesInserted(TreeModelEvent e) {
                 if (!expandRootLatch) {
                     ensureRootExpanded();
@@ -196,9 +197,11 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
                 }
             }
 
+            @Override
             public void treeNodesRemoved(TreeModelEvent e) {
             }
 
+            @Override
             public void treeStructureChanged(TreeModelEvent e) {
             }
         });
@@ -283,7 +286,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
             .name("...")
             .shortDescription("Click to view and manage your always-displayed expression")
             .action(() -> LogPanel.centerAndSetVisible(alwaysDisplayExpressionDialog)).build();
-            ;
+
         alwaysDisplayExpressionPanel.add(btnShowAlwaysDisplayExpressionDialog);
 
         ignorePanel.add(alwaysDisplayExpressionPanel);
@@ -292,15 +295,13 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
 
         ignoreList.setModel(new DefaultListModel());
         ignoreList.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
-                if (
-                    (e.getClickCount() > 1)
-                        && ((e.getModifiers() & InputEvent.BUTTON1_MASK) > 0)) {
+                if (e.getClickCount() > 1 && ((e.getModifiersEx() & InputEvent.BUTTON1_DOWN_MASK) > 0)) {
                     int index = ignoreList.locationToIndex(e.getPoint());
 
                     if (index >= 0) {
-                        String string =
-                            ignoreList.getModel().getElementAt(index).toString();
+                        String string = ignoreList.getModel().getElementAt(index).toString();
                         toggleHiddenLogger(string);
                         fireChangeEvent();
 
@@ -315,6 +316,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
         });
 
         JPanel ignoreListPanel = new JPanel(new BorderLayout());
+        JScrollPane ignoreListScroll = new JScrollPane(ignoreList);
         ignoreListScroll.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Double click an entry to unhide it"));
         ignoreListPanel.add(ignoreListScroll, BorderLayout.CENTER);
 
@@ -322,7 +324,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
         ignoreExpressionEntryField.addKeyListener(new ExpressionRuleContext(filterModel, ignoreExpressionEntryField));
 
         ignoreExpressionDialogPanel.add(new JScrollPane(ignoreExpressionEntryField), BorderLayout.CENTER);
-        JButton ignoreExpressionCloseButton = new JButton(new AbstractAction(" Close ") {
+        JButton ignoreExpressionCloseButton = new JButton(new AbstractAction(ACTION_NAME_CLOSE) {
             public void actionPerformed(ActionEvent e) {
                 String ignoreText = ignoreExpressionEntryField.getText();
 
@@ -337,7 +339,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
         alwaysDisplayExpressionEntryField.addKeyListener(new ExpressionRuleContext(filterModel, alwaysDisplayExpressionEntryField));
 
         alwaysDisplayExpressionDialogPanel.add(new JScrollPane(alwaysDisplayExpressionEntryField), BorderLayout.CENTER);
-        JButton alwaysDisplayExpressionCloseButton = new JButton(new AbstractAction(" Close ") {
+        JButton alwaysDisplayExpressionCloseButton = new JButton(new AbstractAction(ACTION_NAME_CLOSE) {
             public void actionPerformed(ActionEvent e) {
                 String alwaysDisplayText = alwaysDisplayExpressionEntryField.getText();
 
@@ -357,7 +359,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
 
         Box ignoreListButtonPanel = Box.createHorizontalBox();
 
-        JButton unhideAll = new JButton(new AbstractAction(" Unhide All ") {
+        JButton unhideAll = new JButton(new AbstractAction(ACTION_NAME_UNHIDE_ALL) {
 
             public void actionPerformed(final ActionEvent e) {
                 SwingUtilities.invokeLater(() -> clearIgnoreListAction.actionPerformed(e));
@@ -367,7 +369,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
         ignoreListButtonPanel.add(unhideAll);
 
         ignoreListButtonPanel.add(Box.createHorizontalGlue());
-        JButton ignoreCloseButton = new JButton(new AbstractAction(" Close ") {
+        JButton ignoreCloseButton = new JButton(new AbstractAction(ACTION_NAME_CLOSE) {
 
             public void actionPerformed(ActionEvent e) {
                 ignoreDialog.setVisible(false);
@@ -376,9 +378,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
         });
         ignoreListButtonPanel.add(ignoreCloseButton);
 
-
         ignoreListPanel.add(ignoreListButtonPanel, BorderLayout.SOUTH);
-
 
         ignoreDialog.getContentPane().add(ignoreListPanel);
         ignoreDialog.pack();
@@ -397,7 +397,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
             } else {
                 ignoreExpressionRule = null;
             }
-            visibilityRuleDelegate.firePropertyChange("hiddenSet", null, null);
+            visibilityRuleDelegate.firePropertyChange(PROPERTY_HIDDEN_SET, null, null);
 
             updateDisplay();
             ignoreExpressionEntryField.setBackground(UIManager.getColor("TextField.background"));
@@ -428,13 +428,11 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
         }
     }
 
-    //~ Methods =================================================================
-
     /**
      * Adds a change Listener to this LoggerNameTreePanel to be notfied
      * when the State of the Focus or Hidden details have changed.
      *
-     * @param l
+     * @param l the change listener to add
      */
     public void addChangeListener(ChangeListener l) {
         listenerList.add(ChangeListener.class, l);
@@ -448,11 +446,6 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
         return visibilityRuleDelegate;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param l DOCUMENT ME!
-     */
     public void removeChangeListener(ChangeListener l) {
         listenerList.remove(ChangeListener.class, l);
     }
@@ -460,7 +453,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
     /**
      * Ensures the Focus is set to a specific logger name
      *
-     * @param
+     * @param newLogger the name of the logger to focus on
      */
     public void setFocusOn(String newLogger) {
         DefaultMutableTreeNode node = logTreeModel.lookupLogger(newLogger);
@@ -474,7 +467,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
                 focusOnLoggerButton.doClick();
             }
         } else {
-            logger.error("failed to lookup logger " + newLogger);
+            logger.error("failed to lookup logger {}", newLogger);
         }
     }
 
@@ -488,20 +481,14 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
         return false;
     }
 
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param logger
-     */
-    protected void toggleHiddenLogger(String logger) {
+    private void toggleHiddenLogger(String logger) {
         if (!hiddenSet.contains(logger)) {
             hiddenSet.add(logger);
         } else {
             hiddenSet.remove(logger);
         }
 
-        visibilityRuleDelegate.firePropertyChange("hiddenSet", null, null);
+        visibilityRuleDelegate.firePropertyChange(PROPERTY_HIDDEN_SET, null, null);
     }
 
     /**
@@ -526,12 +513,6 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
         return getLoggerName(firstPath);
     }
 
-    /**
-     * Returns the full
-     *
-     * @param path DOCUMENT ME!
-     * @return
-     */
     String getLoggerName(TreePath path) {
         if (path != null) {
             Object[] objects = path.getPath();
@@ -556,11 +537,11 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
      * both the "hiddenSet" property and those expecting the Rule to change
      * via the ChangeListener interface
      *
-     * @param fqnLoggersToIgnore
+     * @param fqnLoggersToIgnore the loggers to ignore
      */
-    public void ignore(Collection fqnLoggersToIgnore) {
+    public void ignore(Collection<String> fqnLoggersToIgnore) {
         hiddenSet.addAll(fqnLoggersToIgnore);
-        visibilityRuleDelegate.firePropertyChange("hiddenSet", null, null);
+        visibilityRuleDelegate.firePropertyChange(PROPERTY_HIDDEN_SET, null, null);
         fireChangeEvent();
     }
 
@@ -570,14 +551,14 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
      * @return true if the FocusOn action/lement has been selected
      */
     boolean isFocusOnSelected() {
-        return focusOnAction.getValue("checked") != null;
+        return focusOnAction.getValue(KEY_CHECKED) != null;
     }
 
     void setFocusOnSelected(boolean selected) {
         if (selected) {
-            focusOnAction.putValue("checked", Boolean.TRUE);
+            focusOnAction.putValue(KEY_CHECKED, Boolean.TRUE);
         } else {
-            focusOnAction.putValue("checked", null);
+            focusOnAction.putValue(KEY_CHECKED, null);
         }
     }
 
@@ -595,17 +576,14 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
         logger.debug("Collapsing all children of selected node");
 
         for (TreePath path : paths) {
-            DefaultMutableTreeNode node =
-                (DefaultMutableTreeNode) path.getLastPathComponent();
-            Enumeration enumeration = node.depthFirstEnumeration();
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+            Enumeration<TreeNode> enumeration = node.depthFirstEnumeration();
 
             while (enumeration.hasMoreElements()) {
-                DefaultMutableTreeNode child =
-                    (DefaultMutableTreeNode) enumeration.nextElement();
+                DefaultMutableTreeNode child = (DefaultMutableTreeNode) enumeration.nextElement();
 
                 if ((child.getParent() != null) && (child != node)) {
-                    TreeNode[] nodes =
-                        ((DefaultMutableTreeNode) child.getParent()).getPath();
+                    TreeNode[] nodes = ((DefaultMutableTreeNode) child.getParent()).getPath();
 
                     TreePath treePath = new TreePath(nodes);
                     logTree.collapsePath(treePath);
@@ -654,13 +632,9 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
         toolbar.add(Box.createHorizontalStrut(5));
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return
-     */
     private Action createClearIgnoreListAction() {
-        Action action = new AbstractAction("Clear Ignore list", null) {
+        Action action = new AbstractAction(ACTION_NAME_CLEAR_IGNORE_LIST, null) {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 ignoreLoggerButton.setSelected(false);
                 logTreeModel.reload();
@@ -679,10 +653,11 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
     /**
      * An action that closes (hides) this panel
      *
-     * @return
+     * @return the close action
      */
     private Action createCloseAction() {
         Action action = new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 logPanelPreferenceModel.setLogTreePanelVisible(false);
             }
@@ -695,13 +670,9 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
         return action;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return
-     */
     private Action createCollapseAction() {
         Action action = new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 collapseCurrentlySelectedNode();
             }
@@ -719,6 +690,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
 
     private Action createEditLoggerAction() {
         Action action = new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 // TODO Auto-generated method stub
             }
@@ -731,8 +703,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
         action.putValue(
             Action.SHORT_DESCRIPTION,
             "Allows you to specify filters and coloring for this Logger");
-        action.putValue(
-            Action.SMALL_ICON, new ImageIcon(ChainsawIcons.ICON_EDIT_RECEIVER));
+        action.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.ICON_EDIT_RECEIVER));
         action.setEnabled(false);
 
         return action;
@@ -746,6 +717,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
      */
     private Action createExpandAction() {
         Action action = new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 expandCurrentlySelectedNode();
             }
@@ -769,6 +741,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
      */
     private Action createFindNextAction() {
         Action action = new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 findNextUsingCurrentlySelectedNode();
             }
@@ -785,6 +758,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
 
     private Action createSetRefineFocusAction() {
         Action action = new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 setRefineFocusUsingCurrentlySelectedNode();
             }
@@ -865,6 +839,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
 
     private Action createDefineColorRuleForLoggerAction() {
         Action action = new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 String selectedLogger = getCurrentlySelectedLoggerName();
                 TreePath[] paths = logTree.getSelectionPaths();
@@ -897,6 +872,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
      */
     private Action createClearFindNextAction() {
         Action action = new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 clearFindNext();
             }
@@ -913,6 +889,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
 
     private Action createClearRefineFocusAction() {
         Action action = new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 clearRefineFocus();
             }
@@ -927,13 +904,9 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
         return action;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return
-     */
     private Action createFocusOnAction() {
         final Action action = new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 toggleFocusOnState();
             }
@@ -951,21 +924,17 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
         return action;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return
-     */
     private Action createIgnoreAllAction() {
         Action action =
-            new AbstractAction(
-                "Ignore loggers below selection") {
+            new AbstractAction("Ignore loggers below selection") {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     //add all top level loggers as hidden loggers
                     TreePath[] paths = logTree.getSelectionPaths();
 
                     StringBuilder parentPathString = new StringBuilder();
                     DefaultMutableTreeNode root;
+
                     if ((paths == null) || (paths.length == 0)) {
                         root = (DefaultMutableTreeNode) logTreeModel.getRoot();
                     } else {
@@ -982,13 +951,14 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
                             parentPathString.append(".");
                         }
                     }
-                    Enumeration topLevelLoggersEnumeration = root.children();
-                    Set topLevelLoggersSet = new HashSet();
+                    Enumeration<TreeNode> topLevelLoggersEnumeration = root.children();
+                    Set<String> topLevelLoggersSet = new HashSet<>();
                     while (topLevelLoggersEnumeration.hasMoreElements()) {
                         String thisLogger = topLevelLoggersEnumeration.nextElement().toString();
                         topLevelLoggersSet.add(parentPathString + thisLogger);
                     }
-                    if (topLevelLoggersSet.size() > 0) {
+
+                    if (!topLevelLoggersSet.isEmpty()) {
                         ignore(topLevelLoggersSet);
                     }
 
@@ -1007,25 +977,19 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
         return action;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return
-     */
     private Action createIgnoreAction() {
         Action action =
-            new AbstractAction(
-                "Ignore this Logger", new ImageIcon(ChainsawIcons.ICON_COLLAPSE)) {
+            new AbstractAction("Ignore this Logger", new ImageIcon(ChainsawIcons.ICON_COLLAPSE)) {
+                @Override
                 public void actionPerformed(ActionEvent e) {
-                    String logger = getCurrentlySelectedLoggerName();
+                    String selectedLoggerName = getCurrentlySelectedLoggerName();
 
-                    if (logger != null) {
-                        toggleHiddenLogger(logger);
-                        logTreeModel.nodeChanged(
-                            (TreeNode) logTree.getSelectionPath().getLastPathComponent());
-                        ignoreLoggerButton.setSelected(hiddenSet.contains(logger));
-                        focusOnAction.setEnabled(!hiddenSet.contains(logger));
-                        popupMenu.hideCheck.setSelected(hiddenSet.contains(logger));
+                    if (selectedLoggerName != null) {
+                        toggleHiddenLogger(selectedLoggerName);
+                        logTreeModel.nodeChanged((TreeNode)logTree.getSelectionPath().getLastPathComponent());
+                        ignoreLoggerButton.setSelected(hiddenSet.contains(selectedLoggerName));
+                        focusOnAction.setEnabled(!hiddenSet.contains(selectedLoggerName));
+                        popupMenu.hideCheck.setSelected(hiddenSet.contains(selectedLoggerName));
                     }
 
                     fireChangeEvent();
@@ -1042,8 +1006,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
     private void ensureRootExpanded() {
         logger.debug("Ensuring Root node is expanded.");
 
-        final DefaultMutableTreeNode root =
-            (DefaultMutableTreeNode) logTreeModel.getRoot();
+        final DefaultMutableTreeNode root = (DefaultMutableTreeNode) logTreeModel.getRoot();
         SwingUtilities.invokeLater(() -> logTree.expandPath(new TreePath(root)));
     }
 
@@ -1054,6 +1017,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
         if (paths == null) {
             return;
         }
+
         logPanel.setFindText("logger like '^" + selectedLogger + ".*'");
     }
 
@@ -1093,10 +1057,8 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
             //        return;
             //      }
 
-            DefaultMutableTreeNode treeNode =
-                (DefaultMutableTreeNode) path.getLastPathComponent();
-
-            Enumeration depthEnum = treeNode.depthFirstEnumeration();
+            DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) path.getLastPathComponent();
+            Enumeration<TreeNode> depthEnum = treeNode.depthFirstEnumeration();
 
             if (!depthEnum.hasMoreElements()) {
                 break;
@@ -1105,8 +1067,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
             List<Integer> depths = new ArrayList<>();
 
             while (depthEnum.hasMoreElements()) {
-                depths.add(
-                    ((DefaultMutableTreeNode) depthEnum.nextElement()).getDepth());
+                depths.add(((DefaultMutableTreeNode) depthEnum.nextElement()).getDepth());
             }
 
             Collections.sort(depths);
@@ -1115,21 +1076,19 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
             int maxDepth = depths.get(0);
 
             if (maxDepth > WARN_DEPTH) {
-                logger.warn("Should warn user, depth=" + maxDepth);
+                logger.warn("Should warn user, depth={}", maxDepth);
             }
 
             depthEnum = treeNode.depthFirstEnumeration();
 
             while (depthEnum.hasMoreElements()) {
-                DefaultMutableTreeNode node =
-                    (DefaultMutableTreeNode) depthEnum.nextElement();
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) depthEnum.nextElement();
 
                 if (node.isLeaf() && node.getParent() != null) {
-                    TreeNode[] nodes =
-                        ((DefaultMutableTreeNode) node.getParent()).getPath();
+                    TreeNode[] nodes = ((DefaultMutableTreeNode) node.getParent()).getPath();
                     TreePath treePath = new TreePath(nodes);
 
-                    logger.debug("Expanding path:" + treePath);
+                    logger.debug("Expanding path: {}", treePath);
 
                     logTree.expandPath(treePath);
                 }
@@ -1138,8 +1097,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
     }
 
     private void fireChangeEvent() {
-        ChangeListener[] listeners =
-            listenerList.getListeners(ChangeListener.class);
+        ChangeListener[] listeners = listenerList.getListeners(ChangeListener.class);
         ChangeEvent e = null;
 
         for (ChangeListener listener : listeners) {
@@ -1152,9 +1110,9 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
     }
 
     private void reconfigureMenuText() {
-        String logger = getCurrentlySelectedLoggerName();
+        String selectedLoggerName = getCurrentlySelectedLoggerName();
 
-        if ((logger == null) || (logger.length() == 0)) {
+        if ((selectedLoggerName == null) || (selectedLoggerName.length() == 0)) {
             focusOnAction.putValue(Action.NAME, "Focus On...");
             hideAction.putValue(Action.NAME, "Ignore...");
             findAction.putValue(Action.NAME, "Find...");
@@ -1163,13 +1121,13 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
             updateFindAction.putValue(Action.NAME, "Add to find field");
             defineColorRuleForLoggerAction.putValue(Action.NAME, "Define color rule");
         } else {
-            focusOnAction.putValue(Action.NAME, "Focus On '" + logger + "'");
-            hideAction.putValue(Action.NAME, "Ignore '" + logger + "'");
-            findAction.putValue(Action.NAME, "Find '" + logger + "'");
-            setRefineFocusAction.putValue(Action.NAME, "Set refine focus field to '" + logger + "'");
-            updateRefineFocusAction.putValue(Action.NAME, "Add '" + logger + "' to 'refine focus' field");
-            updateFindAction.putValue(Action.NAME, "Add '" + logger + "' to 'find' field");
-            defineColorRuleForLoggerAction.putValue(Action.NAME, "Define color rule for '" + logger + "'");
+            focusOnAction.putValue(Action.NAME, "Focus On '" + selectedLoggerName + "'");
+            hideAction.putValue(Action.NAME, "Ignore '" + selectedLoggerName + "'");
+            findAction.putValue(Action.NAME, "Find '" + selectedLoggerName + "'");
+            setRefineFocusAction.putValue(Action.NAME, "Set refine focus field to '" + selectedLoggerName + "'");
+            updateRefineFocusAction.putValue(Action.NAME, "Add '" + selectedLoggerName + "' to 'refine focus' field");
+            updateFindAction.putValue(Action.NAME, "Add '" + selectedLoggerName + "' to 'find' field");
+            defineColorRuleForLoggerAction.putValue(Action.NAME, "Define color rule for '" + selectedLoggerName + "'");
         }
 
         // need to ensure the button doens't update itself with the text, looks stupid otherwise
@@ -1205,7 +1163,6 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
                 (path != null) && (node != null) && (node.getParent() != null));
             if (!focusOnAction.isEnabled()) {
                 setFocusOnSelected(false);
-            } else {
             }
 
             expandAction.setEnabled(path != null);
@@ -1293,7 +1250,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
         });
 
         visibilityRuleDelegate.addPropertyChangeListener(event -> {
-            if (event.getPropertyName().equals("hiddenSet")) {
+            if (event.getPropertyName().equals(PROPERTY_HIDDEN_SET)) {
                 updateDisplay();
             }
         });
@@ -1309,16 +1266,12 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
     private void updateHiddenSetModels() {
         DefaultListModel model = (DefaultListModel) ignoreList.getModel();
         model.clear();
-        List sortedIgnoreList = new ArrayList(hiddenSet);
+        List<String> sortedIgnoreList = new ArrayList<>(hiddenSet);
         Collections.sort(sortedIgnoreList);
 
-        for (Object aSortedIgnoreList : sortedIgnoreList) {
-            String string = (String) aSortedIgnoreList;
-            model.addElement(string);
+        for (String aSortedIgnoreList : sortedIgnoreList) {
+            model.addElement(aSortedIgnoreList);
         }
-
-//      ignoreList.setModel(model);
-
     }
 
     private void updateIgnoreSummary() {
@@ -1338,7 +1291,7 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
         fireChangeEvent();
     }
 
-    public Collection getHiddenSet() {
+    public Collection<String> getHiddenSet() {
         return Collections.unmodifiableSet(hiddenSet);
     }
 
@@ -1375,29 +1328,17 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
     public void reset() {
         expandRootLatch = false;
         //keep track if focuson was active when we were reset
-        final String logger = currentlySelectedLoggerName;
         final boolean focusOnSelected = isFocusOnSelected();
-        if (logger == null || !focusOnSelected) {
+        if (currentlySelectedLoggerName == null || !focusOnSelected) {
             return;
         }
 
         //loggernameAdded runs on EDT
-        logTreeModel.loggerNameAdded(logger);
-        EventQueue.invokeLater(() -> setFocusOn(logger));
+        logTreeModel.loggerNameAdded(currentlySelectedLoggerName);
+        EventQueue.invokeLater(() -> setFocusOn(currentlySelectedLoggerName));
     }
 
-    //~ Inner Classes ===========================================================
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @author $author$
-     * @author Paul Smith &lt;psmith@apache.org&gt;
-     * @version $Revision$, $Date$
-     */
     private class LoggerNameTreeCellRenderer extends DefaultTreeCellRenderer {
-        //~ Constructors ==========================================================
-
         //    private JPanel panel = new JPanel();
         private LoggerNameTreeCellRenderer() {
             super();
@@ -1408,30 +1349,13 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
             setOpaque(false);
         }
 
-        //~ Methods ===============================================================
-
         /* (non-Javadoc)
          * @see javax.swing.tree.TreeCellRenderer#getTreeCellRendererComponent(javax.swing.JTree, java.lang.Object, boolean, boolean, boolean, int, boolean)
          */
-
-        /**
-         * DOCUMENT ME!
-         *
-         * @param tree     DOCUMENT ME!
-         * @param value    DOCUMENT ME!
-         * @param sel      DOCUMENT ME!
-         * @param expanded DOCUMENT ME!
-         * @param leaf     DOCUMENT ME!
-         * @param row      DOCUMENT ME!
-         * @param focus    DOCUMENT ME!
-         * @return DOCUMENT ME!
-         */
+        @Override
         public Component getTreeCellRendererComponent(
-            JTree tree, Object value, boolean sel, boolean expanded, boolean leaf,
-            int row, boolean focus) {
-            JLabel component =
-                (JLabel) super.getTreeCellRendererComponent(
-                    tree, value, sel, expanded, leaf, row, focus);
+            JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean focus) {
+            JLabel component = (JLabel)super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, focus);
 
             Font originalFont = new Font(component.getFont().getName(), component.getFont().getStyle(), component.getFont().getSize());
 
@@ -1441,11 +1365,9 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
                 style = style | Font.BOLD;
             }
 
-            String logger =
-                getLoggerName(
-                    new TreePath(((DefaultMutableTreeNode) value).getPath()));
+            String loggerName = getLoggerName(new TreePath(((DefaultMutableTreeNode) value).getPath()));
 
-            if (hiddenSet.contains(logger)) {
+            if (hiddenSet.contains(loggerName)) {
                 //        component.setEnabled(false);
                 //        component.setIcon(leaf?null:getDefaultOpenIcon());
                 style = style | Font.ITALIC;
@@ -1456,12 +1378,10 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
                 //        component.setEnabled(true);
             }
 
-            if (originalFont != null) {
-                Font font2 = originalFont.deriveFont(style);
 
-                if (font2 != null) {
-                    component.setFont(font2);
-                }
+            Font font2 = originalFont.deriveFont(style);
+            if (font2 != null) {
+                component.setFont(font2);
             }
 
             return component;
@@ -1469,33 +1389,19 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
     }
 
     private class LoggerTreePopupMenu extends JPopupMenu {
-        //~ Instance fields =======================================================
-
         JCheckBoxMenuItem focusOnCheck = new JCheckBoxMenuItem();
         JCheckBoxMenuItem hideCheck = new JCheckBoxMenuItem();
-
-        //~ Constructors ==========================================================
 
         private LoggerTreePopupMenu() {
             initMenu();
         }
 
-        //~ Methods ===============================================================
-
         /* (non-Javadoc)
          * @see javax.swing.JPopupMenu#show(java.awt.Component, int, int)
          */
-
-        /**
-         * DOCUMENT ME!
-         *
-         * @param invoker DOCUMENT ME!
-         * @param x       DOCUMENT ME!
-         * @param y       DOCUMENT ME!
-         */
+        @Override
         public void show(Component invoker, int x, int y) {
-            DefaultMutableTreeNode node =
-                (DefaultMutableTreeNode) logTree.getLastSelectedPathComponent();
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) logTree.getLastSelectedPathComponent();
 
             if (node == null) {
                 return;
@@ -1504,9 +1410,6 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
             super.show(invoker, x, y);
         }
 
-        /**
-         * DOCUMENT ME!
-         */
         private void initMenu() {
             focusOnCheck.setAction(focusOnAction);
             hideCheck.setAction(hideAction);
@@ -1534,53 +1437,31 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
     }
 
     private final class MouseFocusOnListener extends MouseAdapter {
-        //~ Methods ===============================================================
-
         /* (non-Javadoc)
          * @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent)
          */
-
-        /**
-         * DOCUMENT ME!
-         *
-         * @param e DOCUMENT ME!
-         */
+        @Override
         public void mouseClicked(MouseEvent e) {
-            if (
-                (e.getClickCount() > 1)
-                    && ((e.getModifiers() & InputEvent.CTRL_MASK) > 0)
-                    && ((e.getModifiers() & InputEvent.SHIFT_MASK) > 0)) {
+            if (e.getClickCount() > 1 &&
+                ((e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) > 0) &&
+                ((e.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) > 0)) {
                 ignoreLoggerAtPoint(e.getPoint());
                 e.consume();
                 fireChangeEvent();
-            } else if (
-                (e.getClickCount() > 1)
-                    && ((e.getModifiers() & InputEvent.CTRL_MASK) > 0)) {
+            } else if (e.getClickCount() > 1 &&
+                ((e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) > 0)) {
                 focusAnLoggerAtPoint(e.getPoint());
                 e.consume();
                 fireChangeEvent();
             }
         }
 
-        /**
-         * DOCUMENT ME!
-         *
-         * @param point
-         */
         private void focusAnLoggerAtPoint(Point point) {
-            String logger = getLoggerAtPoint(point);
-
-            if (logger != null) {
+            if (getLoggerAtPoint(point) != null) {
                 toggleFocusOnState();
             }
         }
 
-        /**
-         * DOCUMENT ME!
-         *
-         * @param point
-         * @return
-         */
         private String getLoggerAtPoint(Point point) {
             TreePath path = logTree.getPathForLocation(point.x, point.y);
 
@@ -1591,25 +1472,17 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
             return null;
         }
 
-        /**
-         * DOCUMENT ME!
-         *
-         * @param point
-         */
         private void ignoreLoggerAtPoint(Point point) {
-            String logger = getLoggerAtPoint(point);
+            String loggerAtPoint = getLoggerAtPoint(point);
 
-            if (logger != null) {
-                toggleHiddenLogger(logger);
+            if (loggerAtPoint != null) {
+                toggleHiddenLogger(loggerAtPoint);
                 fireChangeEvent();
             }
         }
     }
 
-    private final class MouseKeyIconListener extends MouseMotionAdapter
-        implements MouseMotionListener {
-        //~ Instance fields =======================================================
-
+    private final class MouseKeyIconListener extends MouseMotionAdapter implements MouseMotionListener {
         Cursor focusOnCursor =
             Toolkit.getDefaultToolkit().createCustomCursor(
                 ChainsawIcons.FOCUS_ON_ICON.getImage(), new Point(10, 10), "");
@@ -1617,24 +1490,14 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
             Toolkit.getDefaultToolkit().createCustomCursor(
                 ChainsawIcons.IGNORE_ICON.getImage(), new Point(10, 10), "");
 
-        //~ Methods ===============================================================
-
         /* (non-Javadoc)
          * @see java.awt.event.MouseMotionListener#mouseMoved(java.awt.event.MouseEvent)
          */
-
-        /**
-         * DOCUMENT ME!
-         *
-         * @param e DOCUMENT ME!
-         */
+        @Override
         public void mouseMoved(MouseEvent e) {
-            //      logger.debug(e.toString());
-            if (
-                ((e.getModifiers() & InputEvent.CTRL_MASK) > 0)
-                    && ((e.getModifiers() & InputEvent.SHIFT_MASK) > 0)) {
+            if (((e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) > 0) && ((e.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) > 0)) {
                 logTree.setCursor(ignoreCursor);
-            } else if ((e.getModifiers() & InputEvent.CTRL_MASK) > 0) {
+            } else if ((e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) > 0) {
                 logTree.setCursor(focusOnCursor);
             } else {
                 logTree.setCursor(Cursor.getDefaultCursor());
@@ -1643,25 +1506,28 @@ public final class LoggerNameTreePanel extends JPanel implements LoggerNameListe
     }
 
     class VisibilityRuleDelegate extends AbstractRule {
-        public boolean evaluate(ChainsawLoggingEvent e, Map matches) {
-            String currentlySelectedLoggerName = getCurrentlySelectedLoggerName();
-            boolean hiddenLogger = e.m_logger != null && isHiddenLogger(e.m_logger);
-            boolean hiddenExpression = (ignoreExpressionRule != null && ignoreExpressionRule.evaluate(e, null));
-            boolean alwaysDisplayExpression = (alwaysDisplayExpressionRule != null && alwaysDisplayExpressionRule.evaluate(e, null));
+        @Override
+        public boolean evaluate(ChainsawLoggingEvent event, Map matches) {
+            String selectedLoggerName = getCurrentlySelectedLoggerName();
+            boolean hiddenLogger = event.m_logger != null && isHiddenLogger(event.m_logger);
+            boolean hiddenExpression = (ignoreExpressionRule != null && ignoreExpressionRule.evaluate(event, null));
+            boolean alwaysDisplayExpression = (alwaysDisplayExpressionRule != null && alwaysDisplayExpressionRule.evaluate(event, null));
             boolean hidden = (!alwaysDisplayExpression) && (hiddenLogger || hiddenExpression);
-            if (currentlySelectedLoggerName == null) {
+            if (selectedLoggerName == null) {
                 //if there is no selected logger, pass if not hidden
                 return !hidden;
             }
-            boolean result = (e.m_logger != null) && !hidden;
+
+            boolean result = (event.m_logger != null) && !hidden;
 
             if (result && isFocusOnSelected()) {
-                result = (e.m_logger != null && (e.m_logger.startsWith(currentlySelectedLoggerName + ".") || e.m_logger.endsWith(currentlySelectedLoggerName)));
+                result = (event.m_logger != null && (event.m_logger.startsWith(selectedLoggerName + ".") || event.m_logger.endsWith(selectedLoggerName)));
             }
 
             return result;
         }
 
+        @Override
         public void firePropertyChange(String propertyName, Object oldVal, Object newVal) {
             super.firePropertyChange(propertyName, oldVal, newVal);
         }
