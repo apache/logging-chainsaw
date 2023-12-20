@@ -526,6 +526,9 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         if (dateFormatInUse != null && dateFormatTZ != null && !("".equals(dateFormatTZ))) {
             dateFormatInUse.setTimeZone(TimeZone.getTimeZone(dateFormatTZ));
         } else {
+            if (this.dateFormatInUse == null) {
+                this.dateFormatInUse = new SimpleDateFormat(Constants.ISO8601_PATTERN);
+            }
             dateFormatInUse.setTimeZone(TimeZone.getDefault());
         }
     }
@@ -587,6 +590,9 @@ public class TableColorizingRenderer extends DefaultTableCellRenderer {
         if (dateFormatInUse != null && dateFormatTZ != null && !("".equals(dateFormatTZ))) {
             dateFormatInUse.setTimeZone(TimeZone.getTimeZone(dateFormatTZ));
         } else {
+            if (this.dateFormatInUse == null) {
+                this.dateFormatInUse = new SimpleDateFormat(Constants.ISO8601_PATTERN);
+            }
             dateFormatInUse.setTimeZone(TimeZone.getDefault());
         }
     }
