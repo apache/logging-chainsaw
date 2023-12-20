@@ -18,6 +18,8 @@ package org.apache.log4j.spi;
 
 import org.apache.log4j.ULogger;
 import org.apache.log4j.helpers.MessageFormatter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -43,7 +45,7 @@ import org.apache.log4j.helpers.MessageFormatter;
  * @author Ceki G&uuml;lc&uuml;
  */
 public final class SimpleULogger implements ULogger {
-
+    private static Logger logger = LogManager.getLogger(SimpleULogger.class);
     /**
      * Logger name.
      */
@@ -161,11 +163,11 @@ public final class SimpleULogger implements ULogger {
 
         buf.append(LINE_SEPARATOR);
 
-        System.out.print(buf.toString());
+        System.out.print(buf);
         if (t != null) {
-            t.printStackTrace(System.out);
+            logger.error(t);
         }
-        System.out.flush();
+
     }
 
     /**
