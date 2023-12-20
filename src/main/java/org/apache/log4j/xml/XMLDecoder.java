@@ -17,6 +17,7 @@
 
 package org.apache.log4j.xml;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.log4j.spi.Decoder;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -24,6 +25,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import javax.swing.*;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -114,9 +116,10 @@ public class XMLDecoder implements Decoder {
      */
     public XMLDecoder() {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setValidating(false);
-
         try {
+            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            dbf.setValidating(false);
             docBuilder = dbf.newDocumentBuilder();
 //            docBuilder.setErrorHandler(new SAXErrorHandler());
             docBuilder.setEntityResolver(new Log4jEntityResolver());

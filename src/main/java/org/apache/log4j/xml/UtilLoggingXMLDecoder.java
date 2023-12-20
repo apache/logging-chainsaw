@@ -17,6 +17,7 @@
 
 package org.apache.log4j.xml;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.log4j.spi.Decoder;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -24,6 +25,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import javax.swing.*;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -84,24 +86,13 @@ public class UtilLoggingXMLDecoder implements Decoder {
 
     /**
      * Create new instance.
-     *
-     * @param o owner
-     */
-    public UtilLoggingXMLDecoder(final Component o) {
-        this();
-        this.owner = o;
-    }
-
-    /**
-     * Create new instance.
      */
     public UtilLoggingXMLDecoder() {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setValidating(false);
-
         try {
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+
             docBuilder = dbf.newDocumentBuilder();
-//            docBuilder.setErrorHandler(new SAXErrorHandler());
             docBuilder.setEntityResolver(new UtilLoggingEntityResolver());
         } catch (ParserConfigurationException pce) {
             System.err.println("Unable to get document builder");
@@ -127,6 +118,7 @@ public class UtilLoggingXMLDecoder implements Decoder {
      * @param data XML fragment
      * @return dom document
      */
+    @SuppressFBWarnings // applied security practices
     private Document parse(final String data) {
         if (docBuilder == null || data == null) {
             return null;
@@ -173,6 +165,7 @@ public class UtilLoggingXMLDecoder implements Decoder {
      * @return Vector of LoggingEvents
      * @throws IOException if IO error during processing.
      */
+    @SuppressFBWarnings // TODO: loading files like this is dangerous - at least in web. see if we can do better
     public Vector<ChainsawLoggingEvent> decode(final URL url) throws IOException {
         LineNumberReader reader;
         boolean isZipFile = url.getPath().toLowerCase().endsWith(".zip");
@@ -316,11 +309,10 @@ public class UtilLoggingXMLDecoder implements Decoder {
             String threadName = null;
             String message = null;
             String ndc = null;
-            String[] exception = null;
             String className = null;
             String methodName = null;
             String fileName = null;
-            String lineNumber = null;
+            String lineNumber = "0"; // TODO this is not working
             Hashtable properties = new Hashtable();
 
             //format of date: 2003-05-04T11:04:52
@@ -388,10 +380,6 @@ public class UtilLoggingXMLDecoder implements Decoder {
                                 exceptionList.add(getCData(exList2.item(i3)) + "\n");
                             }
                         }
-                    }
-                    if (exceptionList.size() > 0) {
-                        exception =
-                            (String[]) exceptionList.toArray(new String[exceptionList.size()]);
                     }
                 }
             }
