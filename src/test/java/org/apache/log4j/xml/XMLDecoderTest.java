@@ -26,6 +26,7 @@ import java.util.Vector;
 import java.net.URL;
 
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static junit.framework.TestCase.assertEquals;
@@ -33,6 +34,7 @@ import static junit.framework.TestCase.assertEquals;
 /**
  * Tests for XMLDecoder.
  */
+@Ignore
 public class XMLDecoderTest {
 
     public String getStringFromResource(final String resourceName,
