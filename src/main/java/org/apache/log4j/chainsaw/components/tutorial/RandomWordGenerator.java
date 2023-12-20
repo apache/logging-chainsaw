@@ -16,10 +16,11 @@
  */
 package org.apache.log4j.chainsaw.components.tutorial;
 
+import java.security.SecureRandom;
 import java.util.Random;
 
 public class RandomWordGenerator {
-    Random random = new Random();
+    SecureRandom random = new SecureRandom();
     private final String[] SYLLABLES = {
         "can", "cen", "cin", "con", "cun",
         "na", "ne", "ni", "no", "nu",
@@ -44,7 +45,7 @@ public class RandomWordGenerator {
         StringBuilder sentence = new StringBuilder(words);
         for (int i = 0; i < words; i++) {
             int randomSyllables = random.nextInt(6) + 2; // 2-7 syllabiles
-            sentence.append(generateWord(randomSyllables) + " ");
+            sentence.append(generateWord(randomSyllables)).append(" ");
         }
         return sentence.toString().trim();
     }
