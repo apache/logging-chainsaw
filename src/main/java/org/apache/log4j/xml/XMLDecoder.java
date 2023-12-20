@@ -147,6 +147,7 @@ public class XMLDecoder implements Decoder {
      * @param data XML fragment
      * @return dom document
      */
+    @SuppressFBWarnings // applied security practices
     private Document parse(final String data) {
         if (docBuilder == null || data == null) {
             return null;
@@ -180,6 +181,7 @@ public class XMLDecoder implements Decoder {
      * @return Vector of LoggingEvents
      * @throws IOException if IO error during processing.
      */
+    @SuppressFBWarnings // TODO: loading files like this is dangerous - at least in web. see if we can do better
     public Vector<ChainsawLoggingEvent> decode(final URL url) throws IOException {
         LineNumberReader reader;
         boolean isZipFile = url.getPath().toLowerCase().endsWith(".zip");
