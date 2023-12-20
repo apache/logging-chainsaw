@@ -17,6 +17,10 @@
 
 package org.apache.log4j.scheduler;
 
+import org.apache.log4j.chainsaw.logui.LogUI;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.List;
 import java.util.Vector;
 
@@ -31,7 +35,7 @@ import java.util.Vector;
  * @author Ceki
  */
 public class Scheduler extends Thread {
-
+    private static Logger logger = LogManager.getLogger(Scheduler.class);
     /**
      * Job list.
      */
@@ -92,7 +96,7 @@ public class Scheduler extends Thread {
         if (i != -1) {
             ScheduledJobEntry se = jobList.remove(i);
             if (se.job != job) { // this should never happen
-                new IllegalStateException("Internal programming error");
+                throw new IllegalStateException("Internal programming error");
             }
             // if the job is the first on the list,
             // then notify the scheduler thread to schedule a new job
@@ -237,8 +241,7 @@ public class Scheduler extends Thread {
         try {
             job.execute();
         } catch (Exception e) {
-            System.err.println("The execution of the job threw an exception");
-            e.printStackTrace(System.err);
+            logger.error("The execution of the job threw an exception", e);
         }
     }
 
