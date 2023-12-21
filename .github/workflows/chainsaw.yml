@@ -62,12 +62,12 @@ jobs:
           mvn site:site
           mvn install
 
-      - name: archive dmg
-        timeout-minutes: 60
-        shell: bash
-        run: find target -name \*.dmg
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: chainsaw.dmg
-          path: target/*.dmg
+#      - name: archive dmg
+#        timeout-minutes: 60
+#        shell: bash
+#        run: find target -name \*.dmg
+#
+#      - uses: actions/upload-artifact@v3
+#        with:
+#          name: chainsaw.dmg
+#          path: target/*.dmg
