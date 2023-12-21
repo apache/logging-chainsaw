@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.apache.logging</groupId>
     <artifactId>logging-parent</artifactId>
-    <version>10.4.0</version>
+    <version>10.5.0</version>
     <relativePath></relativePath>
   </parent>
   <groupId>log4j</groupId>
@@ -126,6 +126,7 @@
     <maven.compiler.release>11</maven.compiler.release>
     <chainsaw.mainclass>org.apache.log4j.chainsaw.ChainsawStarter</chainsaw.mainclass>
     <maven.compiler.target>11</maven.compiler.target>
+    <minimalJavaBuildVersion>[11,)</minimalJavaBuildVersion>
     <ChainsawReleaseManager>Robert Middleton</ChainsawReleaseManager>
     <maven.compiler.source>11</maven.compiler.source>
     <log4j.version>2.22.0</log4j.version>
@@ -298,6 +299,43 @@
       </activation>
       <build>
         <plugins>
+          <plugin>
+            <groupId>de.perdian.maven.plugins</groupId>
+            <artifactId>macosappbundler-maven-plugin</artifactId>
+            <version>1.10.2</version>
+            <executions>
+              <execution>
+                <phase>package</phase>
+                <goals>
+                  <goal>bundle</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <plist>
+                <CFBundleIconFile>src/main/resources/logo.icns</CFBundleIconFile>
+                <CFBundleDisplayName>Chainsaw</CFBundleDisplayName>
+                <CFBundleDevelopmentRegion>English</CFBundleDevelopmentRegion>
+                <CFBundleURLTypes>
+                  <string>msa</string>
+                </CFBundleURLTypes>
+                <JVMMainClassName>${chainsaw.mainclass}</JVMMainClassName>
+                <JVMVersion>11+</JVMVersion>
+                <JVMOptions>
+                  <jvmOption>-Xms128m</jvmOption>
+                  <jvmOption>-Xmx512m</jvmOption>
+                </JVMOptions>
+              </plist>
+              <dmg>
+                <generate>true</generate>
+                <additionalResources>
+                  <additionalResource>
+                    <directory>src/bundle/macos/distribution</directory>
+                  </additionalResource>
+                </additionalResources>
+              </dmg>
+            </configuration>
+          </plugin>
           <plugin>
             <groupId>org.apache.rat</groupId>
             <artifactId>apache-rat-plugin</artifactId>

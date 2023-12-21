@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.apache.logging</groupId>
     <artifactId>logging-parent</artifactId>
-    <version>10.4.0</version>
+    <version>10.5.0</version>
     <relativePath />
   </parent>
   <groupId>log4j</groupId>
@@ -327,7 +327,6 @@
       </activation>
       <build>
         <plugins>
-          <!--
           <plugin>
             <groupId>de.perdian.maven.plugins</groupId>
             <artifactId>macosappbundler-maven-plugin</artifactId>
@@ -358,14 +357,13 @@
             </configuration>
             <executions>
               <execution>
-                <phase>package</phase>
                 <goals>
                   <goal>bundle</goal>
                 </goals>
+                <phase>package</phase>
               </execution>
             </executions>
           </plugin>
-          -->
           <plugin>
             <groupId>org.apache.rat</groupId>
             <artifactId>apache-rat-plugin</artifactId>
