@@ -59,8 +59,8 @@ jobs:
         timeout-minutes: 60
         shell: bash
         run: |
-          mvn -Pdevelopment site:site
-          mvn -Pdevelopment install
+          mvn site:site
+          mvn install
 
       - name: archive dmg
         timeout-minutes: 60
