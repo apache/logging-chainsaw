@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,12 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.chainsaw.helper;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -27,6 +24,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import javax.swing.*;
 
 /**
  * A collection of standard utility methods for use within Swing.
@@ -42,8 +40,8 @@ public final class SwingHelper {
     public static void centerOnScreen(Component component) {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         component.setLocation(
-            (screenSize.width / 2) - (component.getWidth() / 2),
-            (screenSize.height / 2) - (component.getHeight() / 2));
+                (screenSize.width / 2) - (component.getWidth() / 2),
+                (screenSize.height / 2) - (component.getHeight() / 2));
     }
 
     /**
@@ -69,7 +67,6 @@ public final class SwingHelper {
         };
         cancelButton.setAction(closeAction);
         dialog.getRootPane().getActionMap().put(CANCEL_ACTION_KEY, closeAction);
-
     }
 
     public static void invokeOnEDT(Runnable runnable) {
@@ -99,7 +96,7 @@ public final class SwingHelper {
     @SuppressFBWarnings // TODO: loading files like this is dangerous - at least in web. see if we can do better
     public static File promptForFile(Container parent, String defaultPath, String title, boolean loadDialog) {
         if (SwingHelper.isMacOSX()) {
-            //use filedialog on mac
+            // use filedialog on mac
             Component root = SwingUtilities.getRoot(parent);
             Frame frame = null;
             if (root instanceof Frame) {

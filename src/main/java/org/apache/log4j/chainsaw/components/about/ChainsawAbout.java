@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,15 +16,12 @@
  */
 package org.apache.log4j.chainsaw.components.about;
 
-import org.apache.log4j.chainsaw.JTextComponentFormatter;
-import org.apache.log4j.chainsaw.help.HelpManager;
-
-import javax.swing.*;
-import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
 import java.io.IOException;
 import java.net.URL;
-
+import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
+import org.apache.log4j.chainsaw.help.HelpManager;
 import org.apache.log4j.chainsaw.logui.LogUI;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -58,20 +55,19 @@ public class ChainsawAbout extends JDialog {
         }
 
         JScrollPane scrollPane = new JScrollPane(
-            editPane,
-            ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
-            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+                editPane,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         getContentPane().add(scrollPane, BorderLayout.CENTER);
         getContentPane().add(closeButton, BorderLayout.SOUTH);
 
         editPane.setEditable(false);
-        editPane.addHyperlinkListener(
-            e -> {
-                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                    HelpManager.getInstance().setHelpURL(e.getURL());
-                }
-            });
+        editPane.addHyperlinkListener(e -> {
+            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                HelpManager.getInstance().setHelpURL(e.getURL());
+            }
+        });
 
         calculateDimentions();
         scrollPane.getViewport().setViewPosition(new Point(0, 0));
@@ -93,7 +89,6 @@ public class ChainsawAbout extends JDialog {
         if (width > 400) {
             width = width - (width * 0.10);
         }
-        setSize((int)width, (int)height);
-
+        setSize((int) width, (int) height);
     }
 }

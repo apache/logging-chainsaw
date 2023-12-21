@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,22 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.net;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
 import java.util.Vector;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.apache.log4j.chainsaw.receiver.ChainsawReceiverSkeleton;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiverSkeleton;
 import org.apache.log4j.spi.Decoder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 
 /**
  * XMLSocketReceiver receives a remote logging event via XML on a configured
@@ -52,7 +49,7 @@ import org.apache.logging.log4j.Logger;
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 public class XMLSocketReceiver extends ChainsawReceiverSkeleton implements Runnable, PortBased {
-    //default to log4j xml decoder
+    // default to log4j xml decoder
     protected String decoder = "org.apache.log4j.xml.XMLDecoder";
     private ServerSocket serverSocket;
     private List<Socket> socketList = new Vector<>();
@@ -73,8 +70,7 @@ public class XMLSocketReceiver extends ChainsawReceiverSkeleton implements Runna
      * _log4j_xml_tcpconnect_appender.local.
      */
 
-    public XMLSocketReceiver() {
-    }
+    public XMLSocketReceiver() {}
 
     /**
      * Get the port to receive logging events on.
@@ -177,9 +173,7 @@ public class XMLSocketReceiver extends ChainsawReceiverSkeleton implements Runna
         try {
             serverSocket = new ServerSocket(port);
         } catch (Exception e) {
-            logger.error(
-                "error starting XMLSocketReceiver (" + this.getName()
-                    + "), receiver did not start", e);
+            logger.error("error starting XMLSocketReceiver (" + this.getName() + "), receiver did not start", e);
             active = false;
             doShutdown();
 
@@ -195,7 +189,7 @@ public class XMLSocketReceiver extends ChainsawReceiverSkeleton implements Runna
 
             while (!rThread.isInterrupted()) {
                 // if we have a socket, start watching it
-                if (socket != null ) {
+                if (socket != null) {
                     logger.debug("socket not null - parsing data");
                     parseIncomingData(socket);
                 }
@@ -213,8 +207,7 @@ public class XMLSocketReceiver extends ChainsawReceiverSkeleton implements Runna
                 socket.close();
             }
         } catch (Exception e) {
-            logger.warn(
-                "socket server disconnected, stopping");
+            logger.warn("socket server disconnected, stopping");
         }
     }
 
@@ -235,11 +228,11 @@ public class XMLSocketReceiver extends ChainsawReceiverSkeleton implements Runna
         return active;
     }
 
-    private void parseIncomingData(Socket sock){
+    private void parseIncomingData(Socket sock) {
         InputStream is;
         Decoder d = null;
-        
-        try{
+
+        try {
             d = (Decoder) Class.forName(decoder).getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             logger.error("Unable to load correct decoder", e);
@@ -255,20 +248,19 @@ public class XMLSocketReceiver extends ChainsawReceiverSkeleton implements Runna
         }
 
         while (is != null) {
-            try{
+            try {
                 byte[] b = new byte[1024];
                 int length = is.read(b);
                 if (length == -1) {
-                    logger.info(
-                        "no bytes read from stream - closing connection.");
+                    logger.info("no bytes read from stream - closing connection.");
                     break;
                 }
                 List<ChainsawLoggingEvent> v = d.decodeEvents(new String(b, 0, length));
 
-                for( ChainsawLoggingEvent evt : v ){
+                for (ChainsawLoggingEvent evt : v) {
                     append(evt);
                 }
-            }catch(Exception ex){
+            } catch (Exception ex) {
                 logger.error(ex);
                 break;
             }
@@ -280,7 +272,7 @@ public class XMLSocketReceiver extends ChainsawReceiverSkeleton implements Runna
                 is.close();
             }
         } catch (Exception e) {
-            //logger.info("Could not close connection.", e);
+            // logger.info("Could not close connection.", e);
         }
     }
 }

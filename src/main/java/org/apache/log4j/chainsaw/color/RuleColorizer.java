@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,26 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.chainsaw.color;
-
-import org.apache.commons.configuration2.AbstractConfiguration;
-import org.apache.commons.configuration2.DataConfiguration;
-import org.apache.log4j.chainsaw.ChainsawConstants;
-import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
-import org.apache.log4j.chainsaw.prefs.SettingsManager;
-import org.apache.log4j.rule.ColorRule;
-import org.apache.log4j.rule.ExpressionRule;
-import org.apache.log4j.rule.Rule;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
-
+import org.apache.log4j.chainsaw.ChainsawConstants;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.log4j.rule.ColorRule;
+import org.apache.log4j.rule.ExpressionRule;
+import org.apache.log4j.rule.Rule;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A colorizer supporting an ordered collection of ColorRules, including support for notification of
@@ -46,8 +40,7 @@ public class RuleColorizer implements Colorizer {
     public static final String PROPERTY_CHANGED_COLORRULE = "colorrule";
 
     private final List<ColorRule> rules;
-    private final PropertyChangeSupport colorChangeSupport =
-        new PropertyChangeSupport(this);
+    private final PropertyChangeSupport colorChangeSupport = new PropertyChangeSupport(this);
 
     private Rule findRule;
     private Rule loggerRule;
@@ -57,28 +50,21 @@ public class RuleColorizer implements Colorizer {
     private static final Color MARKER_DEFAULT_COLOR = new Color(153, 255, 153);
 
     private static final String DEFAULT_WARN_EXPRESSION = "level == WARN";
-    private static final String DEFAULT_FATAL_ERROR_EXCEPTION_EXPRESSION = "level == FATAL || level == ERROR || exception exists";
+    private static final String DEFAULT_FATAL_ERROR_EXCEPTION_EXPRESSION =
+            "level == FATAL || level == ERROR || exception exists";
     private static final String DEFAULT_MARKER_EXPRESSION = "prop.marker exists";
 
-    public static List<ColorRule> defaultRules(){
+    public static List<ColorRule> defaultRules() {
         List<ColorRule> rulesList = new ArrayList<>();
 
         String expression = DEFAULT_FATAL_ERROR_EXCEPTION_EXPRESSION;
-        rulesList.add(
-            new ColorRule(
-                expression, ExpressionRule.getRule(expression), FATAL_OR_ERROR_DEFAULT_COLOR,
-                Color.black));
+        rulesList.add(new ColorRule(
+                expression, ExpressionRule.getRule(expression), FATAL_OR_ERROR_DEFAULT_COLOR, Color.black));
         expression = DEFAULT_WARN_EXPRESSION;
-        rulesList.add(
-            new ColorRule(
-                expression, ExpressionRule.getRule(expression), WARN_DEFAULT_COLOR,
-                Color.black));
+        rulesList.add(new ColorRule(expression, ExpressionRule.getRule(expression), WARN_DEFAULT_COLOR, Color.black));
 
         expression = DEFAULT_MARKER_EXPRESSION;
-        rulesList.add(
-            new ColorRule(
-                expression, ExpressionRule.getRule(expression), MARKER_DEFAULT_COLOR,
-                Color.black));
+        rulesList.add(new ColorRule(expression, ExpressionRule.getRule(expression), MARKER_DEFAULT_COLOR, Color.black));
 
         return rulesList;
     }
@@ -159,16 +145,12 @@ public class RuleColorizer implements Colorizer {
      * @param propertyName
      * @param listener
      */
-    public void addPropertyChangeListener(
-        String propertyName, PropertyChangeListener listener) {
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         colorChangeSupport.addPropertyChangeListener(propertyName, listener);
     }
 
-    public static String colorToRGBString( Color c ){
-        return String.format( "#%02x%02x%02x",
-                c.getRed(),
-                c.getGreen(),
-                c.getBlue());
+    public static String colorToRGBString(Color c) {
+        return String.format("#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
     }
 
     public static List<Color> getDefaultColors() {
@@ -176,7 +158,7 @@ public class RuleColorizer implements Colorizer {
 
         vec.add(Color.white);
         vec.add(Color.black);
-        //add default alternating color & search backgrounds (both foreground are black)
+        // add default alternating color & search backgrounds (both foreground are black)
         vec.add(ChainsawConstants.COLOR_ODD_ROW_BACKGROUND);
         vec.add(ChainsawConstants.FIND_LOGGER_BACKGROUND);
 
@@ -205,17 +187,16 @@ public class RuleColorizer implements Colorizer {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append( String.format( "RuleColorizer - %d rules", rules.size() ) );
-        for( ColorRule rule : rules ){
-            sb.append( System.lineSeparator() );
-            sb.append( "  " );
-            sb.append( rule.getRule().toString() );
+        sb.append(String.format("RuleColorizer - %d rules", rules.size()));
+        for (ColorRule rule : rules) {
+            sb.append(System.lineSeparator());
+            sb.append("  ");
+            sb.append(rule.getRule().toString());
         }
-        sb.append( System.lineSeparator() );
+        sb.append(System.lineSeparator());
 
         return sb.toString();
     }
-
 }

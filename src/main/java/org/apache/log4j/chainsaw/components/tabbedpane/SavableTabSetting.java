@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -20,12 +20,11 @@ package org.apache.log4j.chainsaw.components.tabbedpane;
  * This class is used to in saving and loading the tab settings
  * of Chainsaw....
  */
-
 public class SavableTabSetting {
     private boolean welcome = false;
     private boolean chainsawLog = false;
     private boolean zeroConf = false;
-    //not used currently, but leaving it here to prevent xstream exception for older clients
+    // not used currently, but leaving it here to prevent xstream exception for older clients
     private boolean dragdrop = false;
 
     public void setWelcome(boolean welcome) {

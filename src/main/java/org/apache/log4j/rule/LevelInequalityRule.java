@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.rule;
 
 import java.util.HashSet;
@@ -24,7 +23,6 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.logevents.Level;
-
 import org.apache.log4j.spi.LoggingEventFieldResolver;
 
 /**
@@ -42,7 +40,6 @@ public class LevelInequalityRule {
      * List equivalents of java.util.logging levels.
      */
     private static List utilLoggingLevelList;
-
 
     static {
         populateLevels();
@@ -70,13 +67,13 @@ public class LevelInequalityRule {
 
         utilLoggingLevelList = new LinkedList();
 
-//        utilLoggingLevelList.add(UtilLoggingLevel.SEVERE.toString());
-//        utilLoggingLevelList.add(UtilLoggingLevel.WARNING.toString());
-//        utilLoggingLevelList.add(UtilLoggingLevel.INFO.toString());
-//        utilLoggingLevelList.add(UtilLoggingLevel.CONFIG.toString());
-//        utilLoggingLevelList.add(UtilLoggingLevel.FINE.toString());
-//        utilLoggingLevelList.add(UtilLoggingLevel.FINER.toString());
-//        utilLoggingLevelList.add(UtilLoggingLevel.FINEST.toString());
+        //        utilLoggingLevelList.add(UtilLoggingLevel.SEVERE.toString());
+        //        utilLoggingLevelList.add(UtilLoggingLevel.WARNING.toString());
+        //        utilLoggingLevelList.add(UtilLoggingLevel.INFO.toString());
+        //        utilLoggingLevelList.add(UtilLoggingLevel.CONFIG.toString());
+        //        utilLoggingLevelList.add(UtilLoggingLevel.FINE.toString());
+        //        utilLoggingLevelList.add(UtilLoggingLevel.FINER.toString());
+        //        utilLoggingLevelList.add(UtilLoggingLevel.FINEST.toString());
 
     }
 
@@ -86,26 +83,24 @@ public class LevelInequalityRule {
      * @param value Symbolic name of comparison level.
      * @return instance of AbstractRule.
      */
-    public static Rule getRule(final String inequalitySymbol,
-                               final String value) {
+    public static Rule getRule(final String inequalitySymbol, final String value) {
 
         Level thisLevel = null;
 
-        //if valid util.logging levels are used against events
+        // if valid util.logging levels are used against events
         // with log4j levels, the
-        //DEBUG level is used and an illegalargumentexception won't be generated
+        // DEBUG level is used and an illegalargumentexception won't be generated
 
-        //an illegalargumentexception is only generated
+        // an illegalargumentexception is only generated
         // if the user types a level name
-        //that doesn't exist as either a log4j or util.logging level name
+        // that doesn't exist as either a log4j or util.logging level name
         if (levelList.contains(value.toUpperCase())) {
             thisLevel = Level.valueOf(value.toUpperCase());
         } else if (utilLoggingLevelList.contains(value.toUpperCase())) {
-//            thisLevel = UtilLoggingLevel.toLevel(value.toUpperCase());
+            //            thisLevel = UtilLoggingLevel.toLevel(value.toUpperCase());
         } else {
             throw new IllegalArgumentException(
-                    "Invalid level inequality rule - " + value
-                            + " is not a supported level");
+                    "Invalid level inequality rule - " + value + " is not a supported level");
         }
 
         if ("<".equals(inequalitySymbol)) {
@@ -231,7 +226,6 @@ public class LevelInequalityRule {
      * Rule returning true if event level less than or
      * equal to specified level.
      */
-
     private static final class LessThanEqualsRule extends AbstractRule {
         /**
          * Comparison level.

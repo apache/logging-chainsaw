@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -17,7 +17,6 @@
 package org.apache.log4j.spi;
 
 import org.apache.log4j.ULogger;
-
 
 /**
  * A no operation (NOP) implementation of {@link ULogger}.
@@ -73,9 +72,7 @@ public final class NOPULogger implements ULogger {
     /**
      * {@inheritDoc}
      */
-    public void debug(final String parameterizedMsg,
-                      final Object param1,
-                      final Object param2) {
+    public void debug(final String parameterizedMsg, final Object param1, final Object param2) {
         // NOP
     }
 
@@ -111,8 +108,7 @@ public final class NOPULogger implements ULogger {
     /**
      * {@inheritDoc}
      */
-    public void info(final String parameterizedMsg,
-                     final Object param1, final Object param2) {
+    public void info(final String parameterizedMsg, final Object param1, final Object param2) {
         // NOP
     }
 
@@ -140,17 +136,14 @@ public final class NOPULogger implements ULogger {
     /**
      * {@inheritDoc}
      */
-    public void warn(final Object parameterizedMsg,
-                     final Object param1) {
+    public void warn(final Object parameterizedMsg, final Object param1) {
         // NOP
     }
 
     /**
      * {@inheritDoc}
      */
-    public void warn(final String parameterizedMsg,
-                     final Object param1,
-                     final Object param2) {
+    public void warn(final String parameterizedMsg, final Object param1, final Object param2) {
         // NOP
     }
 
@@ -185,9 +178,7 @@ public final class NOPULogger implements ULogger {
     /**
      * {@inheritDoc}
      */
-    public void error(final String parameterizedMsg,
-                      final Object param1,
-                      final Object param2) {
+    public void error(final String parameterizedMsg, final Object param1, final Object param2) {
         // NOP
     }
 
@@ -197,5 +188,4 @@ public final class NOPULogger implements ULogger {
     public void error(final Object msg, final Throwable t) {
         // NOP
     }
-
 }

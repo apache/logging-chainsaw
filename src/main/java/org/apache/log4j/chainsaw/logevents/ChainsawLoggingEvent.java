@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -17,7 +17,6 @@
 package org.apache.log4j.chainsaw.logevents;
 
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -39,10 +38,10 @@ public class ChainsawLoggingEvent {
     public final String m_logger;
     public final LocationInfo m_locationInfo;
     public final String m_ndc;
-    public final Map<String,String> m_mdc;
-    private Map<String,String> m_properties;
+    public final Map<String, String> m_mdc;
+    private Map<String, String> m_properties;
 
-    ChainsawLoggingEvent( ChainsawLoggingEventBuilder b ){
+    ChainsawLoggingEvent(ChainsawLoggingEventBuilder b) {
         m_timestamp = b.m_timestamp;
         m_level = b.m_level;
         m_message = b.m_message;
@@ -54,23 +53,23 @@ public class ChainsawLoggingEvent {
         m_properties = new HashMap<>();
     }
 
-    public void setProperty(String name, String value){
+    public void setProperty(String name, String value) {
         m_properties.put(name, value);
     }
 
-    public String removeProperty(String name){
+    public String removeProperty(String name) {
         return m_properties.remove(name);
     }
 
-    public String getProperty(String name){
+    public String getProperty(String name) {
         return m_properties.get(name);
     }
 
-    public Set<String> getPropertyKeySet(){
+    public Set<String> getPropertyKeySet() {
         return m_properties.keySet();
     }
 
-    public Map<String,String> getProperties(){
+    public Map<String, String> getProperties() {
         return new HashMap<>(m_properties);
     }
 }

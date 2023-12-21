@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -18,7 +18,6 @@ package org.apache.log4j.net;
 
 import com.owlike.genson.annotation.JsonProperty;
 import java.time.ZonedDateTime;
-import java.util.Hashtable;
 import java.util.List;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
@@ -29,19 +28,24 @@ import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
 public class ECSLogEvent {
     @JsonProperty("@timestamp")
     public String timestamp;
+
     @JsonProperty("log.level")
     public String level;
+
     public String message;
+
     @JsonProperty("process.thread.name")
     public String thread_name;
+
     @JsonProperty("log.logger")
     public String logger;
+
     public List<String> tags;
 
-    ChainsawLoggingEvent toChainsawLoggingEvent( ChainsawLoggingEventBuilder build ){
+    ChainsawLoggingEvent toChainsawLoggingEvent(ChainsawLoggingEventBuilder build) {
         build.clear();
 
-        build.setLevelFromString( level )
+        build.setLevelFromString(level)
                 .setMessage(message)
                 .setLogger(logger)
                 .setThreadName(thread_name)

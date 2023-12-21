@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,12 +16,12 @@
  */
 package org.apache.log4j.chainsaw.zeroconf;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 import javax.swing.table.AbstractTableModel;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ZeroConfDeviceModel extends AbstractTableModel implements ServiceListener {
 
@@ -51,10 +51,13 @@ public class ZeroConfDeviceModel extends AbstractTableModel implements ServiceLi
             case 1:
                 return info.getAddress().getHostName() + ":" + info.getPort();
             case 2:
-                return zeroConfPreferenceModel.getAutoConnectDevices().contains(getAutoConnectHandle(info)) ? Boolean.TRUE : Boolean.FALSE;
+                return zeroConfPreferenceModel.getAutoConnectDevices().contains(getAutoConnectHandle(info))
+                        ? Boolean.TRUE
+                        : Boolean.FALSE;
             case 3:
-//                return plugin.isConnectedTo(info) ? "Connected" : "Not Connected";
-//                return plugin.isConnectedTo(info)?new ImageIcon(ChainsawIcons.ANIM_NET_CONNECT):new ImageIcon();
+                //                return plugin.isConnectedTo(info) ? "Connected" : "Not Connected";
+                //                return plugin.isConnectedTo(info)?new ImageIcon(ChainsawIcons.ANIM_NET_CONNECT):new
+                // ImageIcon();
             default:
                 return "";
         }
@@ -65,8 +68,7 @@ public class ZeroConfDeviceModel extends AbstractTableModel implements ServiceLi
     }
 
     @Override
-    public void serviceAdded(ServiceEvent event) {
-    }
+    public void serviceAdded(ServiceEvent event) {}
 
     public void serviceRemoved(ServiceEvent event) {
         deviceList.removeIf(info -> info.getName().equals(event.getName()));
@@ -78,8 +80,7 @@ public class ZeroConfDeviceModel extends AbstractTableModel implements ServiceLi
         fireTableDataChanged();
     }
 
-    public void setZeroConfPreferenceModel(
-        ZeroConfPreferenceModel zeroConfPreferenceModel) {
+    public void setZeroConfPreferenceModel(ZeroConfPreferenceModel zeroConfPreferenceModel) {
         this.zeroConfPreferenceModel = zeroConfPreferenceModel;
     }
 

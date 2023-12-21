@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,14 +16,13 @@
  */
 package org.apache.log4j.chainsaw;
 
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import javax.swing.text.JTextComponent;
 import org.apache.log4j.chainsaw.filter.FilterModel;
 import org.apache.log4j.rule.RuleFactory;
 import org.apache.log4j.spi.LoggingEventFieldResolver;
-
-import javax.swing.*;
-import javax.swing.text.JTextComponent;
-import java.awt.*;
-import java.awt.event.*;
 
 /**
  * A popup menu which assists in building expression rules.  Completes event keywords, operators and
@@ -42,8 +41,7 @@ public class ExpressionRuleContext extends KeyAdapter {
     private final DefaultListModel<String> fieldModel = new DefaultListModel<>();
     private final DefaultListModel<String> operatorModel = new DefaultListModel<>();
 
-    public ExpressionRuleContext(
-        final FilterModel filterModel, final JTextComponent textComponent) {
+    public ExpressionRuleContext(final FilterModel filterModel, final JTextComponent textComponent) {
         this.filterModel = filterModel;
         this.textComponent = textComponent;
         fieldModel.addElement("LOGGER");
@@ -72,53 +70,50 @@ public class ExpressionRuleContext extends KeyAdapter {
         operatorModel.addElement("<=");
         operatorModel.addElement(">=");
 
-        //make long to avoid scrollbar
+        // make long to avoid scrollbar
         list.setVisibleRowCount(13);
 
         PopupListener popupListener = new PopupListener();
         textComponent.addMouseListener(popupListener);
 
-        list.addKeyListener(
-            new KeyAdapter() {
-                @Override
-                public void keyPressed(KeyEvent e) {
-                    if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                        String value = list.getSelectedValue();
-                        String contextKey = getContextKey();
-                        if (contextKey != null && (!(contextKey.endsWith(".")))) {
-                            value = "'" + value + "'";
-                        }
-
-                        updateField(value);
-                        contextMenu.setVisible(false);
+        list.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    String value = list.getSelectedValue();
+                    String contextKey = getContextKey();
+                    if (contextKey != null && (!(contextKey.endsWith(".")))) {
+                        value = "'" + value + "'";
                     }
+
+                    updateField(value);
+                    contextMenu.setVisible(false);
                 }
-            });
+            }
+        });
 
-        list.addMouseListener(
-            new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    if (e.getClickCount() == 2) {
-                        String value = list.getSelectedValue();
-                        String contextKey = getContextKey();
-                        if (contextKey != null && (!(contextKey.endsWith(".")))) {
-                            value = "'" + value + "'";
-                        }
-
-                        updateField(value);
-                        contextMenu.setVisible(false);
+        list.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    String value = list.getSelectedValue();
+                    String contextKey = getContextKey();
+                    if (contextKey != null && (!(contextKey.endsWith(".")))) {
+                        value = "'" + value + "'";
                     }
+
+                    updateField(value);
+                    contextMenu.setVisible(false);
                 }
-            });
+            }
+        });
 
         contextMenu.insert(scrollPane, 0);
     }
 
     private void updateField(String value) {
-        if (textComponent.getSelectedText() == null &&
-            !value.endsWith(".")) {
-                value = value + " ";
+        if (textComponent.getSelectedText() == null && !value.endsWith(".")) {
+            value = value + " ";
         }
 
         textComponent.replaceSelection(value);
@@ -126,8 +121,7 @@ public class ExpressionRuleContext extends KeyAdapter {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_SPACE &&
-            e.getModifiersEx() == InputEvent.CTRL_DOWN_MASK) {
+        if (e.getKeyCode() == KeyEvent.VK_SPACE && e.getModifiersEx() == InputEvent.CTRL_DOWN_MASK) {
             displayContext();
         }
     }
@@ -151,8 +145,8 @@ public class ExpressionRuleContext extends KeyAdapter {
                 Point p = textComponent.getCaret().getMagicCaretPosition();
                 if (p == null) {
                     p = new Point(
-                        textComponent.getLocation().x,
-                        (textComponent.getLocation().y - textComponent.getHeight() + 5));
+                            textComponent.getLocation().x,
+                            (textComponent.getLocation().y - textComponent.getHeight() + 5));
                 }
 
                 contextMenu.doLayout();
@@ -204,7 +198,9 @@ public class ExpressionRuleContext extends KeyAdapter {
         }
 
         int lastFieldStartPosition = Math.max(0, text.lastIndexOf(" ", lastFieldPosition - 1));
-        String field = text.substring(lastFieldStartPosition, lastFieldPosition).toUpperCase().trim();
+        String field = text.substring(lastFieldStartPosition, lastFieldPosition)
+                .toUpperCase()
+                .trim();
 
         return resolver.isField(field);
     }
@@ -233,20 +229,21 @@ public class ExpressionRuleContext extends KeyAdapter {
         }
 
         int lastFieldStartPosition = Math.max(0, text.lastIndexOf(" ", lastFieldPosition - 1));
-        String lastSymbol = text.substring(lastFieldPosition + 1, symbolPosition).trim();
+        String lastSymbol =
+                text.substring(lastFieldPosition + 1, symbolPosition).trim();
 
-        String lastField = text.substring(lastFieldStartPosition, lastFieldPosition).trim();
+        String lastField =
+                text.substring(lastFieldStartPosition, lastFieldPosition).trim();
 
-        if (factory.isRule(lastSymbol) &&
-            filterModel.getContainer().modelExists(lastField)) {
+        if (factory.isRule(lastSymbol) && filterModel.getContainer().modelExists(lastField)) {
             return lastField;
         }
 
         return null;
     }
 
-    //subfields allow the key portion of a field to provide context menu support
-    //and are available after the fieldname and a . (for example, PROP.)
+    // subfields allow the key portion of a field to provide context menu support
+    // and are available after the fieldname and a . (for example, PROP.)
     private String getSubField() {
         int currentPosition = textComponent.getSelectionStart();
         String text = textComponent.getText();

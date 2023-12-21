@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,16 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.chainsaw.icons;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-
+import javax.swing.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A simple factory/facade for creating some of the standard Icons that are based
@@ -38,33 +35,24 @@ public final class LineIconFactory {
     /**
      *
      */
-    private LineIconFactory() {
-    }
+    private LineIconFactory() {}
 
     public static Icon createExpandIcon() {
         int size = 8;
         int xOffSet = 0;
         int yOffSet = 0;
         try {
-            GraphicsEnvironment environment =
-                GraphicsEnvironment.getLocalGraphicsEnvironment();
+            GraphicsEnvironment environment = GraphicsEnvironment.getLocalGraphicsEnvironment();
             BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g2D =
-                environment.createGraphics(
-                    image);
+            Graphics2D g2D = environment.createGraphics(image);
             g2D.setBackground(new Color(0, 0, 0, 0));
             g2D.clearRect(0, 0, size, size);
             g2D.setStroke(new BasicStroke(1.5f));
-            g2D.setRenderingHint(
-                RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+            g2D.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
             g2D.setColor(Color.black);
-            g2D.drawLine(
-                xOffSet, (size / 2) + yOffSet, size - xOffSet,
-                (size / 2) + yOffSet);
+            g2D.drawLine(xOffSet, (size / 2) + yOffSet, size - xOffSet, (size / 2) + yOffSet);
 
-            g2D.drawLine(
-                xOffSet + (size / 2), yOffSet, xOffSet + (size / 2),
-                (size) + yOffSet);
+            g2D.drawLine(xOffSet + (size / 2), yOffSet, xOffSet + (size / 2), (size) + yOffSet);
 
             return new ImageIcon(image);
         } catch (Exception e) {
@@ -79,21 +67,15 @@ public final class LineIconFactory {
         int xOffSet = 0;
         int yOffSet = 0;
         try {
-            GraphicsEnvironment environment =
-                GraphicsEnvironment.getLocalGraphicsEnvironment();
+            GraphicsEnvironment environment = GraphicsEnvironment.getLocalGraphicsEnvironment();
             BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g2D =
-                environment.createGraphics(
-                    image);
+            Graphics2D g2D = environment.createGraphics(image);
             g2D.setBackground(new Color(0, 0, 0, 0));
             g2D.clearRect(0, 0, size, size);
             g2D.setStroke(new BasicStroke(1.5f));
-            g2D.setRenderingHint(
-                RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+            g2D.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
             g2D.setColor(Color.black);
-            g2D.drawLine(
-                xOffSet, (size / 2) + yOffSet, size - xOffSet,
-                (size / 2) + yOffSet);
+            g2D.drawLine(xOffSet, (size / 2) + yOffSet, size - xOffSet, (size / 2) + yOffSet);
 
             return new ImageIcon(image);
         } catch (Exception e) {
@@ -131,8 +113,7 @@ public final class LineIconFactory {
             return size;
         }
 
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-        }
+        public void paintIcon(Component c, Graphics g, int x, int y) {}
     }
 
     /**
@@ -162,13 +143,10 @@ public final class LineIconFactory {
         public void paintIcon(Component c, Graphics g, int x, int y) {
             Graphics2D g2D = (Graphics2D) g;
             g2D.setStroke(new BasicStroke(1.5f));
-            g2D.setRenderingHint(
-                RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+            g2D.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
             g2D.setColor(Color.black);
-            g2D.drawLine(
-                x + xOffSet, y + yOffSet, x + size + xOffSet, y + size + yOffSet);
-            g2D.drawLine(
-                x + xOffSet, y + size + yOffSet, x + size + xOffSet, y + yOffSet);
+            g2D.drawLine(x + xOffSet, y + yOffSet, x + size + xOffSet, y + size + yOffSet);
+            g2D.drawLine(x + xOffSet, y + size + yOffSet, x + size + xOffSet, y + yOffSet);
         }
     }
 }

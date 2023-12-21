@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -34,14 +34,14 @@ public class JsonReceiverFactory implements ChainsawReceiverFactory {
 
     @Override
     public PropertyDescriptor[] getPropertyDescriptors() throws IntrospectionException {
-        return new PropertyDescriptor[]{
-                new PropertyDescriptor("name", JsonReceiver.class),
-//                new PropertyDescriptor("address", JsonReceiver.class),
-                new PropertyDescriptor("port", JsonReceiver.class),
-//                new PropertyDescriptor("threshold", MulticastReceiver.class),
-//                new PropertyDescriptor("decoder", MulticastReceiver.class),
-//                new PropertyDescriptor("advertiseViaMulticastDNS", MulticastReceiver.class),
-            };
+        return new PropertyDescriptor[] {
+            new PropertyDescriptor("name", JsonReceiver.class),
+            //                new PropertyDescriptor("address", JsonReceiver.class),
+            new PropertyDescriptor("port", JsonReceiver.class),
+            //                new PropertyDescriptor("threshold", MulticastReceiver.class),
+            //                new PropertyDescriptor("decoder", MulticastReceiver.class),
+            //                new PropertyDescriptor("advertiseViaMulticastDNS", MulticastReceiver.class),
+        };
     }
 
     @Override
@@ -51,9 +51,7 @@ public class JsonReceiverFactory implements ChainsawReceiverFactory {
 
     @Override
     public String getReceiverDocumentation() {
-        return "JSON Recevier\n" +
-                "The JSON recevier receives events in an ECS Log Event format.\n" +
-                "This receiver listens on the specified port for incoming data.";
+        return "JSON Recevier\n" + "The JSON recevier receives events in an ECS Log Event format.\n"
+                + "This receiver listens on the specified port for incoming data.";
     }
-    
 }

@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,13 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.rule;
 
 import java.util.Map;
 import java.util.Stack;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
-
 
 /**
  * A Rule class supporting both infix and postfix expressions,
@@ -50,38 +48,37 @@ public class ExpressionRule extends AbstractRule {
     /**
      * Serialization ID.
      */
-  static final long serialVersionUID = 5809121703146893729L;
+    static final long serialVersionUID = 5809121703146893729L;
     /**
      * Converter.
      */
-  private static final InFixToPostFix CONVERTER = new InFixToPostFix();
+    private static final InFixToPostFix CONVERTER = new InFixToPostFix();
     /**
      * Compiler.
      */
-  private static final PostFixExpressionCompiler COMPILER =
-          new PostFixExpressionCompiler();
+    private static final PostFixExpressionCompiler COMPILER = new PostFixExpressionCompiler();
     /**
      * Rule.
      */
-  private final Rule rule;
+    private final Rule rule;
 
     /**
      * Create new instance.
      * @param r rule
      */
-  private ExpressionRule(final Rule r) {
-    super();
-    this.rule = r;
-  }
+    private ExpressionRule(final Rule r) {
+        super();
+        this.rule = r;
+    }
 
     /**
      * Get rule.
      * @param expression expression.
      * @return rule.
      */
-  public static Rule getRule(final String expression) {
-      return getRule(expression, false);
-  }
+    public static Rule getRule(final String expression) {
+        return getRule(expression, false);
+    }
 
     /**
      * Get rule.
@@ -89,92 +86,89 @@ public class ExpressionRule extends AbstractRule {
      * @param isPostFix If post-fix.
      * @return rule
      */
-  public static Rule getRule(final String expression,
-                             final boolean isPostFix) {
-    String postFix = expression;
-    if (!isPostFix) {
-      postFix = CONVERTER.convert(expression);
+    public static Rule getRule(final String expression, final boolean isPostFix) {
+        String postFix = expression;
+        if (!isPostFix) {
+            postFix = CONVERTER.convert(expression);
+        }
+
+        return new ExpressionRule(COMPILER.compileExpression(postFix));
     }
 
-    return new ExpressionRule(COMPILER.compileExpression(postFix));
-  }
+    /**
+     * {@inheritDoc}
+     */
+    public boolean evaluate(final ChainsawLoggingEvent event, Map matches) {
+        return rule.evaluate(event, matches);
+    }
 
     /**
      * {@inheritDoc}
      */
-  public boolean evaluate(final ChainsawLoggingEvent event, Map matches) {
-    return rule.evaluate(event, matches);
-  }
+    public String toString() {
+        return rule.toString();
+    }
 
     /**
-     * {@inheritDoc}
+     * Evaluate a boolean postfix expression.
+     *
      */
-  public String toString() {
-      return rule.toString();
-  }
+    static final class PostFixExpressionCompiler {
+        /**
+         * Compile expression.
+         * @param expression expression.
+         * @return rule.
+         */
+        public Rule compileExpression(final String expression) {
+            RuleFactory factory = RuleFactory.getInstance();
 
-  /**
-   * Evaluate a boolean postfix expression.
-   *
-   */
-  static final class PostFixExpressionCompiler {
-      /**
-       * Compile expression.
-       * @param expression expression.
-       * @return rule.
-       */
-    public Rule compileExpression(final String expression) {
-      RuleFactory factory = RuleFactory.getInstance();
+            Stack stack = new Stack();
+            InFixToPostFix.CustomTokenizer tokenizer = new InFixToPostFix.CustomTokenizer(expression);
 
-      Stack stack = new Stack();
-      InFixToPostFix.CustomTokenizer tokenizer = new InFixToPostFix.CustomTokenizer(expression);
-
-          while (tokenizer.hasMoreTokens()) {
-            //examine each token
-            String token = tokenizer.nextToken();
-              if (token.startsWith("'") || token.startsWith("\"")) {
-                String quoteChar = token.substring(0, 1);
-                token = token.substring(1);
-                while (!token.endsWith(quoteChar) && tokenizer.hasMoreTokens()) {
-                  token = token + " " + tokenizer.nextToken();
+            while (tokenizer.hasMoreTokens()) {
+                // examine each token
+                String token = tokenizer.nextToken();
+                if (token.startsWith("'") || token.startsWith("\"")) {
+                    String quoteChar = token.substring(0, 1);
+                    token = token.substring(1);
+                    while (!token.endsWith(quoteChar) && tokenizer.hasMoreTokens()) {
+                        token = token + " " + tokenizer.nextToken();
+                    }
+                    if (token.length() > 0) {
+                        token = token.substring(0, token.length() - 1);
+                    }
+                } else {
+                    // if a symbol is found, pop 2 off the stack,
+                    // evaluate and push the result
+                    if (factory.isRule(token)) {
+                        Rule r = factory.getRule(token, stack);
+                        stack.push(r);
+                        // null out the token so we don't try to push it below
+                        token = null;
+                    }
                 }
-                if (token.length() > 0) {
-                  token = token.substring(0, token.length() - 1);
-                }
-              } else {
-                //if a symbol is found, pop 2 off the stack,
-                  // evaluate and push the result
-                if (factory.isRule(token)) {
-                  Rule r = factory.getRule(token, stack);
-                  stack.push(r);
-                  //null out the token so we don't try to push it below
-                  token = null;
+                // variables or constants are pushed onto the stack
+                if (token != null && token.length() > 0) {
+                    stack.push(token);
                 }
             }
-              //variables or constants are pushed onto the stack
-              if (token != null && token.length() > 0) {
-                  stack.push(token);
-              }
-          }
 
-          if ((stack.size() == 1) && (!(stack.peek() instanceof Rule))) {
-            //while this may be an attempt at creating an expression,
-            //for ease of use, convert this single entry to a partial-text
-            //match on the MSG field
-            Object o = stack.pop();
-            stack.push("MSG");
-            stack.push(o);
-            return factory.getRule("~=", stack);
-          }
+            if ((stack.size() == 1) && (!(stack.peek() instanceof Rule))) {
+                // while this may be an attempt at creating an expression,
+                // for ease of use, convert this single entry to a partial-text
+                // match on the MSG field
+                Object o = stack.pop();
+                stack.push("MSG");
+                stack.push(o);
+                return factory.getRule("~=", stack);
+            }
 
-          //stack should contain a single rule if the expression is valid
-          if ((stack.size() != 1) || (!(stack.peek() instanceof Rule))) {
-            throw new IllegalArgumentException("invalid expression: " + expression);
-          } else {
-            return (Rule) stack.pop();
-          }
+            // stack should contain a single rule if the expression is valid
+            if ((stack.size() != 1) || (!(stack.peek() instanceof Rule))) {
+                throw new IllegalArgumentException("invalid expression: " + expression);
+            } else {
+                return (Rule) stack.pop();
+            }
         }
-  }
+    }
 }
-
-

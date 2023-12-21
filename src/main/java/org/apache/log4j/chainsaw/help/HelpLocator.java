@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,15 +16,14 @@
  */
 package org.apache.log4j.chainsaw.help;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A helper class that assists the HelpManager by serving as a collection of
@@ -96,7 +95,7 @@ class HelpLocator {
 
             try {
                 URL resourceURL = new URL(root, name);
-                URL[] urlArray = new URL[]{root, resourceURL};
+                URL[] urlArray = new URL[] {root, resourceURL};
                 logger.debug("Looking for Help resource at: {}", resourceURL.toExternalForm());
                 logger.debug("urlArray={}", Arrays.asList(urlArray));
                 return new URLClassLoader(urlArray).findResource(name);

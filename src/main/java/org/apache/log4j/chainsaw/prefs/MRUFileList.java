@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,16 +16,14 @@
  */
 package org.apache.log4j.chainsaw.prefs;
 
-
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.EventListenerList;
-import java.io.Reader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EventListener;
 import java.util.List;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.EventListenerList;
 
 // MRU appears to stand for 'most recently used'
 public class MRUFileList {
@@ -38,9 +36,7 @@ public class MRUFileList {
 
     private static transient EventListenerList listeners = new EventListenerList();
 
-    private MRUFileList() {
-
-    }
+    private MRUFileList() {}
 
     public static void addChangeListener(ChangeListener listener) {
         listeners.add(ChangeListener.class, listener);

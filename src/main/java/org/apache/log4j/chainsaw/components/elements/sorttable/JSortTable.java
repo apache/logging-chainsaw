@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,21 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.chainsaw.components.elements.sorttable;
 
-import org.apache.log4j.chainsaw.ChainsawColumns;
-import org.apache.log4j.chainsaw.SortTableModel;
-import org.apache.log4j.chainsaw.helper.SwingHelper;
-
-import javax.swing.JTable;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumnModel;
 import java.awt.Color;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-
+import javax.swing.JTable;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumnModel;
+import org.apache.log4j.chainsaw.ChainsawColumns;
+import org.apache.log4j.chainsaw.SortTableModel;
+import org.apache.log4j.chainsaw.helper.SwingHelper;
 
 /**
  * A Sortable JTable implementation that allows a user to click on a
@@ -49,9 +46,9 @@ public class JSortTable extends JTable implements MouseListener {
     }
 
     public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
-        //selection of the msg field causes rendering to flash...skip over it
+        // selection of the msg field causes rendering to flash...skip over it
         int colToSelect = columnIndex;
-        //CHAINSAW columns are 1-based indexes
+        // CHAINSAW columns are 1-based indexes
         if (columnIndex + 1 == ChainsawColumns.INDEX_MESSAGE_COL_NAME) {
             colToSelect = lastSelectedColumn < columnIndex ? columnIndex + 1 : columnIndex - 1;
             super.changeSelection(rowIndex, colToSelect, toggle, extend);
@@ -77,7 +74,7 @@ public class JSortTable extends JTable implements MouseListener {
             try {
                 sortedColumnIndex = columnModel.getColumnIndex(sortedColumn);
                 getTableHeader().resizeAndRepaint();
-            } catch (IllegalArgumentException ie) {//nothing...column is not in the model
+            } catch (IllegalArgumentException ie) { // nothing...column is not in the model
                 setSortedColumnIndex(-1);
             }
         }
@@ -92,14 +89,15 @@ public class JSortTable extends JTable implements MouseListener {
         getTableHeader().resizeAndRepaint();
     }
 
-    //Allow synchronous updates if already on the EDT
+    // Allow synchronous updates if already on the EDT
     private void scrollTo(final int row, final int col) {
         SwingHelper.invokeOnEDT(() -> {
             final int currentRow = getSelectedRow();
             if ((row > -1) && (row < getRowCount())) {
                 try {
-                    //get the requested row off of the bottom and top of the screen by making the 5 rows around the requested row visible
-                    //if new past current row, scroll to display the 20th row past new selected row
+                    // get the requested row off of the bottom and top of the screen by making the 5 rows around the
+                    // requested row visible
+                    // if new past current row, scroll to display the 20th row past new selected row
                     scrollRectToVisible(getCellRect(row, col, true));
                     if (row > currentRow) {
                         scrollRectToVisible(getCellRect(row + 5, col, true));
@@ -110,7 +108,7 @@ public class JSortTable extends JTable implements MouseListener {
                     scrollRectToVisible(getCellRect(row, col, true));
                     setRowSelectionInterval(row, row);
                 } catch (IllegalArgumentException iae) {
-                    //ignore..out of bounds
+                    // ignore..out of bounds
                 }
             }
         });
@@ -150,15 +148,11 @@ public class JSortTable extends JTable implements MouseListener {
         }
     }
 
-    public void mousePressed(MouseEvent event) {
-    }
+    public void mousePressed(MouseEvent event) {}
 
-    public void mouseReleased(MouseEvent event) {
-    }
+    public void mouseReleased(MouseEvent event) {}
 
-    public void mouseEntered(MouseEvent event) {
-    }
+    public void mouseEntered(MouseEvent event) {}
 
-    public void mouseExited(MouseEvent event) {
-    }
+    public void mouseExited(MouseEvent event) {}
 }

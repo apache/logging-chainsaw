@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,18 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.chainsaw;
 
-import org.apache.log4j.chainsaw.helper.SwingHelper;
-import org.apache.log4j.chainsaw.icons.ChainsawIcons;
-
-import javax.swing.*;
-import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.Enumeration;
 import java.util.List;
+import javax.swing.*;
+import javax.swing.tree.*;
+import org.apache.log4j.chainsaw.helper.SwingHelper;
+import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 
 /**
  * Some basic plumbing for Preference related dialogs.
@@ -97,24 +95,19 @@ public abstract class AbstractPreferencePanel extends JPanel {
 
         add(buttonBox, BorderLayout.SOUTH);
 
-        DefaultTreeSelectionModel treeSelectionModel =
-            new DefaultTreeSelectionModel();
-        treeSelectionModel.setSelectionMode(
-            TreeSelectionModel.SINGLE_TREE_SELECTION);
+        DefaultTreeSelectionModel treeSelectionModel = new DefaultTreeSelectionModel();
+        treeSelectionModel.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         prefTree.setSelectionModel(treeSelectionModel);
-        prefTree.addTreeSelectionListener(
-            e -> {
-                TreePath path = e.getNewLeadSelectionPath();
-                DefaultMutableTreeNode node =
-                    (DefaultMutableTreeNode) path.getLastPathComponent();
-                setDisplayedPrefPanel((JComponent) node.getUserObject());
-            });
+        prefTree.addTreeSelectionListener(e -> {
+            TreePath path = e.getNewLeadSelectionPath();
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+            setDisplayedPrefPanel((JComponent) node.getUserObject());
+        });
 
         // ensure the first pref panel is selected and displayed
         DefaultMutableTreeNode root =
-            (DefaultMutableTreeNode) prefTree.getModel().getRoot();
-        DefaultMutableTreeNode firstNode =
-            (DefaultMutableTreeNode) root.getFirstChild();
+                (DefaultMutableTreeNode) prefTree.getModel().getRoot();
+        DefaultMutableTreeNode firstNode = (DefaultMutableTreeNode) root.getFirstChild();
         prefTree.setSelectionPath(new TreePath(firstNode.getPath()));
     }
 

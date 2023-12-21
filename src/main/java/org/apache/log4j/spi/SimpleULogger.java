@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -20,7 +20,6 @@ import org.apache.log4j.ULogger;
 import org.apache.log4j.helpers.MessageFormatter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 
 /**
  * A simple implementation that logs messages of level INFO or higher on
@@ -51,7 +50,6 @@ public final class SimpleULogger implements ULogger {
      */
     private final String loggerName;
 
-
     /**
      * Mark the time when this class gets loaded into memory.
      */
@@ -60,8 +58,7 @@ public final class SimpleULogger implements ULogger {
     /**
      * Line separator.
      */
-    public static final String LINE_SEPARATOR
-        = System.getProperty("line.separator");
+    public static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
     /**
      * INFO string literal.
@@ -120,9 +117,7 @@ public final class SimpleULogger implements ULogger {
     /**
      * {@inheritDoc}
      */
-    public void debug(final String parameterizedMsg,
-                      final Object param1,
-                      final Object param2) {
+    public void debug(final String parameterizedMsg, final Object param1, final Object param2) {
         // NOP
     }
 
@@ -141,9 +136,7 @@ public final class SimpleULogger implements ULogger {
      * @param message message
      * @param t       throwable
      */
-    private void log(final String level,
-                     final String message,
-                     final Throwable t) {
+    private void log(final String level, final String message, final Throwable t) {
         StringBuilder buf = new StringBuilder();
 
         long millis = System.currentTimeMillis();
@@ -167,7 +160,6 @@ public final class SimpleULogger implements ULogger {
         if (t != null) {
             logger.error(t);
         }
-
     }
 
     /**
@@ -178,10 +170,8 @@ public final class SimpleULogger implements ULogger {
      * @param param1           param1
      * @param param2           param2
      */
-    private void parameterizedLog(final String level,
-                                  final Object parameterizedMsg,
-                                  final Object param1,
-                                  final Object param2) {
+    private void parameterizedLog(
+            final String level, final Object parameterizedMsg, final Object param1, final Object param2) {
         if (parameterizedMsg instanceof String) {
             String msgStr = (String) parameterizedMsg;
             msgStr = MessageFormatter.format(msgStr, param1, param2);
@@ -207,7 +197,6 @@ public final class SimpleULogger implements ULogger {
         log(INFO_STR, msg.toString(), null);
     }
 
-
     /**
      * {@inheritDoc}
      */
@@ -218,9 +207,7 @@ public final class SimpleULogger implements ULogger {
     /**
      * {@inheritDoc}
      */
-    public void info(final String parameterizedMsg,
-                     final Object param1,
-                     final Object param2) {
+    public void info(final String parameterizedMsg, final Object param1, final Object param2) {
         parameterizedLog(INFO_STR, parameterizedMsg, param1, param2);
     }
 
@@ -255,9 +242,7 @@ public final class SimpleULogger implements ULogger {
     /**
      * {@inheritDoc}
      */
-    public void warn(final String parameterizedMsg,
-                     final Object param1,
-                     final Object param2) {
+    public void warn(final String parameterizedMsg, final Object param1, final Object param2) {
         parameterizedLog(WARN_STR, parameterizedMsg, param1, param2);
     }
 
@@ -282,7 +267,6 @@ public final class SimpleULogger implements ULogger {
         log(ERROR_STR, msg.toString(), null);
     }
 
-
     /**
      * {@inheritDoc}
      */
@@ -293,9 +277,7 @@ public final class SimpleULogger implements ULogger {
     /**
      * {@inheritDoc}
      */
-    public void error(final String parameterizedMsg,
-                      final Object param1,
-                      final Object param2) {
+    public void error(final String parameterizedMsg, final Object param1, final Object param2) {
         parameterizedLog(ERROR_STR, parameterizedMsg, param1, param2);
     }
 
@@ -305,5 +287,4 @@ public final class SimpleULogger implements ULogger {
     public void error(final Object msg, final Throwable t) {
         log(ERROR_STR, msg.toString(), t);
     }
-
 }

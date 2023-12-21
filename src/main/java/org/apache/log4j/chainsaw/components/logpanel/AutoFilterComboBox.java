@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,18 +16,17 @@
  */
 package org.apache.log4j.chainsaw.components.logpanel;
 
-import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Vector;
-
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 
 public class AutoFilterComboBox extends JComboBox {
     private boolean bypassFiltering;
@@ -35,7 +34,7 @@ public class AutoFilterComboBox extends JComboBox {
     private List displayedEntries = new ArrayList();
 
     AutoFilterComboBoxModel model = new AutoFilterComboBoxModel();
-    //editor component
+    // editor component
     private final JTextField textField = new JTextField();
     private String lastTextToMatch;
 
@@ -43,13 +42,15 @@ public class AutoFilterComboBox extends JComboBox {
         textField.setPreferredSize(getPreferredSize());
         setModel(model);
         setEditor(new AutoFilterEditor());
-        ((JTextField) getEditor().getEditorComponent()).getDocument().addDocumentListener(new AutoFilterDocumentListener());
+        ((JTextField) getEditor().getEditorComponent())
+                .getDocument()
+                .addDocumentListener(new AutoFilterDocumentListener());
         setEditable(true);
         addPopupMenuListener(new PopupMenuListenerImpl());
     }
 
     public Vector getModelData() {
-        //reverse the model order, because it will be un-reversed when we reload it from saved settings
+        // reverse the model order, because it will be un-reversed when we reload it from saved settings
         Vector vector = new Vector();
         for (Object allEntry : allEntries) {
             vector.insertElementAt(allEntry, 0);
@@ -58,7 +59,7 @@ public class AutoFilterComboBox extends JComboBox {
     }
 
     void refilter() {
-        //only refilter if we're not bypassing filtering AND the text has changed since the last call to refilter
+        // only refilter if we're not bypassing filtering AND the text has changed since the last call to refilter
         String textToMatch = getEditor().getItem().toString();
         if (bypassFiltering || (lastTextToMatch != null && lastTextToMatch.equals(textToMatch))) {
             return;
@@ -74,18 +75,19 @@ public class AutoFilterComboBox extends JComboBox {
             }
         }
         bypassFiltering = false;
-        //TODO: on no-match, don't filter at all (show the popup?)
+        // TODO: on no-match, don't filter at all (show the popup?)
         if (displayedEntries.size() > 0 && !textToMatch.isEmpty()) {
             showPopup();
         } else {
             hidePopup();
         }
     }
+
     class AutoFilterComboBoxModel extends AbstractListModel implements MutableComboBoxModel {
         private Object selectedItem;
 
         public void addElement(Object obj) {
-            //assuming add is to displayed list...add to full list (only if not a dup)
+            // assuming add is to displayed list...add to full list (only if not a dup)
             bypassFiltering = true;
 
             boolean entryExists = !allEntries.contains(obj);
@@ -107,7 +109,7 @@ public class AutoFilterComboBox extends JComboBox {
         }
 
         public void insertElementAt(Object obj, int index) {
-            //assuming add is to displayed list...add to full list (only if not a dup)
+            // assuming add is to displayed list...add to full list (only if not a dup)
             if (allEntries.contains(obj)) {
                 return;
             }
@@ -121,7 +123,7 @@ public class AutoFilterComboBox extends JComboBox {
 
         public void removeElementAt(int index) {
             bypassFiltering = true;
-            //assuming removal is from displayed list..remove from full list
+            // assuming removal is from displayed list..remove from full list
             Object obj = displayedEntries.get(index);
             allEntries.remove(obj);
             displayedEntries.remove(obj);
@@ -157,14 +159,15 @@ public class AutoFilterComboBox extends JComboBox {
             int displayedEntrySize = displayedEntries.size();
             if (displayedEntrySize > 0) {
                 displayedEntries.clear();
-                //if firecontentschaned is used, the combobox resizes..use fireintervalremoved instead, which doesn't do that..
+                // if firecontentschaned is used, the combobox resizes..use fireintervalremoved instead, which doesn't
+                // do that..
                 fireIntervalRemoved(this, 0, displayedEntrySize - 1);
             }
             bypassFiltering = false;
         }
 
         public void showAllElements() {
-            //first remove whatever is there and fire necessary events then add events
+            // first remove whatever is there and fire necessary events then add events
             removeAllElements();
             bypassFiltering = true;
             displayedEntries.addAll(allEntries);
@@ -224,7 +227,6 @@ public class AutoFilterComboBox extends JComboBox {
         }
     }
 
-
     private class PopupMenuListenerImpl implements PopupMenuListener {
         private boolean willBecomeVisible = false;
 
@@ -233,13 +235,13 @@ public class AutoFilterComboBox extends JComboBox {
             ((JComboBox) e.getSource()).setSelectedIndex(-1);
             bypassFiltering = false;
             if (!willBecomeVisible) {
-                //we already have a match but we're showing the popup - unfilter
+                // we already have a match but we're showing the popup - unfilter
                 if (displayedEntries.contains(textField.getText())) {
                     model.showAllElements();
                 }
 
-                //workaround for bug http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4743225
-                //the height of the popup after updating entries in this listener was not updated..
+                // workaround for bug http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4743225
+                // the height of the popup after updating entries in this listener was not updated..
                 JComboBox list = (JComboBox) e.getSource();
                 willBecomeVisible = true; // the flag is needed to prevent a loop
                 try {
@@ -251,11 +253,11 @@ public class AutoFilterComboBox extends JComboBox {
         }
 
         public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-            //no-op
+            // no-op
         }
 
         public void popupMenuCanceled(PopupMenuEvent e) {
-            //no-op
+            // no-op
         }
     }
 }

@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,18 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.chainsaw.components.tutorial;
 
 import java.time.Instant;
-import java.util.Random;
-
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
 import org.apache.log4j.chainsaw.logevents.Level;
 import org.apache.log4j.chainsaw.logevents.LocationInfo;
 import org.apache.log4j.chainsaw.receiver.ChainsawReceiverSkeleton;
-
 
 /**
  * Class designed to stress, and/or test the Chainsaw GUI by sending it
@@ -34,7 +30,7 @@ import org.apache.log4j.chainsaw.receiver.ChainsawReceiverSkeleton;
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 public class Generator extends ChainsawReceiverSkeleton implements Runnable {
-    private static final String logger1 ="com.mycompany.mycomponentA";
+    private static final String logger1 = "com.mycompany.mycomponentA";
     private static final String logger2 = "com.mycompany.mycomponentB";
     private static final String logger3 = "com.someothercompany.corecomponent";
     private final String baseString;
@@ -50,8 +46,7 @@ public class Generator extends ChainsawReceiverSkeleton implements Runnable {
         randomWordGenerator = new RandomWordGenerator();
     }
 
-    private ChainsawLoggingEvent createEvent(
-        Level level, String logger, String msg, Throwable t) {
+    private ChainsawLoggingEvent createEvent(Level level, String logger, String msg, Throwable t) {
         builder.clear();
         builder.setLogger(logger)
                 .setTimestamp(Instant.now())
@@ -67,30 +62,20 @@ public class Generator extends ChainsawReceiverSkeleton implements Runnable {
 
         while (!shutdown) {
             append(createEvent(Level.TRACE, logger1, "tracemsg" + i++, null));
-            append(
-                createEvent(
-                    Level.DEBUG, logger1, "debugmsg " + i++ + randomWordGenerator.generateSentence(), null));
+            append(createEvent(Level.DEBUG, logger1, "debugmsg " + i++ + randomWordGenerator.generateSentence(), null));
 
             append(createEvent(Level.INFO, logger1, "infomsg " + i++, null));
             append(createEvent(Level.WARN, logger1, "warnmsg " + i++, null));
             append(createEvent(Level.ERROR, logger1, "errormsg " + i++, null));
             append(createEvent(Level.FATAL, logger1, "fatalmsg " + i++, new Exception("someexception-" + baseString)));
             append(createEvent(Level.TRACE, logger2, "tracemsg" + i++, null));
-            append(
-                createEvent(
-                    Level.DEBUG, logger2,
-                    "debugmsg " + i++ + randomWordGenerator.generateSentence(),
-                    null));
+            append(createEvent(Level.DEBUG, logger2, "debugmsg " + i++ + randomWordGenerator.generateSentence(), null));
             append(createEvent(Level.INFO, logger2, "infomsg " + i++, null));
             append(createEvent(Level.WARN, logger2, "warnmsg " + i++, null));
             append(createEvent(Level.ERROR, logger2, "errormsg " + i++, null));
             append(createEvent(Level.FATAL, logger2, "fatalmsg " + i++, new Exception("someexception-" + baseString)));
             append(createEvent(Level.TRACE, logger3, "tracemsg" + i++, null));
-            append(
-                createEvent(
-                    Level.DEBUG, logger3,
-                    "debugmsg " + i++ + randomWordGenerator.generateSentence(),
-                    null));
+            append(createEvent(Level.DEBUG, logger3, "debugmsg " + i++ + randomWordGenerator.generateSentence(), null));
             append(createEvent(Level.INFO, logger3, "infomsg " + i++, null));
             append(createEvent(Level.WARN, logger3, "warnmsg " + i++, null));
             append(createEvent(Level.ERROR, logger3, "errormsg " + i++, null));

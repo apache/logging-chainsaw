@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,8 +16,6 @@
  */
 package org.apache.log4j.chainsaw.prefs;
 
-import java.util.Properties;
-
 /**
  * @author Paul Smith &lt;psmith@apache.org&gt;
  */
@@ -30,17 +28,14 @@ public class ProfileManager {
     }
 
     public void configure(Profileable p) {
-//        Properties props = new Properties(SettingsManager.getInstance().getDefaultSettings());
-//        LoadSettingsEvent event = new LoadSettingsEvent(this, props);
-//        p.loadSettings(event);
+        //        Properties props = new Properties(SettingsManager.getInstance().getDefaultSettings());
+        //        LoadSettingsEvent event = new LoadSettingsEvent(this, props);
+        //        p.loadSettings(event);
     }
 
     public void configure(Profileable p, String profileName) {
         throw new UnsupportedOperationException("Not implemented as yet");
     }
 
-    private ProfileManager() {
-
-
-    }
+    private ProfileManager() {}
 }

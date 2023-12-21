@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,23 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.chainsaw;
 
-import org.apache.log4j.chainsaw.color.RuleColorizer;
-import org.apache.log4j.chainsaw.components.loggernamepanel.LoggerNameListener;
-import org.apache.log4j.chainsaw.components.loggernamepanel.LoggerNameModel;
-import org.apache.log4j.chainsaw.components.loggernamepanel.LoggerNameModelSupport;
-import org.apache.log4j.chainsaw.helper.SwingHelper;
-import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
-import org.apache.log4j.helpers.Constants;
-import org.apache.log4j.rule.Rule;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import javax.swing.*;
-import javax.swing.event.EventListenerList;
-import javax.swing.table.AbstractTableModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -41,7 +26,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
+import javax.swing.*;
+import javax.swing.event.EventListenerList;
+import javax.swing.table.AbstractTableModel;
+import org.apache.log4j.chainsaw.color.RuleColorizer;
+import org.apache.log4j.chainsaw.components.loggernamepanel.LoggerNameListener;
+import org.apache.log4j.chainsaw.components.loggernamepanel.LoggerNameModel;
+import org.apache.log4j.chainsaw.components.loggernamepanel.LoggerNameModelSupport;
+import org.apache.log4j.chainsaw.helper.SwingHelper;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.log4j.helpers.Constants;
+import org.apache.log4j.rule.Rule;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A CyclicBuffer implementation of the EventContainer.
@@ -57,14 +54,14 @@ import java.util.Set;
  * @author Stephen Pain
  */
 public class ChainsawCyclicBufferTableModel extends AbstractTableModel
-    implements EventContainer, PropertyChangeListener {
+        implements EventContainer, PropertyChangeListener {
 
-    //cyclic field used internally in this class, but not exposed via the eventcontainer
+    // cyclic field used internally in this class, but not exposed via the eventcontainer
     private boolean cyclic = true;
     private final int cyclicBufferSize;
-    //original list of LoggingEventWrapper instances
+    // original list of LoggingEventWrapper instances
     private List<LoggingEventWrapper> unfilteredList;
-    //filtered list of LoggingEventWrapper instances
+    // filtered list of LoggingEventWrapper instances
     private List<LoggingEventWrapper> filteredList;
     private boolean currentSortAscending;
     private int currentSortColumn;
@@ -78,8 +75,8 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
     private final LoggerNameModel loggerNameModelDelegate = new LoggerNameModelSupport();
     private final Object mutex = new Object();
 
-    //because we may be using a cyclic buffer, if an ID is not provided in the property,
-    //use and increment this row counter as the ID for each received row
+    // because we may be using a cyclic buffer, if an ID is not provided in the property,
+    // use and increment this row counter as the ID for each received row
     private int uniqueRow;
     private final Set uniquePropertyKeys = new HashSet();
     private Rule ruleMediator;
@@ -105,7 +102,7 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
         if (evt.getSource() instanceof Rule) {
             if (evt.getSource() == ruleMediator && evt.getPropertyName().equals("findRule")) {
                 if (((RuleMediator) evt.getSource()).isFindRuleRequired()) {
-                    //only refilter if find rule is required
+                    // only refilter if find rule is required
                     reFilter();
                 }
             } else {
@@ -136,7 +133,7 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
         final int previousSize;
         final int newSize;
         synchronized (mutex) {
-            //post refilter with newValue of TRUE (filtering is about to begin)
+            // post refilter with newValue of TRUE (filtering is about to begin)
             propertySupport.firePropertyChange("refilter", Boolean.FALSE, Boolean.TRUE);
             previousSize = filteredList.size();
             filteredList.clear();
@@ -169,26 +166,27 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
         SwingHelper.invokeOnEDT(() -> {
             if (newSize > 0) {
                 if (previousSize == newSize) {
-                    //same - update all
+                    // same - update all
                     fireTableRowsUpdated(0, newSize - 1);
                 } else if (previousSize > newSize) {
-                    //less now..update and delete difference
+                    // less now..update and delete difference
                     fireTableRowsUpdated(0, newSize - 1);
-//swing bug exposed by variable height rows when calling fireTableRowsDeleted..use tabledatacchanged
+                    // swing bug exposed by variable height rows when calling fireTableRowsDeleted..use
+                    // tabledatacchanged
                     fireTableDataChanged();
                 } else if (previousSize < newSize) {
-                    //more now..update and insert difference
+                    // more now..update and insert difference
                     if (previousSize > 0) {
                         fireTableRowsUpdated(0, previousSize - 1);
                     }
                     fireTableRowsInserted(Math.max(0, previousSize), newSize - 1);
                 }
             } else {
-                //no rows to show
+                // no rows to show
                 fireTableDataChanged();
             }
             notifyCountListeners();
-//post refilter with newValue of FALSE (filtering is complete)
+            // post refilter with newValue of FALSE (filtering is complete)
             SwingHelper.invokeOnEDT(() -> propertySupport.firePropertyChange("refilter", Boolean.TRUE, Boolean.FALSE));
         });
     }
@@ -205,7 +203,7 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
                     return i;
                 }
             }
-            //if there was no match, start at row zero and go to startLocation
+            // if there was no match, start at row zero and go to startLocation
             for (int i = 0; i < startLocation; i++) {
                 if (rule.evaluate((filteredListCopy.get(i)).getLoggingEvent(), null)) {
                     return i;
@@ -217,7 +215,7 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
                     return i;
                 }
             }
-            //if there was no match, start at row list.size() - 1 and go to startLocation
+            // if there was no match, start at row list.size() - 1 and go to startLocation
             for (int i = filteredListCopy.size() - 1; i > startLocation; i--) {
                 if (rule.evaluate((filteredListCopy.get(i)).getLoggingEvent(), null)) {
                     return i;
@@ -279,8 +277,7 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
             unfilteredListSize = unfilteredList.size();
         }
         for (EventCountListener listener : listeners) {
-            listener.eventCountChanged(
-                filteredListSize, unfilteredListSize);
+            listener.eventCountChanged(filteredListSize, unfilteredListSize);
         }
     }
 
@@ -316,7 +313,7 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
             filteredListSize = filteredList.size();
             sort = (sortEnabled && filteredListSize > 0);
             if (sort) {
-                //reset display (used to ensure row height is updated)
+                // reset display (used to ensure row height is updated)
                 LoggingEventWrapper lastEvent = null;
                 for (LoggingEventWrapper e : filteredList) {
                     e.setDisplayed(true);
@@ -324,8 +321,7 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
                     lastEvent = e;
                 }
                 filteredList.sort(new ColumnComparator(
-                    getColumnName(currentSortColumn), currentSortColumn,
-                    currentSortAscending));
+                        getColumnName(currentSortColumn), currentSortColumn, currentSortAscending));
             }
         }
         if (sort) {
@@ -390,7 +386,7 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
 
     @Override
     public void removePropertyFromEvents(String propName) {
-        //first remove the event from any displayed events, so we can fire row updated event
+        // first remove the event from any displayed events, so we can fire row updated event
         List<LoggingEventWrapper> filteredListCopy;
         List<LoggingEventWrapper> unfilteredListCopy;
         synchronized (mutex) {
@@ -404,7 +400,7 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
                 fireRowUpdated(i, false);
             }
         }
-        //now remove the event from all events
+        // now remove the event from all events
         for (LoggingEventWrapper loggingEventWrapper : unfilteredListCopy) {
             loggingEventWrapper.removeProperty(propName);
         }
@@ -419,7 +415,7 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
         }
         for (LoggingEventWrapper loggingEventWrapper : unfilteredListCopy) {
             loggingEventWrapper.evaluateSearchRule(findRule);
-            //return the count of visible search matches
+            // return the count of visible search matches
             if (loggingEventWrapper.isSearchMatch() && loggingEventWrapper.isDisplayed()) {
                 count++;
             }
@@ -436,32 +432,32 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
         if (searchForward) {
             for (int i = startLocation; i < filteredListCopy.size(); i++) {
                 LoggingEventWrapper event = filteredListCopy.get(i);
-                if (!event.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND) ||
-                    !event.getColorRuleForeground().equals(ChainsawConstants.COLOR_DEFAULT_FOREGROUND)) {
+                if (!event.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)
+                        || !event.getColorRuleForeground().equals(ChainsawConstants.COLOR_DEFAULT_FOREGROUND)) {
                     return i;
                 }
             }
-            //searching forward, no colorized event was found - now start at row zero and go to startLocation
+            // searching forward, no colorized event was found - now start at row zero and go to startLocation
             for (int i = 0; i < startLocation; i++) {
                 LoggingEventWrapper event = filteredListCopy.get(i);
-                if (!event.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND) ||
-                    !event.getColorRuleForeground().equals(ChainsawConstants.COLOR_DEFAULT_FOREGROUND)) {
+                if (!event.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)
+                        || !event.getColorRuleForeground().equals(ChainsawConstants.COLOR_DEFAULT_FOREGROUND)) {
                     return i;
                 }
             }
         } else {
             for (int i = startLocation; i > -1; i--) {
                 LoggingEventWrapper event = filteredListCopy.get(i);
-                if (!event.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND) ||
-                    !event.getColorRuleForeground().equals(ChainsawConstants.COLOR_DEFAULT_FOREGROUND)) {
+                if (!event.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)
+                        || !event.getColorRuleForeground().equals(ChainsawConstants.COLOR_DEFAULT_FOREGROUND)) {
                     return i;
                 }
             }
-            //searching backward, no colorized event was found - now start at list.size() - 1 and go to startLocation
+            // searching backward, no colorized event was found - now start at list.size() - 1 and go to startLocation
             for (int i = filteredListCopy.size() - 1; i > startLocation; i--) {
                 LoggingEventWrapper event = filteredListCopy.get(i);
-                if (!event.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND) ||
-                    !event.getColorRuleForeground().equals(ChainsawConstants.COLOR_DEFAULT_FOREGROUND)) {
+                if (!event.getColorRuleBackground().equals(ChainsawConstants.COLOR_DEFAULT_BACKGROUND)
+                        || !event.getColorRuleForeground().equals(ChainsawConstants.COLOR_DEFAULT_FOREGROUND)) {
                     return i;
                 }
             }
@@ -535,11 +531,11 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
             case ChainsawColumns.INDEX_LOG4J_MARKER_COL_NAME:
                 return event.getProperty(ChainsawConstants.LOG4J_MARKER_COL_NAME);
 
-/*
-            case ChainsawColumns.INDEX_MILLIS_DELTA_COL_NAME:
-                return event.getProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
+                /*
+                            case ChainsawColumns.INDEX_MILLIS_DELTA_COL_NAME:
+                                return event.getProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
 
-*/
+                */
             case ChainsawColumns.INDEX_LOGGER_COL_NAME:
                 return event.m_logger;
 
@@ -549,47 +545,48 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
             case ChainsawColumns.INDEX_MESSAGE_COL_NAME:
                 return event.m_message;
 
-/*
-            case ChainsawColumns.INDEX_NDC_COL_NAME:
-                return event.m_ndc;
+                /*
+                            case ChainsawColumns.INDEX_NDC_COL_NAME:
+                                return event.m_ndc;
 
-            case ChainsawColumns.INDEX_THREAD_COL_NAME:
-                return event.m_threadName;
+                            case ChainsawColumns.INDEX_THREAD_COL_NAME:
+                                return event.m_threadName;
 
-            case ChainsawColumns.INDEX_THROWABLE_COL_NAME:
-                return "IMPLEMENT ME";
+                            case ChainsawColumns.INDEX_THROWABLE_COL_NAME:
+                                return "IMPLEMENT ME";
 
-            case ChainsawColumns.INDEX_CLASS_COL_NAME:
-                return info == null ? "" : info.className;
+                            case ChainsawColumns.INDEX_CLASS_COL_NAME:
+                                return info == null ? "" : info.className;
 
-            case ChainsawColumns.INDEX_FILE_COL_NAME:
-                return info == null ? "" : info.fileName;
+                            case ChainsawColumns.INDEX_FILE_COL_NAME:
+                                return info == null ? "" : info.fileName;
 
-            case ChainsawColumns.INDEX_LINE_COL_NAME:
-                return info == null ? -1 : info.lineNumber;
+                            case ChainsawColumns.INDEX_LINE_COL_NAME:
+                                return info == null ? -1 : info.lineNumber;
 
-            case ChainsawColumns.INDEX_METHOD_COL_NAME:
-                return info == null ? "" : info.methodName;
-*/
+                            case ChainsawColumns.INDEX_METHOD_COL_NAME:
+                                return info == null ? "" : info.methodName;
+                */
 
             default:
 
-//                if (columnIndex < columnNames.size()) {
-//                    //case may not match..try case sensitive and fall back to case-insensitive
-//                    String result = event.getProperty(columnNames.get(columnIndex).toString());
-//                    if (result == null) {
-//                        String lowerColName = columnNames.get(columnIndex).toString().toLowerCase(Locale.ENGLISH);
-//                        Set<String> entrySet = event.entrySet();
-//                        for (String entry : entrySet) {
-//                            if (entry.equalsIgnoreCase(lowerColName)) {
-//                                result = thisEntry.getValue().toString();
-//                            }
-//                        }
-//                    }
-//                    if (result != null) {
-//                        return result;
-//                    }
-//                }
+                //                if (columnIndex < columnNames.size()) {
+                //                    //case may not match..try case sensitive and fall back to case-insensitive
+                //                    String result = event.getProperty(columnNames.get(columnIndex).toString());
+                //                    if (result == null) {
+                //                        String lowerColName =
+                // columnNames.get(columnIndex).toString().toLowerCase(Locale.ENGLISH);
+                //                        Set<String> entrySet = event.entrySet();
+                //                        for (String entry : entrySet) {
+                //                            if (entry.equalsIgnoreCase(lowerColName)) {
+                //                                result = thisEntry.getValue().toString();
+                //                            }
+                //                        }
+                //                    }
+                //                    if (result != null) {
+                //                        return result;
+                //                    }
+                //                }
         }
         return "";
     }
@@ -598,13 +595,15 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
     public boolean isAddRow(LoggingEventWrapper loggingEventWrapper) {
         Object id = loggingEventWrapper.getLoggingEvent().getProperty(Constants.LOG4J_ID_KEY);
 
-        //only set the property if it doesn't already exist
+        // only set the property if it doesn't already exist
         if (id == null) {
             id = ++uniqueRow;
             loggingEventWrapper.setProperty(Constants.LOG4J_ID_KEY, id.toString());
         }
 
-        loggingEventWrapper.updateColorRuleColors(colorizer.getBackgroundColor(loggingEventWrapper.getLoggingEvent()), colorizer.getForegroundColor(loggingEventWrapper.getLoggingEvent()));
+        loggingEventWrapper.updateColorRuleColors(
+                colorizer.getBackgroundColor(loggingEventWrapper.getLoggingEvent()),
+                colorizer.getForegroundColor(loggingEventWrapper.getLoggingEvent()));
         Rule findRule = colorizer.getFindRule();
         if (findRule != null) {
             loggingEventWrapper.evaluateSearchRule(colorizer.getFindRule());
@@ -646,11 +645,13 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
         return rowAdded;
     }
 
-    private void updateEventMillisDelta(LoggingEventWrapper loggingEventWrapper, LoggingEventWrapper lastLoggingEventWrapper) {
+    private void updateEventMillisDelta(
+            LoggingEventWrapper loggingEventWrapper, LoggingEventWrapper lastLoggingEventWrapper) {
         if (lastLoggingEventWrapper != null) {
-            loggingEventWrapper.setPreviousDisplayedEventTimestamp(lastLoggingEventWrapper.getLoggingEvent().m_timestamp);
+            loggingEventWrapper.setPreviousDisplayedEventTimestamp(
+                    lastLoggingEventWrapper.getLoggingEvent().m_timestamp);
         } else {
-            //delta to same event = 0
+            // delta to same event = 0
             loggingEventWrapper.setPreviousDisplayedEventTimestamp(loggingEventWrapper.getLoggingEvent().m_timestamp);
         }
     }
@@ -669,13 +670,15 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
             for (Object o : loggingEventWrapper.getPropertyKeySet()) {
                 String key = o.toString().toUpperCase();
 
-                //add all keys except the 'log4jid' key (columnNames is all-caps)
+                // add all keys except the 'log4jid' key (columnNames is all-caps)
                 if (!columnNames.contains(key) && !(Constants.LOG4J_ID_KEY.equalsIgnoreCase(key))) {
                     columnNames.add(key);
-                    logger.debug("Adding col '{}', columnNames={}" ,key, columnNames);
-                    fireNewKeyColumnAdded(
-                        new NewKeyEvent(
-                            this, columnNames.indexOf(key), key, loggingEventWrapper.getLoggingEvent().getProperty(key)));
+                    logger.debug("Adding col '{}', columnNames={}", key, columnNames);
+                    fireNewKeyColumnAdded(new NewKeyEvent(
+                            this,
+                            columnNames.indexOf(key),
+                            key,
+                            loggingEventWrapper.getLoggingEvent().getProperty(key)));
                 }
             }
         }
@@ -686,12 +689,12 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
         SwingHelper.invokeOnEDT(() -> {
             if (cyclic) {
                 if (!reachedCapacity) {
-//if we didn't loop and it's the 1st time, insert
+                    // if we didn't loop and it's the 1st time, insert
                     if ((begin + count) < cyclicBufferSize) {
                         fireTableRowsInserted(begin, end);
                     } else {
-//we did loop - insert and then update rows
-//rows are zero-indexed, subtract 1 from cyclicbuffersize for the event notification
+                        // we did loop - insert and then update rows
+                        // rows are zero-indexed, subtract 1 from cyclicbuffersize for the event notification
                         fireTableRowsInserted(begin, cyclicBufferSize - 1);
                         fireTableRowsUpdated(0, cyclicBufferSize - 1);
                         reachedCapacity = true;
@@ -709,7 +712,9 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
     public void fireRowUpdated(int row, boolean checkForNewColumns) {
         LoggingEventWrapper loggingEventWrapper = getRow(row);
         if (loggingEventWrapper != null) {
-            loggingEventWrapper.updateColorRuleColors(colorizer.getBackgroundColor(loggingEventWrapper.getLoggingEvent()), colorizer.getForegroundColor(loggingEventWrapper.getLoggingEvent()));
+            loggingEventWrapper.updateColorRuleColors(
+                    colorizer.getBackgroundColor(loggingEventWrapper.getLoggingEvent()),
+                    colorizer.getForegroundColor(loggingEventWrapper.getLoggingEvent()));
             Rule findRule = colorizer.getFindRule();
             if (findRule != null) {
                 loggingEventWrapper.evaluateSearchRule(colorizer.getFindRule());
@@ -717,15 +722,14 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
 
             fireTableRowsUpdated(row, row);
             if (checkForNewColumns) {
-                //row may have had a column added..if so, make sure a column is added
+                // row may have had a column added..if so, make sure a column is added
                 checkForNewColumn(loggingEventWrapper);
             }
         }
     }
 
     private void fireNewKeyColumnAdded(NewKeyEvent e) {
-        NewKeyListener[] listeners =
-            eventListenerList.getListeners(NewKeyListener.class);
+        NewKeyListener[] listeners = eventListenerList.getListeners(NewKeyListener.class);
 
         for (NewKeyListener listener : listeners) {
             listener.newKeyAdded(e);
@@ -763,7 +767,6 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
         }
 
         return columnIndex < columnNames.size() && super.isCellEditable(rowIndex, columnIndex);
-
     }
 
     /* (non-Javadoc)
@@ -792,8 +795,7 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
      * @see org.apache.log4j.chainsaw.EventContainer#addPropertyChangeListener(java.lang.String, java.beans.PropertyChangeListener)
      */
     @Override
-    public void addPropertyChangeListener(
-        String propertyName, PropertyChangeListener l) {
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener l) {
         propertySupport.addPropertyChangeListener(propertyName, l);
     }
 
@@ -813,58 +815,56 @@ public class ChainsawCyclicBufferTableModel extends AbstractTableModel
          */
         @Override
         public void propertyChange(PropertyChangeEvent arg0) {
-            Thread thread =
-                new Thread(
-                    () -> {
-                        ProgressMonitor monitor = null;
+            Thread thread = new Thread(() -> {
+                ProgressMonitor monitor = null;
 
-                        int index = 0;
+                int index = 0;
 
-                        try {
-                            synchronized (mutex) {
-                                monitor =
-                                    new ProgressMonitor(
-                                        null, "Switching models...",
-                                        "Transferring between data structures, please wait...", 0,
-                                        unfilteredList.size() + 1);
-                                monitor.setMillisToDecideToPopup(250);
-                                monitor.setMillisToPopup(100);
-                                logger.debug(
-                                    "Changing Model, isCyclic is now {}", cyclic);
+                try {
+                    synchronized (mutex) {
+                        monitor = new ProgressMonitor(
+                                null,
+                                "Switching models...",
+                                "Transferring between data structures, please wait...",
+                                0,
+                                unfilteredList.size() + 1);
+                        monitor.setMillisToDecideToPopup(250);
+                        monitor.setMillisToPopup(100);
+                        logger.debug("Changing Model, isCyclic is now {}", cyclic);
 
-                                List newUnfilteredList;
-                                List newFilteredList;
+                        List newUnfilteredList;
+                        List newFilteredList;
 
-                                if (cyclic) {
-                                    newUnfilteredList = new CyclicBufferList(cyclicBufferSize);
-                                    newFilteredList = new CyclicBufferList(cyclicBufferSize);
-                                } else {
-                                    newUnfilteredList = new ArrayList(cyclicBufferSize);
-                                    newFilteredList = new ArrayList(cyclicBufferSize);
-                                }
-
-                                for (Object anUnfilteredList : unfilteredList) {
-                                    LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) anUnfilteredList;
-                                    newUnfilteredList.add(loggingEventWrapper);
-                                    monitor.setProgress(index++);
-                                }
-
-                                unfilteredList = newUnfilteredList;
-                                filteredList = newFilteredList;
-                            }
-
-                            monitor.setNote("Refiltering...");
-                            reFilter();
-
-                            monitor.setProgress(index++);
-                        } finally {
-                            if (monitor != null) {
-                                monitor.close();
-                            }
+                        if (cyclic) {
+                            newUnfilteredList = new CyclicBufferList(cyclicBufferSize);
+                            newFilteredList = new CyclicBufferList(cyclicBufferSize);
+                        } else {
+                            newUnfilteredList = new ArrayList(cyclicBufferSize);
+                            newFilteredList = new ArrayList(cyclicBufferSize);
                         }
 
-                        logger.debug("Model Change completed");
-                    });
+                        for (Object anUnfilteredList : unfilteredList) {
+                            LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) anUnfilteredList;
+                            newUnfilteredList.add(loggingEventWrapper);
+                            monitor.setProgress(index++);
+                        }
+
+                        unfilteredList = newUnfilteredList;
+                        filteredList = newFilteredList;
+                    }
+
+                    monitor.setNote("Refiltering...");
+                    reFilter();
+
+                    monitor.setProgress(index++);
+                } finally {
+                    if (monitor != null) {
+                        monitor.close();
+                    }
+                }
+
+                logger.debug("Model Change completed");
+            });
             thread.setPriority(Thread.MIN_PRIORITY + 1);
             thread.start();
         }

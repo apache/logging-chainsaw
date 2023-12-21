@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,14 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.chainsaw.file;
 
-import org.apache.log4j.chainsaw.logui.LogUI;
-import org.apache.log4j.chainsaw.LoggingEventWrapper;
-import org.apache.log4j.chainsaw.icons.ChainsawIcons;
-
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -30,9 +24,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import javax.swing.*;
+import org.apache.log4j.chainsaw.LoggingEventWrapper;
+import org.apache.log4j.chainsaw.icons.ChainsawIcons;
+import org.apache.log4j.chainsaw.logui.LogUI;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 
 /**
  * Allows the user to specify a particular file to which the current tab's
@@ -56,11 +53,11 @@ class FileSaveAction extends AbstractAction {
         super("Save displayed events as...");
 
         putValue(
-            Action.ACCELERATOR_KEY,
-            KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                Action.ACCELERATOR_KEY,
+                KeyStroke.getKeyStroke(
+                        KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         putValue(Action.MNEMONIC_KEY, KeyEvent.VK_S);
-        putValue(
-            Action.SHORT_DESCRIPTION, "Saves displayed events for the current tab");
+        putValue(Action.SHORT_DESCRIPTION, "Saves displayed events for the current tab");
         putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.FILE_SAVE_AS));
         this.parent = parent;
     }
@@ -88,18 +85,23 @@ class FileSaveAction extends AbstractAction {
             List v = parent.getCurrentLogPanel().getFilteredEvents();
 
             if (((v != null) && (v.size() == 0)) || (v == null)) {
-                //no events to save
+                // no events to save
                 return;
             }
 
-//            XMLLayout layout = new XMLLayout();
-//            layout.setProperties(true);
-            boolean saveAsZip = selectedFile.getName().toLowerCase(Locale.ENGLISH).endsWith(".zip");
+            //            XMLLayout layout = new XMLLayout();
+            //            layout.setProperties(true);
+            boolean saveAsZip =
+                    selectedFile.getName().toLowerCase(Locale.ENGLISH).endsWith(".zip");
             Writer writer = null;
             try {
                 if (saveAsZip) {
-                    ZipOutputStream zipOutput = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(selectedFile)));
-                    ZipEntry entry = new ZipEntry(selectedFile.getName().substring(0, selectedFile.getName().length() - ".zip".length()) + ".xml");
+                    ZipOutputStream zipOutput =
+                            new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(selectedFile)));
+                    ZipEntry entry = new ZipEntry(
+                            selectedFile
+                                            .getName()
+                                            .substring(0, selectedFile.getName().length() - ".zip".length()) + ".xml");
                     zipOutput.putNextEntry(entry);
                     writer = new OutputStreamWriter(zipOutput);
                 } else {
@@ -107,8 +109,9 @@ class FileSaveAction extends AbstractAction {
                 }
                 for (Object aV : v) {
                     LoggingEventWrapper loggingEventWrapper = (LoggingEventWrapper) aV;
-//                    layout.setLocationInfo(loggingEventWrapper.getLoggingEvent().getThrowableInformation() != null);
-//                    writer.write(layout.format(loggingEventWrapper.getLoggingEvent()));
+                    //
+                    // layout.setLocationInfo(loggingEventWrapper.getLoggingEvent().getThrowableInformation() != null);
+                    //                    writer.write(layout.format(loggingEventWrapper.getLoggingEvent()));
                 }
             } catch (IOException ioe) {
                 logger.warn("Unable to save file", ioe);
@@ -118,7 +121,7 @@ class FileSaveAction extends AbstractAction {
                         writer.flush();
                         writer.close();
                     } catch (IOException e1) {
-                        //ignore
+                        // ignore
                     }
                 }
             }

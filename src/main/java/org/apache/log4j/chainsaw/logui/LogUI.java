@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,9 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.chainsaw.logui;
 
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.net.URL;
+import java.util.*;
+import java.util.List;
+import javax.swing.*;
+import javax.swing.event.EventListenerList;
 import org.apache.commons.configuration2.AbstractConfiguration;
 import org.apache.log4j.chainsaw.*;
 import org.apache.log4j.chainsaw.components.about.ChainsawAbout;
@@ -38,21 +51,6 @@ import org.apache.log4j.rule.ExpressionRule;
 import org.apache.log4j.rule.Rule;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import javax.swing.*;
-import javax.swing.event.EventListenerList;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.File;
-import java.net.URL;
-import java.util.*;
-import java.util.List;
 
 /**
  * The main entry point for Chainsaw, this class represents the first frame
@@ -144,7 +142,8 @@ public class LogUI extends JFrame {
 
         createDragAndDrop();
 
-        applicationPreferenceModelPanel = new ApplicationPreferenceModelPanel(settingsManager, applicationPreferenceModel);
+        applicationPreferenceModelPanel =
+                new ApplicationPreferenceModelPanel(settingsManager, applicationPreferenceModel);
 
         applicationPreferenceModelPanel.setOkCancelActionListener(e -> preferencesFrame.setVisible(false));
 
@@ -154,11 +153,21 @@ public class LogUI extends JFrame {
                 preferencesFrame.setVisible(false);
             }
         };
-        preferencesFrame.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escape, "ESCAPE");
-        preferencesFrame.getRootPane().
-            getActionMap().put("ESCAPE", closeAction);
+        preferencesFrame
+                .getRootPane()
+                .getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                .put(escape, "ESCAPE");
+        preferencesFrame.getRootPane().getActionMap().put("ESCAPE", closeAction);
 
-        logUIPanelBuilder = new LogUIPanelBuilder(tabbedPane, identifierPanels, chainsawToolBarAndMenus, panelMap, settingsManager, applicationPreferenceModel, statusBar, zeroConf);
+        logUIPanelBuilder = new LogUIPanelBuilder(
+                tabbedPane,
+                identifierPanels,
+                chainsawToolBarAndMenus,
+                panelMap,
+                settingsManager,
+                applicationPreferenceModel,
+                statusBar,
+                zeroConf);
 
         OSXIntegration.init(this);
     }
@@ -201,21 +210,22 @@ public class LogUI extends JFrame {
         tutorialFrame = new TutorialFrame(receivers, receiverListeners, this, statusBar);
 
         JToolBar tb = welcomePanel.getToolbar();
-        JButton help = new SmallButton.Builder().iconUrl(ChainsawIcons.HELP)
-            .action(tutorialFrame::setupTutorial).shortDescription("Tutorial").build();
+        JButton help = new SmallButton.Builder()
+                .iconUrl(ChainsawIcons.HELP)
+                .action(tutorialFrame::setupTutorial)
+                .shortDescription("Tutorial")
+                .build();
 
         tb.add(help);
 
         tb.addSeparator();
 
-        JButton exampleButton = new SmallButton.Builder().iconUrl(ChainsawIcons.HELP)
-            .action(
-                () -> HelpManager.getInstance().setHelpURL(ChainsawConstants.EXAMPLE_CONFIG_URL)
-            )
-            .name("View example Receiver configuration")
-            .shortDescription("Displays an example Log4j configuration file with several Receivers defined.")
-            .build();
-
+        JButton exampleButton = new SmallButton.Builder()
+                .iconUrl(ChainsawIcons.HELP)
+                .action(() -> HelpManager.getInstance().setHelpURL(ChainsawConstants.EXAMPLE_CONFIG_URL))
+                .name("View example Receiver configuration")
+                .shortDescription("Displays an example Log4j configuration file with several Receivers defined.")
+                .build();
 
         tb.add(exampleButton);
         tb.add(Box.createHorizontalGlue());
@@ -224,16 +234,14 @@ public class LogUI extends JFrame {
          * Setup a listener on the HelpURL property and automatically change the WelcomePages URL
          * to it.
          */
-        HelpManager.getInstance().addPropertyChangeListener(
-            "helpURL",
-            evt -> {
-                URL newURL = (URL) evt.getNewValue();
+        HelpManager.getInstance().addPropertyChangeListener("helpURL", evt -> {
+            URL newURL = (URL) evt.getNewValue();
 
-                if (newURL != null) {
-                    welcomePanel.setURL(newURL);
-                    ensureWelcomePanelVisible();
-                }
-            });
+            if (newURL != null) {
+                welcomePanel.setURL(newURL);
+                ensureWelcomePanelVisible();
+            }
+        });
     }
 
     /**
@@ -252,9 +260,7 @@ public class LogUI extends JFrame {
      */
     private void loadSettings() {
         AbstractConfiguration config = settingsManager.getGlobalConfiguration();
-        setLocation(
-            config.getInt(LogUI.MAIN_WINDOW_X, 0),
-            config.getInt(LogUI.MAIN_WINDOW_Y, 0));
+        setLocation(config.getInt(LogUI.MAIN_WINDOW_X, 0), config.getInt(LogUI.MAIN_WINDOW_Y, 0));
 
         int width = config.getInt(LogUI.MAIN_WINDOW_WIDTH, -1);
         int height = config.getInt(LogUI.MAIN_WINDOW_HEIGHT, -1);
@@ -308,22 +314,19 @@ public class LogUI extends JFrame {
 
         createReceiversPanel(panePanel);
 
-        addWindowListener(
-            new WindowAdapter() {
-                public void windowClosing(WindowEvent event) {
-                    exit();
-                }
-            });
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent event) {
+                exit();
+            }
+        });
         preferencesFrame.setTitle("'Application-wide Preferences");
-        preferencesFrame.setIconImage(
-            ((ImageIcon) ChainsawIcons.ICON_PREFERENCES).getImage());
+        preferencesFrame.setIconImage(((ImageIcon) ChainsawIcons.ICON_PREFERENCES).getImage());
         preferencesFrame.getContentPane().add(applicationPreferenceModelPanel);
 
         preferencesFrame.setSize(750, 520);
 
         Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
-        preferencesFrame.setLocation(
-            new Point(
+        preferencesFrame.setLocation(new Point(
                 (screenDimension.width / 2) - (preferencesFrame.getSize().width / 2),
                 (screenDimension.height / 2) - (preferencesFrame.getSize().height / 2)));
 
@@ -366,12 +369,13 @@ public class LogUI extends JFrame {
     }
 
     private void createReceiversPanel(JPanel panePanel) {
-        LogUiReceiversPanel logUiReceiversPanel = new LogUiReceiversPanel(settingsManager, applicationPreferenceModel, receivers, this, statusBar, panePanel);
+        LogUiReceiversPanel logUiReceiversPanel = new LogUiReceiversPanel(
+                settingsManager, applicationPreferenceModel, receivers, this, statusBar, panePanel);
         getContentPane().add(logUiReceiversPanel.getMainReceiverSplitPane(), BorderLayout.CENTER);
     }
 
     public void createCustomExpressionLogPanel(String ident) {
-        //collect events matching the rule from all of the tabs
+        // collect events matching the rule from all of the tabs
         try {
             List<ChainsawLoggingEvent> list = new ArrayList<>();
             Rule rule = ExpressionRule.getRule(ident);
@@ -384,9 +388,7 @@ public class LogUI extends JFrame {
 
             logUIPanelBuilder.buildLogPanel(true, ident, null);
         } catch (IllegalArgumentException iae) {
-            statusBar.setMessage(
-                "Unable to add tab using expression: " + ident + ", reason: "
-                    + iae.getMessage());
+            statusBar.setMessage("Unable to add tab using expression: " + ident + ", reason: " + iae.getMessage());
         }
     }
 
@@ -396,8 +398,7 @@ public class LogUI extends JFrame {
 
     public void addWelcomePanel() {
         tabbedPane.insertTab(
-            ChainsawTabbedPane.WELCOME_TAB, new ImageIcon(ChainsawIcons.ABOUT), welcomePanel,
-            "Welcome/Help", 0);
+                ChainsawTabbedPane.WELCOME_TAB, new ImageIcon(ChainsawIcons.ABOUT), welcomePanel, "Welcome/Help", 0);
         tabbedPane.setSelectedComponent(welcomePanel);
         panelMap.put(ChainsawTabbedPane.WELCOME_TAB, welcomePanel);
     }
@@ -405,8 +406,7 @@ public class LogUI extends JFrame {
     public void removeWelcomePanel() {
         EventQueue.invokeLater(() -> {
             if (tabbedPane.containsWelcomePanel()) {
-                tabbedPane.remove(
-                    tabbedPane.getComponentAt(tabbedPane.indexOfTab(ChainsawTabbedPane.WELCOME_TAB)));
+                tabbedPane.remove(tabbedPane.getComponentAt(tabbedPane.indexOfTab(ChainsawTabbedPane.WELCOME_TAB)));
             }
         });
     }
@@ -457,9 +457,9 @@ public class LogUI extends JFrame {
             settingsManager.saveSettingsForReceiver(rx);
         }
 
-        for (Component comp :  panelMap.values()) {
+        for (Component comp : panelMap.values()) {
             if (comp instanceof LogPanel) {
-                ((LogPanel)comp).saveSettings();
+                ((LogPanel) comp).saveSettings();
             }
         }
 
@@ -531,8 +531,7 @@ public class LogUI extends JFrame {
      */
     private void setStatusBarVisible(final boolean visible) {
         logger.debug("Setting StatusBar to {}", visible);
-        SwingUtilities.invokeLater(
-            () -> statusBar.setVisible(visible));
+        SwingUtilities.invokeLater(() -> statusBar.setVisible(visible));
     }
 
     public boolean isStatusBarVisible() {
@@ -599,14 +598,10 @@ public class LogUI extends JFrame {
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
 
-                if (
-                    (e.getClickCount() > 1)
-                        && ((e.getModifiers() & InputEvent.BUTTON1_MASK) > 0)) {
+                if ((e.getClickCount() > 1) && ((e.getModifiers() & InputEvent.BUTTON1_MASK) > 0)) {
                     int tabIndex = tabbedPane.getSelectedIndex();
 
-                    if (
-                        (tabIndex != -1)
-                            && (tabIndex == tabbedPane.getSelectedIndex())) {
+                    if ((tabIndex != -1) && (tabIndex == tabbedPane.getSelectedIndex())) {
                         LogPanel logPanel = getCurrentLogPanel();
 
                         if (logPanel != null) {
@@ -651,8 +646,7 @@ public class LogUI extends JFrame {
                 for (int i = 0; i < count; i++) {
                     String name = tabbedPane.getTitleAt(index);
 
-                    if (
-                        panelMap.containsKey(name) && !name.equals(currentName)) {
+                    if (panelMap.containsKey(name) && !name.equals(currentName)) {
                         displayPanel(name, false);
                         chainsawToolBarAndMenus.stateChange();
                     } else {

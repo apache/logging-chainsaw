@@ -1,28 +1,25 @@
 /*
- * Copyright 1999,2004 The Apache Software Foundation.
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to you under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package org.apache.log4j.chainsaw.vfs;
 
-import org.apache.log4j.chainsaw.receivers.VisualReceiver;
-import org.apache.log4j.varia.LogFilePatternReceiver;
-
-import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.util.zip.GZIPInputStream;
+import javax.swing.*;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemManager;
@@ -32,6 +29,8 @@ import org.apache.commons.vfs2.VFS;
 import org.apache.commons.vfs2.provider.URLFileName;
 import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
 import org.apache.commons.vfs2.util.RandomAccessMode;
+import org.apache.log4j.chainsaw.receivers.VisualReceiver;
+import org.apache.log4j.varia.LogFilePatternReceiver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -223,92 +222,96 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
      * Read and process the log file.
      */
     public void activateOptions() {
-        //we don't want to call super.activateOptions, but we do want active to be set to true
+        // we don't want to call super.activateOptions, but we do want active to be set to true
         active = true;
-        //on receiver restart, only prompt for credentials if we don't already have them
+        // on receiver restart, only prompt for credentials if we don't already have them
         if (promptForUserInfo && !getFileURL().contains("@")) {
-    	  /*
-    	  if promptforuserinfo is true, wait for a reference to the container
-    	  (via the VisualReceiver callback).
+            /*
+            if promptforuserinfo is true, wait for a reference to the container
+            (via the VisualReceiver callback).
 
-    	  We need to display a login dialog on top of the container, so we must then
-    	  wait until the container has been added to a frame
-    	  */
+            We need to display a login dialog on top of the container, so we must then
+            wait until the container has been added to a frame
+            */
 
-            //get a reference to the container
+            // get a reference to the container
             new Thread(() -> {
-                synchronized (waitForContainerLock) {
-                    while (container == null) {
-                        try {
-                            waitForContainerLock.wait(1000);
-                            logger.debug("waiting for setContainer call");
-                        } catch (InterruptedException ie) {
-                        }
-                    }
-                }
-
-                Frame containerFrame1;
-                if (container instanceof Frame) {
-                    containerFrame1 = (Frame) container;
-                } else {
-                    synchronized (waitForContainerLock) {
-//loop until the container has a frame
-                        while ((containerFrame1 = (Frame) SwingUtilities.getAncestorOfClass(Frame.class, container)) == null) {
-                            try {
-                                waitForContainerLock.wait(1000);
-                                logger.debug("waiting for container's frame to be available");
-                            } catch (InterruptedException ie) {
+                        synchronized (waitForContainerLock) {
+                            while (container == null) {
+                                try {
+                                    waitForContainerLock.wait(1000);
+                                    logger.debug("waiting for setContainer call");
+                                } catch (InterruptedException ie) {
+                                }
                             }
                         }
-                    }
-                }
-                final Frame containerFrame = containerFrame1;
-                //create the dialog
-                SwingUtilities.invokeLater(() -> {
-                    Frame owner = null;
-                    if (container != null) {
-                        owner = (Frame) SwingUtilities.getAncestorOfClass(Frame.class, containerFrame);
-                    }
-                    final UserNamePasswordDialog f = new UserNamePasswordDialog(owner);
-                    f.pack();
-                    Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
-                    f.setLocation(d.width / 2, d.height / 2);
-                    f.setVisible(true);
-                    if (null == f.getUserName() || null == f.getPassword()) {
-                        logger.info("Username and password not both provided, not using credentials");
-                    } else {
-                        String oldURL = getFileURL();
-                        int index = oldURL.indexOf("://");
-                        String firstPart = oldURL.substring(0, index);
-                        String lastPart = oldURL.substring(index + "://".length());
-                        setFileURL(firstPart + "://" + f.getUserName() + ":" + new String(f.getPassword()) + "@" + lastPart);
 
-                        setHost(oldURL.substring(0, index + "://".length()));
-                        setPath(oldURL.substring(index + "://".length()));
-                    }
-                    vfsReader = new VFSReader();
-                    new Thread(vfsReader).start();
-                });
-            }).start();
+                        Frame containerFrame1;
+                        if (container instanceof Frame) {
+                            containerFrame1 = (Frame) container;
+                        } else {
+                            synchronized (waitForContainerLock) {
+                                // loop until the container has a frame
+                                while ((containerFrame1 =
+                                                (Frame) SwingUtilities.getAncestorOfClass(Frame.class, container))
+                                        == null) {
+                                    try {
+                                        waitForContainerLock.wait(1000);
+                                        logger.debug("waiting for container's frame to be available");
+                                    } catch (InterruptedException ie) {
+                                    }
+                                }
+                            }
+                        }
+                        final Frame containerFrame = containerFrame1;
+                        // create the dialog
+                        SwingUtilities.invokeLater(() -> {
+                            Frame owner = null;
+                            if (container != null) {
+                                owner = (Frame) SwingUtilities.getAncestorOfClass(Frame.class, containerFrame);
+                            }
+                            final UserNamePasswordDialog f = new UserNamePasswordDialog(owner);
+                            f.pack();
+                            Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+                            f.setLocation(d.width / 2, d.height / 2);
+                            f.setVisible(true);
+                            if (null == f.getUserName() || null == f.getPassword()) {
+                                logger.info("Username and password not both provided, not using credentials");
+                            } else {
+                                String oldURL = getFileURL();
+                                int index = oldURL.indexOf("://");
+                                String firstPart = oldURL.substring(0, index);
+                                String lastPart = oldURL.substring(index + "://".length());
+                                setFileURL(firstPart + "://" + f.getUserName() + ":" + new String(f.getPassword()) + "@"
+                                        + lastPart);
+
+                                setHost(oldURL.substring(0, index + "://".length()));
+                                setPath(oldURL.substring(index + "://".length()));
+                            }
+                            vfsReader = new VFSReader();
+                            new Thread(vfsReader).start();
+                        });
+                    })
+                    .start();
         } else {
-            //starts with protocol:/  but not protocol://
+            // starts with protocol:/  but not protocol://
             String oldURL = getFileURL();
             if (oldURL != null && oldURL.contains(":/") && !oldURL.contains("://")) {
                 int index = oldURL.indexOf(":/");
                 String lastPart = oldURL.substring(index + ":/".length());
                 int passEndIndex = lastPart.indexOf("@");
-                if (passEndIndex > -1) { //we have a username/password
+                if (passEndIndex > -1) { // we have a username/password
                     setHost(oldURL.substring(0, index + ":/".length()));
                     setPath(lastPart.substring(passEndIndex + 1));
                 }
                 vfsReader = new VFSReader();
                 new Thread(vfsReader).start();
             } else if (oldURL != null && oldURL.contains("://")) {
-                //starts with protocol://
+                // starts with protocol://
                 int index = oldURL.indexOf("://");
                 String lastPart = oldURL.substring(index + "://".length());
                 int passEndIndex = lastPart.indexOf("@");
-                if (passEndIndex > -1) { //we have a username/password
+                if (passEndIndex > -1) { // we have a username/password
                     setHost(oldURL.substring(0, index + "://".length()));
                     setPath(lastPart.substring(passEndIndex + 1));
                 }
@@ -326,21 +329,24 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
         private FileObject fileObject;
 
         private boolean isGZip(String fileName) {
-            return fileName.endsWith( ".gz" );
+            return fileName.endsWith(".gz");
         }
 
         public void run() {
-            //thread should end when we're no longer active
+            // thread should end when we're no longer active
             while (reader == null && !terminated) {
                 int atIndex = getFileURL().indexOf("@");
                 int protocolIndex = getFileURL().indexOf("://");
 
-                String loggableFileURL = atIndex > -1 ? getFileURL().substring(0, protocolIndex + "://".length()) + "username:password" + getFileURL().substring(atIndex) : getFileURL();
+                String loggableFileURL = atIndex > -1
+                        ? getFileURL().substring(0, protocolIndex + "://".length()) + "username:password"
+                                + getFileURL().substring(atIndex)
+                        : getFileURL();
                 logger.info("attempting to load file: " + loggableFileURL);
                 try {
                     FileSystemManager fileSystemManager = VFS.getManager();
                     FileSystemOptions opts = new FileSystemOptions();
-                    //if jsch not in classpath, can get NoClassDefFoundError here
+                    // if jsch not in classpath, can get NoClassDefFoundError here
                     try {
                         SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
                     } catch (NoClassDefFoundError ncdfe) {
@@ -350,20 +356,28 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                     synchronized (fileSystemManager) {
                         fileObject = fileSystemManager.resolveFile(getFileURL(), opts);
                         if (fileObject.exists()) {
-                            reader = new InputStreamReader(fileObject.getContent().getInputStream(), "UTF-8");
-                            //now that we have a reader, remove additional portions of the file url (sftp passwords, etc.)
-                            //check to see if the name is a URLFileName..if so, set file name to not include username/pass
+                            reader = new InputStreamReader(
+                                    fileObject.getContent().getInputStream(), "UTF-8");
+                            // now that we have a reader, remove additional portions of the file url (sftp passwords,
+                            // etc.)
+                            // check to see if the name is a URLFileName..if so, set file name to not include
+                            // username/pass
                             if (fileObject.getName() instanceof URLFileName) {
                                 URLFileName urlFileName = (URLFileName) fileObject.getName();
                                 setHost(urlFileName.getHostName());
                                 setPath(urlFileName.getPath());
                             }
                         } else {
-                            logger.info(loggableFileURL + " not available - will re-attempt to load after waiting " + MISSING_FILE_RETRY_MILLIS + " millis");
+                            logger.info(loggableFileURL + " not available - will re-attempt to load after waiting "
+                                    + MISSING_FILE_RETRY_MILLIS + " millis");
                         }
                     }
                 } catch (FileSystemException fse) {
-                    logger.info(loggableFileURL + " not available - may be due to incorrect credentials, but will re-attempt to load after waiting " + MISSING_FILE_RETRY_MILLIS + " millis", fse);
+                    logger.info(
+                            loggableFileURL
+                                    + " not available - may be due to incorrect credentials, but will re-attempt to load after waiting "
+                                    + MISSING_FILE_RETRY_MILLIS + " millis",
+                            fse);
                 } catch (UnsupportedEncodingException e) {
                     logger.info("UTF-8 not available", e);
                 }
@@ -377,7 +391,7 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                 }
             }
             if (terminated) {
-                //shut down while waiting for a file
+                // shut down while waiting for a file
                 return;
             }
             initialize();
@@ -392,17 +406,20 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                     do {
                         FileSystemManager fileSystemManager = VFS.getManager();
                         FileSystemOptions opts = new FileSystemOptions();
-                        //if jsch not in classpath, can get NoClassDefFoundError here
+                        // if jsch not in classpath, can get NoClassDefFoundError here
                         try {
                             SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
                         } catch (NoClassDefFoundError ncdfe) {
                             logger.warn("JSch not on classpath!", ncdfe);
                         }
 
-                        //fileobject was created above, release it and construct a new one
+                        // fileobject was created above, release it and construct a new one
                         synchronized (fileSystemManager) {
                             if (fileObject != null) {
-                                fileObject.getFileSystem().getFileSystemManager().closeFileSystem(fileObject.getFileSystem());
+                                fileObject
+                                        .getFileSystem()
+                                        .getFileSystemManager()
+                                        .closeFileSystem(fileObject.getFileSystem());
                                 fileObject.close();
                                 fileObject = null;
                             }
@@ -410,32 +427,35 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                             fileObject = fileSystemManager.resolveFile(getFileURL(), opts);
                         }
 
-                        //file may not exist..
+                        // file may not exist..
                         boolean fileLarger = false;
                         if (fileObject != null && fileObject.exists()) {
                             try {
-                                //available in vfs as of 30 Mar 2006 - will load but not tail if not available
+                                // available in vfs as of 30 Mar 2006 - will load but not tail if not available
                                 fileObject.refresh();
                             } catch (Error err) {
                                 logger.info(getPath() + " - unable to refresh fileobject", err);
                             }
 
                             if (isGZip(getFileURL())) {
-                                InputStream gzipStream = new GZIPInputStream(fileObject.getContent().getInputStream());
-                                Reader decoder = new InputStreamReader(gzipStream,  "UTF-8");
+                                InputStream gzipStream = new GZIPInputStream(
+                                        fileObject.getContent().getInputStream());
+                                Reader decoder = new InputStreamReader(gzipStream, "UTF-8");
                                 BufferedReader bufferedReader = new BufferedReader(decoder);
                                 process(bufferedReader);
                                 readingFinished = true;
                             }
-                            //could have been truncated or appended to (don't do anything if same size)
+                            // could have been truncated or appended to (don't do anything if same size)
                             if (fileObject.getContent().getSize() < lastFileSize) {
-                                reader = new InputStreamReader(fileObject.getContent().getInputStream(), "UTF-8");
+                                reader = new InputStreamReader(
+                                        fileObject.getContent().getInputStream(), "UTF-8");
                                 logger.debug(getPath() + " was truncated");
-                                lastFileSize = 0; //seek to beginning of file
+                                lastFileSize = 0; // seek to beginning of file
                                 lastFilePointer = 0;
                             } else if (fileObject.getContent().getSize() > lastFileSize) {
                                 fileLarger = true;
-                                RandomAccessContent rac = fileObject.getContent().getRandomAccessContent(RandomAccessMode.READ);
+                                RandomAccessContent rac =
+                                        fileObject.getContent().getRandomAccessContent(RandomAccessMode.READ);
                                 rac.seek(lastFilePointer);
                                 reader = new InputStreamReader(rac.getInputStream(), "UTF-8");
                                 BufferedReader bufferedReader = new BufferedReader(reader);
@@ -453,7 +473,8 @@ public class VFSLogFilePatternReceiver extends LogFilePatternReceiver implements
                                 logger.debug(getPath() + " - unable to close reader", ioe);
                             }
                         } else {
-                            logger.info(getPath() + " - not available - will re-attempt to load after waiting " + getWaitMillis() + " millis");
+                            logger.info(getPath() + " - not available - will re-attempt to load after waiting "
+                                    + getWaitMillis() + " millis");
                         }
 
                         try {

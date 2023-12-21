@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,31 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.xml;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.apache.log4j.spi.Decoder;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-
-import javax.swing.*;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
 import java.io.*;
 import java.net.URL;
 import java.time.Instant;
 import java.util.*;
 import java.util.zip.ZipInputStream;
+import javax.swing.*;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
 import org.apache.log4j.chainsaw.logevents.LocationInfo;
-
+import org.apache.log4j.spi.Decoder;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 /**
  * Decodes JDK 1.4's java.util.logging package events
@@ -48,13 +45,12 @@ import org.apache.log4j.chainsaw.logevents.LocationInfo;
  * @author Paul Smith (psmith@apache.org)
  */
 public class UtilLoggingXMLDecoder implements Decoder {
-    //NOTE: xml section is only handed on first delivery of events
-    //on this first delivery of events, there is no end tag for the log element
+    // NOTE: xml section is only handed on first delivery of events
+    // on this first delivery of events, there is no end tag for the log element
     /**
      * Document prolog.
      */
-    private static final String BEGIN_PART =
-        "<log>";
+    private static final String BEGIN_PART = "<log>";
     /**
      * Document close.
      */
@@ -148,8 +144,7 @@ public class UtilLoggingXMLDecoder implements Decoder {
                 buf.append(END_PART);
             }
 
-            InputSource inputSource =
-                new InputSource(new StringReader(buf.toString()));
+            InputSource inputSource = new InputSource(new StringReader(buf.toString()));
             document = docBuilder.parse(inputSource);
         } catch (Exception e) {
             e.printStackTrace();
@@ -172,16 +167,14 @@ public class UtilLoggingXMLDecoder implements Decoder {
         InputStream inputStream;
         if (isZipFile) {
             inputStream = new ZipInputStream(url.openStream());
-            //move stream to next entry so we can read it
+            // move stream to next entry so we can read it
             ((ZipInputStream) inputStream).getNextEntry();
         } else {
             inputStream = url.openStream();
         }
         if (owner != null) {
-            reader = new LineNumberReader(
-                new InputStreamReader(
-                    new ProgressMonitorInputStream(owner,
-                        "Loading " + url, inputStream), ENCODING));
+            reader = new LineNumberReader(new InputStreamReader(
+                    new ProgressMonitorInputStream(owner, "Loading " + url, inputStream), ENCODING));
         } else {
             reader = new LineNumberReader(new InputStreamReader(inputStream, ENCODING));
         }
@@ -230,23 +223,20 @@ public class UtilLoggingXMLDecoder implements Decoder {
 
             String newDoc;
             String newPartialEvent = null;
-            //separate the string into the last portion ending with </record>
+            // separate the string into the last portion ending with </record>
             // (which will be processed) and the partial event which
             // will be combined and processed in the next section
 
-            //if the document does not contain a record end,
+            // if the document does not contain a record end,
             // append it to the partial event string
             if (document.lastIndexOf(RECORD_END) == -1) {
                 partialEvent = partialEvent + document;
                 return null;
             }
 
-            if (document.lastIndexOf(RECORD_END) + RECORD_END.length()
-                < document.length()) {
-                newDoc = document.substring(0,
-                    document.lastIndexOf(RECORD_END) + RECORD_END.length());
-                newPartialEvent = document.substring(
-                    document.lastIndexOf(RECORD_END) + RECORD_END.length());
+            if (document.lastIndexOf(RECORD_END) + RECORD_END.length() < document.length()) {
+                newDoc = document.substring(0, document.lastIndexOf(RECORD_END) + RECORD_END.length());
+                newPartialEvent = document.substring(document.lastIndexOf(RECORD_END) + RECORD_END.length());
             } else {
                 newDoc = document;
             }
@@ -299,8 +289,7 @@ public class UtilLoggingXMLDecoder implements Decoder {
 
         NodeList eventList = document.getElementsByTagName("record");
 
-        for (int eventIndex = 0; eventIndex < eventList.getLength();
-             eventIndex++) {
+        for (int eventIndex = 0; eventIndex < eventList.getLength(); eventIndex++) {
             Node eventNode = eventList.item(eventIndex);
 
             String logger = null;
@@ -315,8 +304,8 @@ public class UtilLoggingXMLDecoder implements Decoder {
             String lineNumber = "0"; // TODO this is not working
             Hashtable properties = new Hashtable();
 
-            //format of date: 2003-05-04T11:04:52
-            //ignore date or set as a property? using millis in constructor instead
+            // format of date: 2003-05-04T11:04:52
+            // ignore date or set as a property? using millis in constructor instead
             NodeList list = eventNode.getChildNodes();
             int listLength = list.getLength();
 
@@ -399,20 +388,16 @@ public class UtilLoggingXMLDecoder implements Decoder {
             }
 
             LocationInfo info;
-            if ((fileName != null)
-                || (className != null)
-                || (methodName != null)
-                || (lineNumber != null)) {
-                info = new LocationInfo(fileName, className, methodName, 
-                        Integer.parseInt(lineNumber));
+            if ((fileName != null) || (className != null) || (methodName != null) || (lineNumber != null)) {
+                info = new LocationInfo(fileName, className, methodName, Integer.parseInt(lineNumber));
             } else {
                 info = null;
             }
 
-//            ThrowableInformation throwableInfo = null;
-//            if (exception != null) {
-//                throwableInfo = new ThrowableInformation(exception);
-//            }
+            //            ThrowableInformation throwableInfo = null;
+            //            if (exception != null) {
+            //                throwableInfo = new ThrowableInformation(exception);
+            //            }
 
             builder.clear();
             builder.setLogger(logger)
@@ -424,9 +409,7 @@ public class UtilLoggingXMLDecoder implements Decoder {
                     .setNDC(ndc)
                     .setLocationInfo(info);
 
-
             events.add(builder.create());
-
         }
         return events;
     }
@@ -444,9 +427,7 @@ public class UtilLoggingXMLDecoder implements Decoder {
         for (int x = 0; x < nl.getLength(); x++) {
             Node innerNode = nl.item(x);
 
-            if (
-                (innerNode.getNodeType() == Node.TEXT_NODE)
-                    || (innerNode.getNodeType() == Node.CDATA_SECTION_NODE)) {
+            if ((innerNode.getNodeType() == Node.TEXT_NODE) || (innerNode.getNodeType() == Node.CDATA_SECTION_NODE)) {
                 buf.append(innerNode.getNodeValue());
             }
         }

@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,16 +16,16 @@
  */
 package org.apache.log4j.chainsaw.components.elements;
 
-import javax.swing.*;
-import javax.swing.border.BevelBorder;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.SoftBevelBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.net.URL;
+import javax.swing.*;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.SoftBevelBorder;
 
 /**
  * A better button class that has nice roll over effects.
@@ -69,7 +69,7 @@ public class SmallButton extends JButton implements MouseListener {
     }
 
     public KeyStroke getActionAcceleratorKey() {
-        return (KeyStroke)getAction().getValue(Action.ACCELERATOR_KEY);
+        return (KeyStroke) getAction().getValue(Action.ACCELERATOR_KEY);
     }
 
     /**
@@ -105,8 +105,7 @@ public class SmallButton extends JButton implements MouseListener {
      * is called with an action.
      */
     @Override
-    public void mouseClicked(MouseEvent e) {
-    }
+    public void mouseClicked(MouseEvent e) {}
 
     /**
      * {@inheritDoc}
@@ -148,7 +147,7 @@ public class SmallButton extends JButton implements MouseListener {
         setBorder(inactiveBorder);
     }
 
-    static public class Builder {
+    public static class Builder {
         Runnable action;
         String name = "";
 
@@ -168,6 +167,7 @@ public class SmallButton extends JButton implements MouseListener {
             this.action = action;
             return this;
         }
+
         public Builder name(String name) {
             this.name = name;
             return this;
@@ -182,22 +182,27 @@ public class SmallButton extends JButton implements MouseListener {
             this.enabled = true;
             return this;
         }
+
         public Builder disabled() {
             this.enabled = false;
             return this;
         }
+
         public Builder icon(Icon icon) {
             this.icon = icon;
             return this;
         }
+
         public Builder iconUrl(URL iconUrl) {
             this.iconUrl = iconUrl;
             return this;
         }
+
         public Builder smallIconUrl(URL smallIconUrl) {
             this.smallIconUrl = smallIconUrl;
             return this;
         }
+
         public Builder shortDescription(String shortDescription) {
             this.shortDescription = shortDescription;
             return this;
@@ -230,7 +235,7 @@ public class SmallButton extends JButton implements MouseListener {
             }
             if (icon != null) {
                 button.setIcon(icon);
-            } else  if (iconUrl != null) {
+            } else if (iconUrl != null) {
                 button.setIcon(new ImageIcon(iconUrl));
             }
             if (name != null) {

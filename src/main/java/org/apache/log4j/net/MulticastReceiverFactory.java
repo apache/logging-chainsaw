@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -24,7 +24,7 @@ import org.apache.log4j.chainsaw.receiver.ChainsawReceiverFactory;
 /**
  *
  */
-public class MulticastReceiverFactory implements ChainsawReceiverFactory{
+public class MulticastReceiverFactory implements ChainsawReceiverFactory {
 
     @Override
     public ChainsawReceiver create() {
@@ -33,7 +33,7 @@ public class MulticastReceiverFactory implements ChainsawReceiverFactory{
 
     @Override
     public PropertyDescriptor[] getPropertyDescriptors() throws IntrospectionException {
-        return new PropertyDescriptor[]{
+        return new PropertyDescriptor[] {
             new PropertyDescriptor("name", MulticastReceiver.class),
             new PropertyDescriptor("port", MulticastReceiver.class),
             new PropertyDescriptor("address", MulticastReceiver.class),
@@ -49,14 +49,12 @@ public class MulticastReceiverFactory implements ChainsawReceiverFactory{
 
     @Override
     public String getReceiverDocumentation() {
-        return "<html>The multicast recevier has the following parameters:<br/>" +
-                "<ul>" +
-                "<li>port - the port to listen on for incoming data</li>"+
-                "<li>address - the IP address to listen on for incoming data</li>"+
-                "<li>encoding - the encoding of the data(e.g. UTF-8)</li>"+
-                "<li>decoder - the specific decoder to use to decode the data.  Only XML decoding is built-in</li>"+
-                "</ul>"+
-                "</html>";
+        return "<html>The multicast recevier has the following parameters:<br/>" + "<ul>"
+                + "<li>port - the port to listen on for incoming data</li>"
+                + "<li>address - the IP address to listen on for incoming data</li>"
+                + "<li>encoding - the encoding of the data(e.g. UTF-8)</li>"
+                + "<li>decoder - the specific decoder to use to decode the data.  Only XML decoding is built-in</li>"
+                + "</ul>"
+                + "</html>";
     }
-
 }

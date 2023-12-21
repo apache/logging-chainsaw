@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,14 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.chainsaw;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 
 /**
  * CyclicBuffer implementation that is Object generic, and implements the List interface.
@@ -46,8 +44,7 @@ public class CyclicBufferList extends AbstractList implements List {
      */
     public CyclicBufferList(int maxSize) {
         if (maxSize < 1) {
-            throw new IllegalArgumentException(
-                "The maxSize argument (" + maxSize + ") is not a positive integer.");
+            throw new IllegalArgumentException("The maxSize argument (" + maxSize + ") is not a positive integer.");
         }
         this.maxSize = maxSize;
         clear();
@@ -169,8 +166,7 @@ public class CyclicBufferList extends AbstractList implements List {
      */
     public void resize(int newSize) {
         if (newSize < 0) {
-            throw new IllegalArgumentException(
-                "Negative array size [" + newSize + "] not allowed.");
+            throw new IllegalArgumentException("Negative array size [" + newSize + "] not allowed.");
         }
 
         if (newSize == numElems) {
@@ -210,7 +206,5 @@ public class CyclicBufferList extends AbstractList implements List {
         first = 0;
         last = 0;
         numElems = 0;
-
     }
-
 }

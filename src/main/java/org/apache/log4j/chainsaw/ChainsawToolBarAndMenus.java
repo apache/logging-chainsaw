@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,8 +16,13 @@
  */
 package org.apache.log4j.chainsaw;
 
-import org.apache.commons.configuration2.AbstractConfiguration;
-import org.apache.commons.configuration2.event.ConfigurationEvent;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.apache.log4j.chainsaw.components.elements.SmallButton;
 import org.apache.log4j.chainsaw.components.elements.SmallToggleButton;
 import org.apache.log4j.chainsaw.components.logpanel.LogPanel;
@@ -27,14 +32,6 @@ import org.apache.log4j.chainsaw.help.HelpManager;
 import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.chainsaw.logui.LogUI;
 import org.apache.log4j.chainsaw.osx.OSXIntegration;
-
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 
 /**
  * Encapsulates the full Toolbar, and menus and all the actions that can be performed from it.
@@ -117,131 +114,135 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
         createMenuBar();
         createToolbar();
 
-        applicationPreferenceModel.addEventListener(
-            evt -> {
-                if (evt.getPropertyName().equals(ApplicationPreferenceModel.TOOLBAR_VISIBLE)) {
-                    boolean value = (Boolean) evt.getPropertyValue();
-                    toolbar.setVisible(value);
-                }
-            });
+        applicationPreferenceModel.addEventListener(evt -> {
+            if (evt.getPropertyName().equals(ApplicationPreferenceModel.TOOLBAR_VISIBLE)) {
+                boolean value = (Boolean) evt.getPropertyValue();
+                toolbar.setVisible(value);
+            }
+        });
         boolean showToolbar = applicationPreferenceModel.isToolbarVisible();
         toolbar.setVisible(showToolbar);
 
-        logPanelSpecificActions =
-            new Action[]{
-                pauseAction, findNextColorizedEventAction, findPreviousColorizedEventAction,
-                findNextMarkerAction, findPreviousMarkerAction,
-                toggleMarkerAction, clearAllMarkersAction, scrollToTopAction, clearAction,
-                fileMenu.getFileSaveAction(), toggleDetailPaneAction,
-                showPreferencesAction, showColorPanelAction, undockAction,
-                toggleLogTreeAction, toggleScrollToBottomAction, changeModelAction,
-            };
+        logPanelSpecificActions = new Action[] {
+            pauseAction,
+            findNextColorizedEventAction,
+            findPreviousColorizedEventAction,
+            findNextMarkerAction,
+            findPreviousMarkerAction,
+            toggleMarkerAction,
+            clearAllMarkersAction,
+            scrollToTopAction,
+            clearAction,
+            fileMenu.getFileSaveAction(),
+            toggleDetailPaneAction,
+            showPreferencesAction,
+            showColorPanelAction,
+            undockAction,
+            toggleLogTreeAction,
+            toggleScrollToBottomAction,
+            changeModelAction,
+        };
 
-            applicationPreferenceModel.addEventListener(
-            evt -> {
-                if( evt.getPropertyName().equals(ApplicationPreferenceModel.STATUS_BAR_VISIBLE) ){
-                    boolean value = (Boolean) evt.getPropertyValue();
-                    toggleStatusBarCheck.setSelected(value);
-                }
-            });
+        applicationPreferenceModel.addEventListener(evt -> {
+            if (evt.getPropertyName().equals(ApplicationPreferenceModel.STATUS_BAR_VISIBLE)) {
+                boolean value = (Boolean) evt.getPropertyValue();
+                toggleStatusBarCheck.setSelected(value);
+            }
+        });
 
-        applicationPreferenceModel.addEventListener(
-            evt -> {
-                if( evt.getPropertyName().equals(ApplicationPreferenceModel.RECEIVERS_VISIBLE) ){
-                    boolean value = (Boolean) evt.getPropertyValue();
-                    showReceiversButton.setSelected(value);
-                    toggleShowReceiversCheck.setSelected(value);
-                }
-            });
+        applicationPreferenceModel.addEventListener(evt -> {
+            if (evt.getPropertyName().equals(ApplicationPreferenceModel.RECEIVERS_VISIBLE)) {
+                boolean value = (Boolean) evt.getPropertyValue();
+                showReceiversButton.setSelected(value);
+                toggleShowReceiversCheck.setSelected(value);
+            }
+        });
     }
 
     private Action createChangeModelAction() {
-        Action action =
-            new AbstractAction("Use Cyclic", new ImageIcon(ChainsawIcons.REFRESH)) {
-                public void actionPerformed(ActionEvent arg0) {
-                    LogPanel logPanel = logui.getCurrentLogPanel();
-                    logPanel.toggleCyclic();
-                    scanState();
-                }
-            };
+        Action action = new AbstractAction("Use Cyclic", new ImageIcon(ChainsawIcons.REFRESH)) {
+            public void actionPerformed(ActionEvent arg0) {
+                LogPanel logPanel = logui.getCurrentLogPanel();
+                logPanel.toggleCyclic();
+                scanState();
+            }
+        };
 
-        action.putValue(
-            Action.SHORT_DESCRIPTION, "Changes between Cyclic and Unlimited mode.");
+        action.putValue(Action.SHORT_DESCRIPTION, "Changes between Cyclic and Unlimited mode.");
 
         return action;
     }
 
     private Action createToggleLogTreeAction() {
-        Action action =
-            new AbstractAction("Toggle the Logger Tree Pane") {
-                public void actionPerformed(ActionEvent e) {
-                    if (logui.getCurrentLogPanel() != null) {
-                        logui.getCurrentLogPanel().toggleLogTreeVisible();
-                    }
+        Action action = new AbstractAction("Toggle the Logger Tree Pane") {
+            public void actionPerformed(ActionEvent e) {
+                if (logui.getCurrentLogPanel() != null) {
+                    logui.getCurrentLogPanel().toggleLogTreeVisible();
                 }
-            };
+            }
+        };
 
         action.putValue(Action.SHORT_DESCRIPTION, "Toggles the Logger Tree Pane");
         action.putValue("enabled", Boolean.TRUE);
         action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_T);
         action.putValue(
-            Action.ACCELERATOR_KEY,
-            KeyStroke.getKeyStroke(KeyEvent.VK_T, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        action.putValue(
-            Action.SMALL_ICON, new ImageIcon(ChainsawIcons.WINDOW_ICON));
+                Action.ACCELERATOR_KEY,
+                KeyStroke.getKeyStroke(
+                        KeyEvent.VK_T, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        action.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.WINDOW_ICON));
 
         return action;
     }
 
     private Action createScrollToBottomAction() {
-        Action action =
-            new AbstractAction("Toggle Scroll to Bottom") {
-                public void actionPerformed(ActionEvent e) {
-                    if (logui.getCurrentLogPanel() != null) {
-                        logui.getCurrentLogPanel().toggleScrollToBottom();
-                    }
+        Action action = new AbstractAction("Toggle Scroll to Bottom") {
+            public void actionPerformed(ActionEvent e) {
+                if (logui.getCurrentLogPanel() != null) {
+                    logui.getCurrentLogPanel().toggleScrollToBottom();
                 }
-            };
+            }
+        };
 
         action.putValue(Action.SHORT_DESCRIPTION, "Toggles Scroll to Bottom");
         action.putValue("enabled", Boolean.TRUE);
         action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_B);
         action.putValue(
-            Action.ACCELERATOR_KEY,
-            KeyStroke.getKeyStroke(KeyEvent.VK_B, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        action.putValue(
-            Action.SMALL_ICON, new ImageIcon(ChainsawIcons.SCROLL_TO_BOTTOM));
+                Action.ACCELERATOR_KEY,
+                KeyStroke.getKeyStroke(
+                        KeyEvent.VK_B, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        action.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.SCROLL_TO_BOTTOM));
 
         return action;
     }
 
     private Action createScrollToTopAction() {
-        Action action =
-            new AbstractAction("Scroll to top") {
-                public void actionPerformed(ActionEvent e) {
-                    if (logui.getCurrentLogPanel() != null) {
-                        logui.getCurrentLogPanel().scrollToTop();
-                    }
+        Action action = new AbstractAction("Scroll to top") {
+            public void actionPerformed(ActionEvent e) {
+                if (logui.getCurrentLogPanel() != null) {
+                    logui.getCurrentLogPanel().scrollToTop();
                 }
-            };
+            }
+        };
 
         action.putValue(Action.SHORT_DESCRIPTION, "Scroll to top");
         action.putValue("enabled", Boolean.TRUE);
         action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_T);
-        action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_A, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        action.putValue(
+                Action.ACCELERATOR_KEY,
+                KeyStroke.getKeyStroke(
+                        KeyEvent.VK_A, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 
         return action;
     }
 
     private Action createFindNextMarkerAction() {
-        Action action =
-            new AbstractAction("Find next marker") {
-                public void actionPerformed(ActionEvent e) {
-                    if (logui.getCurrentLogPanel() != null) {
-                        logui.getCurrentLogPanel().findNextMarker();
-                    }
+        Action action = new AbstractAction("Find next marker") {
+            public void actionPerformed(ActionEvent e) {
+                if (logui.getCurrentLogPanel() != null) {
+                    logui.getCurrentLogPanel().findNextMarker();
                 }
-            };
+            }
+        };
 
         action.putValue(Action.SHORT_DESCRIPTION, "Find the next marker from the current location");
         action.putValue("enabled", Boolean.TRUE);
@@ -252,14 +253,13 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
     }
 
     private Action createFindPreviousMarkerAction() {
-        Action action =
-            new AbstractAction("Find previous marker") {
-                public void actionPerformed(ActionEvent e) {
-                    if (logui.getCurrentLogPanel() != null) {
-                        logui.getCurrentLogPanel().findPreviousMarker();
-                    }
+        Action action = new AbstractAction("Find previous marker") {
+            public void actionPerformed(ActionEvent e) {
+                if (logui.getCurrentLogPanel() != null) {
+                    logui.getCurrentLogPanel().findPreviousMarker();
                 }
-            };
+            }
+        };
 
         action.putValue(Action.SHORT_DESCRIPTION, "Find the previous marker from the current location");
         action.putValue("enabled", Boolean.TRUE);
@@ -270,39 +270,41 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
     }
 
     private Action createToggleMarkerAction() {
-        Action action =
-            new AbstractAction("Toggle marker") {
-                public void actionPerformed(ActionEvent e) {
-                    if (logui.getCurrentLogPanel() != null) {
-                        logui.getCurrentLogPanel().toggleMarker();
-                    }
+        Action action = new AbstractAction("Toggle marker") {
+            public void actionPerformed(ActionEvent e) {
+                if (logui.getCurrentLogPanel() != null) {
+                    logui.getCurrentLogPanel().toggleMarker();
                 }
-            };
+            }
+        };
 
         action.putValue(Action.SHORT_DESCRIPTION, "Toggle marker for selected row");
         action.putValue("enabled", Boolean.TRUE);
         action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_T);
-        action.putValue(Action.ACCELERATOR_KEY,
-            KeyStroke.getKeyStroke(KeyEvent.VK_F2, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        action.putValue(
+                Action.ACCELERATOR_KEY,
+                KeyStroke.getKeyStroke(
+                        KeyEvent.VK_F2, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 
         return action;
     }
 
     private Action createClearAllMarkersAction() {
-        Action action =
-            new AbstractAction("Clear all markers") {
-                public void actionPerformed(ActionEvent e) {
-                    if (logui.getCurrentLogPanel() != null) {
-                        logui.getCurrentLogPanel().clearAllMarkers();
-                    }
+        Action action = new AbstractAction("Clear all markers") {
+            public void actionPerformed(ActionEvent e) {
+                if (logui.getCurrentLogPanel() != null) {
+                    logui.getCurrentLogPanel().clearAllMarkers();
                 }
-            };
+            }
+        };
 
         action.putValue(Action.SHORT_DESCRIPTION, "Removes all markers");
         action.putValue("enabled", Boolean.TRUE);
         action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_R);
-        action.putValue(Action.ACCELERATOR_KEY,
-            KeyStroke.getKeyStroke(KeyEvent.VK_F2, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | InputEvent.SHIFT_MASK));
+        action.putValue(
+                Action.ACCELERATOR_KEY,
+                KeyStroke.getKeyStroke(
+                        KeyEvent.VK_F2, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | InputEvent.SHIFT_MASK));
 
         return action;
     }
@@ -319,28 +321,28 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
         return menuBar;
     }
 
-    public  JToolBar getToolbar() {
+    public JToolBar getToolbar() {
         return toolbar;
     }
 
     private Action createClearAction() {
-        final Action action =
-            new AbstractAction("Clear") {
-                public void actionPerformed(ActionEvent e) {
-                    LogPanel logPanel = logui.getCurrentLogPanel();
+        final Action action = new AbstractAction("Clear") {
+            public void actionPerformed(ActionEvent e) {
+                LogPanel logPanel = logui.getCurrentLogPanel();
 
-                    if (logPanel == null) {
-                        return;
-                    }
-
-                    logPanel.clearEvents();
+                if (logPanel == null) {
+                    return;
                 }
-            };
+
+                logPanel.clearEvents();
+            }
+        };
 
         action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_C);
         action.putValue(
-            Action.ACCELERATOR_KEY,
-            KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                Action.ACCELERATOR_KEY,
+                KeyStroke.getKeyStroke(
+                        KeyEvent.VK_BACK_SPACE, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         action.putValue(Action.SHORT_DESCRIPTION, "Removes all the events from the current view");
         action.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.DELETE));
 
@@ -348,17 +350,16 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
     }
 
     private Action toggleWelcomeVisibleAction() {
-        final Action action =
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    toggleWelcomeVisibleAction.putValue(Action.NAME, "Welcome tab");
-                    if (menuShowWelcome.isSelected()) {
-                        logui.addWelcomePanel();
-                    } else {
-                        logui.removeWelcomePanel();
-                    }
+        final Action action = new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                toggleWelcomeVisibleAction.putValue(Action.NAME, "Welcome tab");
+                if (menuShowWelcome.isSelected()) {
+                    logui.addWelcomePanel();
+                } else {
+                    logui.removeWelcomePanel();
                 }
-            };
+            }
+        };
 
         action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F1"));
         action.putValue(Action.SHORT_DESCRIPTION, "Toggles the Welcome tab");
@@ -370,8 +371,7 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
 
     private void createMenuBar() {
         JMenuItem menuItemUseRightMouse =
-            new JMenuItem(
-                "Other options available via panel's right mouse button popup menu");
+                new JMenuItem("Other options available via panel's right mouse button popup menu");
         menuItemUseRightMouse.setEnabled(false);
 
         viewMenu.setMnemonic('V');
@@ -383,19 +383,20 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
 
         JCheckBoxMenuItem pause = new JCheckBoxMenuItem(pauseAction);
         JMenuItem menuPrefs = new JMenuItem(showPreferencesAction);
-        menuPrefs.setText(showPreferencesAction.getValue(Action.SHORT_DESCRIPTION).toString());
+        menuPrefs.setText(
+                showPreferencesAction.getValue(Action.SHORT_DESCRIPTION).toString());
 
-        JMenuItem menuCustomExpressionPanel =new JMenuItem(customExpressionPanelAction);
-        menuCustomExpressionPanel.setText(customExpressionPanelAction.getValue(Action.SHORT_DESCRIPTION).toString());
+        JMenuItem menuCustomExpressionPanel = new JMenuItem(customExpressionPanelAction);
+        menuCustomExpressionPanel.setText(
+                customExpressionPanelAction.getValue(Action.SHORT_DESCRIPTION).toString());
 
         JMenuItem menuShowColor = new JMenuItem(showColorPanelAction);
         menuShowColor.setText(
-            showColorPanelAction.getValue(Action.SHORT_DESCRIPTION).toString());
+                showColorPanelAction.getValue(Action.SHORT_DESCRIPTION).toString());
 
         JMenuItem menuUndock = new JMenuItem(undockAction);
 
-        JMenuItem showAppPrefs =
-            new JMenuItem("Show Application-wide Preferences...");
+        JMenuItem showAppPrefs = new JMenuItem("Show Application-wide Preferences...");
 
         showAppPrefs.addActionListener(e -> logui.showApplicationPreferences());
 
@@ -411,13 +412,12 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
 
         toggleScrollToBottomMenuItem.setAction(toggleScrollToBottomAction);
 
-        final Action toggleStatusBarAction =
-            new AbstractAction("Show Status bar") {
-                public void actionPerformed(ActionEvent arg0) {
-                    boolean isSelected = toggleStatusBarCheck.isSelected();
-                    applicationPreferenceModel.setStatusBarVisible(isSelected);
-                }
-            };
+        final Action toggleStatusBarAction = new AbstractAction("Show Status bar") {
+            public void actionPerformed(ActionEvent arg0) {
+                boolean isSelected = toggleStatusBarCheck.isSelected();
+                applicationPreferenceModel.setStatusBarVisible(isSelected);
+            }
+        };
 
         toggleStatusBarAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_B);
         toggleStatusBarCheck.setAction(toggleStatusBarAction);
@@ -470,15 +470,13 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
         about.setMnemonic('A');
         about.addActionListener(e -> logui.showAboutBox());
 
-        Action startTutorial =
-            new AbstractAction("Tutorial...", new ImageIcon(ChainsawIcons.HELP)) {
-                public void actionPerformed(ActionEvent e) {
-                    logui.tutorialFrame.setupTutorial();
-                }
-            };
+        Action startTutorial = new AbstractAction("Tutorial...", new ImageIcon(ChainsawIcons.HELP)) {
+            public void actionPerformed(ActionEvent e) {
+                logui.tutorialFrame.setupTutorial();
+            }
+        };
 
-        startTutorial.putValue(
-            Action.SHORT_DESCRIPTION, "Starts the tutorial process");
+        startTutorial.putValue(Action.SHORT_DESCRIPTION, "Starts the tutorial process");
         helpMenu.add(startTutorial);
 
         JMenu receiverHelp = new JMenu("Receiver JavaDoc");
@@ -500,41 +498,37 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
     }
 
     private Action createPauseAction() {
-        final Action action =
-            new AbstractAction("Pause") {
-                public void actionPerformed(ActionEvent evt) {
-                    LogPanel logPanel = logui.getCurrentLogPanel();
+        final Action action = new AbstractAction("Pause") {
+            public void actionPerformed(ActionEvent evt) {
+                LogPanel logPanel = logui.getCurrentLogPanel();
 
-                    if (logPanel == null) {
-                        return;
-                    }
-
-                    logPanel.setPaused(!logPanel.isPaused());
-                    scanState();
+                if (logPanel == null) {
+                    return;
                 }
-            };
+
+                logPanel.setPaused(!logPanel.isPaused());
+                scanState();
+            }
+        };
 
         action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_P);
         action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F12"));
-        action.putValue(
-            Action.SHORT_DESCRIPTION,
-            "Causes incoming events for this tab to be discarded");
+        action.putValue(Action.SHORT_DESCRIPTION, "Causes incoming events for this tab to be discarded");
         action.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.PAUSE));
 
         return action;
     }
 
     private Action createShowPreferencesAction() {
-        Action showPreferences =
-            new AbstractAction("", ChainsawIcons.ICON_PREFERENCES) {
-                public void actionPerformed(ActionEvent arg0) {
-                    LogPanel logPanel = logui.getCurrentLogPanel();
+        Action showPreferences = new AbstractAction("", ChainsawIcons.ICON_PREFERENCES) {
+            public void actionPerformed(ActionEvent arg0) {
+                LogPanel logPanel = logui.getCurrentLogPanel();
 
-                    if (logPanel != null) {
-                        logPanel.showPreferences();
-                    }
+                if (logPanel != null) {
+                    logPanel.showPreferences();
                 }
-            };
+            }
+        };
 
         showPreferences.putValue(Action.SHORT_DESCRIPTION, "Tab Preferences...");
 
@@ -548,12 +542,11 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
         dialog.setLocationRelativeTo(null);
         dialog.pack();
 
-        Action createExpressionPanel =
-            new AbstractAction("", ChainsawIcons.ICON_HELP) {
-                public void actionPerformed(ActionEvent arg0) {
-                    LogPanel.centerAndSetVisible(dialog);
-                }
-            };
+        Action createExpressionPanel = new AbstractAction("", ChainsawIcons.ICON_HELP) {
+            public void actionPerformed(ActionEvent arg0) {
+                LogPanel.centerAndSetVisible(dialog);
+            }
+        };
 
         createExpressionPanel.putValue(Action.SHORT_DESCRIPTION, "Create tab from expression...   ");
 
@@ -562,16 +555,15 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
     }
 
     private Action createShowColorPanelAction() {
-        Action showColorPanel =
-            new AbstractAction("", ChainsawIcons.ICON_PREFERENCES) {
-                public void actionPerformed(ActionEvent arg0) {
-                    LogPanel logPanel = logui.getCurrentLogPanel();
+        Action showColorPanel = new AbstractAction("", ChainsawIcons.ICON_PREFERENCES) {
+            public void actionPerformed(ActionEvent arg0) {
+                LogPanel logPanel = logui.getCurrentLogPanel();
 
-                    if (logPanel != null) {
-                        logPanel.showColorPreferences();
-                    }
+                if (logPanel != null) {
+                    logPanel.showColorPreferences();
                 }
-            };
+            }
+        };
 
         showColorPanel.putValue(Action.SHORT_DESCRIPTION, "Color settings...");
 
@@ -580,46 +572,42 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
     }
 
     private Action createShowReceiversAction() {
-        final Action action =
-            new AbstractAction("Show Receivers") {
-                public void actionPerformed(ActionEvent arg0) {
-                    // Since this action can be triggered from either a button
-                    // or a check box, get the current value and invert it.
-                    boolean currentValue = applicationPreferenceModel.isReceiversVisible();
-                    applicationPreferenceModel.setReceiversVisible(!currentValue);
-                }
-            };
+        final Action action = new AbstractAction("Show Receivers") {
+            public void actionPerformed(ActionEvent arg0) {
+                // Since this action can be triggered from either a button
+                // or a check box, get the current value and invert it.
+                boolean currentValue = applicationPreferenceModel.isReceiversVisible();
+                applicationPreferenceModel.setReceiversVisible(!currentValue);
+            }
+        };
 
         action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_E);
-        action.putValue(
-            Action.SHORT_DESCRIPTION,
-            "Shows the currently configured Log4j Receivers");
+        action.putValue(Action.SHORT_DESCRIPTION, "Shows the currently configured Log4j Receivers");
         action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F6"));
-        action.putValue(
-            Action.SMALL_ICON, new ImageIcon(ChainsawIcons.ANIM_NET_CONNECT));
+        action.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.ANIM_NET_CONNECT));
         toggleShowReceiversCheck.setAction(action);
 
         return action;
     }
 
     private Action createToggleDetailPaneAction() {
-        Action action =
-            new AbstractAction("Show Detail Pane") {
-                public void actionPerformed(ActionEvent evt) {
-                    LogPanel logPanel = logui.getCurrentLogPanel();
+        Action action = new AbstractAction("Show Detail Pane") {
+            public void actionPerformed(ActionEvent evt) {
+                LogPanel logPanel = logui.getCurrentLogPanel();
 
-                    if (logPanel == null) {
-                        return;
-                    }
-
-                    logPanel.toggleDetailVisible();
+                if (logPanel == null) {
+                    return;
                 }
-            };
+
+                logPanel.toggleDetailVisible();
+            }
+        };
 
         action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_D);
         action.putValue(
-            Action.ACCELERATOR_KEY,
-            KeyStroke.getKeyStroke(KeyEvent.VK_D, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                Action.ACCELERATOR_KEY,
+                KeyStroke.getKeyStroke(
+                        KeyEvent.VK_D, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         action.putValue(Action.SHORT_DESCRIPTION, "Hides/Shows the Detail Pane");
         action.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.INFO));
 
@@ -630,13 +618,12 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
         /**
          * -== Begin of Show/Hide toolbar action
          */
-        final Action action =
-            new AbstractAction("Show Toolbar") {
-                public void actionPerformed(ActionEvent e) {
-                    boolean isSelected = toggleShowToolbarCheck.isSelected();
-                    applicationPreferenceModel.setToolbarVisible(isSelected);
-                }
-            };
+        final Action action = new AbstractAction("Show Toolbar") {
+            public void actionPerformed(ActionEvent e) {
+                boolean isSelected = toggleShowToolbarCheck.isSelected();
+                applicationPreferenceModel.setToolbarVisible(isSelected);
+            }
+        };
 
         action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_T);
 
@@ -664,34 +651,41 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
         pauseButton.setAction(pauseAction);
         pauseButton.setText("");
 
-        pauseButton.getActionMap().put(
-            pauseAction.getValue(Action.NAME), pauseAction);
+        pauseButton.getActionMap().put(pauseAction.getValue(Action.NAME), pauseAction);
 
         toggleCyclicButton.setAction(changeModelAction);
         toggleCyclicButton.setText(null);
 
         detailPaneButton.setAction(toggleDetailPaneAction);
         detailPaneButton.setText(null);
-        detailPaneButton.getActionMap().put(
-            toggleDetailPaneAction.getValue(Action.NAME), toggleDetailPaneAction);
-        detailPaneButton.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-            KeyStroke.getKeyStroke(KeyEvent.VK_D, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()),
-            toggleDetailPaneAction.getValue(Action.NAME));
+        detailPaneButton.getActionMap().put(toggleDetailPaneAction.getValue(Action.NAME), toggleDetailPaneAction);
+        detailPaneButton
+                .getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                .put(
+                        KeyStroke.getKeyStroke(
+                                KeyEvent.VK_D, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()),
+                        toggleDetailPaneAction.getValue(Action.NAME));
 
         logTreePaneButton.setAction(toggleLogTreeAction);
-        logTreePaneButton.getActionMap().put(
-            toggleLogTreeAction.getValue(Action.NAME), toggleLogTreeAction);
-        logTreePaneButton.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-            KeyStroke.getKeyStroke(KeyEvent.VK_T, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()),
-            toggleLogTreeAction.getValue(Action.NAME));
+        logTreePaneButton.getActionMap().put(toggleLogTreeAction.getValue(Action.NAME), toggleLogTreeAction);
+        logTreePaneButton
+                .getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                .put(
+                        KeyStroke.getKeyStroke(
+                                KeyEvent.VK_T, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()),
+                        toggleLogTreeAction.getValue(Action.NAME));
         logTreePaneButton.setText(null);
 
         scrollToBottomButton.setAction(toggleScrollToBottomAction);
-        scrollToBottomButton.getActionMap().put(
-            toggleScrollToBottomAction.getValue(Action.NAME), toggleScrollToBottomAction);
-        scrollToBottomButton.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-            KeyStroke.getKeyStroke(KeyEvent.VK_B, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()),
-            toggleScrollToBottomAction.getValue(Action.NAME));
+        scrollToBottomButton
+                .getActionMap()
+                .put(toggleScrollToBottomAction.getValue(Action.NAME), toggleScrollToBottomAction);
+        scrollToBottomButton
+                .getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                .put(
+                        KeyStroke.getKeyStroke(
+                                KeyEvent.VK_B, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()),
+                        toggleScrollToBottomAction.getValue(Action.NAME));
         scrollToBottomButton.setText(null);
 
         SmallButton prefsButton = new SmallButton(showPreferencesAction);
@@ -723,20 +717,17 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
     }
 
     private Action createUndockAction() {
-        Action action =
-            new AbstractAction("Undock", ChainsawIcons.ICON_UNDOCK) {
-                public void actionPerformed(ActionEvent arg0) {
-                    LogPanel logPanel = logui.getCurrentLogPanel();
+        Action action = new AbstractAction("Undock", ChainsawIcons.ICON_UNDOCK) {
+            public void actionPerformed(ActionEvent arg0) {
+                LogPanel logPanel = logui.getCurrentLogPanel();
 
-                    if (logPanel != null) {
-                        logPanel.undock();
-                    }
+                if (logPanel != null) {
+                    logPanel.undock();
                 }
-            };
+            }
+        };
 
-        action.putValue(
-            Action.SHORT_DESCRIPTION,
-            "Undocks the current Log panel into its own window");
+        action.putValue(Action.SHORT_DESCRIPTION, "Undocks the current Log panel into its own window");
 
         //	TODO think of some mnemonics and HotKeys for this action
         return action;
@@ -746,8 +737,7 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
         boolean showReceiversByDefault = applicationPreferenceModel.isReceiversVisible();
 
         toggleStatusBarCheck.setSelected(logui.isStatusBarVisible());
-        toggleShowReceiversCheck.setSelected(
-            showReceiversByDefault);
+        toggleShowReceiversCheck.setSelected(showReceiversByDefault);
 
         logTreePaneButton.setSelected(logui.isLogTreePanelVisible());
         LogPanel panel = logui.getCurrentLogPanel();
@@ -758,8 +748,7 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
             scrollToBottomButton.setSelected(false);
             toggleDetailMenuItem.setSelected(false);
         }
-        showReceiversButton.setSelected(
-            showReceiversByDefault);
+        showReceiversButton.setSelected(showReceiversByDefault);
         menuShowWelcome.setSelected(logui.getTabbedPane().containsWelcomePanel());
 
         /**
@@ -794,52 +783,54 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
     }
 
     private Action getFindNextColorizedEventAction() {
-        final Action action =
-            new AbstractAction("Find next colorized event") {
-                public void actionPerformed(ActionEvent e) {
-                    LogPanel p = logui.getCurrentLogPanel();
-                    if (p != null) {
-                        p.findNextColorizedEvent();
-                    }
+        final Action action = new AbstractAction("Find next colorized event") {
+            public void actionPerformed(ActionEvent e) {
+                LogPanel p = logui.getCurrentLogPanel();
+                if (p != null) {
+                    p.findNextColorizedEvent();
                 }
-            };
+            }
+        };
         action.putValue(Action.SHORT_DESCRIPTION, "Find the next colorized event from the current location");
         action.putValue("enabled", Boolean.TRUE);
         action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_N);
-        action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        action.putValue(
+                Action.ACCELERATOR_KEY,
+                KeyStroke.getKeyStroke(
+                        KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 
         return action;
     }
 
     private Action getFindPreviousColorizedEventAction() {
-        final Action action =
-            new AbstractAction("Find previous colorized event") {
-                public void actionPerformed(ActionEvent e) {
-                    LogPanel p = logui.getCurrentLogPanel();
+        final Action action = new AbstractAction("Find previous colorized event") {
+            public void actionPerformed(ActionEvent e) {
+                LogPanel p = logui.getCurrentLogPanel();
 
-                    if (p != null) {
-                        p.findPreviousColorizedEvent();
-                    }
+                if (p != null) {
+                    p.findPreviousColorizedEvent();
                 }
-            };
+            }
+        };
         action.putValue(Action.SHORT_DESCRIPTION, "Find the next colorized event from the current location");
         action.putValue("enabled", Boolean.TRUE);
         action.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_P);
-        action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        action.putValue(
+                Action.ACCELERATOR_KEY,
+                KeyStroke.getKeyStroke(
+                        KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 
         return action;
     }
 
     private JPanel getCustomExpressionPanel() {
         final JPanel panel = new JPanel(new BorderLayout());
-        panel.add(
-            new JLabel("Enter expression for new tab:  "), BorderLayout.NORTH);
+        panel.add(new JLabel("Enter expression for new tab:  "), BorderLayout.NORTH);
 
         final JEditorPane entryField = new JEditorPane();
         entryField.setPreferredSize(new Dimension(350, 75));
         JTextComponentFormatter.applySystemFontAndSize(entryField);
-        entryField.addKeyListener(
-            new ExpressionRuleContext(new FilterModel(), entryField));
+        entryField.addKeyListener(new ExpressionRuleContext(new FilterModel(), entryField));
         panel.add(entryField, BorderLayout.CENTER);
 
         JButton ok = new JButton(" OK ");
@@ -850,22 +841,18 @@ public class ChainsawToolBarAndMenus implements ChangeListener {
         lowerPanel.add(close);
         panel.add(lowerPanel, BorderLayout.SOUTH);
 
-        ok.addActionListener(
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent evt) {
-                    logui.createCustomExpressionLogPanel(entryField.getText());
-                    SwingUtilities.getAncestorOfClass(JDialog.class, panel).setVisible(
-                        false);
-                }
-            });
+        ok.addActionListener(new AbstractAction() {
+            public void actionPerformed(ActionEvent evt) {
+                logui.createCustomExpressionLogPanel(entryField.getText());
+                SwingUtilities.getAncestorOfClass(JDialog.class, panel).setVisible(false);
+            }
+        });
 
-        close.addActionListener(
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent evt) {
-                    SwingUtilities.getAncestorOfClass(JDialog.class, panel).setVisible(
-                        false);
-                }
-            });
+        close.addActionListener(new AbstractAction() {
+            public void actionPerformed(ActionEvent evt) {
+                SwingUtilities.getAncestorOfClass(JDialog.class, panel).setVisible(false);
+            }
+        });
 
         return panel;
     }

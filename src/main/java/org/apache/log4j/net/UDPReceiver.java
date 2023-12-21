@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.net;
 
 import java.io.IOException;
@@ -22,12 +21,11 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.List;
-import org.apache.log4j.chainsaw.receiver.ChainsawReceiverSkeleton;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiverSkeleton;
 import org.apache.log4j.spi.Decoder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 
 /**
  * Receive LoggingEvents encoded with an XMLLayout, convert the XML data to a
@@ -40,7 +38,7 @@ public class UDPReceiver extends ChainsawReceiverSkeleton implements PortBased {
     private UDPReceiverThread receiverThread;
     private String encoding;
 
-    //default to log4j xml decoder
+    // default to log4j xml decoder
     private String decoder = "org.apache.log4j.xml.XMLDecoder";
     private Decoder decoderImpl;
     private boolean closed = false;
@@ -54,7 +52,6 @@ public class UDPReceiver extends ChainsawReceiverSkeleton implements PortBased {
      * The MulticastDNS zone advertised by a UDPReceiver
      */
     public static final String ZONE = "_log4j_xml_udp_receiver.local.";
-
 
     public int getPort() {
         return port;
@@ -150,8 +147,8 @@ public class UDPReceiver extends ChainsawReceiverSkeleton implements PortBased {
                 try {
                     socket.receive(p);
 
-                    //this string constructor which accepts a charset throws an exception if it is
-                    //null
+                    // this string constructor which accepts a charset throws an exception if it is
+                    // null
                     String data;
                     if (encoding == null) {
                         data = new String(p.getData(), 0, p.getLength());
@@ -160,17 +157,17 @@ public class UDPReceiver extends ChainsawReceiverSkeleton implements PortBased {
                     }
 
                     List<ChainsawLoggingEvent> v = decoderImpl.decodeEvents(data);
-                    for( ChainsawLoggingEvent evt : v ){
+                    for (ChainsawLoggingEvent evt : v) {
                         append(evt);
                     }
                 } catch (SocketException se) {
-                    //disconnected
+                    // disconnected
                 } catch (IOException ioe) {
                     ioe.printStackTrace();
                 }
             }
 
-            //LogLog.debug(UDPReceiver.this.getName() + "'s thread is ending.");
+            // LogLog.debug(UDPReceiver.this.getName() + "'s thread is ending.");
         }
     }
 }

@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,29 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/*
- */
 package org.apache.log4j.chainsaw.components.logpanel;
 
-import org.apache.log4j.chainsaw.components.loggernamepanel.LoggerNameListener;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
+import java.util.*;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
-import java.util.*;
-
+import org.apache.log4j.chainsaw.components.loggernamepanel.LoggerNameListener;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A TreeModel that represents the Loggers for a given LogPanel
  *
  * @author Paul Smith &lt;psmith@apache.org&gt;
  */
-public class LogPanelLoggerTreeModel extends DefaultTreeModel
-    implements LoggerNameListener {
+public class LogPanelLoggerTreeModel extends DefaultTreeModel implements LoggerNameListener {
     private final Map<String, LogPanelTreeNode> fullPackageMap = new HashMap<>();
     private final Logger logger = LogManager.getLogger(LogPanelLoggerTreeModel.class);
 
@@ -48,9 +42,8 @@ public class LogPanelLoggerTreeModel extends DefaultTreeModel
      * @see org.apache.log4j.chainsaw.components.loggernamepanel.LoggerNameListener#loggerNameAdded(java.lang.String)
      */
     public void loggerNameAdded(final String loggerName) {
-        //invoke later, not on current EDT
-        SwingUtilities.invokeLater(
-            () -> addLoggerNameInDispatchThread(loggerName));
+        // invoke later, not on current EDT
+        SwingUtilities.invokeLater(() -> addLoggerNameInDispatchThread(loggerName));
     }
 
     public void reset() {
@@ -81,8 +74,7 @@ public class LogPanelLoggerTreeModel extends DefaultTreeModel
             Enumeration enumeration = current.children();
 
             while (enumeration.hasMoreElements()) {
-                DefaultMutableTreeNode child =
-                    (DefaultMutableTreeNode) enumeration.nextElement();
+                DefaultMutableTreeNode child = (DefaultMutableTreeNode) enumeration.nextElement();
                 String childName = child.getUserObject().toString();
 
                 if (childName.equals(packageName)) {
@@ -129,8 +121,7 @@ public class LogPanelLoggerTreeModel extends DefaultTreeModel
                 changedIndices[j] = j;
             }
 
-            nodesWereInserted(
-                changedNode, new int[]{changedNode.getIndex(newChild)});
+            nodesWereInserted(changedNode, new int[] {changedNode.getIndex(newChild)});
             nodesChanged(changedNode, changedIndices);
             current = newChild;
         }
@@ -170,8 +161,7 @@ public class LogPanelLoggerTreeModel extends DefaultTreeModel
     }
 
     private static class LogPanelTreeNode extends DefaultMutableTreeNode {
-        protected static Comparator nodeComparator =
-            (o1, o2) -> o1.toString().compareToIgnoreCase(o2.toString());
+        protected static Comparator nodeComparator = (o1, o2) -> o1.toString().compareToIgnoreCase(o2.toString());
 
         private LogPanelTreeNode(String logName) {
             super(logName);

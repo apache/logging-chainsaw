@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,25 +16,24 @@
  */
 package org.apache.log4j.chainsaw.components.tutorial;
 
-import org.apache.log4j.chainsaw.ChainsawConstants;
-import org.apache.log4j.chainsaw.ChainsawStatusBar;
-import org.apache.log4j.chainsaw.JTextComponentFormatter;
-import org.apache.log4j.chainsaw.logui.LogUI;
-import org.apache.log4j.chainsaw.ReceiverEventListener;
-import org.apache.log4j.chainsaw.components.elements.SmallButton;
-import org.apache.log4j.chainsaw.components.elements.SmallToggleButton;
-import org.apache.log4j.chainsaw.icons.ChainsawIcons;
-import org.apache.log4j.chainsaw.receiver.ChainsawReceiver;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import javax.swing.*;
-import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.List;
+import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
+import org.apache.log4j.chainsaw.ChainsawConstants;
+import org.apache.log4j.chainsaw.ChainsawStatusBar;
+import org.apache.log4j.chainsaw.JTextComponentFormatter;
+import org.apache.log4j.chainsaw.ReceiverEventListener;
+import org.apache.log4j.chainsaw.components.elements.SmallButton;
+import org.apache.log4j.chainsaw.components.elements.SmallToggleButton;
+import org.apache.log4j.chainsaw.icons.ChainsawIcons;
+import org.apache.log4j.chainsaw.logui.LogUI;
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiver;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class TutorialFrame extends JFrame {
     public static final String LABEL_TUTORIAL_STARTED = "TutorialStarted";
@@ -45,7 +44,11 @@ public class TutorialFrame extends JFrame {
     private final List<ReceiverEventListener> receiverEventListeners;
     private final LogUI logUI;
 
-    public TutorialFrame(List<ChainsawReceiver> receivers, List<ReceiverEventListener> receiverEventListeners, LogUI logUI, ChainsawStatusBar statusBar) {
+    public TutorialFrame(
+            List<ChainsawReceiver> receivers,
+            List<ReceiverEventListener> receiverEventListeners,
+            LogUI logUI,
+            ChainsawStatusBar statusBar) {
         super("Chainsaw Tutorial");
         this.receivers = receivers;
         this.receiverEventListeners = receiverEventListeners;
@@ -55,24 +58,24 @@ public class TutorialFrame extends JFrame {
     }
 
     public void setupTutorial() {
-        SwingUtilities.invokeLater(
-            () -> {
-                Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-                setLocation(0, getLocation().y);
+        SwingUtilities.invokeLater(() -> {
+            Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+            setLocation(0, getLocation().y);
 
-                double chainsawwidth = 0.7;
-                double tutorialwidth = 1 - chainsawwidth;
-                setSize((int) (screen.width * chainsawwidth), getSize().height);
-                invalidate();
-                validate();
+            double chainsawwidth = 0.7;
+            double tutorialwidth = 1 - chainsawwidth;
+            setSize((int) (screen.width * chainsawwidth), getSize().height);
+            invalidate();
+            validate();
 
-                Dimension size = getSize();
-                Point loc = getLocation();
-                setSize((int) (screen.width * tutorialwidth), size.height);
-                setLocation(loc.x + size.width, loc.y);
-                setVisible(true);
-            });
+            Dimension size = getSize();
+            Point loc = getLocation();
+            setSize((int) (screen.width * tutorialwidth), size.height);
+            setLocation(loc.x + size.width, loc.y);
+            setVisible(true);
+        });
     }
+
     public void createTutorialFrame(ChainsawStatusBar statusBar) {
         Container container = getContentPane();
         container.setLayout(new BorderLayout());
@@ -98,52 +101,51 @@ public class TutorialFrame extends JFrame {
         final JToolBar tutorialToolbar = createTutorialToolbar(startTutorial, stopTutorial);
 
         container.add(tutorialToolbar, BorderLayout.NORTH);
-        tutorialArea.addHyperlinkListener(
-            e -> {
-                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                    if (e.getDescription().equals("StartTutorial")) {
-                        startTutorial.actionPerformed(null);
-                    } else if (e.getDescription().equals("StopTutorial")) {
-                        stopTutorial.actionPerformed(null);
-                    } else {
-                        try {
-                            tutorialArea.setPage(e.getURL());
-                        } catch (IOException e1) {
-                            statusBar.setMessage("Failed to change URL for tutorial");
-                            logger.error("Failed to change the URL for the Tutorial", e1);
-                        }
+        tutorialArea.addHyperlinkListener(e -> {
+            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                if (e.getDescription().equals("StartTutorial")) {
+                    startTutorial.actionPerformed(null);
+                } else if (e.getDescription().equals("StopTutorial")) {
+                    stopTutorial.actionPerformed(null);
+                } else {
+                    try {
+                        tutorialArea.setPage(e.getURL());
+                    } catch (IOException e1) {
+                        statusBar.setMessage("Failed to change URL for tutorial");
+                        logger.error("Failed to change the URL for the Tutorial", e1);
                     }
                 }
-            });
+            }
+        });
     }
 
     private Action createStopTutorialAction(Action startTutorial) {
         final Action stopTutorial =
-            new AbstractAction(
-                "Stop Tutorial", new ImageIcon(ChainsawIcons.ICON_STOP_RECEIVER)) {
-                public void actionPerformed(ActionEvent e) {
-                    if (
-                        JOptionPane.showConfirmDialog(
-                            null,
-                            "This will stop all of the \"Generator\" receivers used in the Tutorial, but leave any other Receiver untouched.  Is that ok?",
-                            "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                        new Thread(
-                            () -> {
-                                for( ChainsawReceiver rx : receivers){
-                                    if( rx instanceof Generator){
-                                        rx.shutdown();
-                                    }
-                                }
-                            }).start();
-                        setEnabled(false);
-                        startTutorial.putValue(LABEL_TUTORIAL_STARTED, Boolean.FALSE);
+                new AbstractAction("Stop Tutorial", new ImageIcon(ChainsawIcons.ICON_STOP_RECEIVER)) {
+                    public void actionPerformed(ActionEvent e) {
+                        if (JOptionPane.showConfirmDialog(
+                                        null,
+                                        "This will stop all of the \"Generator\" receivers used in the Tutorial, but leave any other Receiver untouched.  Is that ok?",
+                                        "Confirm",
+                                        JOptionPane.YES_NO_OPTION)
+                                == JOptionPane.YES_OPTION) {
+                            new Thread(() -> {
+                                        for (ChainsawReceiver rx : receivers) {
+                                            if (rx instanceof Generator) {
+                                                rx.shutdown();
+                                            }
+                                        }
+                                    })
+                                    .start();
+                            setEnabled(false);
+                            startTutorial.putValue(LABEL_TUTORIAL_STARTED, Boolean.FALSE);
+                        }
                     }
-                }
-            };
+                };
 
         stopTutorial.putValue(
-            Action.SHORT_DESCRIPTION,
-            "Removes all of the Tutorials Generator Receivers, leaving all other Receivers untouched");
+                Action.SHORT_DESCRIPTION,
+                "Removes all of the Tutorials Generator Receivers, leaving all other Receivers untouched");
 
         stopTutorial.setEnabled(false);
         return stopTutorial;
@@ -151,46 +153,45 @@ public class TutorialFrame extends JFrame {
 
     private Action createStartTutorialAction() {
         final Action startTutorial =
-            new AbstractAction(
-                "Start Tutorial", new ImageIcon(ChainsawIcons.ICON_RESUME_RECEIVER)) {
-                public void actionPerformed(ActionEvent e) {
-                    if (
-                        JOptionPane.showConfirmDialog(
-                            null,
-                            "This will start 3 \"Generator\" receivers for use in the Tutorial.  Is that ok?",
-                            "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                        // Create and start generators
-                        Generator[] generators = {
-                            new Generator("Generator 1"),
-                            new Generator("Generator 2"),
-                            new Generator("Generator 3"),
-                        };
+                new AbstractAction("Start Tutorial", new ImageIcon(ChainsawIcons.ICON_RESUME_RECEIVER)) {
+                    public void actionPerformed(ActionEvent e) {
+                        if (JOptionPane.showConfirmDialog(
+                                        null,
+                                        "This will start 3 \"Generator\" receivers for use in the Tutorial.  Is that ok?",
+                                        "Confirm",
+                                        JOptionPane.YES_NO_OPTION)
+                                == JOptionPane.YES_OPTION) {
+                            // Create and start generators
+                            Generator[] generators = {
+                                new Generator("Generator 1"),
+                                new Generator("Generator 2"),
+                                new Generator("Generator 3"),
+                            };
 
-                        for( Generator gen : generators ){
-                            logUI.addReceiver(gen);
-                            gen.start();
+                            for (Generator gen : generators) {
+                                logUI.addReceiver(gen);
+                                gen.start();
+                            }
+
+                            putValue(LABEL_TUTORIAL_STARTED, Boolean.TRUE);
+                        } else {
+                            putValue(LABEL_TUTORIAL_STARTED, Boolean.FALSE);
                         }
-
-                        putValue(LABEL_TUTORIAL_STARTED, Boolean.TRUE);
-                    } else {
-                        putValue(LABEL_TUTORIAL_STARTED, Boolean.FALSE);
                     }
-                }
-            };
+                };
         startTutorial.putValue(
-            Action.SHORT_DESCRIPTION,
-            "Begins the Tutorial, starting up some Generator Receivers so you can see Chainsaw in action");
+                Action.SHORT_DESCRIPTION,
+                "Begins the Tutorial, starting up some Generator Receivers so you can see Chainsaw in action");
         return startTutorial;
     }
 
     private JToolBar createTutorialToolbar(Action startTutorial, Action stopTutorial) {
         final SmallToggleButton startButton = new SmallToggleButton(startTutorial);
-        PropertyChangeListener pcl =
-            evt -> {
-                stopTutorial.setEnabled(
+        PropertyChangeListener pcl = evt -> {
+            stopTutorial.setEnabled(
                     startTutorial.getValue(LABEL_TUTORIAL_STARTED).equals(Boolean.TRUE));
-                startButton.setSelected(stopTutorial.isEnabled());
-            };
+            startButton.setSelected(stopTutorial.isEnabled());
+        };
 
         startTutorial.addPropertyChangeListener(pcl);
         stopTutorial.addPropertyChangeListener(pcl);
@@ -202,8 +203,8 @@ public class TutorialFrame extends JFrame {
             @Override
             public void receiverRemoved(ChainsawReceiver rx1) {
                 int count = 0;
-                for( ChainsawReceiver rx : receivers){
-                    if( rx instanceof Generator ){
+                for (ChainsawReceiver rx : receivers) {
+                    if (rx instanceof Generator) {
                         count++;
                     }
                 }

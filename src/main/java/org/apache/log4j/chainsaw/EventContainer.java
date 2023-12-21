@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,15 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.chainsaw;
-
-import org.apache.log4j.chainsaw.components.loggernamepanel.LoggerNameModel;
-import org.apache.log4j.rule.Rule;
 
 import java.beans.PropertyChangeListener;
 import java.util.List;
-
+import org.apache.log4j.chainsaw.components.loggernamepanel.LoggerNameModel;
+import org.apache.log4j.rule.Rule;
 
 /**
  * To allow pluggable TableModel implementations for Chainsaw, this interface has been factored out.
@@ -43,8 +40,7 @@ public interface EventContainer extends SortTableModel, LoggerNameModel {
 
     void addPropertyChangeListener(PropertyChangeListener l);
 
-    void addPropertyChangeListener(
-        String propertyName, PropertyChangeListener l);
+    void addPropertyChangeListener(String propertyName, PropertyChangeListener l);
 
     /**
      * Adds a NewKeyListener to be notified when unique Key (Property keys)

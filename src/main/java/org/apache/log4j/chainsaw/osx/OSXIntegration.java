@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,9 +16,8 @@
  */
 package org.apache.log4j.chainsaw.osx;
 
-import org.apache.log4j.chainsaw.logui.LogUI;
-
 import java.awt.Desktop;
+import org.apache.log4j.chainsaw.logui.LogUI;
 
 /**
  * This class leverages the 'Desktop' awt API in order to follow Mac-specific UI guidelines.
@@ -33,27 +32,21 @@ public class OSXIntegration {
 
     public static void init(final LogUI logUI) {
         if (desktop.isSupported(Desktop.Action.APP_ABOUT)) {
-            desktop.setAboutHandler(e ->
-                logUI.showAboutBox()
-            );
+            desktop.setAboutHandler(e -> logUI.showAboutBox());
         }
 
         if (desktop.isSupported(Desktop.Action.APP_PREFERENCES)) {
-            desktop.setPreferencesHandler(e ->
-                logUI.showApplicationPreferences()
-            );
+            desktop.setPreferencesHandler(e -> logUI.showApplicationPreferences());
         }
 
         if (desktop.isSupported(Desktop.Action.APP_QUIT_HANDLER)) {
             desktop.setQuitHandler((e, r) -> {
-                    if (
-                        logUI.exit()) {
-                        r.performQuit();
-                    } else {
-                        r.cancelQuit();
-                    }
+                if (logUI.exit()) {
+                    r.performQuit();
+                } else {
+                    r.cancelQuit();
                 }
-            );
+            });
         }
     }
 }

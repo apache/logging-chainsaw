@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,20 +16,17 @@
  */
 package org.apache.log4j.xml;
 
-import junit.framework.TestCase;
+import static junit.framework.TestCase.assertEquals;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.nio.CharBuffer;
 import java.util.Vector;
-import java.net.URL;
-
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import static junit.framework.TestCase.assertEquals;
 
 /**
  * Tests for XMLDecoder.
@@ -37,8 +34,7 @@ import static junit.framework.TestCase.assertEquals;
 @Ignore
 public class XMLDecoderTest {
 
-    public String getStringFromResource(final String resourceName,
-                                        final int maxSize) throws Exception {
+    public String getStringFromResource(final String resourceName, final int maxSize) throws Exception {
         InputStream is = XMLDecoderTest.class.getResourceAsStream(resourceName);
         if (is == null) {
             throw new FileNotFoundException(resourceName);
@@ -46,7 +42,8 @@ public class XMLDecoderTest {
         InputStreamReader reader = new InputStreamReader(is, "UTF-8");
         CharBuffer cb = CharBuffer.allocate(maxSize);
 
-        while (reader.read(cb) != -1) ;
+        while (reader.read(cb) != -1)
+            ;
 
         cb.flip();
         return cb.toString();

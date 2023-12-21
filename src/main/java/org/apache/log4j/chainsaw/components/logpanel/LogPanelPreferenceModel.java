@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,20 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/*
- */
 package org.apache.log4j.chainsaw.components.logpanel;
 
+import java.util.*;
+import javax.swing.table.TableColumn;
 import org.apache.commons.configuration2.AbstractConfiguration;
 import org.apache.commons.configuration2.event.ConfigurationEvent;
 import org.apache.commons.configuration2.event.EventListener;
 import org.apache.log4j.chainsaw.ChainsawConstants;
 import org.apache.log4j.chainsaw.layout.DefaultLayoutFactory;
 import org.apache.log4j.helpers.Constants;
-
-import javax.swing.table.TableColumn;
-import java.util.*;
 
 /**
  * Used to encapsulate all the preferences for a given LogPanel
@@ -81,14 +77,27 @@ public class LogPanelPreferenceModel {
 
     private static final String conversionPatternDefault = DefaultLayoutFactory.getDefaultPatternLayout();
 
-    private static final List<String> defaultOrderedColumnNames = List.of(ChainsawConstants.ID_COL_NAME,
-        ChainsawConstants.TIMESTAMP_COL_NAME, ChainsawConstants.LOG4J_MARKER_COL_NAME,
-        ChainsawConstants.LEVEL_COL_NAME, ChainsawConstants.LOGGER_COL_NAME, ChainsawConstants.MESSAGE_COL_NAME);
+    private static final List<String> defaultOrderedColumnNames = List.of(
+            ChainsawConstants.ID_COL_NAME,
+            ChainsawConstants.TIMESTAMP_COL_NAME,
+            ChainsawConstants.LOG4J_MARKER_COL_NAME,
+            ChainsawConstants.LEVEL_COL_NAME,
+            ChainsawConstants.LOGGER_COL_NAME,
+            ChainsawConstants.MESSAGE_COL_NAME);
 
-    private static final Map<String, Integer> defaultOrderedColumnNamesAndWidths =
-        Map.of(ChainsawConstants.ID_COL_NAME, 75, ChainsawConstants.TIMESTAMP_COL_NAME, 100,
-            ChainsawConstants.LOG4J_MARKER_COL_NAME, 120, ChainsawConstants.LEVEL_COL_NAME, 75,
-            ChainsawConstants.LOGGER_COL_NAME, 125, ChainsawConstants.MESSAGE_COL_NAME, 650);
+    private static final Map<String, Integer> defaultOrderedColumnNamesAndWidths = Map.of(
+            ChainsawConstants.ID_COL_NAME,
+            75,
+            ChainsawConstants.TIMESTAMP_COL_NAME,
+            100,
+            ChainsawConstants.LOG4J_MARKER_COL_NAME,
+            120,
+            ChainsawConstants.LEVEL_COL_NAME,
+            75,
+            ChainsawConstants.LOGGER_COL_NAME,
+            125,
+            ChainsawConstants.MESSAGE_COL_NAME,
+            650);
 
     public LogPanelPreferenceModel(AbstractConfiguration tabConfig) {
         this.tabConfig = tabConfig;

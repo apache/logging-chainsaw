@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -17,16 +17,6 @@
 package org.apache.log4j.chainsaw;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.apache.log4j.chainsaw.helper.SwingHelper;
-import org.apache.log4j.chainsaw.prefs.SettingsManager;
-import org.apache.log4j.net.UDPReceiver;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import javax.swing.*;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -37,7 +27,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Locale;
-
+import javax.swing.*;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
+import org.apache.log4j.chainsaw.helper.SwingHelper;
+import org.apache.log4j.chainsaw.prefs.SettingsManager;
+import org.apache.log4j.net.UDPReceiver;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A panel providing receiver configuration options
@@ -49,17 +47,17 @@ class ReceiverConfigurationPanel extends JPanel {
 
     private final PanelModel panelModel;
 
-    //network receiver widgets
+    // network receiver widgets
     private JComboBox<String> networkReceiverPortComboBox;
     private JComboBox<String> networkReceiverClassNameComboBox;
     private DefaultComboBoxModel<String> networkReceiverClassNameComboBoxModel;
     private DefaultComboBoxModel<String> networkReceiverPortComboBoxModel;
 
-    //log4j config receiver widgets
+    // log4j config receiver widgets
     private JButton browseLog4jConfigButton;
     private JTextField log4jConfigURLTextField;
 
-    //logfile receiver widgets
+    // logfile receiver widgets
     private JButton browseLogFileButton;
     private JComboBox<String> logFileFormatTypeComboBox;
 
@@ -69,19 +67,19 @@ class ReceiverConfigurationPanel extends JPanel {
     private DefaultComboBoxModel<String> logFileFormatComboBoxModel;
     private DefaultComboBoxModel<String> logFileFormatTimestampFormatComboBoxModel;
 
-    //use existing configuration widgets
+    // use existing configuration widgets
     private JButton browseForAnExistingConfigurationButton;
     private DefaultComboBoxModel<String> existingConfigurationComboBoxModel;
     private JComboBox<String> existingConfigurationComboBox;
 
-    //don't warn again widgets
+    // don't warn again widgets
     private JCheckBox dontwarnIfNoReceiver;
 
     private JButton saveButton;
     private JButton okButton;
     private JButton cancelButton;
 
-    //radiobutton widgets
+    // radiobutton widgets
     private JRadioButton log4jConfigReceiverRadioButton;
     private JRadioButton logFileReceiverRadioButton;
     private JRadioButton networkReceiverRadioButton;
@@ -97,9 +95,9 @@ class ReceiverConfigurationPanel extends JPanel {
     private final JPanel dontWarnAndOKPanel = buildDontWarnAndOKPanel();
     private final JPanel bottomDescriptionPanel = buildBottomDescriptionPanel();
 
-    //set by LogUI to handle hiding of the dialog
+    // set by LogUI to handle hiding of the dialog
     private ActionListener completionActionListener;
-    //used as frame for file open dialogs
+    // used as frame for file open dialogs
     private Container dialog;
 
     ReceiverConfigurationPanel(SettingsManager settingsManager) {
@@ -110,7 +108,8 @@ class ReceiverConfigurationPanel extends JPanel {
         buttonGroup = new ButtonGroup();
 
         lowerPanel = new JPanel(new BorderLayout());
-        lowerPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEtchedBorder(), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        lowerPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEtchedBorder(), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
         lowerPanel.setPreferredSize(new Dimension(600, 200));
         lowerPanel.setMinimumSize(new Dimension(600, 200));
 
@@ -233,13 +232,18 @@ class ReceiverConfigurationPanel extends JPanel {
         okButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 panelModel.setCancelled(false);
-                if (logFileFormatComboBox.getSelectedItem() != null && !(logFileFormatComboBox.getSelectedItem().toString().trim().isEmpty())) {
-                    panelModel.setLogFormat(logFileFormatComboBox.getSelectedItem().toString());
+                if (logFileFormatComboBox.getSelectedItem() != null
+                        && !(logFileFormatComboBox
+                                .getSelectedItem()
+                                .toString()
+                                .trim()
+                                .isEmpty())) {
+                    panelModel.setLogFormat(
+                            logFileFormatComboBox.getSelectedItem().toString());
                 }
                 completionActionListener.actionPerformed(new ActionEvent(this, -1, "ok"));
             }
         });
-
 
         saveButton.addActionListener(new ActionListener() {
             @SuppressFBWarnings // TODO: loading files like this is dangerous - at least in web. see if we can do better
@@ -294,7 +298,7 @@ class ReceiverConfigurationPanel extends JPanel {
 
         networkReceiverClassNameComboBoxModel = new DefaultComboBoxModel<>();
         networkReceiverClassNameComboBoxModel.addElement(UDPReceiver.class.getName());
-//        networkReceiverClassNameComboBoxModel.addElement(JsonReceiver.class.getName());
+        //        networkReceiverClassNameComboBoxModel.addElement(JsonReceiver.class.getName());
 
         networkReceiverClassNameComboBox = new JComboBox<>(networkReceiverClassNameComboBoxModel);
 
@@ -333,14 +337,13 @@ class ReceiverConfigurationPanel extends JPanel {
                         log4jConfigURLTextField.setText(url.toExternalForm());
                     }
                 } catch (Exception ex) {
-                    logger.error(
-                        "Error browsing for log4j config file", ex);
+                    logger.error("Error browsing for log4j config file", ex);
                 }
             }
         });
 
         browseLog4jConfigButton.setToolTipText(
-            "Shows a File Open dialog to allow you to find a log4j configuration file");
+                "Shows a File Open dialog to allow you to find a log4j configuration file");
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
         c.gridx = 0;
@@ -363,7 +366,6 @@ class ReceiverConfigurationPanel extends JPanel {
         c.fill = GridBagConstraints.HORIZONTAL;
         panel.add(log4jConfigURLTextField, c);
 
-
         return panel;
     }
 
@@ -378,8 +380,7 @@ class ReceiverConfigurationPanel extends JPanel {
                         logFileURLTextField.setText(item);
                     }
                 } catch (Exception ex) {
-                    logger.error(
-                        "Error browsing for log file", ex);
+                    logger.error("Error browsing for log file", ex);
                 }
             }
         });
@@ -510,19 +511,17 @@ class ReceiverConfigurationPanel extends JPanel {
         existingConfigurationComboBox.setToolTipText("Previously loaded configurations can be chosen here");
         existingConfigurationComboBox.setEditable(true);
 
-        existingConfigurationComboBox.getEditor().getEditorComponent().addFocusListener(
-            new FocusListener() {
-                public void focusGained(FocusEvent e) {
-                    selectAll();
-                }
+        existingConfigurationComboBox.getEditor().getEditorComponent().addFocusListener(new FocusListener() {
+            public void focusGained(FocusEvent e) {
+                selectAll();
+            }
 
-                private void selectAll() {
-                    existingConfigurationComboBox.getEditor().selectAll();
-                }
+            private void selectAll() {
+                existingConfigurationComboBox.getEditor().selectAll();
+            }
 
-                public void focusLost(FocusEvent e) {
-                }
-            });
+            public void focusLost(FocusEvent e) {}
+        });
 
         browseForAnExistingConfigurationButton = new JButton(new AbstractAction(" Open File... ") {
             public void actionPerformed(ActionEvent e) {
@@ -532,18 +531,16 @@ class ReceiverConfigurationPanel extends JPanel {
 
                     if (url != null) {
                         existingConfigurationComboBoxModel.addElement(url.toExternalForm());
-                        existingConfigurationComboBox.getModel().setSelectedItem(
-                            url);
+                        existingConfigurationComboBox.getModel().setSelectedItem(url);
                     }
                 } catch (Exception ex) {
-                    logger.error(
-                        "Error browsing for Configuration file", ex);
+                    logger.error("Error browsing for Configuration file", ex);
                 }
             }
         });
 
         browseForAnExistingConfigurationButton.setToolTipText(
-            "Shows a File Open dialog to allow you to find a configuration file");
+                "Shows a File Open dialog to allow you to find a configuration file");
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
         c.gridx = 0;
@@ -565,7 +562,6 @@ class ReceiverConfigurationPanel extends JPanel {
         c.weightx = 0.5;
         c.fill = GridBagConstraints.HORIZONTAL;
         panel.add(existingConfigurationComboBox, c);
-
 
         return panel;
     }
@@ -613,7 +609,7 @@ class ReceiverConfigurationPanel extends JPanel {
      * or null if they cancelled.
      */
     private URL browseConfig() throws MalformedURLException {
-        //hiding and showing the dialog to avoid focus issues with 2 dialogs
+        // hiding and showing the dialog to avoid focus issues with 2 dialogs
         dialog.setVisible(false);
         File selectedFile = SwingHelper.promptForFile(dialog, null, "Choose a Chainsaw configuration file", true);
         URL result = null;
@@ -635,7 +631,7 @@ class ReceiverConfigurationPanel extends JPanel {
      * or null if they cancelled.
      */
     private URL browseFile(String title, boolean loadDialog) throws MalformedURLException {
-        //hiding and showing the dialog to avoid focus issues with 2 dialogs
+        // hiding and showing the dialog to avoid focus issues with 2 dialogs
         dialog.setVisible(false);
         File selectedFile = SwingHelper.promptForFile(dialog, null, title, loadDialog);
         URL result = null;
@@ -671,7 +667,7 @@ class ReceiverConfigurationPanel extends JPanel {
     class PanelModel {
 
         private File file;
-        //default to cancelled
+        // default to cancelled
         private boolean cancelled = true;
         private String lastLogFormat;
         private File saveConfigFile;
@@ -687,12 +683,14 @@ class ReceiverConfigurationPanel extends JPanel {
 
         int getNetworkReceiverPort() {
 
-            return Integer.parseInt(networkReceiverPortComboBoxModel.getSelectedItem().toString());
+            return Integer.parseInt(
+                    networkReceiverPortComboBoxModel.getSelectedItem().toString());
         }
 
-//        Class<? extends Receiver> getNetworkReceiverClass() throws ClassNotFoundException {
-//            return Class.forName(networkReceiverClassNameComboBoxModel.getSelectedItem().toString()).asSubclass(Receiver.class);
-//        }
+        //        Class<? extends Receiver> getNetworkReceiverClass() throws ClassNotFoundException {
+        //            return
+        // Class.forName(networkReceiverClassNameComboBoxModel.getSelectedItem().toString()).asSubclass(Receiver.class);
+        //        }
 
         boolean isLoadConfig() {
 
@@ -710,7 +708,8 @@ class ReceiverConfigurationPanel extends JPanel {
         URL getConfigToLoad() {
 
             try {
-                return new URL(existingConfigurationComboBoxModel.getSelectedItem().toString());
+                return new URL(
+                        existingConfigurationComboBoxModel.getSelectedItem().toString());
             } catch (MalformedURLException e) {
                 return null;
             }

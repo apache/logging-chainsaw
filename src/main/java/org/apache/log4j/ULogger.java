@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j;
-
 
 /**
  * A proxy for org.slf4j.ULogger.  In slf4j implementing builds, this
@@ -26,7 +24,6 @@ package org.apache.log4j;
  * @author Curt Arnold
  */
 public interface ULogger {
-
 
     /**
      * Is the logger instance enabled for the DEBUG level?
@@ -41,7 +38,6 @@ public interface ULogger {
      * @param msg - the message object to be logged
      */
     void debug(Object msg);
-
 
     /**
      * Log a parameterized message object at the DEBUG level.
@@ -76,7 +72,6 @@ public interface ULogger {
      * @param t   the exception to log, including its stack trace.
      */
     void debug(Object msg, Throwable t);
-
 
     /**
      * Is the logger instance enabled for the INFO level?
@@ -126,7 +121,6 @@ public interface ULogger {
      */
     void info(Object msg, Throwable t);
 
-
     /**
      * Is the logger instance enabled for the WARN level?
      *
@@ -175,7 +169,6 @@ public interface ULogger {
      */
     void warn(Object msg, Throwable t);
 
-
     /**
      * Is the logger instance enabled for the ERROR level?
      *
@@ -223,5 +216,4 @@ public interface ULogger {
      * @param t   the exception to log, including its stack trace.
      */
     void error(Object msg, Throwable t);
-
 }

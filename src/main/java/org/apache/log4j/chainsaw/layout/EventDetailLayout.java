@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.chainsaw.layout;
 
 import java.time.ZoneId;
@@ -25,9 +24,7 @@ import org.apache.log4j.chainsaw.ChainsawConstants;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
 import org.apache.log4j.chainsaw.logevents.LocationInfo;
-import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.apache.logging.log4j.core.lookup.StrSubstitutor;
-
 
 /**
  * This layout is used for formatting HTML text for use inside
@@ -56,11 +53,11 @@ public class EventDetailLayout {
         return m_conversionPattern;
     }
 
-    public void setDateformat(DateTimeFormatter dateFormat){
+    public void setDateformat(DateTimeFormatter dateFormat) {
         m_dateFormat = dateFormat;
     }
 
-    public DateTimeFormatter getDateformat(){
+    public DateTimeFormatter getDateformat() {
         return m_dateFormat;
     }
 
@@ -181,12 +178,8 @@ public class EventDetailLayout {
 
         build.setMessage(escape(event.m_message));
         LocationInfo li = event.m_locationInfo;
-        if( li != null ){
-            li = new LocationInfo(escape(li.fileName),
-                    escape(li.className),
-                    escape(li.methodName),
-                    li.lineNumber
-            );
+        if (li != null) {
+            li = new LocationInfo(escape(li.fileName), escape(li.className), escape(li.methodName), li.lineNumber);
             build.setLocationInfo(li);
         }
 
@@ -197,17 +190,17 @@ public class EventDetailLayout {
      * @param event
      * @return
      */
-//    private static Hashtable<String, String> formatProperties(LoggingEvent event) {
-//        Set keySet = event.getPropertyKeySet();
-//        Hashtable<String, String> hashTable = new Hashtable<>();
-//
-//        for (Object key : keySet) {
-//            Object value = event.getProperty(key.toString());
-//            hashTable.put(escape(key.toString()), escape(value.toString()));
-//        }
-//
-//        return hashTable;
-//    }
+    //    private static Hashtable<String, String> formatProperties(LoggingEvent event) {
+    //        Set keySet = event.getPropertyKeySet();
+    //        Hashtable<String, String> hashTable = new Hashtable<>();
+    //
+    //        for (Object key : keySet) {
+    //            Object value = event.getProperty(key.toString());
+    //            hashTable.put(escape(key.toString()), escape(value.toString()));
+    //        }
+    //
+    //        return hashTable;
+    //    }
 
     /* (non-Javadoc)
      * @see org.apache.log4j.Layout#ignoresThrowable()
@@ -219,8 +212,7 @@ public class EventDetailLayout {
     /* (non-Javadoc)
      * @see org.apache.log4j.spi.OptionHandler#activateOptions()
      */
-    public void activateOptions() {
-    }
+    public void activateOptions() {}
 
     /* (non-Javadoc)
      * @see org.apache.log4j.Layout#format(java.io.Writer, org.apache.log4j.spi.LoggingEvent)
@@ -228,7 +220,7 @@ public class EventDetailLayout {
     public String format(final ChainsawLoggingEvent event) {
         ChainsawLoggingEvent newEvent = copyForHTML(event);
 
-        Map<String,String> valuesMap = new HashMap<>();
+        Map<String, String> valuesMap = new HashMap<>();
         valuesMap.put("level", event.m_level.toString());
         valuesMap.put("logger", event.m_logger);
         valuesMap.put("time", event.m_timestamp.atZone(ZoneId.systemDefault()).format(m_dateFormat));
@@ -241,8 +233,8 @@ public class EventDetailLayout {
         String resolvedString = sub.replace(m_conversionPattern);
 
         return resolvedString;
-//        synchronized (patternLayout) {
-//            return patternLayout.format(newEvent);
-//        }
+        //        synchronized (patternLayout) {
+        //            return patternLayout.format(newEvent);
+        //        }
     }
 }

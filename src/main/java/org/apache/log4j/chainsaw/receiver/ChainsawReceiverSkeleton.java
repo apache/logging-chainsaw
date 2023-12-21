@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,60 +16,57 @@
  */
 package org.apache.log4j.chainsaw.receiver;
 
-import org.apache.log4j.chainsaw.ChainsawEventBatchListener;
-import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
-import org.apache.log4j.chainsaw.logevents.Level;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.log4j.chainsaw.ChainsawEventBatchListener;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.log4j.chainsaw.logevents.Level;
 
 /**
  *
  */
 public abstract class ChainsawReceiverSkeleton implements ChainsawReceiver {
-    
+
     /**
      * Name of this plugin.
      */
     protected String name = "Receiver";
 
-
     /**
      * This is a delegate that does all the PropertyChangeListener
      * support.
      */
-    private PropertyChangeSupport propertySupport =
-        new PropertyChangeSupport(this);
-    
+    private PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
+
     /**
      * Threshold level.
      */
     protected Level thresholdLevel = Level.TRACE;
-    
+
     private List<ChainsawEventBatchListener> m_eventListeners;
     private WorkQueue m_worker;
     private final Object mutex = new Object();
     private int m_sleepInterval = 1000;
     private boolean m_paused = false;
-    
-    public ChainsawReceiverSkeleton(){
+
+    public ChainsawReceiverSkeleton() {
         m_eventListeners = new ArrayList<>();
         m_worker = new WorkQueue();
     }
 
     @Override
     public void addChainsawEventBatchListener(ChainsawEventBatchListener listen) {
-        if( listen != null ){
-            m_eventListeners.add( listen );
+        if (listen != null) {
+            m_eventListeners.add(listen);
         }
     }
 
     @Override
     public void removeEventBatchListener(ChainsawEventBatchListener listen) {
-        if( listen != null ){
-            m_eventListeners.remove( listen );
+        if (listen != null) {
+            m_eventListeners.remove(listen);
         }
     }
 
@@ -92,7 +89,7 @@ public abstract class ChainsawReceiverSkeleton implements ChainsawReceiver {
 
     @Override
     public void setName(String name) {
-        if( this.name.equals(name) ){
+        if (this.name.equals(name)) {
             return;
         }
 
@@ -120,7 +117,7 @@ public abstract class ChainsawReceiverSkeleton implements ChainsawReceiver {
     public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         propertySupport.removePropertyChangeListener(propertyName, listener);
     }
-    
+
     @Override
     public int getQueueInterval() {
         return m_sleepInterval;
@@ -130,28 +127,28 @@ public abstract class ChainsawReceiverSkeleton implements ChainsawReceiver {
     public void setQueueInterval(int interval) {
         m_sleepInterval = interval;
     }
-    
+
     @Override
-    public void setPaused(boolean paused){
+    public void setPaused(boolean paused) {
         m_paused = paused;
     }
-    
+
     @Override
-    public boolean getPaused(){
+    public boolean getPaused() {
         return m_paused;
     }
-    
+
     /**
      * Whenever a new log event comes in, create a ChainsawLoggingEvent and call
      * this method.  If this receiver is paused, discard the event.
-     * 
-     * @param event 
+     *
+     * @param event
      */
-    public void append(final ChainsawLoggingEvent event){
-        if( m_paused ) return;
+    public void append(final ChainsawLoggingEvent event) {
+        if (m_paused) return;
         m_worker.enqueue(event);
     }
-    
+
     /**
      * Queue of Events are placed in here, which are picked up by an asychronous
      * thread. The WorkerThread looks for events once a second and processes all
@@ -196,7 +193,7 @@ public abstract class ChainsawReceiverSkeleton implements ChainsawReceiver {
                     synchronized (mutex) {
                         try {
                             while ((queue.size() == 0)) {
-//                                setDataRate(0);
+                                //                                setDataRate(0);
                                 mutex.wait();
                             }
                             if (queue.size() > 0) {
@@ -207,10 +204,10 @@ public abstract class ChainsawReceiverSkeleton implements ChainsawReceiver {
                         }
                     }
 
-                    for( ChainsawEventBatchListener evtListner : m_eventListeners ){
+                    for (ChainsawEventBatchListener evtListner : m_eventListeners) {
                         evtListner.receiveChainsawEventBatch(innerList);
                     }
-                    
+
                     if (getQueueInterval() > 1000) {
                         try {
                             synchronized (this) {
@@ -221,14 +218,14 @@ public abstract class ChainsawReceiverSkeleton implements ChainsawReceiver {
                     } else {
                         Thread.yield();
                     }
-//                    if (size == 0) {
-//                        setDataRate(0.0);
-//                    } else {
-//                        long timeEnd = System.currentTimeMillis();
-//                        long diffInSeconds = (timeEnd - timeStart) / 1000;
-//                        double rate = (((double) size) / diffInSeconds);
-//                        setDataRate(rate);
-//                    }
+                    //                    if (size == 0) {
+                    //                        setDataRate(0.0);
+                    //                    } else {
+                    //                        long timeEnd = System.currentTimeMillis();
+                    //                        long diffInSeconds = (timeEnd - timeStart) / 1000;
+                    //                        double rate = (((double) size) / diffInSeconds);
+                    //                        setDataRate(rate);
+                    //                    }
                 }
             }
         }

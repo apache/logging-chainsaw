@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,11 +16,10 @@
  */
 package org.apache.log4j.chainsaw;
 
+import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.table.TableColumn;
-import java.awt.*;
-
 
 /**
  * A ListCellRenderer that display a check box if the value
@@ -31,10 +30,8 @@ import java.awt.*;
  *
  * @author Paul Smith
  */
-public abstract class CheckListCellRenderer extends JCheckBox
-    implements ListCellRenderer {
-    private final Border noFocusBorder =
-        BorderFactory.createEmptyBorder(1, 1, 1, 1);
+public abstract class CheckListCellRenderer extends JCheckBox implements ListCellRenderer {
+    private final Border noFocusBorder = BorderFactory.createEmptyBorder(1, 1, 1, 1);
 
     /**
      *
@@ -49,17 +46,12 @@ public abstract class CheckListCellRenderer extends JCheckBox
      * @see javax.swing.ListCellRenderer#getListCellRendererComponent(javax.swing.JList, java.lang.Object, int, boolean, boolean)
      */
     public Component getListCellRendererComponent(
-        JList list, Object value, int index, boolean isSelected,
-        boolean cellHasFocus) {
+            JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         setText(((TableColumn) value).getHeaderValue().toString());
-        setBackground(
-            isSelected ? list.getSelectionBackground() : list.getBackground());
-        setForeground(
-            isSelected ? list.getSelectionForeground() : list.getForeground());
+        setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
+        setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
         setFont(list.getFont());
-        setBorder(
-            cellHasFocus ? UIManager.getBorder("List.focusCellHighlightBorder")
-                : noFocusBorder);
+        setBorder(cellHasFocus ? UIManager.getBorder("List.focusCellHighlightBorder") : noFocusBorder);
 
         setSelected(isSelected(value));
         return this;

@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,16 +16,15 @@
  */
 package org.apache.log4j.chainsaw.components.elements;
 
-import javax.swing.*;
-import javax.swing.border.BevelBorder;
-import javax.swing.border.Border;
-import javax.swing.border.SoftBevelBorder;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-
+import javax.swing.*;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.Border;
+import javax.swing.border.SoftBevelBorder;
 
 /**
  * A better button class that has nice roll over effects.
@@ -38,8 +37,7 @@ import java.awt.event.MouseListener;
  * @author Pavel Vorobeiv
  * @author Paul Smith &lt;psmith@apache.org&gt;
  */
-public class SmallToggleButton extends JToggleButton implements ItemListener,
-    MouseListener {
+public class SmallToggleButton extends JToggleButton implements ItemListener, MouseListener {
     protected Border m_highlighted = new SoftBevelBorder(BevelBorder.RAISED);
     protected Border m_raised = BorderFactory.createEmptyBorder(3, 3, 3, 3);
     protected Border m_inactive = m_raised;
@@ -104,8 +102,7 @@ public class SmallToggleButton extends JToggleButton implements ItemListener,
      *
      * @param e DOCUMENT ME!
      */
-    public void mouseClicked(MouseEvent e) {
-    }
+    public void mouseClicked(MouseEvent e) {}
 
     /**
      * DOCUMENT ME!

@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,15 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/*
- */
 package org.apache.log4j.rule;
 
 import java.beans.PropertyChangeListener;
 import java.util.Map;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
-
 
 /**
  * A Rule evaluates to true of false given a LoggingEvent object, and can notify
@@ -33,31 +29,31 @@ import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
  * @author Scott Deboy (sdeboy@apache.org)
  */
 public interface Rule {
-  /**
-   * Returns true if this implementation of the rule accepts the LoggingEvent,
-   * or false if not.
-   *
-   * <p>What True/False means can be client-specific.
-   *
-   * @param e LoggingEvent this instance will evaluate
-   * @param matches a Map of event field keys to Sets of matching strings (may be null) which will be
-   * updated during execution of this method to include field and string matches based on the rule
-   * evaluation results 
-   * @return true if this Rule instance accepts the event, otherwise false.
-   */
-  boolean evaluate(ChainsawLoggingEvent e, Map matches);
+    /**
+     * Returns true if this implementation of the rule accepts the LoggingEvent,
+     * or false if not.
+     *
+     * <p>What True/False means can be client-specific.
+     *
+     * @param e LoggingEvent this instance will evaluate
+     * @param matches a Map of event field keys to Sets of matching strings (may be null) which will be
+     * updated during execution of this method to include field and string matches based on the rule
+     * evaluation results
+     * @return true if this Rule instance accepts the event, otherwise false.
+     */
+    boolean evaluate(ChainsawLoggingEvent e, Map matches);
 
-  /**
-   * Adds a PropertyChangeListener to this instance, which is notified when
-   * underlying Rule information has changed.
-   * (there are no specific property name events).
-   * @param listener listener
-   */
-  void addPropertyChangeListener(PropertyChangeListener listener);
+    /**
+     * Adds a PropertyChangeListener to this instance, which is notified when
+     * underlying Rule information has changed.
+     * (there are no specific property name events).
+     * @param listener listener
+     */
+    void addPropertyChangeListener(PropertyChangeListener listener);
 
-  /**
-   * Removes a known PropertyChangeListener from this Rule.
-   * @param listener listener
-   */
-  void removePropertyChangeListener(PropertyChangeListener listener);
+    /**
+     * Removes a known PropertyChangeListener from this Rule.
+     * @param listener listener
+     */
+    void removePropertyChangeListener(PropertyChangeListener listener);
 }

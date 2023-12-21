@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,15 +16,14 @@
  */
 package org.apache.log4j.chainsaw.help;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.log4j.chainsaw.ChainsawConstants;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.URL;
+import org.apache.log4j.chainsaw.ChainsawConstants;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Singleton help manager where objects can register to display
@@ -42,21 +41,20 @@ public final class HelpManager {
     private final HelpLocator helpLocator = new HelpLocator();
 
     private HelpManager() {
-//    TODO setup all the base URLs in the default.properties and configure in ApplicationPreferenceModel
+        //    TODO setup all the base URLs in the default.properties and configure in ApplicationPreferenceModel
 
         try {
             if (System.getProperty("log4j.chainsaw.localDocs") != null) {
-                logger.info("Adding HelpLocator for localDocs property={}",
-                    System.getProperty("log4j.chainsaw.localDocs"));
+                logger.info(
+                        "Adding HelpLocator for localDocs property={}", System.getProperty("log4j.chainsaw.localDocs"));
                 helpLocator.installLocator(new URL(System.getProperty("log4j.chainsaw.localDocs")));
             } else if (new File("docs/api").exists()) {
                 File dir = new File("docs/api");
                 logger.info("Detected Local JavaDocs at {}", dir);
                 helpLocator.installLocator(dir.toURI().toURL());
             } else {
-                logger.warn(
-                    "Could not find any local JavaDocs, you might want to consider running 'ant javadoc'. " +
-                        "The release version will be able to access Javadocs from the Apache website.");
+                logger.warn("Could not find any local JavaDocs, you might want to consider running 'ant javadoc'. "
+                        + "The release version will be able to access Javadocs from the Apache website.");
             }
         } catch (Exception e) {
             logger.error(e);

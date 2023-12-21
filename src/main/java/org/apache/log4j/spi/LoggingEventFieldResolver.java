@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,19 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.spi;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.Locale;
+import java.util.Map;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
-
 import org.apache.log4j.rule.InFixToPostFix;
-
 
 /**
  * A singleton helper utility which accepts a field name
@@ -55,7 +50,7 @@ import org.apache.log4j.rule.InFixToPostFix;
  * THREAD        thread                                    String
  * PROP.keyName  entry in the Property hashtable           String
  *               mapped to the key [keyName]
-
+ *
  * NOTE:  the values for the 'keyName' portion of the MDC and PROP mappings must
  * be an exact match to the key in the hashTable (case sensitive).
  *
@@ -70,83 +65,82 @@ public final class LoggingEventFieldResolver {
     /**
      * Keyword list.
      */
-  public static final List KEYWORD_LIST = new ArrayList();
+    public static final List KEYWORD_LIST = new ArrayList();
     /**
      * LOGGER string literal.
      */
-  public static final String LOGGER_FIELD = "LOGGER";
+    public static final String LOGGER_FIELD = "LOGGER";
     /**
      * LEVEL string literal.
      */
-  public static final String LEVEL_FIELD = "LEVEL";
+    public static final String LEVEL_FIELD = "LEVEL";
     /**
      * CLASS string literal.
      */
-  public static final String CLASS_FIELD = "CLASS";
+    public static final String CLASS_FIELD = "CLASS";
     /**
      * FILE string literal.
      */
-  public static final String FILE_FIELD = "FILE";
+    public static final String FILE_FIELD = "FILE";
     /**
      * LINE string literal.
      */
-  public static final String LINE_FIELD = "LINE";
+    public static final String LINE_FIELD = "LINE";
     /**
      * METHOD string literal.
      */
-  public static final String METHOD_FIELD = "METHOD";
+    public static final String METHOD_FIELD = "METHOD";
     /**
      * MSG string literal.
      */
-  public static final String MSG_FIELD = "MSG";
+    public static final String MSG_FIELD = "MSG";
     /**
      * NDC string literal.
      */
-  public static final String NDC_FIELD = "NDC";
+    public static final String NDC_FIELD = "NDC";
     /**
      * EXCEPTION string literal.
      */
-  public static final String EXCEPTION_FIELD = "EXCEPTION";
+    public static final String EXCEPTION_FIELD = "EXCEPTION";
     /**
      * TIMESTAMP string literal.
      */
-  public static final String TIMESTAMP_FIELD = "TIMESTAMP";
+    public static final String TIMESTAMP_FIELD = "TIMESTAMP";
     /**
      * THREAD string literal.
      */
-  public static final String THREAD_FIELD = "THREAD";
+    public static final String THREAD_FIELD = "THREAD";
     /**
      * PROP. string literal.
      */
-  public static final String PROP_FIELD = "PROP.";
+    public static final String PROP_FIELD = "PROP.";
     /**
      * empty string literal.
      */
-  public static final String EMPTY_STRING = "";
+    public static final String EMPTY_STRING = "";
     /**
      * LOGGER string literal.
      */
-  private static final LoggingEventFieldResolver RESOLVER =
-    new LoggingEventFieldResolver();
+    private static final LoggingEventFieldResolver RESOLVER = new LoggingEventFieldResolver();
 
     /**
      * Create new instance.
      */
-  private LoggingEventFieldResolver() {
-    super();
-    KEYWORD_LIST.add(LOGGER_FIELD);
-    KEYWORD_LIST.add(LEVEL_FIELD);
-    KEYWORD_LIST.add(CLASS_FIELD);
-    KEYWORD_LIST.add(FILE_FIELD);
-    KEYWORD_LIST.add(LINE_FIELD);
-    KEYWORD_LIST.add(METHOD_FIELD);
-    KEYWORD_LIST.add(MSG_FIELD);
-    KEYWORD_LIST.add(NDC_FIELD);
-    KEYWORD_LIST.add(EXCEPTION_FIELD);
-    KEYWORD_LIST.add(TIMESTAMP_FIELD);
-    KEYWORD_LIST.add(THREAD_FIELD);
-    KEYWORD_LIST.add(PROP_FIELD);
-  }
+    private LoggingEventFieldResolver() {
+        super();
+        KEYWORD_LIST.add(LOGGER_FIELD);
+        KEYWORD_LIST.add(LEVEL_FIELD);
+        KEYWORD_LIST.add(CLASS_FIELD);
+        KEYWORD_LIST.add(FILE_FIELD);
+        KEYWORD_LIST.add(LINE_FIELD);
+        KEYWORD_LIST.add(METHOD_FIELD);
+        KEYWORD_LIST.add(MSG_FIELD);
+        KEYWORD_LIST.add(NDC_FIELD);
+        KEYWORD_LIST.add(EXCEPTION_FIELD);
+        KEYWORD_LIST.add(TIMESTAMP_FIELD);
+        KEYWORD_LIST.add(THREAD_FIELD);
+        KEYWORD_LIST.add(PROP_FIELD);
+    }
 
     /**
      * Apply fields.
@@ -154,51 +148,49 @@ public final class LoggingEventFieldResolver {
      * @param event logging event.
      * @return evaluted expression
      */
-  public String applyFields(final String replaceText,
-                            final ChainsawLoggingEvent event) {
-      if (replaceText == null) {
-        return null;
-      }
-      InFixToPostFix.CustomTokenizer tokenizer = new InFixToPostFix.CustomTokenizer(replaceText);
-      StringBuffer result = new StringBuffer();
-      boolean found = false;
+    public String applyFields(final String replaceText, final ChainsawLoggingEvent event) {
+        if (replaceText == null) {
+            return null;
+        }
+        InFixToPostFix.CustomTokenizer tokenizer = new InFixToPostFix.CustomTokenizer(replaceText);
+        StringBuffer result = new StringBuffer();
+        boolean found = false;
 
-      while (tokenizer.hasMoreTokens()) {
-          String token = tokenizer.nextToken();
-          if (isField(token) || token.toUpperCase(Locale.US).startsWith(PROP_FIELD)) {
-              result.append(getValue(token, event).toString());
-              found = true;
-          } else {
-              result.append(token);
-          }
-      }
-      if (found) {
-        return result.toString();
-      }
-      return null;
-  }
+        while (tokenizer.hasMoreTokens()) {
+            String token = tokenizer.nextToken();
+            if (isField(token) || token.toUpperCase(Locale.US).startsWith(PROP_FIELD)) {
+                result.append(getValue(token, event).toString());
+                found = true;
+            } else {
+                result.append(token);
+            }
+        }
+        if (found) {
+            return result.toString();
+        }
+        return null;
+    }
 
     /**
      * Get singleton instance.
      * @return singleton instance
      */
-  public static LoggingEventFieldResolver getInstance() {
-    return RESOLVER;
-  }
+    public static LoggingEventFieldResolver getInstance() {
+        return RESOLVER;
+    }
 
     /**
      * Determines if specified string is a recognized field.
      * @param fieldName field name
      * @return true if recognized field.
      */
-  public boolean isField(final String fieldName) {
-    if (fieldName != null) {
-        return (KEYWORD_LIST.contains(
-                fieldName.toUpperCase(Locale.US))
-                || fieldName.toUpperCase().startsWith(PROP_FIELD));
+    public boolean isField(final String fieldName) {
+        if (fieldName != null) {
+            return (KEYWORD_LIST.contains(fieldName.toUpperCase(Locale.US))
+                    || fieldName.toUpperCase().startsWith(PROP_FIELD));
+        }
+        return false;
     }
-    return false;
-  }
 
     /**
      * Get value of field.
@@ -206,63 +198,62 @@ public final class LoggingEventFieldResolver {
      * @param event event
      * @return value of field
      */
-  public Object getValue(final String fieldName,
-                         final ChainsawLoggingEvent event) {
-    String upperField = fieldName.toUpperCase(Locale.US);
-    if (LOGGER_FIELD.equals(upperField)) {
-      return event.m_logger;
-    } else if (LEVEL_FIELD.equals(upperField)) {
-      return event.m_level;
-    } else if (MSG_FIELD.equals(upperField)) {
-      return event.m_message;
-    } else if (NDC_FIELD.equals(upperField)) {
-      String ndcValue = event.m_ndc;
-      return ((ndcValue == null) ? EMPTY_STRING : ndcValue);
-    } else if (EXCEPTION_FIELD.equals(upperField)) {
-//        String[] throwableRep = event.getThrowableStrRep();
-//        if (throwableRep == null) {
-//            return EMPTY_STRING;
-//        } else {
-//            return getExceptionMessage(throwableRep);
-//        }
-        return "";
-    } else if (TIMESTAMP_FIELD.equals(upperField)) {
-      return event.m_timestamp;
-    } else if (THREAD_FIELD.equals(upperField)) {
-      return event.m_threadName;
-    } else if (upperField.startsWith(PROP_FIELD)) {
-      //note: need to use actual fieldname since case matters
-        String realFieldName = fieldName.substring(5);
-        String property = event.getProperty(realFieldName);
-        if( property != null && property.length() >= 1 ){
-            return property;
-        }
+    public Object getValue(final String fieldName, final ChainsawLoggingEvent event) {
+        String upperField = fieldName.toUpperCase(Locale.US);
+        if (LOGGER_FIELD.equals(upperField)) {
+            return event.m_logger;
+        } else if (LEVEL_FIELD.equals(upperField)) {
+            return event.m_level;
+        } else if (MSG_FIELD.equals(upperField)) {
+            return event.m_message;
+        } else if (NDC_FIELD.equals(upperField)) {
+            String ndcValue = event.m_ndc;
+            return ((ndcValue == null) ? EMPTY_STRING : ndcValue);
+        } else if (EXCEPTION_FIELD.equals(upperField)) {
+            //        String[] throwableRep = event.getThrowableStrRep();
+            //        if (throwableRep == null) {
+            //            return EMPTY_STRING;
+            //        } else {
+            //            return getExceptionMessage(throwableRep);
+            //        }
+            return "";
+        } else if (TIMESTAMP_FIELD.equals(upperField)) {
+            return event.m_timestamp;
+        } else if (THREAD_FIELD.equals(upperField)) {
+            return event.m_threadName;
+        } else if (upperField.startsWith(PROP_FIELD)) {
+            // note: need to use actual fieldname since case matters
+            String realFieldName = fieldName.substring(5);
+            String property = event.getProperty(realFieldName);
+            if (property != null && property.length() >= 1) {
+                return property;
+            }
 
-        // We did not get the property in a case-sensitive manner - check for
-        // case-insensitive
-        for( Map.Entry<String,String> entry : event.getProperties().entrySet() ){
-            if( entry.getKey().equalsIgnoreCase( realFieldName ) ){
-                return entry.getValue();
+            // We did not get the property in a case-sensitive manner - check for
+            // case-insensitive
+            for (Map.Entry<String, String> entry : event.getProperties().entrySet()) {
+                if (entry.getKey().equalsIgnoreCase(realFieldName)) {
+                    return entry.getValue();
+                }
+            }
+
+            return EMPTY_STRING;
+        } else {
+            org.apache.log4j.chainsaw.logevents.LocationInfo info = event.m_locationInfo;
+            if (CLASS_FIELD.equals(upperField)) {
+                return ((info == null) ? EMPTY_STRING : info.className);
+            } else if (FILE_FIELD.equals(upperField)) {
+                return ((info == null) ? EMPTY_STRING : info.fileName);
+            } else if (LINE_FIELD.equals(upperField)) {
+                return ((info == null) ? EMPTY_STRING : info.lineNumber);
+            } else if (METHOD_FIELD.equals(upperField)) {
+                return ((info == null) ? EMPTY_STRING : info.methodName);
             }
         }
-        
-        return EMPTY_STRING;
-    } else {
-        org.apache.log4j.chainsaw.logevents.LocationInfo info = event.m_locationInfo;
-        if (CLASS_FIELD.equals(upperField)) {
-            return ((info == null) ? EMPTY_STRING : info.className);
-        } else if (FILE_FIELD.equals(upperField)) {
-            return ((info == null) ? EMPTY_STRING : info.fileName);
-        } else if (LINE_FIELD.equals(upperField)) {
-            return ((info == null) ? EMPTY_STRING : info.lineNumber);
-        } else if (METHOD_FIELD.equals(upperField)) {
-            return ((info == null) ? EMPTY_STRING : info.methodName);
-        }
-    }
 
-    //there wasn't a match, so throw a runtime exception
-    throw new IllegalArgumentException("Unsupported field name: " + fieldName);
-  }
+        // there wasn't a match, so throw a runtime exception
+        throw new IllegalArgumentException("Unsupported field name: " + fieldName);
+    }
 
     /**
      * Get message from throwable representation.

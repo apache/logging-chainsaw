@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,21 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.xml;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.apache.log4j.helpers.Constants;
-import org.apache.log4j.rule.ExpressionRule;
-import org.apache.log4j.rule.Rule;
-import org.apache.log4j.spi.Decoder;
-
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
-import org.apache.log4j.chainsaw.receiver.ChainsawReceiverSkeleton;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiverSkeleton;
+import org.apache.log4j.helpers.Constants;
+import org.apache.log4j.rule.ExpressionRule;
+import org.apache.log4j.rule.Rule;
+import org.apache.log4j.spi.Decoder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -57,7 +55,6 @@ import org.apache.logging.log4j.Logger;
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  * @since 1.3
  */
-
 public class LogFileXMLReceiver extends ChainsawReceiverSkeleton {
     private String fileURL;
     private Rule expressionRule;
@@ -298,8 +295,6 @@ public class LogFileXMLReceiver extends ChainsawReceiverSkeleton {
             Thread thread = new Thread(runnable, "LogFileXMLReceiver-" + getName());
 
             thread.start();
-
         }
     }
-
 }

@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,16 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.chainsaw;
 
-import org.apache.log4j.chainsaw.icons.ChainsawIcons;
-
-import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-
+import javax.swing.*;
+import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 
 /**
  * @author Paul Smith &lt;psmith@apache.org&gt;
@@ -38,7 +35,8 @@ public class ChainsawColumns {
         columnNames.add(ChainsawConstants.LOGGER_COL_NAME);
         columnNames.add(ChainsawConstants.MESSAGE_COL_NAME);
 
-        //NOTE:  ID must ALWAYS be last field because the model adds this value itself as an identifier to the end of the consructed vector
+        // NOTE:  ID must ALWAYS be last field because the model adds this value itself as an identifier to the end of
+        // the consructed vector
         columnNames.add(ChainsawConstants.ID_COL_NAME);
     }
 
@@ -52,11 +50,11 @@ public class ChainsawColumns {
     public static final Cursor CURSOR_FOCUS_ON;
 
     static {
-        CURSOR_FOCUS_ON = Toolkit.getDefaultToolkit().createCustomCursor(new ImageIcon(ChainsawIcons.WINDOW_ICON).getImage(), new Point(3, 3), "FocusOn");
+        CURSOR_FOCUS_ON = Toolkit.getDefaultToolkit()
+                .createCustomCursor(new ImageIcon(ChainsawIcons.WINDOW_ICON).getImage(), new Point(3, 3), "FocusOn");
     }
 
-    private ChainsawColumns() {
-    }
+    private ChainsawColumns() {}
 
     public static List<String> getColumnsNames() {
         return columnNames;

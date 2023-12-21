@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,9 +16,8 @@
  */
 package org.apache.log4j.chainsaw.helper;
 
-import javax.swing.*;
 import java.awt.*;
-
+import javax.swing.*;
 
 public class OkCancelPanel extends JPanel {
     private final JButton cancelButton = new JButton(" Cancel ");
@@ -43,7 +42,7 @@ public class OkCancelPanel extends JPanel {
 
         add(okButton, c);
         add(cancelButton, c);
-//    add(Box.createHorizontalStrut(6));
+        //    add(Box.createHorizontalStrut(6));
     }
 
     /**
@@ -59,5 +58,4 @@ public class OkCancelPanel extends JPanel {
     public final JButton getOkButton() {
         return okButton;
     }
-
 }

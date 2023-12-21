@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,28 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/*
- * @author Paul Smith &lt;psmith@apache.org&gt;
- *
- */
 package org.apache.log4j.chainsaw.components.tabbedpane;
 
 import com.owlike.genson.Genson;
+import java.awt.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import javax.swing.*;
 import org.apache.log4j.chainsaw.prefs.LoadSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
 import org.apache.log4j.chainsaw.prefs.SettingsListener;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import javax.swing.*;
-import java.awt.*;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-
 
 /**
  * The only reason this class is needed is because
@@ -55,7 +48,6 @@ import java.nio.file.Files;
  * @author Paul Smith &lt;psmith@apache.org&gt;
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
-
 public class ChainsawTabbedPane extends JTabbedPane implements SettingsListener {
     private static Logger logger = LogManager.getLogger(ChainsawTabbedPane.class);
     public SavableTabSetting tabSetting;
@@ -104,8 +96,7 @@ public class ChainsawTabbedPane extends JTabbedPane implements SettingsListener 
         super.fireStateChanged();
     }
 
-    public void addANewTab(
-        String name, JComponent component, Icon icon, String tooltip) {
+    public void addANewTab(String name, JComponent component, Icon icon, String tooltip) {
         super.insertTab(name, icon, component, tooltip, getTabCount());
         super.fireStateChanged();
     }
@@ -163,7 +154,6 @@ public class ChainsawTabbedPane extends JTabbedPane implements SettingsListener 
      * If the file doesn't exist, all three panels should be
      * shown as the default setting....
      */
-
     public void loadSettings(LoadSettingsEvent event) {
         File file = new File(SettingsManager.getSettingsDirectory(), "tab-settings.json");
         Genson genson = new Genson();

@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,15 +16,12 @@
  */
 package org.apache.log4j.chainsaw;
 
+import java.awt.*;
+import java.util.List;
+import javax.swing.*;
 import org.apache.commons.configuration2.AbstractConfiguration;
 import org.apache.commons.configuration2.event.ConfigurationEvent;
 import org.apache.commons.configuration2.event.EventListener;
-import org.apache.log4j.varia.LogFilePatternReceiver;
-
-import javax.swing.*;
-import java.awt.*;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Encapsulates the Chainsaw Application wide properties
@@ -73,8 +70,7 @@ public class ApplicationPreferenceModel {
     private final boolean isToolbarDefault = true;
     private final boolean confirmExitDefault = true;
     private final boolean showSplashDefault = true;
-    private List<String> defaultColumns = List.of("LOGGER","MARKER","TIMESTAMP","LEVEL","MESSAGE");
-
+    private List<String> defaultColumns = List.of("LOGGER", "MARKER", "TIMESTAMP", "LEVEL", "MESSAGE");
 
     public ApplicationPreferenceModel(AbstractConfiguration globalConfiguration) {
         this.globalConfiguration = globalConfiguration;
@@ -129,23 +125,26 @@ public class ApplicationPreferenceModel {
      */
     public void apply(ApplicationPreferenceModel model) {
         setIdentifierExpression(model.getIdentifierExpression());
-        setShowNoReceiverWarning(model.isShowNoReceiverWarning() || (model.getConfigurationURL() == null || model.getConfigurationURL().trim().isEmpty()));
+        setShowNoReceiverWarning(model.isShowNoReceiverWarning()
+                || (model.getConfigurationURL() == null
+                        || model.getConfigurationURL().trim().isEmpty()));
         setResponsiveness(model.getResponsiveness());
         setTabPlacement(model.getTabPlacement());
         setStatusBarVisible(model.isStatusBarVisible());
         setToolbarVisible(model.isToolbarVisible());
         setReceiversVisible(model.isReceiversVisible());
-        if (model.getLookAndFeelClassName() != null && !model.getLookAndFeelClassName().trim().isEmpty()) {
+        if (model.getLookAndFeelClassName() != null
+                && !model.getLookAndFeelClassName().trim().isEmpty()) {
             setLookAndFeelClassName(model.getLookAndFeelClassName());
         } else {
-            //ensure current look and feel is selected
+            // ensure current look and feel is selected
             setLookAndFeelClassName(UIManager.getLookAndFeel().getClass().getName());
         }
         setConfirmExit(model.isConfirmExit());
         setShowSplash(model.isShowSplash());
         setToolTipDisplayMillis(model.getToolTipDisplayMillis());
         setCyclicBufferSize(model.getCyclicBufferSize());
-        //only set current config URL if bypass is null
+        // only set current config URL if bypass is null
         if (model.getBypassConfigurationURL() == null) {
             setConfigurationURL(model.getConfigurationURL());
         }
@@ -168,20 +167,20 @@ public class ApplicationPreferenceModel {
         setBypassSearchColors(model.isBypassSearchColors());
     }
 
-    //use a lighter version of search color as the delta color
+    // use a lighter version of search color as the delta color
     public Color getDeltaColor() {
         float factor = 1.3F;
         Color search = getSearchBackgroundColor();
 
-        return new Color(boundColorValue((int) (search.getRed() * factor)),
-            boundColorValue((int) (search.getGreen() * factor)),
-            boundColorValue((int) (search.getBlue() * factor)));
+        return new Color(
+                boundColorValue((int) (search.getRed() * factor)),
+                boundColorValue((int) (search.getGreen() * factor)),
+                boundColorValue((int) (search.getBlue() * factor)));
     }
 
     private int boundColorValue(int colorValue) {
         return Math.min(Math.max(0, colorValue), 255);
     }
-
 
     /**
      * @return Returns the responsiveness.
@@ -248,7 +247,6 @@ public class ApplicationPreferenceModel {
     public Color getAlternatingForegroundColor() {
         return globalConfiguration.get(Color.class, ALTERNATING_FOREGROUND_COLOR, alternatingForegroundColorDefault);
     }
-
 
     public Color getSearchBackgroundColor() {
         return globalConfiguration.get(Color.class, SEARCH_BACKGROUND_COLOR, searchBackgroundColorDefault);
@@ -340,8 +338,8 @@ public class ApplicationPreferenceModel {
     }
 
     /*
-      Set to null to un-bypass
-     */
+     Set to null to un-bypass
+    */
     public void setBypassConfigurationURL(String bypassConfigurationURL) {
         globalConfiguration.setProperty(BYPASS_CONFIGURATION_URL, bypassConfigurationURL);
     }

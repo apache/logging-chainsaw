@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,30 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.chainsaw.layout;
 
-import org.apache.log4j.chainsaw.ChainsawConstants;
-import org.apache.log4j.chainsaw.JTextComponentFormatter;
-import org.apache.log4j.chainsaw.icons.ChainsawIcons;
-
-import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Hashtable;
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.apache.log4j.chainsaw.ChainsawConstants;
+import org.apache.log4j.chainsaw.JTextComponentFormatter;
+import org.apache.log4j.chainsaw.icons.ChainsawIcons;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
 import org.apache.log4j.chainsaw.logevents.Level;
 import org.apache.log4j.chainsaw.logevents.LocationInfo;
-
 
 /**
  * An editor Pane that allows a user to Edit a Pattern Layout and preview the output it would
@@ -55,16 +50,11 @@ public final class LayoutEditorPane extends JPanel {
 
     //  private final JButton applyButton = new JButton();
     private final JEditorPane patternEditor = new JEditorPane("text/plain", "");
-    private final JEditorPane previewer =
-        new JEditorPane(ChainsawConstants.DETAIL_CONTENT_TYPE, "");
-    private final JScrollPane patternEditorScroll =
-        new JScrollPane(
-            ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
-            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-    private final JScrollPane previewEditorScroll =
-        new JScrollPane(
-            ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
-            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+    private final JEditorPane previewer = new JEditorPane(ChainsawConstants.DETAIL_CONTENT_TYPE, "");
+    private final JScrollPane patternEditorScroll = new JScrollPane(
+            ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+    private final JScrollPane previewEditorScroll = new JScrollPane(
+            ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
     private ChainsawLoggingEvent event;
     private EventDetailLayout layout = new EventDetailLayout();
     private DateTimeFormatter m_datetimeFormat;
@@ -88,12 +78,11 @@ public final class LayoutEditorPane extends JPanel {
      * @return
      */
     private Action createCutAction() {
-        final Action action =
-            new AbstractAction("Cut", ChainsawIcons.ICON_CUT) {
-                public void actionPerformed(ActionEvent e) {
-                    // TODO Auto-generated method stub
-                }
-            };
+        final Action action = new AbstractAction("Cut", ChainsawIcons.ICON_CUT) {
+            public void actionPerformed(ActionEvent e) {
+                // TODO Auto-generated method stub
+            }
+        };
 
         action.setEnabled(false);
 
@@ -104,12 +93,11 @@ public final class LayoutEditorPane extends JPanel {
      * @return
      */
     private Action createCopyAction() {
-        final Action action =
-            new AbstractAction("Copy", ChainsawIcons.ICON_COPY) {
-                public void actionPerformed(ActionEvent e) {
-                    // TODO Auto-generated method stub
-                }
-            };
+        final Action action = new AbstractAction("Copy", ChainsawIcons.ICON_COPY) {
+            public void actionPerformed(ActionEvent e) {
+                // TODO Auto-generated method stub
+            }
+        };
 
         action.setEnabled(false);
 
@@ -120,23 +108,21 @@ public final class LayoutEditorPane extends JPanel {
      *
      */
     private void setupListeners() {
-        patternEditor.getDocument().addDocumentListener(
-            new DocumentListener() {
-                public void changedUpdate(DocumentEvent e) {
-                    updatePreview();
-                }
+        patternEditor.getDocument().addDocumentListener(new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {
+                updatePreview();
+            }
 
-                public void insertUpdate(DocumentEvent e) {
-                    updatePreview();
-                }
+            public void insertUpdate(DocumentEvent e) {
+                updatePreview();
+            }
 
-                public void removeUpdate(DocumentEvent e) {
-                    updatePreview();
-                }
-            });
+            public void removeUpdate(DocumentEvent e) {
+                updatePreview();
+            }
+        });
 
-        patternEditor.addCaretListener(
-            e -> updateTextActions(e.getMark() != e.getDot()));
+        patternEditor.addCaretListener(e -> updateTextActions(e.getMark() != e.getDot()));
     }
 
     private void updatePreview() {
@@ -164,12 +150,10 @@ public final class LayoutEditorPane extends JPanel {
         hashTable.put("key2", "val2");
         hashTable.put("key3", "val3");
 
-        LocationInfo li =
-            new LocationInfo(
-                "myfile.java", "com.mycompany.util.MyClass", "myMethod", 321);
+        LocationInfo li = new LocationInfo("myfile.java", "com.mycompany.util.MyClass", "myMethod", 321);
 
         ChainsawLoggingEventBuilder build = new ChainsawLoggingEventBuilder();
-        build.setLevel( Level.DEBUG )
+        build.setLevel(Level.DEBUG)
                 .setLocationInfo(li)
                 .setLogger("com.mycompany.mylogger")
                 .setMessage("The quick brown fox jumped over the lazy dog")
@@ -201,18 +185,15 @@ public final class LayoutEditorPane extends JPanel {
         previewEditorScroll.setViewportView(previewer);
 
         patternEditor.setToolTipText("Edit the Pattern here");
-        previewer.setToolTipText(
-            "The result of the layout of the pattern is shown here");
+        previewer.setToolTipText("The result of the layout of the pattern is shown here");
 
         patternEditorScroll.setBorder(
-            BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), "Pattern Editor"));
+                BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Pattern Editor"));
         previewEditorScroll.setBorder(
-            BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), "Pattern Preview"));
+                BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Pattern Preview"));
 
-//    editorToolbar.add(new JButton(copyAction));
-//    editorToolbar.add(new JButton(cutAction));
+        //    editorToolbar.add(new JButton(copyAction));
+        //    editorToolbar.add(new JButton(cutAction));
 
         configureDatetimeFormatters();
         editorToolbar.add(Box.createHorizontalGlue());
@@ -231,35 +212,42 @@ public final class LayoutEditorPane extends JPanel {
         add(okCancelToolbar);
     }
 
-    private void configureDatetimeFormatters(){
+    private void configureDatetimeFormatters() {
         java.util.List<DatetimeFormatterOption> options = new ArrayList<>();
 
-        options.add( new DatetimeFormatterOption( DateTimeFormatter.BASIC_ISO_DATE, "Basic ISO Date(20111203)" ) );
-        options.add( new DatetimeFormatterOption( DateTimeFormatter.ISO_LOCAL_DATE, "ISO Local Date(2011-12-03)" ) );
-        options.add( new DatetimeFormatterOption( DateTimeFormatter.ISO_OFFSET_DATE, "ISO Offset Date(2011-12-03+01:00)" ) );
-        options.add( new DatetimeFormatterOption( DateTimeFormatter.ISO_DATE, "ISO Date('2011-12-03+01:00'; '2011-12-03')" ) );
-        options.add( new DatetimeFormatterOption( DateTimeFormatter.ISO_LOCAL_TIME, "ISO Local Time(10:15:30)" ) );
-        options.add( new DatetimeFormatterOption( DateTimeFormatter.ISO_OFFSET_TIME, "ISO Offset Time(10:15:30+01:00)" ) );
-        options.add( new DatetimeFormatterOption( DateTimeFormatter.ISO_TIME, "ISO Time('10:15:30+01:00'; '10:15:30')" ) );
-        options.add( new DatetimeFormatterOption( DateTimeFormatter.ISO_LOCAL_DATE_TIME, "ISO Local Date Time(2011-12-03T10:15:30)" ) );
-        options.add( new DatetimeFormatterOption( DateTimeFormatter.ISO_OFFSET_DATE_TIME, "ISO Offset Date Time(2011-12-03T10:15:30+01:00)" ) );
-        options.add( new DatetimeFormatterOption( DateTimeFormatter.ISO_ZONED_DATE_TIME, "ISO Zoned Date Time(2011-12-03T10:15:30+01:00[Europe/Paris])" ) );
-        options.add( new DatetimeFormatterOption( DateTimeFormatter.ISO_DATE_TIME, "ISO Date Time(2011-12-03T10:15:30+01:00[Europe/Paris])" ) );
-        options.add( new DatetimeFormatterOption( DateTimeFormatter.ISO_ORDINAL_DATE, "ISO Ordinal Date(2012-337)" ) );
-        options.add( new DatetimeFormatterOption( DateTimeFormatter.ISO_WEEK_DATE, "ISO Week Date(2012-W48-6)" ) );
-        options.add( new DatetimeFormatterOption( DateTimeFormatter.ISO_INSTANT, "ISO Instant(2011-12-03T10:15:30Z)" ) );
-        options.add( new DatetimeFormatterOption( DateTimeFormatter.RFC_1123_DATE_TIME, "RFC 1123 DateTue, 3 Jun 2008 11:05:30 GMT)" ) );
+        options.add(new DatetimeFormatterOption(DateTimeFormatter.BASIC_ISO_DATE, "Basic ISO Date(20111203)"));
+        options.add(new DatetimeFormatterOption(DateTimeFormatter.ISO_LOCAL_DATE, "ISO Local Date(2011-12-03)"));
+        options.add(
+                new DatetimeFormatterOption(DateTimeFormatter.ISO_OFFSET_DATE, "ISO Offset Date(2011-12-03+01:00)"));
+        options.add(
+                new DatetimeFormatterOption(DateTimeFormatter.ISO_DATE, "ISO Date('2011-12-03+01:00'; '2011-12-03')"));
+        options.add(new DatetimeFormatterOption(DateTimeFormatter.ISO_LOCAL_TIME, "ISO Local Time(10:15:30)"));
+        options.add(new DatetimeFormatterOption(DateTimeFormatter.ISO_OFFSET_TIME, "ISO Offset Time(10:15:30+01:00)"));
+        options.add(new DatetimeFormatterOption(DateTimeFormatter.ISO_TIME, "ISO Time('10:15:30+01:00'; '10:15:30')"));
+        options.add(new DatetimeFormatterOption(
+                DateTimeFormatter.ISO_LOCAL_DATE_TIME, "ISO Local Date Time(2011-12-03T10:15:30)"));
+        options.add(new DatetimeFormatterOption(
+                DateTimeFormatter.ISO_OFFSET_DATE_TIME, "ISO Offset Date Time(2011-12-03T10:15:30+01:00)"));
+        options.add(new DatetimeFormatterOption(
+                DateTimeFormatter.ISO_ZONED_DATE_TIME, "ISO Zoned Date Time(2011-12-03T10:15:30+01:00[Europe/Paris])"));
+        options.add(new DatetimeFormatterOption(
+                DateTimeFormatter.ISO_DATE_TIME, "ISO Date Time(2011-12-03T10:15:30+01:00[Europe/Paris])"));
+        options.add(new DatetimeFormatterOption(DateTimeFormatter.ISO_ORDINAL_DATE, "ISO Ordinal Date(2012-337)"));
+        options.add(new DatetimeFormatterOption(DateTimeFormatter.ISO_WEEK_DATE, "ISO Week Date(2012-W48-6)"));
+        options.add(new DatetimeFormatterOption(DateTimeFormatter.ISO_INSTANT, "ISO Instant(2011-12-03T10:15:30Z)"));
+        options.add(new DatetimeFormatterOption(
+                DateTimeFormatter.RFC_1123_DATE_TIME, "RFC 1123 DateTue, 3 Jun 2008 11:05:30 GMT)"));
 
-        for( DatetimeFormatterOption opt : options ){
+        for (DatetimeFormatterOption opt : options) {
             m_datetimeCombo.addItem(opt);
 
-            if( opt.m_formatter.equals( m_datetimeFormat ) ){
+            if (opt.m_formatter.equals(m_datetimeFormat)) {
                 m_datetimeCombo.setSelectedItem(opt);
             }
         }
 
         m_datetimeCombo.addActionListener((ae) -> {
-            DatetimeFormatterOption option = (DatetimeFormatterOption)m_datetimeCombo.getSelectedItem();
+            DatetimeFormatterOption option = (DatetimeFormatterOption) m_datetimeCombo.getSelectedItem();
             m_datetimeFormat = option.m_formatter;
             updatePreview();
         });
@@ -281,12 +269,12 @@ public final class LayoutEditorPane extends JPanel {
         cancelButton.addActionListener(l);
     }
 
-    public void setDatetimeFormatter( DateTimeFormatter formatter ){
+    public void setDatetimeFormatter(DateTimeFormatter formatter) {
         m_datetimeFormat = formatter;
 
-        for( int x = 0; x < m_datetimeCombo.getItemCount(); x++ ){
-            DatetimeFormatterOption opt = (DatetimeFormatterOption)m_datetimeCombo.getItemAt(x);
-            if( opt.m_formatter == formatter ){
+        for (int x = 0; x < m_datetimeCombo.getItemCount(); x++) {
+            DatetimeFormatterOption opt = (DatetimeFormatterOption) m_datetimeCombo.getItemAt(x);
+            if (opt.m_formatter == formatter) {
                 m_datetimeCombo.setSelectedIndex(x);
                 break;
             }
@@ -295,7 +283,7 @@ public final class LayoutEditorPane extends JPanel {
         updatePreview();
     }
 
-    public DateTimeFormatter getDatetimeFormatter(){
+    public DateTimeFormatter getDatetimeFormatter() {
         return m_datetimeFormat;
     }
 
@@ -303,13 +291,13 @@ public final class LayoutEditorPane extends JPanel {
         final DateTimeFormatter m_formatter;
         final String m_text;
 
-        DatetimeFormatterOption( DateTimeFormatter formatter, String text ){
+        DatetimeFormatterOption(DateTimeFormatter formatter, String text) {
             m_formatter = formatter;
             m_text = text;
         }
 
         @Override
-        public String toString(){
+        public String toString() {
             return m_text;
         }
     }

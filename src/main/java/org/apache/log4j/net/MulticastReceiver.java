@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,20 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.net;
-
-import org.apache.log4j.spi.Decoder;
 
 import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.log4j.chainsaw.receiver.ChainsawReceiverSkeleton;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiverSkeleton;
+import org.apache.log4j.spi.Decoder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 
 /**
  * Multicast-based receiver.  Accepts LoggingEvents encoded using
@@ -36,15 +33,14 @@ import org.apache.logging.log4j.Logger;
  *
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
-public class MulticastReceiver extends ChainsawReceiverSkeleton implements PortBased,
-    AddressBased {
+public class MulticastReceiver extends ChainsawReceiverSkeleton implements PortBased, AddressBased {
     private static final int PACKET_LENGTH = 16384;
     private int port;
     private String address;
     private String encoding;
     private MulticastSocket socket = null;
 
-    //default to log4j xml decoder
+    // default to log4j xml decoder
     private String decoder = "org.apache.log4j.xml.XMLDecoder";
     private Decoder decoderImpl;
     private MulticastReceiverThread receiverThread;
@@ -182,7 +178,6 @@ public class MulticastReceiver extends ChainsawReceiverSkeleton implements PortB
 
                     for (Object aList2 : list2) {
                         String data = (String) aList2;
-                        
                     }
 
                     list2.clear();
@@ -213,15 +208,13 @@ public class MulticastReceiver extends ChainsawReceiverSkeleton implements PortB
                 try {
                     socket.receive(p);
 
-                    //this string constructor which accepts a charset throws an exception if it is
-                    //null
+                    // this string constructor which accepts a charset throws an exception if it is
+                    // null
                     String data;
                     if (encoding == null) {
-                        data =
-                            new String(p.getData(), 0, p.getLength());
+                        data = new String(p.getData(), 0, p.getLength());
                     } else {
-                        data =
-                            new String(p.getData(), 0, p.getLength(), encoding);
+                        data = new String(p.getData(), 0, p.getLength(), encoding);
                     }
 
                     List<ChainsawLoggingEvent> v = decoderImpl.decodeEvents(data.trim());
@@ -233,7 +226,7 @@ public class MulticastReceiver extends ChainsawReceiverSkeleton implements PortB
                         }
                     }
                 } catch (SocketException se) {
-                    //disconnected
+                    // disconnected
                 } catch (IOException ioe) {
                     ioe.printStackTrace();
                 }

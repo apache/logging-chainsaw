@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -23,29 +23,29 @@ import java.beans.PropertyDescriptor;
  * A factory that will create new instances of Receivers
  */
 public interface ChainsawReceiverFactory {
-    
+
     /**
      * Create a new ChainsawReceiver from this factory.
-     * @return 
+     * @return
      */
     ChainsawReceiver create();
-    
+
     /**
      * For the type of ChainsawReceiver that this factory creates,
      * get the property descriptors for the class.
-     * @return 
+     * @return
      */
     PropertyDescriptor[] getPropertyDescriptors() throws IntrospectionException;
-    
+
     /**
      * Get the name of the receiver that this factory will create
-     * @return 
+     * @return
      */
     String getReceiverName();
 
     /**
      * Documentation string in HTML format that will be displayed to the user.
-     * 
+     *
      * @return
      */
     String getReceiverDocumentation();

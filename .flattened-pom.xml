@@ -15,23 +15,22 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.logging</groupId>
     <artifactId>logging-parent</artifactId>
     <version>10.4.0</version>
-    <relativePath />
+    <relativePath></relativePath>
   </parent>
   <groupId>log4j</groupId>
   <artifactId>apache-chainsaw</artifactId>
   <version>2.2.0-SNAPSHOT</version>
-  <packaging>jar</packaging>
   <name>Apache Chainsaw</name>
   <description>Graphical Viewer for Logging events from a local or remote log4j event system.</description>
   <url>https://logging.apache.org/chainsaw</url>
   <inceptionYear>2002</inceptionYear>
-
   <licenses>
     <license>
       <name>Apache License, Version 2.0</name>
@@ -39,7 +38,6 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
-
   <developers>
     <developer>
       <id>mwomack</id>
@@ -77,7 +75,6 @@
       <name>Isuru Suriarachchi</name>
     </contributor>
   </contributors>
-
   <mailingLists>
     <mailingList>
       <name>log4j-user</name>
@@ -109,18 +106,15 @@
       <archive>http://mail-archives.apache.org/mod_mbox/logging-commits/</archive>
     </mailingList>
   </mailingLists>
-
   <scm>
     <connection>scm:git:https://github.com/apache/logging-chainsaw.git</connection>
     <developerConnection>scm:git:https://github.com/apache/logging-chainsaw.git</developerConnection>
     <url>https://github.com/apache/logging-chainsaw</url>
   </scm>
-
   <issueManagement>
     <system>GitHub</system>
     <url>https://github.com/apache/logging-chainsaw/issues</url>
   </issueManagement>
-
   <distributionManagement>
     <site>
       <id>www.example.com</id>
@@ -128,21 +122,18 @@
     </site>
     <downloadUrl>https://logging.apache.org/log4j/chainsaw/download.html</downloadUrl>
   </distributionManagement>
-
   <properties>
-    <chainsaw.mainclass>org.apache.log4j.chainsaw.ChainsawStarter</chainsaw.mainclass>
-    <maven.compiler.source>11</maven.compiler.source>
-    <maven.compiler.target>11</maven.compiler.target>
     <maven.compiler.release>11</maven.compiler.release>
+    <chainsaw.mainclass>org.apache.log4j.chainsaw.ChainsawStarter</chainsaw.mainclass>
+    <maven.compiler.target>11</maven.compiler.target>
+    <ChainsawReleaseManager>Robert Middleton</ChainsawReleaseManager>
+    <maven.compiler.source>11</maven.compiler.source>
     <log4j.version>2.22.0</log4j.version>
     <dependency.locations.enabled>false</dependency.locations.enabled>
     <ChainsawReleaseVersion>2.1.0</ChainsawReleaseVersion>
-    <ChainsawReleaseManager>Robert Middleton</ChainsawReleaseManager>
     <ChainsawReleaseKey>B095DD52</ChainsawReleaseKey>
   </properties>
-
   <dependencies>
-
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-api</artifactId>
@@ -158,7 +149,6 @@
       <artifactId>jmdns</artifactId>
       <version>3.5.8</version>
     </dependency>
-    <!-- TODO upgrade to new versions once they come out -->
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-vfs2</artifactId>
@@ -174,7 +164,6 @@
       <groupId>org.apache.openejb</groupId>
       <artifactId>javaee-api</artifactId>
       <version>5.0-2</version>
-      <type>jar</type>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -199,7 +188,6 @@
       <artifactId>commons-configuration2</artifactId>
       <version>2.9.0</version>
     </dependency>
-    <!-- TODO: Upgrade to next version when it comes out: CVE-2020-15250 -->
     <dependency>
       <groupId>commons-beanutils</groupId>
       <artifactId>commons-beanutils</artifactId>
@@ -211,11 +199,9 @@
       <scope>provided</scope>
     </dependency>
   </dependencies>
-
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.12.0</version>
         <configuration>
@@ -223,20 +209,16 @@
           <target>${maven.compiler.target}</target>
         </configuration>
       </plugin>
-
     </plugins>
   </build>
-
   <reporting>
     <excludeDefaults>true</excludeDefaults>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jxr-plugin</artifactId>
         <version>2.5</version>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
         <configuration>
           <goals>site-deploy</goals>
@@ -244,7 +226,6 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-changes-plugin</artifactId>
         <version>2.12.1</version>
         <reportSets>
@@ -260,25 +241,22 @@
         <artifactId>maven-pmd-plugin</artifactId>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>3.3.2</version>
         <configuration>
-          <bottom><![CDATA[<p align="center">Copyright &#169; {inceptionYear}-{currentYear} {organizationName}. All Rights Reserved.<br />
+          <bottom>&lt;p align="center">Copyright &amp;#169; {inceptionYear}-{currentYear} {organizationName}. All Rights Reserved.&lt;br />
           Apache Logging, Apache Log4j, Log4j, Apache Chainsaw, Chainsaw, Apache, the Apache feather logo, the Apache Logging project logo,
-          and the Apache Log4j logo are trademarks of The Apache Software Foundation.</p>]]></bottom>
+          and the Apache Log4j logo are trademarks of The Apache Software Foundation.&lt;/p></bottom>
           <encoding>UTF-8</encoding>
           <doclint>none</doclint>
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-project-info-reports-plugin</artifactId>
         <version>2.9</version>
         <reportSets>
           <reportSet>
             <reports>
-              <!--report>cim</report-->
               <report>scm</report>
               <report>project-team</report>
               <report>issue-tracking</report>
@@ -290,7 +268,6 @@
       </plugin>
     </plugins>
   </reporting>
-
   <profiles>
     <profile>
       <id>mac</id>
@@ -301,69 +278,25 @@
       </activation>
       <build>
         <plugins>
-          <!--
-          <plugin>
-            <groupId>de.perdian.maven.plugins</groupId>
-            <artifactId>macosappbundler-maven-plugin</artifactId>
-            <version>1.10.2</version>
-            <configuration>
-              <plist>
-                <CFBundleIconFile>src/main/resources/logo.icns</CFBundleIconFile>
-                <CFBundleDisplayName>Chainsaw</CFBundleDisplayName>
-                <CFBundleDevelopmentRegion>English</CFBundleDevelopmentRegion>
-                <CFBundleURLTypes>
-                  <string>msa</string>
-                </CFBundleURLTypes>
-                <JVMMainClassName>${chainsaw.mainclass}</JVMMainClassName>
-                <JVMVersion>11+</JVMVersion>
-                <JVMOptions>
-                  <jvmOption>-Xms128m</jvmOption>
-                  <jvmOption>-Xmx512m</jvmOption>
-                </JVMOptions>
-              </plist>
-              <dmg>
-                <generate>true</generate>
-                <additionalResources>
-                  <additionalResource>
-                    <directory>src/bundle/macos/distribution</directory>
-                  </additionalResource>
-                </additionalResources>
-              </dmg>
-            </configuration>
-            <executions>
-              <execution>
-                <phase>package</phase>
-                <goals>
-                  <goal>bundle</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-          -->
           <plugin>
             <groupId>org.apache.rat</groupId>
             <artifactId>apache-rat-plugin</artifactId>
             <configuration>
               <consoleOutput>true</consoleOutput>
               <excludes>
-                <!-- usually testing log files -->
                 <exclude>**/*.log</exclude>
-
-                <!-- should come by parent, but parent does not allow override so far (PR in progress -->
                 <exclude>.java-version</exclude>
                 <exclude>.mvn/jvm.config</exclude>
                 <exclude>**/*.txt</exclude>
                 <exclude>src/changelog/**/*.xml</exclude>
                 <exclude>.github/ISSUE_TEMPLATE/*.md</exclude>
                 <exclude>.github/pull_request_template.md</exclude>
-
               </excludes>
             </configuration>
           </plugin>
         </plugins>
       </build>
     </profile>
-
     <profile>
       <id>development</id>
       <repositories>
@@ -377,7 +310,6 @@
         </repository>
       </repositories>
     </profile>
-
     <profile>
       <id>packaging</id>
       <build>
@@ -387,19 +319,15 @@
             <artifactId>apache-rat-plugin</artifactId>
           </plugin>
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-project-info-reports-plugin</artifactId>
           </plugin>
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <workingDirectory>target</workingDirectory>
             </configuration>
           </plugin>
-
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-jar-plugin</artifactId>
             <version>3.2.2</version>
             <configuration>
@@ -421,10 +349,17 @@
               </archive>
             </configuration>
           </plugin>
-
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>appassembler-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <phase>package</phase>
+                <goals>
+                  <goal>assemble</goal>
+                </goals>
+              </execution>
+            </executions>
             <configuration>
               <showConsoleWindow>false</showConsoleWindow>
               <programs>
@@ -434,32 +369,21 @@
                 </program>
               </programs>
             </configuration>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>assemble</goal>
-                </goals>
-                <phase>package</phase>
-              </execution>
-            </executions>
           </plugin>
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-assembly-plugin</artifactId>
             <executions>
               <execution>
                 <id>make-assembly</id>
+                <phase>package</phase>
                 <goals>
                   <goal>single</goal>
                 </goals>
-                <phase>package</phase>
                 <configuration>
                   <descriptors>
                     <descriptor>src/assembly/bin.xml</descriptor>
                     <descriptor>src/assembly/standalone.xml</descriptor>
                   </descriptors>
-                  <!-- we append the assembly ID here,but note that the bin assembly does not have an id specified
-                      in its config, so it doesn't have a suffix -->
                   <appendAssemblyId>true</appendAssemblyId>
                 </configuration>
               </execution>
@@ -471,10 +395,10 @@
             <executions>
               <execution>
                 <id>attach-artifacts</id>
+                <phase>package</phase>
                 <goals>
                   <goal>attach-artifact</goal>
                 </goals>
-                <phase>package</phase>
                 <configuration>
                   <artifacts>
                     <artifact>
@@ -488,7 +412,6 @@
             </executions>
           </plugin>
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
             <executions>
               <execution>
@@ -499,27 +422,8 @@
             </executions>
           </plugin>
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-site-plugin</artifactId>
             <version>3.8.2</version>
-            <configuration>
-              <!-- only build English site even on other language OS -->
-              <locales>en</locales>
-              <!-- Exclude the navigation file for Maven 1 sites
-                   and the changes file used by the changes-plugin,
-                   as they interfere with the site generation. -->
-              <moduleExcludes>
-                <xdoc>navigation.xml,changes.xml</xdoc>
-              </moduleExcludes>
-              <asciidoc>
-                <attributes>
-                  <!-- copy any site properties wanted in asciidoc files -->
-                  <ChainsawReleaseVersion>${ChainsawReleaseVersion}</ChainsawReleaseVersion>
-                  <ChainsawReleaseManager>${ChainsawReleaseManager}</ChainsawReleaseManager>
-                  <ChainsawReleaseKey>${ChainsawReleaseKey}</ChainsawReleaseKey>
-                </attributes>
-              </asciidoc>
-            </configuration>
             <dependencies>
               <dependency>
                 <groupId>org.asciidoctor</groupId>
@@ -527,6 +431,19 @@
                 <version>1.5.6</version>
               </dependency>
             </dependencies>
+            <configuration>
+              <locales>en</locales>
+              <moduleExcludes>
+                <xdoc>navigation.xml,changes.xml</xdoc>
+              </moduleExcludes>
+              <asciidoc>
+                <attributes>
+                  <ChainsawReleaseVersion>${ChainsawReleaseVersion}</ChainsawReleaseVersion>
+                  <ChainsawReleaseManager>${ChainsawReleaseManager}</ChainsawReleaseManager>
+                  <ChainsawReleaseKey>${ChainsawReleaseKey}</ChainsawReleaseKey>
+                </attributes>
+              </asciidoc>
+            </configuration>
           </plugin>
         </plugins>
       </build>

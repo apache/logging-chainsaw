@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,14 +16,13 @@
  */
 package org.apache.log4j.chainsaw.logui;
 
+import java.util.List;
+import javax.swing.*;
 import org.apache.log4j.chainsaw.ApplicationPreferenceModel;
 import org.apache.log4j.chainsaw.ChainsawStatusBar;
 import org.apache.log4j.chainsaw.prefs.SettingsManager;
 import org.apache.log4j.chainsaw.receiver.ChainsawReceiver;
 import org.apache.log4j.chainsaw.receivers.ReceiversPanel;
-
-import javax.swing.*;
-import java.util.List;
 
 public class LogUiReceiversPanel {
 
@@ -33,8 +32,14 @@ public class LogUiReceiversPanel {
     private int dividerSize;
     private static final double DEFAULT_MAIN_RECEIVER_SPLIT_LOCATION = 0.85d;
     private double lastMainReceiverSplitLocation = DEFAULT_MAIN_RECEIVER_SPLIT_LOCATION;
-    public LogUiReceiversPanel(SettingsManager settingsManager, ApplicationPreferenceModel applicationPreferenceModel,
-                               List<ChainsawReceiver> receivers, LogUI logUI, ChainsawStatusBar statusBar, JPanel panePanel) {
+
+    public LogUiReceiversPanel(
+            SettingsManager settingsManager,
+            ApplicationPreferenceModel applicationPreferenceModel,
+            List<ChainsawReceiver> receivers,
+            LogUI logUI,
+            ChainsawStatusBar statusBar,
+            JPanel panePanel) {
         receiversPanel = new ReceiversPanel(settingsManager, receivers, logUI, statusBar);
         mainReceiverSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panePanel, receiversPanel);
         mainReceiverSplitPane.setContinuousLayout(true);
@@ -44,17 +49,16 @@ public class LogUiReceiversPanel {
 
         boolean showReceivers = applicationPreferenceModel.isReceiversVisible();
 
-        applicationPreferenceModel.addEventListener(
-            evt -> {
-                if (evt.getPropertyName().equals(ApplicationPreferenceModel.RECEIVERS_VISIBLE)) {
-                    boolean value = (Boolean) evt.getPropertyValue();
-                    if (value) {
-                        showReceiverPanel();
-                    } else {
-                        hideReceiverPanel();
-                    }
+        applicationPreferenceModel.addEventListener(evt -> {
+            if (evt.getPropertyName().equals(ApplicationPreferenceModel.RECEIVERS_VISIBLE)) {
+                boolean value = (Boolean) evt.getPropertyValue();
+                if (value) {
+                    showReceiverPanel();
+                } else {
+                    hideReceiverPanel();
                 }
-            });
+            }
+        });
 
         if (showReceivers) {
             showReceiverPanel();
@@ -62,7 +66,6 @@ public class LogUiReceiversPanel {
             hideReceiverPanel();
         }
     }
-
 
     public JSplitPane getMainReceiverSplitPane() {
         return mainReceiverSplitPane;
@@ -82,13 +85,12 @@ public class LogUiReceiversPanel {
      * Hide the log tree pane, holding the current divider location for later use
      */
     public void hideReceiverPanel() {
-        //subtract one to make sizes match
+        // subtract one to make sizes match
         int currentSize = mainReceiverSplitPane.getWidth() - mainReceiverSplitPane.getDividerSize();
         if (mainReceiverSplitPane.getDividerLocation() > -1) {
             if (!(((mainReceiverSplitPane.getDividerLocation() + 1) == currentSize)
-                || ((mainReceiverSplitPane.getDividerLocation() - 1) == 0))) {
-                lastMainReceiverSplitLocation = ((double) mainReceiverSplitPane
-                    .getDividerLocation() / currentSize);
+                    || ((mainReceiverSplitPane.getDividerLocation() - 1) == 0))) {
+                lastMainReceiverSplitLocation = ((double) mainReceiverSplitPane.getDividerLocation() / currentSize);
             }
         }
         mainReceiverSplitPane.setDividerSize(0);

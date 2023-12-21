@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,23 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/*
- * @author Paul Smith &lt;psmith@apache.org&gt;
- *
- */
 package org.apache.log4j.chainsaw.file;
 
-import org.apache.log4j.chainsaw.logui.LogUI;
-import org.apache.log4j.chainsaw.osx.OSXIntegration;
-import org.apache.log4j.chainsaw.prefs.MRUFileList;
-
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.net.URL;
-
+import javax.swing.*;
+import org.apache.log4j.chainsaw.logui.LogUI;
+import org.apache.log4j.chainsaw.osx.OSXIntegration;
+import org.apache.log4j.chainsaw.prefs.MRUFileList;
 
 /**
  * The complete File Menu for the main GUI, containing
@@ -59,29 +52,30 @@ public class FileMenu extends JMenu {
         };
 
         loadLog4JAction = null;
-//            new FileLoadAction(
-//                logUI, new XMLDecoder(logUI), "Open log4j XML-formatted file (.xml or .zip)...", false);
+        //            new FileLoadAction(
+        //                logUI, new XMLDecoder(logUI), "Open log4j XML-formatted file (.xml or .zip)...", false);
 
-//        loadLog4JAction.putValue(
-//            Action.ACCELERATOR_KEY,
-//            KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-//        loadLog4JAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_L);
-//        loadLog4JAction.putValue(Action.SHORT_DESCRIPTION, "Loads events from a local XMLLayout-formatted file ");
-//        loadLog4JAction.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.FILE_OPEN));
+        //        loadLog4JAction.putValue(
+        //            Action.ACCELERATOR_KEY,
+        //            KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        //        loadLog4JAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_L);
+        //        loadLog4JAction.putValue(Action.SHORT_DESCRIPTION, "Loads events from a local XMLLayout-formatted file
+        // ");
+        //        loadLog4JAction.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.FILE_OPEN));
 
         loadUtilLoggingAction = null;
-//            new FileLoadAction(
-//                logUI, new UtilLoggingXMLDecoder(logUI),
-//                "Open util.logging XML-formatted file (.xml or .zip)...", false);
+        //            new FileLoadAction(
+        //                logUI, new UtilLoggingXMLDecoder(logUI),
+        //                "Open util.logging XML-formatted file (.xml or .zip)...", false);
 
         remoteLog4JAction = null;
-//            new FileLoadAction(
-//                logUI, new XMLDecoder(logUI), "Open remote log4j XML-formatted file (.xml or .zip)...",
-//                true);
+        //            new FileLoadAction(
+        //                logUI, new XMLDecoder(logUI), "Open remote log4j XML-formatted file (.xml or .zip)...",
+        //                true);
         remoteUtilLoggingAction = null;
-//            new FileLoadAction(
-//                logUI, new UtilLoggingXMLDecoder(logUI),
-//                "Open remote util.logging XML-formatted file (.xml or .zip)...", true);
+        //            new FileLoadAction(
+        //                logUI, new UtilLoggingXMLDecoder(logUI),
+        //                "Open remote util.logging XML-formatted file (.xml or .zip)...", true);
 
         saveAction = new FileSaveAction(logUI);
 
@@ -92,16 +86,16 @@ public class FileMenu extends JMenu {
         JMenuItem remoteUtilLoggingFile = new JMenuItem(remoteUtilLoggingAction);
         JMenuItem saveFile = new JMenuItem(saveAction);
 
-        exitAction =
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    logUI.exit();
-                }
-            };
+        exitAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                logUI.exit();
+            }
+        };
 
         exitAction.putValue(
-            Action.ACCELERATOR_KEY,
-            KeyStroke.getKeyStroke(KeyEvent.VK_X, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                Action.ACCELERATOR_KEY,
+                KeyStroke.getKeyStroke(
+                        KeyEvent.VK_X, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         exitAction.putValue(Action.SHORT_DESCRIPTION, "Exits the Application");
         exitAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_X);
         exitAction.putValue(Action.NAME, "Exit");
@@ -109,17 +103,16 @@ public class FileMenu extends JMenu {
         JMenuItem menuItemExit = new JMenuItem(exitAction);
 
         add(loadReceiver);
-//        add(loadLog4JFile);
-//        add(loadUtilLoggingFile);
-//        addSeparator();
-//        add(remoteLog4JFile);
-//        add(remoteUtilLoggingFile);
-//        addSeparator();
-//        add(saveFile);
-//        addSeparator();
+        //        add(loadLog4JFile);
+        //        add(loadUtilLoggingFile);
+        //        addSeparator();
+        //        add(remoteLog4JFile);
+        //        add(remoteUtilLoggingFile);
+        //        addSeparator();
+        //        add(saveFile);
+        //        addSeparator();
 
         final JMenu mrulog4j = new JMenu("MRU...");
-
 
         MRUFileList.addChangeListener(e -> buildMRUMenu(mrulog4j, logUI));
         buildMRUMenu(mrulog4j, logUI);
@@ -129,8 +122,6 @@ public class FileMenu extends JMenu {
             addSeparator();
             add(menuItemExit);
         }
-
-
     }
 
     private void buildMRUMenu(final JMenu mrulog4j, final LogUI logui) {
@@ -140,13 +131,15 @@ public class FileMenu extends JMenu {
             for (Object o : MRUFileList.log4jMRU().getMRUList()) {
                 final URL url = (URL) o;
                 // TODO work out the 'name', for local files it can't just be the full path
-                final String name = url.getProtocol().startsWith("file") ? url.getPath().substring(url.getPath().lastIndexOf('/') + 1) : url.getPath();
+                final String name = url.getProtocol().startsWith("file")
+                        ? url.getPath().substring(url.getPath().lastIndexOf('/') + 1)
+                        : url.getPath();
                 String title = (counter++) + " - " + url.toExternalForm();
                 JMenuItem menuItem = new JMenuItem(new AbstractAction(title) {
 
                     public void actionPerformed(ActionEvent e) {
-//                        FileLoadAction.importURL(logui.handler,
-//                            new XMLDecoder(), name, url);
+                        //                        FileLoadAction.importURL(logui.handler,
+                        //                            new XMLDecoder(), name, url);
                     }
                 });
                 mrulog4j.add(menuItem);

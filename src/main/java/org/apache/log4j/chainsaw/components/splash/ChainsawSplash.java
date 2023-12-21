@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,22 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/*
- * @author Paul Smith &lt;psmith@apache.org&gt;
- *
- */
 package org.apache.log4j.chainsaw.components.splash;
 
-import org.apache.log4j.chainsaw.icons.ChainsawIcons;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import javax.swing.*;
 import java.awt.*;
 import java.util.HashSet;
 import java.util.Set;
-
+import javax.swing.*;
+import org.apache.log4j.chainsaw.icons.ChainsawIcons;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A simple splash screen to be used at startup, while everything get's initialized.
@@ -49,11 +42,10 @@ class ChainsawSplash extends JWindow {
 
         JLabel text = new JLabel("Chainsaw v2", SwingConstants.CENTER);
         Font textFont = null;
-        String[] preferredFontNames = new String[]{"Arial", "Helvetica", "SansSerif"};
+        String[] preferredFontNames = new String[] {"Arial", "Helvetica", "SansSerif"};
 
         Set<String> availableFontNames = new HashSet<>();
-        Font[] allFonts =
-            GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
+        Font[] allFonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
 
         for (Font allFont : allFonts) {
             availableFontNames.add(allFont.getName());

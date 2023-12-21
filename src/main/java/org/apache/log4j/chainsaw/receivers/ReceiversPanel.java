@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,29 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.chainsaw.receivers;
 
-import org.apache.log4j.chainsaw.receiver.ChainsawReceiver;
-import org.apache.log4j.chainsaw.receiver.ChainsawReceiverFactory;
-import org.apache.log4j.chainsaw.ChainsawStatusBar;
-import org.apache.log4j.chainsaw.logui.LogUI;
-import org.apache.log4j.chainsaw.PopupListener;
-import org.apache.log4j.chainsaw.components.elements.SmallButton;
-import org.apache.log4j.chainsaw.help.HelpManager;
-import org.apache.log4j.chainsaw.helper.SwingHelper;
-import org.apache.log4j.chainsaw.icons.ChainsawIcons;
-import org.apache.log4j.chainsaw.icons.LevelIconFactory;
-import org.apache.log4j.chainsaw.logevents.Level;
-import org.apache.log4j.chainsaw.prefs.LoadSettingsEvent;
-import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
-import org.apache.log4j.chainsaw.prefs.SettingsListener;
-import org.apache.log4j.chainsaw.prefs.SettingsManager;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.beans.BeanInfo;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.ServiceLoader;
 import javax.swing.*;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeModelEvent;
@@ -55,22 +49,25 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.beans.BeanInfo;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
-
+import org.apache.log4j.chainsaw.ChainsawStatusBar;
+import org.apache.log4j.chainsaw.PopupListener;
+import org.apache.log4j.chainsaw.components.elements.SmallButton;
+import org.apache.log4j.chainsaw.help.HelpManager;
+import org.apache.log4j.chainsaw.helper.SwingHelper;
+import org.apache.log4j.chainsaw.icons.ChainsawIcons;
+import org.apache.log4j.chainsaw.icons.LevelIconFactory;
+import org.apache.log4j.chainsaw.logevents.Level;
+import org.apache.log4j.chainsaw.logui.LogUI;
+import org.apache.log4j.chainsaw.prefs.LoadSettingsEvent;
+import org.apache.log4j.chainsaw.prefs.SaveSettingsEvent;
+import org.apache.log4j.chainsaw.prefs.SettingsListener;
+import org.apache.log4j.chainsaw.prefs.SettingsManager;
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiver;
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiverFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * This panel is used to manage all the Receivers configured within Log4j
@@ -89,22 +86,23 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
     private final Action startAllAction;
     private final JPopupMenu popupMenu = new ReceiverPopupMenu();
     private final JTree receiversTree = new JTree();
-    private final NewReceiverPopupMenu newReceiverPopup =
-        new NewReceiverPopupMenu();
+    private final NewReceiverPopupMenu newReceiverPopup = new NewReceiverPopupMenu();
     private final ReceiverToolbar buttonPanel;
     private final JSplitPane splitter = new JSplitPane();
-    private final PluginPropertyEditorPanel pluginEditorPanel =
-        new PluginPropertyEditorPanel();
+    private final PluginPropertyEditorPanel pluginEditorPanel = new PluginPropertyEditorPanel();
     private final Logger logger = LogManager.getLogger(ReceiversPanel.class);
 
     private final LogUI m_parent;
-    private final Map<Class,PropertyDescriptor[]> m_classToProperties = 
-            new HashMap<>();
+    private final Map<Class, PropertyDescriptor[]> m_classToProperties = new HashMap<>();
     private SettingsManager settingsManager;
     private List<ChainsawReceiver> receivers;
     private final ChainsawStatusBar statusBar;
 
-    public ReceiversPanel(SettingsManager settingsManager, List<ChainsawReceiver> receivers, LogUI parentUi, ChainsawStatusBar statusBar) {
+    public ReceiversPanel(
+            SettingsManager settingsManager,
+            List<ChainsawReceiver> receivers,
+            LogUI parentUi,
+            ChainsawStatusBar statusBar) {
         super(new BorderLayout());
         this.settingsManager = settingsManager;
         this.receivers = receivers;
@@ -116,212 +114,169 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
         receiversTree.setModel(model);
 
         receiversTree.setExpandsSelectedPaths(true);
-        model.addTreeModelListener(
-            new TreeModelListener() {
-                public void treeNodesChanged(TreeModelEvent e) {
-                    expandRoot();
+        model.addTreeModelListener(new TreeModelListener() {
+            public void treeNodesChanged(TreeModelEvent e) {
+                expandRoot();
+            }
+
+            public void treeNodesInserted(TreeModelEvent e) {
+                expandRoot();
+            }
+
+            public void treeNodesRemoved(TreeModelEvent e) {
+                expandRoot();
+            }
+
+            public void treeStructureChanged(TreeModelEvent e) {
+                expandRoot();
+            }
+
+            private void expandRoot() {
+                receiversTree.expandPath(new TreePath(model.getPathToRoot(model.RootNode)));
+            }
+        });
+        receiversTree.expandPath(new TreePath(model.getPathToRoot(model.RootNode)));
+
+        receiversTree.addTreeWillExpandListener(new TreeWillExpandListener() {
+            public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
+                if (event.getPath().getLastPathComponent() == model.RootNode) {
+                    throw new ExpandVetoException(event);
                 }
+            }
 
-                public void treeNodesInserted(TreeModelEvent e) {
-                    expandRoot();
+            public void treeWillExpand(TreeExpansionEvent event) {}
+        });
+
+        receiversTree.addTreeSelectionListener(e -> {
+            TreePath path = e.getNewLeadSelectionPath();
+
+            if (path != null) {
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+
+                if ((node != null)
+                        && (node.getUserObject() != null)
+                        && (node.getUserObject() instanceof ChainsawReceiver)) {
+                    ChainsawReceiver p = (ChainsawReceiver) node.getUserObject();
+                    logger.debug("plugin={}", p);
+                    pluginEditorPanel.setReceiverAndProperties(p, m_classToProperties.get(p.getClass()));
+                } else {
+                    pluginEditorPanel.setReceiverAndProperties(null, null);
                 }
-
-                public void treeNodesRemoved(TreeModelEvent e) {
-                    expandRoot();
-                }
-
-                public void treeStructureChanged(TreeModelEvent e) {
-                    expandRoot();
-                }
-
-                private void expandRoot() {
-                    receiversTree.expandPath(
-                        new TreePath(model.getPathToRoot(model.RootNode)));
-                }
-            });
-        receiversTree.expandPath(
-            new TreePath(model.getPathToRoot(model.RootNode)));
-
-        receiversTree.addTreeWillExpandListener(
-            new TreeWillExpandListener() {
-                public void treeWillCollapse(TreeExpansionEvent event)
-                    throws ExpandVetoException {
-                    if (event.getPath().getLastPathComponent() == model.RootNode) {
-                        throw new ExpandVetoException(event);
-                    }
-                }
-
-                public void treeWillExpand(TreeExpansionEvent event) {
-                }
-            });
-
-        receiversTree.addTreeSelectionListener(
-            e -> {
-                TreePath path = e.getNewLeadSelectionPath();
-
-                if (path != null) {
-                    DefaultMutableTreeNode node =
-                        (DefaultMutableTreeNode) path.getLastPathComponent();
-
-                    if (
-                        (node != null) && (node.getUserObject() != null)
-                            && (node.getUserObject() instanceof ChainsawReceiver)) {
-                        ChainsawReceiver p = (ChainsawReceiver) node.getUserObject();
-                        logger.debug("plugin={}", p);
-                        pluginEditorPanel.setReceiverAndProperties(p, 
-                                m_classToProperties.get(p.getClass()));
-                    } else {
-                        pluginEditorPanel.setReceiverAndProperties(null, null);
-                    }
-                }
-            });
+            }
+        });
 
         receiversTree.setToolTipText("Allows you to manage Log4j Receivers");
-        newReceiverButtonAction =
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    newReceiverPopup.show(
-                        buttonPanel.newReceiverButton, 0,
-                        buttonPanel.newReceiverButton.getHeight());
-                }
-            };
-        newReceiverButtonAction.putValue(
-            Action.SMALL_ICON, new ImageIcon(ChainsawIcons.ICON_NEW_RECEIVER));
-        newReceiverButtonAction.putValue(
-            Action.SHORT_DESCRIPTION, "Creates and configures a new Receiver");
+        newReceiverButtonAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                newReceiverPopup.show(buttonPanel.newReceiverButton, 0, buttonPanel.newReceiverButton.getHeight());
+            }
+        };
+        newReceiverButtonAction.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.ICON_NEW_RECEIVER));
+        newReceiverButtonAction.putValue(Action.SHORT_DESCRIPTION, "Creates and configures a new Receiver");
         newReceiverButtonAction.putValue(Action.NAME, "New Receiver");
-        newReceiverButtonAction.putValue(
-            Action.MNEMONIC_KEY, KeyEvent.VK_N);
+        newReceiverButtonAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_N);
 
         newReceiverButtonAction.setEnabled(true);
 
-        playReceiverButtonAction =
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    playCurrentlySelectedReceiver();
-                }
-            };
+        playReceiverButtonAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                playCurrentlySelectedReceiver();
+            }
+        };
 
-        playReceiverButtonAction.putValue(
-            Action.SHORT_DESCRIPTION, "Resumes the selected Node");
+        playReceiverButtonAction.putValue(Action.SHORT_DESCRIPTION, "Resumes the selected Node");
         playReceiverButtonAction.putValue(Action.NAME, "Resume");
-        playReceiverButtonAction.putValue(
-            Action.SMALL_ICON, new ImageIcon(ChainsawIcons.ICON_RESUME_RECEIVER));
+        playReceiverButtonAction.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.ICON_RESUME_RECEIVER));
         playReceiverButtonAction.setEnabled(false);
-        playReceiverButtonAction.putValue(
-            Action.MNEMONIC_KEY, KeyEvent.VK_R);
+        playReceiverButtonAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_R);
 
-        pauseReceiverButtonAction =
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    pauseCurrentlySelectedReceiver();
-                }
-            };
+        pauseReceiverButtonAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                pauseCurrentlySelectedReceiver();
+            }
+        };
 
         pauseReceiverButtonAction.putValue(
-            Action.SHORT_DESCRIPTION,
-            "Pause the selected Receiver.  All events received will be discarded.");
+                Action.SHORT_DESCRIPTION, "Pause the selected Receiver.  All events received will be discarded.");
         pauseReceiverButtonAction.putValue(Action.NAME, "Pause");
 
-        pauseReceiverButtonAction.putValue(
-            Action.MNEMONIC_KEY, KeyEvent.VK_P);
+        pauseReceiverButtonAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_P);
 
-        pauseReceiverButtonAction.putValue(
-            Action.SMALL_ICON, new ImageIcon(ChainsawIcons.PAUSE));
+        pauseReceiverButtonAction.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.PAUSE));
         pauseReceiverButtonAction.setEnabled(false);
 
-        shutdownReceiverButtonAction =
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    shutdownCurrentlySelectedReceiver();
-                }
-            };
+        shutdownReceiverButtonAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                shutdownCurrentlySelectedReceiver();
+            }
+        };
 
         shutdownReceiverButtonAction.putValue(
-            Action.SHORT_DESCRIPTION,
-            "Shuts down the selected Receiver, and removes it from the Plugin registry");
+                Action.SHORT_DESCRIPTION, "Shuts down the selected Receiver, and removes it from the Plugin registry");
         shutdownReceiverButtonAction.putValue(Action.NAME, "Shutdown");
 
-        shutdownReceiverButtonAction.putValue(
-            Action.SMALL_ICON, new ImageIcon(ChainsawIcons.ICON_STOP_RECEIVER));
-        shutdownReceiverButtonAction.putValue(
-            Action.MNEMONIC_KEY, KeyEvent.VK_S);
+        shutdownReceiverButtonAction.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.ICON_STOP_RECEIVER));
+        shutdownReceiverButtonAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_S);
 
         shutdownReceiverButtonAction.setEnabled(false);
 
-        saveReceiversButtonAction =
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    saveReceivers();
-                }
-            };
+        saveReceiversButtonAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                saveReceivers();
+            }
+        };
 
-        saveReceiversButtonAction.putValue(
-            Action.SHORT_DESCRIPTION,
-            "Save the current receiver configuration");
+        saveReceiversButtonAction.putValue(Action.SHORT_DESCRIPTION, "Save the current receiver configuration");
         saveReceiversButtonAction.putValue(Action.NAME, "Save receivers");
 
-        saveReceiversButtonAction.putValue(
-            Action.SMALL_ICON, new ImageIcon(ChainsawIcons.FILE_SAVE_AS));
-        saveReceiversButtonAction.putValue(
-            Action.MNEMONIC_KEY, KeyEvent.VK_V);
+        saveReceiversButtonAction.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.FILE_SAVE_AS));
+        saveReceiversButtonAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_V);
 
-
-        restartReceiverButtonAction =
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    ChainsawReceiver selectedReceiver = getCurrentlySelectedReceiver();
-                    if (selectedReceiver == null) {
-                        return;
-                    }
-                    selectedReceiver.shutdown();
-                    selectedReceiver.start();
-                    //allow the visual receiver to get a container on restart
-                    if (selectedReceiver instanceof VisualReceiver) {
-                        ((VisualReceiver) selectedReceiver).setContainer(ReceiversPanel.this);
-                    }
+        restartReceiverButtonAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                ChainsawReceiver selectedReceiver = getCurrentlySelectedReceiver();
+                if (selectedReceiver == null) {
+                    return;
                 }
-            };
+                selectedReceiver.shutdown();
+                selectedReceiver.start();
+                // allow the visual receiver to get a container on restart
+                if (selectedReceiver instanceof VisualReceiver) {
+                    ((VisualReceiver) selectedReceiver).setContainer(ReceiversPanel.this);
+                }
+            }
+        };
 
-        restartReceiverButtonAction.putValue(
-            Action.SHORT_DESCRIPTION,
-            "Restarts the selected Receiver");
+        restartReceiverButtonAction.putValue(Action.SHORT_DESCRIPTION, "Restarts the selected Receiver");
         restartReceiverButtonAction.putValue(Action.NAME, "Restart");
 
-        restartReceiverButtonAction.putValue(
-            Action.SMALL_ICON, new ImageIcon(ChainsawIcons.ICON_RESTART));
-        restartReceiverButtonAction.putValue(
-            Action.MNEMONIC_KEY, KeyEvent.VK_R);
+        restartReceiverButtonAction.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.ICON_RESTART));
+        restartReceiverButtonAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_R);
 
         restartReceiverButtonAction.setEnabled(false);
 
-        showReceiverHelpAction =
-            new AbstractAction("Help") {
-                public void actionPerformed(ActionEvent e) {
-                    ChainsawReceiver receiver = getCurrentlySelectedReceiver();
+        showReceiverHelpAction = new AbstractAction("Help") {
+            public void actionPerformed(ActionEvent e) {
+                ChainsawReceiver receiver = getCurrentlySelectedReceiver();
 
-                    if (receiver != null) {
-                        HelpManager.getInstance().showHelpForClass(receiver.getClass());
-                    }
+                if (receiver != null) {
+                    HelpManager.getInstance().showHelpForClass(receiver.getClass());
                 }
-            };
+            }
+        };
 
-        showReceiverHelpAction.putValue(
-            Action.SMALL_ICON, new ImageIcon(ChainsawIcons.HELP));
-        showReceiverHelpAction.putValue(
-            Action.SHORT_DESCRIPTION, "Displays the JavaDoc page for this Plugin");
+        showReceiverHelpAction.putValue(Action.SMALL_ICON, new ImageIcon(ChainsawIcons.HELP));
+        showReceiverHelpAction.putValue(Action.SHORT_DESCRIPTION, "Displays the JavaDoc page for this Plugin");
 
-        startAllAction =
-            new AbstractAction(
-                "(Re)start All Receivers", new ImageIcon(ChainsawIcons.ICON_RESTART_ALL)) {
-                public void actionPerformed(ActionEvent e) {
-                    if (
-                        JOptionPane.showConfirmDialog(
-                            null,
-                            "This will cause any active Receiver to stop, and disconnect.  Is this ok?",
-                            "Confirm", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
-                        new Thread(
-                            () -> {
+        startAllAction = new AbstractAction("(Re)start All Receivers", new ImageIcon(ChainsawIcons.ICON_RESTART_ALL)) {
+            public void actionPerformed(ActionEvent e) {
+                if (JOptionPane.showConfirmDialog(
+                                null,
+                                "This will cause any active Receiver to stop, and disconnect.  Is this ok?",
+                                "Confirm",
+                                JOptionPane.OK_CANCEL_OPTION)
+                        == JOptionPane.OK_OPTION) {
+                    new Thread(() -> {
                                 List<ChainsawReceiver> allReceivers = m_parent.getAllReceivers();
 
                                 for (ChainsawReceiver rx : allReceivers) {
@@ -330,14 +285,15 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
                                 }
 
                                 statusBar.setMessage("All Receivers have been (re)started");
-                            }).start();
-                    }
+                            })
+                            .start();
                 }
-            };
+            }
+        };
 
         startAllAction.putValue(
-            Action.SHORT_DESCRIPTION,
-            "Ensures that any Receiver that isn't active, is started, and any started action is stopped, and then restarted");
+                Action.SHORT_DESCRIPTION,
+                "Ensures that any Receiver that isn't active, is started, and any started action is stopped, and then restarted");
 
         receiversTree.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         receiversTree.setCellRenderer(new ReceiverTreeCellRenderer());
@@ -369,9 +325,9 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
         }
     }
 
-    public void saveReceiversToFile(File file){
+    public void saveReceiversToFile(File file) {
         try {
-            //we programmatically register the ZeroConf plugin in the plugin registry
+            // we programmatically register the ZeroConf plugin in the plugin registry
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
             factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
@@ -403,7 +359,6 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
                 }
 
                 rootElement.appendChild(pluginElement);
-
             }
 
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
@@ -418,9 +373,10 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
             stream.close();
 
         } catch (Exception e) {
-            logger.error(e,e);
+            logger.error(e, e);
         }
     }
+
     protected ReceiversTreeModel getReceiverTreeModel() {
         return ((ReceiversTreeModel) receiversTree.getModel());
     }
@@ -429,19 +385,16 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
      *
      */
     protected void updateCurrentlySelectedNodeInDispatchThread() {
-        SwingUtilities.invokeLater(
-            () -> {
-                DefaultMutableTreeNode node =
-                    (DefaultMutableTreeNode) receiversTree
-                        .getLastSelectedPathComponent();
+        SwingUtilities.invokeLater(() -> {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) receiversTree.getLastSelectedPathComponent();
 
-                if (node == null) {
-                    return;
-                }
+            if (node == null) {
+                return;
+            }
 
-                getReceiverTreeModel().nodeChanged(node);
-                updateActions();
-            });
+            getReceiverTreeModel().nodeChanged(node);
+            updateActions();
+        });
     }
 
     /**
@@ -452,8 +405,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
      * @return Receiver or null
      */
     private ChainsawReceiver getCurrentlySelectedReceiver() {
-        DefaultMutableTreeNode node =
-            (DefaultMutableTreeNode) receiversTree.getLastSelectedPathComponent();
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode) receiversTree.getLastSelectedPathComponent();
 
         if (node == null) {
             return null;
@@ -473,8 +425,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
         Collection receivers = new ArrayList();
 
         for (TreePath path : paths) {
-            DefaultMutableTreeNode node =
-                (DefaultMutableTreeNode) path.getLastPathComponent();
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
 
             if ((node != null) && node.getUserObject() instanceof ChainsawReceiver) {
                 receivers.add(node.getUserObject());
@@ -492,8 +443,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
      * @return Object representing currently seleted Node's User Object
      */
     private Object getCurrentlySelectedUserObject() {
-        DefaultMutableTreeNode node =
-            (DefaultMutableTreeNode) receiversTree.getLastSelectedPathComponent();
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode) receiversTree.getLastSelectedPathComponent();
 
         if (node == null) {
             return null;
@@ -530,21 +480,22 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
      * The user is asked to confirm this operation
      */
     private void shutdownCurrentlySelectedReceiver() {
-        if (
-            JOptionPane.showConfirmDialog(
-                null,
-                "Are you sure you wish to shutdown this receiver?\n\nThis will disconnect any network resources, and remove it from the PluginRegistry.",
-                "Confirm stop of Receiver", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-            new Thread(
-                () -> {
-                    ChainsawReceiver[] receivers = getSelectedReceivers();
+        if (JOptionPane.showConfirmDialog(
+                        null,
+                        "Are you sure you wish to shutdown this receiver?\n\nThis will disconnect any network resources, and remove it from the PluginRegistry.",
+                        "Confirm stop of Receiver",
+                        JOptionPane.YES_NO_OPTION)
+                == JOptionPane.YES_OPTION) {
+            new Thread(() -> {
+                        ChainsawReceiver[] receivers = getSelectedReceivers();
 
-                    if (receivers != null) {
-                        for (ChainsawReceiver receiver : receivers) {
-                            receiver.shutdown();
+                        if (receivers != null) {
+                            for (ChainsawReceiver receiver : receivers) {
+                                receiver.shutdown();
+                            }
                         }
-                    }
-                }).start();
+                    })
+                    .start();
         }
     }
 
@@ -589,14 +540,12 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
         firePropertyChange("visible", oldValue, isVisible());
     }
 
-    public void loadSettings(LoadSettingsEvent event) {
-    }
+    public void loadSettings(LoadSettingsEvent event) {}
 
     /**
      * Saves all the receivers which are active at shut down as a configuration
      * file which can be loaded when Chainsaw will be restarted.
      */
-
     public void saveSettings(SaveSettingsEvent event) {
         File file = new File(SettingsManager.getSettingsDirectory(), "receiver-config.xml");
         saveReceiversToFile(file);
@@ -612,54 +561,54 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
     class NewReceiverPopupMenu extends JPopupMenu {
         NewReceiverPopupMenu() {
             ServiceLoader<ChainsawReceiverFactory> sl = ServiceLoader.load(ChainsawReceiverFactory.class);
-            
-            for( ChainsawReceiverFactory crFactory : sl ){
-                add(
-                    new AbstractAction("New " + crFactory.getReceiverName() + "...") {
-                        public void actionPerformed(ActionEvent e) {
-                            Container container = SwingUtilities.getAncestorOfClass(JFrame.class, ReceiversPanel.this);
-                            final JDialog dialog = new JDialog((JFrame) container, "New " + crFactory.getReceiverName() + "...", true);
 
-                            try {
-                                final NewReceiverDialogPanel panel =
-                                    NewReceiverDialogPanel.create(crFactory);
-                                dialog.getContentPane().add(panel);
-                                dialog.pack();
-                                SwingHelper.centerOnScreen(dialog);
+            for (ChainsawReceiverFactory crFactory : sl) {
+                add(new AbstractAction("New " + crFactory.getReceiverName() + "...") {
+                    public void actionPerformed(ActionEvent e) {
+                        Container container = SwingUtilities.getAncestorOfClass(JFrame.class, ReceiversPanel.this);
+                        final JDialog dialog =
+                                new JDialog((JFrame) container, "New " + crFactory.getReceiverName() + "...", true);
 
-                                /*
-                                 * Make the default button the ok button
-                                 */
-                                dialog.getRootPane().setDefaultButton(panel.getOkPanel().getOkButton());
+                        try {
+                            final NewReceiverDialogPanel panel = NewReceiverDialogPanel.create(crFactory);
+                            dialog.getContentPane().add(panel);
+                            dialog.pack();
+                            SwingHelper.centerOnScreen(dialog);
 
-                                /*
-                                 * Use the standard Cancel metaphor
-                                 */
-                                SwingHelper.configureCancelForDialog(dialog, panel.getOkPanel().getCancelButton());
+                            /*
+                             * Make the default button the ok button
+                             */
+                            dialog.getRootPane()
+                                    .setDefaultButton(panel.getOkPanel().getOkButton());
 
-                                final PropertyDescriptor[] descriptors = crFactory.getPropertyDescriptors();
-                                panel.getOkPanel().getOkButton().addActionListener(
-                                    e2 -> {
-                                        ChainsawReceiver receiver = panel.getReceiver();
-                                        if (receiver.getName() != null && !receiver.getName().trim().isEmpty()) {
-                                            dialog.dispose();
-                                            // Notify the LogUI that a new reciever has been created so it can spawn a new tab
-                                            m_parent.addReceiver(receiver);
-                                            receiver.start();
-                                            m_classToProperties.put(receiver.getClass(), descriptors);
-                                            statusBar.setMessage("Receiver '" + receiver.getName() + "' started");
-                                        } else {
-                                            logger.error("Name required to create receiver");
-                                        }
-                                    });
-                                dialog.setVisible(true);
-                            } catch (Exception e1) {
-                                logger.error(
-                                    "Failed to create the new Receiver dialog", e1);
-                            }
+                            /*
+                             * Use the standard Cancel metaphor
+                             */
+                            SwingHelper.configureCancelForDialog(
+                                    dialog, panel.getOkPanel().getCancelButton());
+
+                            final PropertyDescriptor[] descriptors = crFactory.getPropertyDescriptors();
+                            panel.getOkPanel().getOkButton().addActionListener(e2 -> {
+                                ChainsawReceiver receiver = panel.getReceiver();
+                                if (receiver.getName() != null
+                                        && !receiver.getName().trim().isEmpty()) {
+                                    dialog.dispose();
+                                    // Notify the LogUI that a new reciever has been created so it can spawn a new tab
+                                    m_parent.addReceiver(receiver);
+                                    receiver.start();
+                                    m_classToProperties.put(receiver.getClass(), descriptors);
+                                    statusBar.setMessage("Receiver '" + receiver.getName() + "' started");
+                                } else {
+                                    logger.error("Name required to create receiver");
+                                }
+                            });
+                            dialog.setVisible(true);
+                        } catch (Exception e1) {
+                            logger.error("Failed to create the new Receiver dialog", e1);
                         }
-                    });
-                }
+                    }
+                });
+            }
         }
     }
 
@@ -674,8 +623,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
          * @see javax.swing.JPopupMenu#show(java.awt.Component, int, int)
          */
         public void show(Component invoker, int x, int y) {
-            DefaultMutableTreeNode node =
-                (DefaultMutableTreeNode) receiversTree.getLastSelectedPathComponent();
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) receiversTree.getLastSelectedPathComponent();
 
             if (node == null) {
                 return;
@@ -728,20 +676,17 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
             add(showReceiverHelpAction);
         }
 
-        private JRadioButtonMenuItem createLevelRadioButton(
-            final ChainsawReceiver r, final Level l) {
+        private JRadioButtonMenuItem createLevelRadioButton(final ChainsawReceiver r, final Level l) {
             Map<String, Icon> levelIconMap = LevelIconFactory.getInstance().getLevelToIconMap();
 
-            Action action =
-                new AbstractAction(
-                    l.toString(), levelIconMap.get(l.toString())) {
-                    public void actionPerformed(ActionEvent e) {
-                        if (r != null) {
-                            r.setThreshold(l);
-                            updateCurrentlySelectedNodeInDispatchThread();
-                        }
+            Action action = new AbstractAction(l.toString(), levelIconMap.get(l.toString())) {
+                public void actionPerformed(ActionEvent e) {
+                    if (r != null) {
+                        r.setThreshold(l);
+                        updateCurrentlySelectedNodeInDispatchThread();
                     }
-                };
+                }
+            };
 
             JRadioButtonMenuItem item = new JRadioButtonMenuItem(action);
             item.setSelected(r.getThreshold() == l);
@@ -769,8 +714,7 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
      *
      * @author Paul Smith &lt;psmith@apache.org&gt;
      */
-    private class ReceiverToolbar extends JToolBar
-        implements TreeSelectionListener {
+    private class ReceiverToolbar extends JToolBar implements TreeSelectionListener {
         final SmallButton newReceiverButton;
 
         private ReceiverToolbar() {
@@ -779,17 +723,14 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
             SmallButton restartReceiverButton = new SmallButton(restartReceiverButtonAction);
             restartReceiverButton.setText(null);
 
-            SmallButton shutdownReceiverButton =
-                new SmallButton(shutdownReceiverButtonAction);
+            SmallButton shutdownReceiverButton = new SmallButton(shutdownReceiverButtonAction);
             shutdownReceiverButton.setText(null);
 
-            SmallButton saveReceiversButton =
-                new SmallButton(saveReceiversButtonAction);
+            SmallButton saveReceiversButton = new SmallButton(saveReceiversButtonAction);
             saveReceiversButton.setText(null);
 
             SmallButton restartAllButton = new SmallButton(startAllAction);
             restartAllButton.setText(null);
-
 
             newReceiverButton = new SmallButton(newReceiverButtonAction);
             newReceiverButton.setText(null);
@@ -809,9 +750,9 @@ public class ReceiversPanel extends JPanel implements SettingsListener {
             add(Box.createHorizontalGlue());
 
             SmallButton closeButton = new SmallButton.Builder()
-                .shortDescription("Closes the Receiver panel")
-                .action(() -> ReceiversPanel.this.setVisible(false))
-                .build();
+                    .shortDescription("Closes the Receiver panel")
+                    .action(() -> ReceiversPanel.this.setVisible(false))
+                    .build();
             add(closeButton);
 
             add(Box.createHorizontalStrut(5));

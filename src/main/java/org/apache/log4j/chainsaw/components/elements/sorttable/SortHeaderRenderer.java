@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,14 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.chainsaw.components.elements.sorttable;
 
+import java.awt.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
-import java.awt.*;
-
 
 /**
  * A Table Column header renederer that displays a nice Up/Down arrow
@@ -42,7 +40,7 @@ public class SortHeaderRenderer extends DefaultTableCellRenderer {
 
     @Override
     public Component getTableCellRendererComponent(
-        JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+            JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
         int index = -1;
         boolean ascending = true;
 

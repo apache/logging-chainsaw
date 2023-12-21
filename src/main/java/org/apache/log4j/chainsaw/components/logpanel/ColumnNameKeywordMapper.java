@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,12 +16,11 @@
  */
 package org.apache.log4j.chainsaw.components.logpanel;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.log4j.chainsaw.ChainsawConstants;
 import org.apache.log4j.helpers.Constants;
 import org.apache.log4j.spi.LoggingEventFieldResolver;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class ColumnNameKeywordMapper {
 
@@ -38,9 +37,15 @@ public class ColumnNameKeywordMapper {
         columnNameKeywordMap.put(ChainsawConstants.THREAD_COL_NAME, LoggingEventFieldResolver.THREAD_FIELD);
         columnNameKeywordMap.put(ChainsawConstants.THROWABLE_COL_NAME, LoggingEventFieldResolver.EXCEPTION_FIELD);
         columnNameKeywordMap.put(ChainsawConstants.TIMESTAMP_COL_NAME, LoggingEventFieldResolver.TIMESTAMP_FIELD);
-        columnNameKeywordMap.put(ChainsawConstants.ID_COL_NAME.toUpperCase(), LoggingEventFieldResolver.PROP_FIELD + Constants.LOG4J_ID_KEY);
-        columnNameKeywordMap.put(ChainsawConstants.LOG4J_MARKER_COL_NAME, LoggingEventFieldResolver.PROP_FIELD + ChainsawConstants.LOG4J_MARKER_COL_NAME);
-        columnNameKeywordMap.put(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE.toUpperCase(), LoggingEventFieldResolver.PROP_FIELD + ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
+        columnNameKeywordMap.put(
+                ChainsawConstants.ID_COL_NAME.toUpperCase(),
+                LoggingEventFieldResolver.PROP_FIELD + Constants.LOG4J_ID_KEY);
+        columnNameKeywordMap.put(
+                ChainsawConstants.LOG4J_MARKER_COL_NAME,
+                LoggingEventFieldResolver.PROP_FIELD + ChainsawConstants.LOG4J_MARKER_COL_NAME);
+        columnNameKeywordMap.put(
+                ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE.toUpperCase(),
+                LoggingEventFieldResolver.PROP_FIELD + ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE);
     }
 
     public boolean contains(String key) {

@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,13 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.spi;
 
+import java.io.PrintStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.io.PrintStream;
 
 /**
  * Used to store special log4j errors which cannot be logged using internal
@@ -148,8 +146,7 @@ public class ErrorItem {
      * @return string.
      */
     public String toString() {
-        String str =
-            "Reported error: \"" + message + "\"";
+        String str = "Reported error: \"" + message + "\"";
 
         if (lineNumber != -1) {
             str += " at line " + lineNumber + " column " + colNumber;
@@ -173,8 +170,7 @@ public class ErrorItem {
      * @param ps print stream.
      */
     public void dump(final PrintStream ps) {
-        String str =
-            "Reported error: \"" + message + "\"";
+        String str = "Reported error: \"" + message + "\"";
 
         if (lineNumber != -1) {
             str += " at line " + lineNumber + " column " + colNumber;

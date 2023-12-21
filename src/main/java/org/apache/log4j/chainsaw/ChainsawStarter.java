@@ -1,15 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to you under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.log4j.chainsaw;
 
-import org.apache.commons.configuration2.AbstractConfiguration;
-import org.apache.log4j.chainsaw.logui.LogUI;
-import org.apache.log4j.chainsaw.osx.OSXIntegration;
-import org.apache.log4j.chainsaw.prefs.SettingsManager;
-import org.apache.log4j.chainsaw.components.splash.SplashViewer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
-
-import javax.swing.*;
 import java.awt.*;
 import java.security.AllPermission;
 import java.security.CodeSource;
@@ -17,6 +23,15 @@ import java.security.PermissionCollection;
 import java.security.Permissions;
 import java.security.Policy;
 import java.util.Locale;
+import javax.swing.*;
+import org.apache.commons.configuration2.AbstractConfiguration;
+import org.apache.log4j.chainsaw.components.splash.SplashViewer;
+import org.apache.log4j.chainsaw.logui.LogUI;
+import org.apache.log4j.chainsaw.osx.OSXIntegration;
+import org.apache.log4j.chainsaw.prefs.SettingsManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
 
 public class ChainsawStarter {
     private static final Logger logger = LogManager.getLogger(ChainsawStarter.class);
@@ -38,26 +53,26 @@ public class ChainsawStarter {
             if (lookAndFeelClassName == null || lookAndFeelClassName.trim().isEmpty()) {
                 String osName = System.getProperty("os.name");
                 if (osName.toLowerCase(Locale.ENGLISH).startsWith("mac")) {
-                    //no need to assign look and feel
+                    // no need to assign look and feel
                 } else if (osName.toLowerCase(Locale.ENGLISH).startsWith("windows")) {
                     lookAndFeelClassName = "com.sun.java.swing.plaf.windows.WindowsLookAndFeel";
-                    configuration.setProperty("lookAndFeelClassName",lookAndFeelClassName);
+                    configuration.setProperty("lookAndFeelClassName", lookAndFeelClassName);
                 } else if (osName.toLowerCase(Locale.ENGLISH).startsWith("linux")) {
                     lookAndFeelClassName = "com.sun.java.swing.plaf.gtk.GTKLookAndFeel";
-                    configuration.setProperty("lookAndFeelClassName",lookAndFeelClassName);
+                    configuration.setProperty("lookAndFeelClassName", lookAndFeelClassName);
                 }
             }
 
             if (lookAndFeelClassName != null && !(lookAndFeelClassName.trim().isEmpty())) {
-                try{
+                try {
                     UIManager.setLookAndFeel(lookAndFeelClassName);
-                } catch (Exception ex){
+                } catch (Exception ex) {
                     logger.error(ex);
                 }
-            }else{
-                try{
+            } else {
+                try {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                } catch (Exception ex){
+                } catch (Exception ex) {
                     logger.error(ex);
                 }
             }
@@ -104,7 +119,7 @@ public class ChainsawStarter {
          * the Plugins directory can find them (this is particularly
          * important for the Web start version of Chainsaw
          */
-        //configuration initialized here
+        // configuration initialized here
 
         Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
             logger.error("Uncaught exception in thread {}", t.getName(), e);
@@ -117,6 +132,5 @@ public class ChainsawStarter {
         EventQueue.invokeLater(logUI::buildChainsawLogPanel);
 
         logger.info("SecurityManager is now: {}", System.getSecurityManager());
-
     }
 }

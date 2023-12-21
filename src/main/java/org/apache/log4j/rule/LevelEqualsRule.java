@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,16 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.rule;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.logevents.Level;
 import org.apache.log4j.spi.LoggingEventFieldResolver;
@@ -86,7 +83,7 @@ public class LevelEqualsRule extends AbstractRule {
         if (levelList.contains(value.toUpperCase())) {
             thisLevel = Level.valueOf(value.toUpperCase());
         } else {
-//            thisLevel = UtilLoggingLevel.toLevel(value.toUpperCase());
+            //            thisLevel = UtilLoggingLevel.toLevel(value.toUpperCase());
         }
 
         return new LevelEqualsRule(thisLevel);
@@ -96,8 +93,8 @@ public class LevelEqualsRule extends AbstractRule {
      * {@inheritDoc}
      */
     public boolean evaluate(final ChainsawLoggingEvent event, Map matches) {
-        //both util.logging and log4j contain 'info' - use the int values instead of equality
-        //info level set to the same value for both levels
+        // both util.logging and log4j contain 'info' - use the int values instead of equality
+        // info level set to the same value for both levels
         Level eventLevel = event.m_level;
         boolean result = (level.ordinal() == eventLevel.ordinal());
         if (result && matches != null) {

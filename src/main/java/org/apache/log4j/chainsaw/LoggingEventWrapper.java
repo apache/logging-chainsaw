@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,16 +16,15 @@
  */
 package org.apache.log4j.chainsaw;
 
-import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
-import org.apache.log4j.helpers.Constants;
-import org.apache.log4j.rule.Rule;
-
 import java.awt.*;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.log4j.helpers.Constants;
+import org.apache.log4j.rule.Rule;
 
 /**
  * Wrap access to a LoggingEvent.  All property updates need to go through this object and not through the wrapped logging event,
@@ -42,11 +41,11 @@ public class LoggingEventWrapper {
     private int markerHeight = DEFAULT_HEIGHT;
     private int msgHeight = DEFAULT_HEIGHT;
 
-    //set to the log4jid value via setId - assumed to never change
+    // set to the log4jid value via setId - assumed to never change
     private int id;
 
     private boolean searchMatch = false;
-    //a Map of event fields to Sets of string matches (can be used to render matches differently)
+    // a Map of event fields to Sets of string matches (can be used to render matches differently)
     Map eventMatches = new HashMap();
     private LoggingEventWrapper syncWrapper;
     private boolean displayed;
@@ -158,9 +157,8 @@ public class LoggingEventWrapper {
     }
 
     public void setPreviousDisplayedEventTimestamp(Instant previousDisplayedEventTimeStamp) {
-        long diffMs = ChronoUnit.MILLIS.between( previousDisplayedEventTimeStamp, loggingEvent.m_timestamp );
-        setProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE,
-                String.valueOf(diffMs));
+        long diffMs = ChronoUnit.MILLIS.between(previousDisplayedEventTimeStamp, loggingEvent.m_timestamp);
+        setProperty(ChainsawConstants.MILLIS_DELTA_COL_NAME_LOWERCASE, String.valueOf(diffMs));
     }
 
     public boolean isDisplayed() {
@@ -185,6 +183,7 @@ public class LoggingEventWrapper {
     }
 
     public String toString() {
-        return "LoggingEventWrapper - id: " + id + " background: " + getBackground() + ", foreground: " + getForeground() + ", msg: " + loggingEvent.m_message;
+        return "LoggingEventWrapper - id: " + id + " background: " + getBackground() + ", foreground: "
+                + getForeground() + ", msg: " + loggingEvent.m_message;
     }
 }

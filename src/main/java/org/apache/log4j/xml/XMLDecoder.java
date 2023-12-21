@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,21 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.xml;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.apache.log4j.spi.Decoder;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-
-import javax.swing.*;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
 import java.io.*;
 import java.net.URL;
@@ -38,11 +26,19 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
 import java.util.zip.ZipInputStream;
+import javax.swing.*;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
-import org.apache.log4j.chainsaw.logevents.Level;
 import org.apache.log4j.chainsaw.logevents.LocationInfo;
-
+import org.apache.log4j.spi.Decoder;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 /**
  * Decodes Logging Events in XML formated into elements that are used by
@@ -68,8 +64,7 @@ public class XMLDecoder implements Decoder {
     /**
      * Document prolog.
      */
-    private static final String BEGINPART =
-        "<?xml version=\"1.0\" encoding=\"" + ENCODING + "\" ?>"
+    private static final String BEGINPART = "<?xml version=\"1.0\" encoding=\"" + ENCODING + "\" ?>"
             + "<!DOCTYPE log4j:eventSet SYSTEM \"http://localhost/log4j.dtd\">"
             + "<log4j:eventSet version=\"1.2\" "
             + "xmlns:log4j=\"http://jakarta.apache.org/log4j/\">";
@@ -121,7 +116,7 @@ public class XMLDecoder implements Decoder {
             dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
             dbf.setValidating(false);
             docBuilder = dbf.newDocumentBuilder();
-//            docBuilder.setErrorHandler(new SAXErrorHandler());
+            //            docBuilder.setErrorHandler(new SAXErrorHandler());
             docBuilder.setEntityResolver(new Log4jEntityResolver());
         } catch (ParserConfigurationException pce) {
             System.err.println("Unable to get document builder");
@@ -188,16 +183,14 @@ public class XMLDecoder implements Decoder {
         InputStream inputStream;
         if (isZipFile) {
             inputStream = new ZipInputStream(url.openStream());
-            //move stream to next entry so we can read it
+            // move stream to next entry so we can read it
             ((ZipInputStream) inputStream).getNextEntry();
         } else {
             inputStream = url.openStream();
         }
         if (owner != null) {
-            reader = new LineNumberReader(
-                new InputStreamReader(
-                    new ProgressMonitorInputStream(owner,
-                        "Loading " + url, inputStream), ENCODING));
+            reader = new LineNumberReader(new InputStreamReader(
+                    new ProgressMonitorInputStream(owner, "Loading " + url, inputStream), ENCODING));
         } else {
             reader = new LineNumberReader(new InputStreamReader(inputStream, ENCODING));
         }
@@ -244,24 +237,21 @@ public class XMLDecoder implements Decoder {
             }
             String newDoc;
             String newPartialEvent = null;
-            //separate the string into the last portion ending with
+            // separate the string into the last portion ending with
             // </log4j:event> (which will be processed) and the
             // partial event which will be combined and
             // processed in the next section
 
-            //if the document does not contain a record end,
+            // if the document does not contain a record end,
             // append it to the partial event string
             if (document.lastIndexOf(RECORD_END) == -1) {
                 partialEvent = partialEvent + document;
                 return null;
             }
 
-            if (document.lastIndexOf(RECORD_END)
-                + RECORD_END.length() < document.length()) {
-                newDoc = document.substring(0,
-                    document.lastIndexOf(RECORD_END) + RECORD_END.length());
-                newPartialEvent = document.substring(
-                    document.lastIndexOf(RECORD_END) + RECORD_END.length());
+            if (document.lastIndexOf(RECORD_END) + RECORD_END.length() < document.length()) {
+                newDoc = document.substring(0, document.lastIndexOf(RECORD_END) + RECORD_END.length());
+                newPartialEvent = document.substring(document.lastIndexOf(RECORD_END) + RECORD_END.length());
             } else {
                 newDoc = document;
             }
@@ -329,15 +319,15 @@ public class XMLDecoder implements Decoder {
 
         NodeList eventList = eventSet.getChildNodes();
 
-        for (int eventIndex = 0; eventIndex < eventList.getLength();
-             eventIndex++) {
+        for (int eventIndex = 0; eventIndex < eventList.getLength(); eventIndex++) {
             Node eventNode = eventList.item(eventIndex);
-            //ignore carriage returns in xml
+            // ignore carriage returns in xml
             if (eventNode.getNodeType() != Node.ELEMENT_NODE) {
                 continue;
             }
             logger = eventNode.getAttributes().getNamedItem("logger").getNodeValue();
-            timeStamp = Long.parseLong(eventNode.getAttributes().getNamedItem("timestamp").getNodeValue());
+            timeStamp = Long.parseLong(
+                    eventNode.getAttributes().getNamedItem("timestamp").getNodeValue());
             level = eventNode.getAttributes().getNamedItem("level").getNodeValue();
             threadName = eventNode.getAttributes().getNamedItem("thread").getNodeValue();
 
@@ -358,7 +348,7 @@ public class XMLDecoder implements Decoder {
                 if (tagName.equalsIgnoreCase("log4j:NDC")) {
                     ndc = getCData(list.item(y));
                 }
-                //still support receiving of MDC and convert to properties
+                // still support receiving of MDC and convert to properties
                 if (tagName.equalsIgnoreCase("log4j:MDC")) {
                     properties = new Hashtable();
                     NodeList propertyList = list.item(y).getChildNodes();
@@ -369,10 +359,12 @@ public class XMLDecoder implements Decoder {
 
                         if (propertyTag.equalsIgnoreCase("log4j:data")) {
                             Node property = propertyList.item(i);
-                            String name =
-                                property.getAttributes().getNamedItem("name").getNodeValue();
-                            String value =
-                                property.getAttributes().getNamedItem("value").getNodeValue();
+                            String name = property.getAttributes()
+                                    .getNamedItem("name")
+                                    .getNodeValue();
+                            String value = property.getAttributes()
+                                    .getNamedItem("value")
+                                    .getNodeValue();
                             properties.put(name, value);
                         }
                     }
@@ -381,20 +373,18 @@ public class XMLDecoder implements Decoder {
                 if (tagName.equalsIgnoreCase("log4j:throwable")) {
                     String exceptionString = getCData(list.item(y));
                     if (exceptionString != null && !exceptionString.trim().isEmpty()) {
-                        exception = new String[]{exceptionString.trim()
-                        };
+                        exception = new String[] {exceptionString.trim()};
                     }
                 }
 
                 if (tagName.equalsIgnoreCase("log4j:locationinfo")) {
                     className =
-                        list.item(y).getAttributes().getNamedItem("class").getNodeValue();
+                            list.item(y).getAttributes().getNamedItem("class").getNodeValue();
                     methodName =
-                        list.item(y).getAttributes().getNamedItem("method").getNodeValue();
-                    fileName =
-                        list.item(y).getAttributes().getNamedItem("file").getNodeValue();
+                            list.item(y).getAttributes().getNamedItem("method").getNodeValue();
+                    fileName = list.item(y).getAttributes().getNamedItem("file").getNodeValue();
                     lineNumber =
-                        list.item(y).getAttributes().getNamedItem("line").getNodeValue();
+                            list.item(y).getAttributes().getNamedItem("line").getNodeValue();
                 }
 
                 if (tagName.equalsIgnoreCase("log4j:properties")) {
@@ -409,10 +399,12 @@ public class XMLDecoder implements Decoder {
 
                         if (propertyTag.equalsIgnoreCase("log4j:data")) {
                             Node property = propertyList.item(i);
-                            String name =
-                                property.getAttributes().getNamedItem("name").getNodeValue();
-                            String value =
-                                property.getAttributes().getNamedItem("value").getNodeValue();
+                            String name = property.getAttributes()
+                                    .getNamedItem("name")
+                                    .getNodeValue();
+                            String value = property.getAttributes()
+                                    .getNamedItem("value")
+                                    .getNodeValue();
                             properties.put(name, value);
                         }
                     }
@@ -434,19 +426,15 @@ public class XMLDecoder implements Decoder {
             }
 
             LocationInfo info;
-            if ((fileName != null)
-                || (className != null)
-                || (methodName != null)
-                || (lineNumber != null)) {
-                info = new LocationInfo(fileName, className, methodName, 
-                        Integer.parseInt(lineNumber));
+            if ((fileName != null) || (className != null) || (methodName != null) || (lineNumber != null)) {
+                info = new LocationInfo(fileName, className, methodName, Integer.parseInt(lineNumber));
             } else {
                 info = null;
             }
-//            ThrowableInformation throwableInfo = null;
-//            if (exception != null) {
-//                throwableInfo = new ThrowableInformation(exception);
-//            }
+            //            ThrowableInformation throwableInfo = null;
+            //            if (exception != null) {
+            //                throwableInfo = new ThrowableInformation(exception);
+            //            }
 
             builder.clear();
             builder.setLogger(logger)
@@ -457,7 +445,6 @@ public class XMLDecoder implements Decoder {
                     .setMDC(properties)
                     .setNDC(ndc)
                     .setLocationInfo(info);
-
 
             events.add(builder.create());
 
@@ -487,9 +474,7 @@ public class XMLDecoder implements Decoder {
         for (int x = 0; x < nl.getLength(); x++) {
             Node innerNode = nl.item(x);
 
-            if (
-                (innerNode.getNodeType() == Node.TEXT_NODE)
-                    || (innerNode.getNodeType() == Node.CDATA_SECTION_NODE)) {
+            if ((innerNode.getNodeType() == Node.TEXT_NODE) || (innerNode.getNodeType() == Node.CDATA_SECTION_NODE)) {
                 buf.append(innerNode.getNodeValue());
             }
         }

@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,19 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.varia;
 
-import java.nio.charset.StandardCharsets;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.apache.log4j.helpers.Constants;
-import org.apache.log4j.rule.ExpressionRule;
-import org.apache.log4j.rule.Rule;
-
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
@@ -34,11 +28,14 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import org.apache.log4j.chainsaw.receiver.ChainsawReceiverSkeleton;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
 import org.apache.log4j.chainsaw.logevents.Level;
 import org.apache.log4j.chainsaw.logevents.LocationInfo;
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiverSkeleton;
+import org.apache.log4j.helpers.Constants;
+import org.apache.log4j.rule.ExpressionRule;
+import org.apache.log4j.rule.Rule;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -151,12 +148,12 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
 
     private static final String DEFAULT_HOST = "file";
 
-    //all lines other than first line of exception begin with tab followed by 'at' followed by text
+    // all lines other than first line of exception begin with tab followed by 'at' followed by text
     private static final String EXCEPTION_PATTERN = "^\\s+at.*";
     private static final String REGEXP_DEFAULT_WILDCARD = ".*?";
     private static final String REGEXP_GREEDY_WILDCARD = ".*";
     private static final String PATTERN_WILDCARD = "*";
-    //pull in optional leading and trailing spaces
+    // pull in optional leading and trailing spaces
     private static final String NOSPACE_GROUP = "(\\s*?\\S*?\\s*?)";
     private static final String DEFAULT_GROUP = "(" + REGEXP_DEFAULT_WILDCARD + ")";
     private static final String GREEDY_GROUP = "(" + REGEXP_GREEDY_WILDCARD + ")";
@@ -164,7 +161,7 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
     private static final String NEWLINE_REGEXP = "\n";
     private final String newLine = System.getProperty("line.separator");
 
-    private final String[] emptyException = new String[]{""};
+    private final String[] emptyException = new String[] {""};
 
     private SimpleDateFormat dateFormat;
     private String timestampFormat;
@@ -175,7 +172,7 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
     private String path;
     private boolean tailing;
     private String filterExpression;
-    private long waitMillis = 2000; //default 2 seconds
+    private long waitMillis = 2000; // default 2 seconds
     private String group;
 
     private static final String VALID_DATEFORMAT_CHARS = "GyYMwWDdFEuaHkKhmsSzZX";
@@ -198,7 +195,7 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
     private boolean appendNonMatches;
     private final Map<String, Level> customLevelDefinitionMap = new HashMap<>();
 
-    //default to one line - this number is incremented for each (NL) found in the logFormat
+    // default to one line - this number is incremented for each (NL) found in the logFormat
     private int lineCount = 1;
 
     protected boolean active = false;
@@ -221,7 +218,7 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
         try {
             exceptionPattern = Pattern.compile(EXCEPTION_PATTERN);
         } catch (PatternSyntaxException pse) {
-            //shouldn't happen
+            // shouldn't happen
         }
     }
 
@@ -356,7 +353,6 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
     public void setGroup(String group) {
         this.group = group;
     }
-
 
     /**
      * Accessor
@@ -495,14 +491,13 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
             additionalLines.clear();
             return null;
         }
-        //the current map contains fields - build an event
+        // the current map contains fields - build an event
         int exceptionLine = getExceptionLine();
         String[] exception = buildException(exceptionLine);
 
-        //messages are listed before exceptions in additionallines
+        // messages are listed before exceptions in additionallines
         if (!additionalLines.isEmpty() && exception.length > 0) {
-            currentMap.put(MESSAGE, buildMessage(currentMap.get(MESSAGE),
-                exceptionLine));
+            currentMap.put(MESSAGE, buildMessage(currentMap.get(MESSAGE), exceptionLine));
         }
         ChainsawLoggingEvent event = convertToEvent(currentMap, exception);
         currentMap.clear();
@@ -522,10 +517,10 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
         Matcher eventMatcher;
         Matcher exceptionMatcher;
         String readLine;
-        //if newlines are provided in the logFormat - (NL) - combine the lines prior to matching
+        // if newlines are provided in the logFormat - (NL) - combine the lines prior to matching
         while ((readLine = bufferedReader.readLine()) != null) {
             StringBuilder line = new StringBuilder(readLine);
-            //there is already one line (read above, start i at 1
+            // there is already one line (read above, start i at 1
             for (int i = 1; i < lineCount; i++) {
                 String thisLine = bufferedReader.readLine();
                 if (thisLine != null) {
@@ -534,13 +529,13 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
             }
             String input = line.toString();
             eventMatcher = regexpPattern.matcher(input);
-            //skip empty line entries
+            // skip empty line entries
             if (input.trim().isEmpty()) {
                 continue;
             }
             exceptionMatcher = exceptionPattern.matcher(input);
             if (eventMatcher.matches()) {
-                //build an event from the previous match (held in current map)
+                // build an event from the previous match (held in current map)
                 ChainsawLoggingEvent event = buildEvent();
                 if (event != null) {
                     if (passesExpression(event)) {
@@ -549,17 +544,20 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
                 }
                 currentMap.putAll(processEvent(eventMatcher.toMatchResult()));
             } else if (exceptionMatcher.matches()) {
-                //an exception line
+                // an exception line
                 additionalLines.add(input);
             } else {
-                //neither...either post an event with the line or append as additional lines
-                //if this was a logging event with multiple lines, each line will show up as its own event instead of being
-                //appended as multiple lines on the same event..
-                //choice is to have each non-matching line show up as its own line, or append them all to a previous event
+                // neither...either post an event with the line or append as additional lines
+                // if this was a logging event with multiple lines, each line will show up as its own event instead of
+                // being
+                // appended as multiple lines on the same event..
+                // choice is to have each non-matching line show up as its own line, or append them all to a previous
+                // event
                 if (appendNonMatches) {
-                    //hold on to the previous time, so we can do our best to preserve time-based ordering if the event is a non-match
+                    // hold on to the previous time, so we can do our best to preserve time-based ordering if the event
+                    // is a non-match
                     String lastTime = (String) currentMap.get(TIMESTAMP);
-                    //build an event from the previous match (held in current map)
+                    // build an event from the previous match (held in current map)
                     if (currentMap.size() > 0) {
                         ChainsawLoggingEvent event = buildEvent();
                         if (event != null) {
@@ -578,7 +576,7 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
             }
         }
 
-        //process last event if one exists
+        // process last event if one exists
         ChainsawLoggingEvent event = buildEvent();
         if (event != null) {
             if (passesExpression(event)) {
@@ -600,7 +598,7 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
     private boolean passesExpression(ChainsawLoggingEvent event) {
         if (event != null) {
             if (expressionRule != null) {
-//                return (expressionRule.evaluate(event, null));
+                //                return (expressionRule.evaluate(event, null));
             }
         }
         return true;
@@ -617,7 +615,7 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
      */
     private Map<String, String> processEvent(MatchResult result) {
         Map<String, String> map = new HashMap<>();
-        //group zero is the entire match - process all other groups
+        // group zero is the entire match - process all other groups
         for (int i = 1; i < result.groupCount() + 1; i++) {
             String key = matchingKeywords.get(i - 1);
             String value = result.group(i);
@@ -632,13 +630,13 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
      * @return string
      */
     private String convertTimestamp() {
-        //some locales (for example, French) generate timestamp text with characters not included in \w -
+        // some locales (for example, French) generate timestamp text with characters not included in \w -
         // now using \S (all non-whitespace characters) instead of /w
         String result = "";
         if (timestampFormat != null) {
             result = timestampFormat.replaceAll(Pattern.quote("+"), "[+]");
             result = result.replaceAll(VALID_DATEFORMAT_CHAR_PATTERN, "\\\\S+");
-            //make sure dots in timestamp are escaped
+            // make sure dots in timestamp are escaped
             result = result.replaceAll(Pattern.quote("."), "\\\\.");
         }
         return result;
@@ -685,7 +683,7 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
             dateFormat = new SimpleDateFormat(quoteTimeStampChars(timestampFormat));
             timestampPatternText = convertTimestamp();
         }
-        //if custom level definitions exist, parse them
+        // if custom level definitions exist, parse them
         updateCustomLevelDefinitionMap();
         try {
             if (filterExpression != null) {
@@ -699,20 +697,21 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
 
         String newPattern = logFormat;
 
-        //process newlines - (NL) - in the logFormat - before processing properties
+        // process newlines - (NL) - in the logFormat - before processing properties
         int index = 0;
         while (index > -1) {
             index = newPattern.indexOf(NEWLINE);
             if (index > -1) {
-                //keep track of number of expected newlines in the format, so the lines can be concatenated prior to matching
+                // keep track of number of expected newlines in the format, so the lines can be concatenated prior to
+                // matching
                 lineCount++;
                 newPattern = singleReplace(newPattern, NEWLINE, NEWLINE_REGEXP);
             }
         }
 
         String current = newPattern;
-        //build a list of property names and temporarily replace the property with an empty string,
-        //we'll rebuild the pattern later
+        // build a list of property names and temporarily replace the property with an empty string,
+        // we'll rebuild the pattern later
         List<String> propertyNames = new ArrayList<>();
         index = 0;
         while (index > -1) {
@@ -725,7 +724,7 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
                 current = current.substring(longPropertyName.length() + 1 + index);
                 newPattern = singleReplace(newPattern, longPropertyName, Integer.toString(buildingKeywords.size() - 1));
             } else {
-                //no properties
+                // no properties
                 index = -1;
             }
         }
@@ -757,12 +756,12 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
                 if (isInteger(stringInt)) {
                     matchingKeywords.add(buildingKeywords.get(Integer.parseInt(stringInt)));
                 }
-                //reset
+                // reset
                 buildingInt.setLength(0);
             }
         }
 
-        //if the very last value is an int, make sure to add it
+        // if the very last value is an int, make sure to add it
         String stringInt = buildingInt.toString();
         if (isInteger(stringInt)) {
             matchingKeywords.add(buildingKeywords.get(Integer.parseInt(stringInt)));
@@ -770,14 +769,14 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
 
         newPattern = replaceMetaChars(newPattern);
 
-        //compress one or more spaces in the pattern into the [ ]+ regexp
-        //(supports padding of level in log files)
+        // compress one or more spaces in the pattern into the [ ]+ regexp
+        // (supports padding of level in log files)
         newPattern = newPattern.replaceAll(MULTIPLE_SPACES_REGEXP, MULTIPLE_SPACES_REGEXP);
         newPattern = newPattern.replaceAll(Pattern.quote(PATTERN_WILDCARD), REGEXP_DEFAULT_WILDCARD);
-        //use buildingKeywords here to ensure correct order
+        // use buildingKeywords here to ensure correct order
         for (int i = 0; i < buildingKeywords.size(); i++) {
             String keyword = buildingKeywords.get(i);
-            //make the final keyword greedy (we're assuming it's the message)
+            // make the final keyword greedy (we're assuming it's the message)
             if (i == (buildingKeywords.size() - 1)) {
                 newPattern = singleReplace(newPattern, String.valueOf(i), GREEDY_GROUP);
             } else if (TIMESTAMP.equals(keyword)) {
@@ -815,25 +814,25 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
     }
 
     private String quoteTimeStampChars(String input) {
-        //put single quotes around text that isn't a supported dateformat char
+        // put single quotes around text that isn't a supported dateformat char
         StringBuilder result = new StringBuilder();
-        //ok to default to false because we also check for index zero below
+        // ok to default to false because we also check for index zero below
         boolean lastCharIsDateFormat = false;
         for (int i = 0; i < input.length(); i++) {
             String thisVal = input.substring(i, i + 1);
             boolean thisCharIsDateFormat = VALID_DATEFORMAT_CHARS.contains(thisVal);
-            //we have encountered a non-dateformat char
+            // we have encountered a non-dateformat char
             if (!thisCharIsDateFormat && (i == 0 || lastCharIsDateFormat)) {
                 result.append("'");
             }
-            //we have encountered a dateformat char after previously encountering a non-dateformat char
+            // we have encountered a dateformat char after previously encountering a non-dateformat char
             if (thisCharIsDateFormat && i > 0 && !lastCharIsDateFormat) {
                 result.append("'");
             }
             lastCharIsDateFormat = thisCharIsDateFormat;
             result.append(thisVal);
         }
-        //append an end single-quote if we ended with non-dateformat char
+        // append an end single-quote if we ended with non-dateformat char
         if (!lastCharIsDateFormat) {
             result.append("'");
         }
@@ -871,10 +870,10 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
      * @return string
      */
     private String replaceMetaChars(String input) {
-        //escape backslash first since that character is used to escape the remaining meta chars
+        // escape backslash first since that character is used to escape the remaining meta chars
         input = input.replaceAll("\\\\", "\\\\\\");
 
-        //don't escape star - it's used as the wildcard
+        // don't escape star - it's used as the wildcard
         input = input.replaceAll(Pattern.quote("]"), "\\\\]");
         input = input.replaceAll(Pattern.quote("["), "\\\\[");
         input = input.replaceAll(Pattern.quote("^"), "\\\\^");
@@ -904,7 +903,7 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
             return null;
         }
 
-        //a logger must exist at a minimum for the event to be processed
+        // a logger must exist at a minimum for the event to be processed
         if (!fieldMap.containsKey(LOGGER)) {
             fieldMap.put(LOGGER, "Unknown");
         }
@@ -928,13 +927,12 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
 
         if ((dateFormat != null) && fieldMap.containsKey(TIMESTAMP)) {
             try {
-                timeStamp = dateFormat.parse(fieldMap.remove(TIMESTAMP))
-                    .getTime();
+                timeStamp = dateFormat.parse(fieldMap.remove(TIMESTAMP)).getTime();
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        //use current time if timestamp not parseable/dateformat not specified
+        // use current time if timestamp not parseable/dateformat not specified
         if (timeStamp == 0L) {
             timeStamp = System.currentTimeMillis();
         }
@@ -949,7 +947,7 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
         if (level == null) {
             levelImpl = Level.DEBUG;
         } else {
-            //first try to resolve against custom level definition map, then fall back to regular levels
+            // first try to resolve against custom level definition map, then fall back to regular levels
             levelImpl = customLevelDefinitionMap.get(level);
             if (levelImpl == null) {
                 levelImpl = Level.valueOf(level.trim());
@@ -976,15 +974,13 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
             properties.put(Constants.GROUP_KEY, group);
         }
 
-        //all remaining entries in fieldmap are properties
+        // all remaining entries in fieldmap are properties
         properties.putAll(fieldMap);
 
         LocationInfo info = null;
 
-        if ((eventFileName != null) || (className != null) || (methodName != null)
-            || (lineNumber != null)) {
-            info = new LocationInfo(eventFileName, className, methodName,
-                    Integer.parseInt(lineNumber));
+        if ((eventFileName != null) || (className != null) || (methodName != null) || (lineNumber != null)) {
+            info = new LocationInfo(eventFileName, className, methodName, Integer.parseInt(lineNumber));
         }
 
         build.clear();
@@ -1000,21 +996,23 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
         return build.create();
     }
 
-//  public static void main(String[] args) {
-//    org.apache.log4j.Logger rootLogger = org.apache.log4j.Logger.getRootLogger();
-//    org.apache.log4j.ConsoleAppender appender = new org.apache.log4j.ConsoleAppender(new org.apache.log4j.SimpleLayout());
-//    appender.setName("console");
-//    rootLogger.addAppender(appender);
-//    LogFilePatternReceiver test = new LogFilePatternReceiver();
-//    org.apache.log4j.spi.LoggerRepository repo = new org.apache.log4j.LoggerRepositoryExImpl(org.apache.log4j.LogManager.getLoggerRepository());
-//    test.setLoggerRepository(repo);
-//    test.setLogFormat("PROP(RELATIVETIME) [THREAD] LEVEL LOGGER * - MESSAGE");
-//    test.setTailing(false);
-//    test.setAppendNonMatches(true);
-//    test.setTimestampFormat("yyyy-MM-d HH:mm:ss,SSS");
-//    test.setFileURL("file:///C:/log/test.log");
-//    test.activateOptions();
-//  }
+    //  public static void main(String[] args) {
+    //    org.apache.log4j.Logger rootLogger = org.apache.log4j.Logger.getRootLogger();
+    //    org.apache.log4j.ConsoleAppender appender = new org.apache.log4j.ConsoleAppender(new
+    // org.apache.log4j.SimpleLayout());
+    //    appender.setName("console");
+    //    rootLogger.addAppender(appender);
+    //    LogFilePatternReceiver test = new LogFilePatternReceiver();
+    //    org.apache.log4j.spi.LoggerRepository repo = new
+    // org.apache.log4j.LoggerRepositoryExImpl(org.apache.log4j.LogManager.getLoggerRepository());
+    //    test.setLoggerRepository(repo);
+    //    test.setLogFormat("PROP(RELATIVETIME) [THREAD] LEVEL LOGGER * - MESSAGE");
+    //    test.setTailing(false);
+    //    test.setAppendNonMatches(true);
+    //    test.setTimestampFormat("yyyy-MM-d HH:mm:ss,SSS");
+    //    test.setFileURL("file:///C:/log/test.log");
+    //    test.activateOptions();
+    //  }
 
     /**
      * Close the reader.
@@ -1078,7 +1076,7 @@ public class LogFilePatternReceiver extends ChainsawReceiverSkeleton {
                     } while (tailing);
 
                 } catch (IOException ioe) {
-                    //io exception - probably shut down
+                    // io exception - probably shut down
                     logger.info("stream closed");
                 }
                 logger.debug("processing " + path + " complete");

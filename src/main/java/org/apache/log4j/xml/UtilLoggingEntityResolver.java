@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,14 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.xml;
 
+import java.io.ByteArrayInputStream;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
-
-import java.io.ByteArrayInputStream;
-
 
 /**
  * An {@link EntityResolver} specifically designed to return
@@ -36,12 +33,10 @@ public final class UtilLoggingEntityResolver implements EntityResolver {
         super();
     }
 
-
     /**
      * {@inheritDoc}
      */
-    public InputSource resolveEntity(final String publicId,
-                                     final String systemId) {
+    public InputSource resolveEntity(final String publicId, final String systemId) {
         if (systemId.endsWith("logger.dtd")) {
             return new InputSource(new ByteArrayInputStream(new byte[0]));
         } else {

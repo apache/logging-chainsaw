@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,15 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.scheduler;
-
-import org.apache.log4j.chainsaw.logui.LogUI;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.Vector;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A simple but still useful implementation of a Scheduler (in memory only).
@@ -109,7 +106,6 @@ public class Scheduler extends Thread {
         }
     }
 
-
     /**
      * Schedule a {@link Job} for execution at system time given by
      * the <code>desiredTime</code> parameter.
@@ -117,8 +113,7 @@ public class Scheduler extends Thread {
      * @param job         job to schedule.
      * @param desiredTime desired time of execution.
      */
-    public synchronized void schedule(final Job job,
-                                      final long desiredTime) {
+    public synchronized void schedule(final Job job, final long desiredTime) {
         schedule(new ScheduledJobEntry(job, desiredTime));
     }
 
@@ -133,9 +128,7 @@ public class Scheduler extends Thread {
      * @param desiredTime desired time of execution.
      * @param period      repeat period.
      */
-    public synchronized void schedule(final Job job,
-                                      final long desiredTime,
-                                      final long period) {
+    public synchronized void schedule(final Job job, final long desiredTime, final long period) {
         schedule(new ScheduledJobEntry(job, desiredTime, period));
     }
 
@@ -150,11 +143,9 @@ public class Scheduler extends Thread {
      * @param newPeriod new repeat period.
      * @return true if period could be changed.
      */
-    public synchronized boolean changePeriod(final Job job,
-                                             final long newPeriod) {
+    public synchronized boolean changePeriod(final Job job, final long newPeriod) {
         if (newPeriod <= 0) {
-            throw new IllegalArgumentException(
-                "Period must be an integer langer than zero");
+            throw new IllegalArgumentException("Period must be an integer langer than zero");
         }
 
         int i = findIndex(job);
@@ -305,16 +296,11 @@ public class Scheduler extends Thread {
          * @param desiredTime desired time
          * @param period      repeat period
          */
-        ScheduledJobEntry(final Job job,
-                          final long desiredTime,
-                          final long period) {
+        ScheduledJobEntry(final Job job, final long desiredTime, final long period) {
             super();
             this.desiredExecutionTime = desiredTime;
             this.job = job;
             this.period = period;
         }
     }
-
 }
-
-

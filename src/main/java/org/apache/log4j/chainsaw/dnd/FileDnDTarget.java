@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,8 +16,6 @@
  */
 package org.apache.log4j.chainsaw.dnd;
 
-
-import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -27,6 +25,7 @@ import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -53,7 +52,6 @@ public class FileDnDTarget implements DropTargetListener {
     private JComponent guiTarget;
     private Map<JComponent, DropTarget> dropTargets = new HashMap<>();
 
-
     private PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
 
     /**
@@ -78,8 +76,7 @@ public class FileDnDTarget implements DropTargetListener {
      * @param propertyName
      * @param listener
      */
-    public void addPropertyChangeListener(String propertyName,
-                                          PropertyChangeListener listener) {
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         propertySupport.addPropertyChangeListener(propertyName, listener);
     }
 
@@ -87,13 +84,12 @@ public class FileDnDTarget implements DropTargetListener {
      *
      */
     private void decorateComponent() {
-//        TODO work out a better way of decorating a component
+        //        TODO work out a better way of decorating a component
         guiTarget.setBorder(BorderFactory.createLineBorder(Color.black));
     }
 
-
     public void dragEnter(DropTargetDragEvent e) {
-        //LOG.debug(dtde);
+        // LOG.debug(dtde);
         if (isDragOk(e) == false) {
             e.rejectDrag();
             return;
@@ -103,14 +99,12 @@ public class FileDnDTarget implements DropTargetListener {
         e.acceptDrag(acceptableActions);
     }
 
-
     public void dragExit(DropTargetEvent dte) {
         removeComponentDecoration();
     }
 
-
     public void dragOver(DropTargetDragEvent e) {
-        //LOG.debug(dtde);
+        // LOG.debug(dtde);
 
         if (isDragOk(e) == false) {
             e.rejectDrag();
@@ -133,11 +127,10 @@ public class FileDnDTarget implements DropTargetListener {
         } catch (Exception e) {
             LOG.error("Error with DnD", e);
         }
-
     }
 
     public void dropActionChanged(DropTargetDragEvent dtde) {
-        //LOG.debug(dtde);
+        // LOG.debug(dtde);
     }
 
     /**
@@ -148,7 +141,7 @@ public class FileDnDTarget implements DropTargetListener {
     }
 
     private boolean isDragOk(DropTargetDragEvent e) {
-        DataFlavor[] flavors = new DataFlavor[]{DataFlavor.javaFileListFlavor};
+        DataFlavor[] flavors = new DataFlavor[] {DataFlavor.javaFileListFlavor};
         DataFlavor chosen = null;
         for (DataFlavor flavor : flavors) {
             if (e.isDataFlavorSupported(flavor)) {
@@ -188,8 +181,7 @@ public class FileDnDTarget implements DropTargetListener {
      * @param propertyName
      * @param listener
      */
-    public void removePropertyChangeListener(String propertyName,
-                                             PropertyChangeListener listener) {
+    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         propertySupport.removePropertyChangeListener(propertyName, listener);
     }
 

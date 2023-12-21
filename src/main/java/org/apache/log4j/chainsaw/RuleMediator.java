@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,17 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.chainsaw;
-
-import org.apache.log4j.rule.AbstractRule;
-import org.apache.log4j.rule.Rule;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Map;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
-
+import org.apache.log4j.rule.AbstractRule;
+import org.apache.log4j.rule.Rule;
 
 /**
  * A mediator class that implements the Rule interface, by combining several
@@ -60,8 +57,8 @@ public class RuleMediator extends AbstractRule {
             }
         }
 
-        return (loggerRule == null || loggerRule.evaluate(e, null)) && (filterRule == null || filterRule.evaluate(e, null));
-
+        return (loggerRule == null || loggerRule.evaluate(e, null))
+                && (filterRule == null || filterRule.evaluate(e, null));
     }
 
     public boolean isFindRuleRequired() {

@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.helpers;
-
 
 /**
  * Formats messages according to very simple rules.
@@ -56,8 +54,7 @@ public final class MessageFormatter {
      * @param argument       The argument to be inserted instead of the formatting element
      * @return The formatted message
      */
-    public static String format(final String messagePattern,
-                                final Object argument) {
+    public static String format(final String messagePattern, final Object argument) {
         int j = messagePattern.indexOf(DELIM_START);
         int len = messagePattern.length();
         char escape = 'x';
@@ -76,9 +73,7 @@ public final class MessageFormatter {
                 // present
                 return messagePattern;
             } else {
-                String sbuf = messagePattern.substring(0, j) +
-                    argument +
-                    messagePattern.substring(j + 2);
+                String sbuf = messagePattern.substring(0, j) + argument + messagePattern.substring(j + 2);
                 return sbuf;
             }
         }
@@ -102,9 +97,7 @@ public final class MessageFormatter {
      * @param arg2           The second argument to replace the second formatting element
      * @return The formatted message
      */
-    public static String format(final String messagePattern,
-                                final Object arg1,
-                                final Object arg2) {
+    public static String format(final String messagePattern, final Object arg1, final Object arg2) {
         int i = 0;
         int len = messagePattern.length();
 
@@ -120,16 +113,14 @@ public final class MessageFormatter {
                 } else {
                     // add the tail string which contains no variables
                     // and return the result.
-                    sbuf.append(messagePattern.substring(i,
-                        messagePattern.length()));
+                    sbuf.append(messagePattern.substring(i, messagePattern.length()));
                     return sbuf.toString();
                 }
             } else {
                 char delimStop = messagePattern.charAt(j + 1);
                 if ((delimStop != DELIM_STOP)) {
                     // invalid DELIM_START/DELIM_STOP pair
-                    sbuf.append(messagePattern.substring(i,
-                        messagePattern.length()));
+                    sbuf.append(messagePattern.substring(i, messagePattern.length()));
                     return sbuf.toString();
                 }
                 sbuf.append(messagePattern.substring(i, j));

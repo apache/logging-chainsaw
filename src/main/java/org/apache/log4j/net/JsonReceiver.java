@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -18,14 +18,13 @@ package org.apache.log4j.net;
 
 import com.owlike.genson.Genson;
 import com.owlike.genson.GensonBuilder;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Iterator;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.apache.log4j.chainsaw.receiver.ChainsawReceiverSkeleton;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiverSkeleton;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -41,7 +40,7 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
     public static final int DEFAULT_PORT = 4449;
     protected int m_port = DEFAULT_PORT;
     private boolean active = false;
-    
+
     private static final Logger logger = LogManager.getLogger();
 
     /**
@@ -118,9 +117,7 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
         try {
             m_serverSocket = new ServerSocket(m_port, 1);
         } catch (Exception e) {
-            logger.error(
-                "error starting JsonReceiver (" + this.getName()
-                    + "), receiver did not start", e);
+            logger.error("error starting JsonReceiver (" + this.getName() + "), receiver did not start", e);
             active = false;
             doShutdown();
 
@@ -136,7 +133,7 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
 
             while (!m_rxThread.isInterrupted()) {
                 // if we have a socket, start watching it
-                if (socket != null ) {
+                if (socket != null) {
                     logger.debug("socket not null - parsing data");
                     parseIncomingData(socket);
                 }
@@ -154,8 +151,7 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
                 socket.close();
             }
         } catch (Exception e) {
-            logger.warn(
-                "socket server disconnected, stopping");
+            logger.warn("socket server disconnected, stopping");
         }
     }
 
@@ -163,8 +159,8 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
     public int getPort() {
         return m_port;
     }
-    
-    public void setPort(int portnum){
+
+    public void setPort(int portnum) {
         m_port = portnum;
     }
 
@@ -172,10 +168,10 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
     public boolean isActive() {
         return active;
     }
-    
-    private void parseIncomingData(Socket sock){
+
+    private void parseIncomingData(Socket sock) {
         InputStream is;
-        
+
         try {
             is = sock.getInputStream();
         } catch (Exception e) {
@@ -185,21 +181,19 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
         }
 
         if (is != null) {
-            Genson genson = new GensonBuilder()
-                    .useDateAsTimestamp(true)
-                    .create();
+            Genson genson = new GensonBuilder().useDateAsTimestamp(true).create();
 
             try {
-                //read data from the socket.
+                // read data from the socket.
                 // Once we have a full JSON message, parse it
                 ChainsawLoggingEventBuilder build = new ChainsawLoggingEventBuilder();
                 while (true) {
-                    logger.debug( "About to deserialize values" );
+                    logger.debug("About to deserialize values");
                     Iterator<ECSLogEvent> iter = genson.deserializeValues(is, ECSLogEvent.class);
                     // Because the socket can be closed, if we don't have anything parsed
                     // assume that the socket is closed.
-                    if( !iter.hasNext() ) break;
-                    while( iter.hasNext() ){
+                    if (!iter.hasNext()) break;
+                    while (iter.hasNext()) {
                         ECSLogEvent evt = iter.next();
                         append(evt.toChainsawLoggingEvent(build));
                     }
@@ -215,7 +209,7 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
                 is.close();
             }
         } catch (Exception e) {
-            //logger.info("Could not close connection.", e);
+            // logger.info("Could not close connection.", e);
         }
     }
 }

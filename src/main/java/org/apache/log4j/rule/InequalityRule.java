@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,17 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.rule;
-
-import org.apache.log4j.spi.LoggingEventFieldResolver;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
-
+import org.apache.log4j.spi.LoggingEventFieldResolver;
 
 /**
  * A Rule class implementing inequality evaluation.
@@ -40,24 +37,23 @@ public class InequalityRule extends AbstractRule {
     /**
      * Serialization ID.
      */
-  static final long serialVersionUID = -5592986598528885122L;
+    static final long serialVersionUID = -5592986598528885122L;
     /**
      * field RESOLVER.
      */
-  private static final LoggingEventFieldResolver RESOLVER =
-          LoggingEventFieldResolver.getInstance();
+    private static final LoggingEventFieldResolver RESOLVER = LoggingEventFieldResolver.getInstance();
     /**
      * Field name.
      */
-  private final String field;
+    private final String field;
     /**
      * Comparison value.
      */
-  private final String value;
+    private final String value;
     /**
      * Inequality symbol.
      */
-  private final String inequalitySymbol;
+    private final String inequalitySymbol;
 
     /**
      * Create new instance.
@@ -65,20 +61,17 @@ public class InequalityRule extends AbstractRule {
      * @param field field
      * @param value comparison value.
      */
-  private InequalityRule(
-    final String inequalitySymbol,
-    final String field,
-    final String value) {
-    super();
-    this.inequalitySymbol = inequalitySymbol;
-    if (!RESOLVER.isField(field)) {
-        throw new IllegalArgumentException("Invalid " + inequalitySymbol
-                + " rule - " + field + " is not a supported field");
-    }
+    private InequalityRule(final String inequalitySymbol, final String field, final String value) {
+        super();
+        this.inequalitySymbol = inequalitySymbol;
+        if (!RESOLVER.isField(field)) {
+            throw new IllegalArgumentException(
+                    "Invalid " + inequalitySymbol + " rule - " + field + " is not a supported field");
+        }
 
-    this.field = field;
-    this.value = value;
-  }
+        this.field = field;
+        this.value = value;
+    }
 
     /**
      * Create new instance from top two elements on stack.
@@ -86,18 +79,16 @@ public class InequalityRule extends AbstractRule {
      * @param stack stack.
      * @return rule.
      */
-  public static Rule getRule(final String inequalitySymbol,
-                             final Stack stack) {
-      if (stack.size() < 2) {
-          throw new IllegalArgumentException("Invalid " + inequalitySymbol
-                  + " rule - expected two parameters but received "
-                  + stack.size());
-      } 
+    public static Rule getRule(final String inequalitySymbol, final Stack stack) {
+        if (stack.size() < 2) {
+            throw new IllegalArgumentException(
+                    "Invalid " + inequalitySymbol + " rule - expected two parameters but received " + stack.size());
+        }
 
-      String p2 = stack.pop().toString();
-      String p1 = stack.pop().toString();
-      return getRule(inequalitySymbol, p1, p2);
-  }
+        String p2 = stack.pop().toString();
+        String p1 = stack.pop().toString();
+        return getRule(inequalitySymbol, p1, p2);
+    }
 
     /**
      * Create new instance from top two elements on stack.
@@ -106,57 +97,54 @@ public class InequalityRule extends AbstractRule {
      * @param value comparison value.
      * @return rule.
      */
-  public static Rule getRule(final String inequalitySymbol,
-                             final String field,
-                             final String value) {
-    if (field.equalsIgnoreCase(LoggingEventFieldResolver.LEVEL_FIELD)) {
-      //push the value back on the stack and
-        // allow the level-specific rule pop values
-      return LevelInequalityRule.getRule(inequalitySymbol, value);
-    } else if (
-            field.equalsIgnoreCase(LoggingEventFieldResolver.TIMESTAMP_FIELD)) {
-      return TimestampInequalityRule.getRule(inequalitySymbol, value);
-    } else {
-      return new InequalityRule(inequalitySymbol, field, value);
+    public static Rule getRule(final String inequalitySymbol, final String field, final String value) {
+        if (field.equalsIgnoreCase(LoggingEventFieldResolver.LEVEL_FIELD)) {
+            // push the value back on the stack and
+            // allow the level-specific rule pop values
+            return LevelInequalityRule.getRule(inequalitySymbol, value);
+        } else if (field.equalsIgnoreCase(LoggingEventFieldResolver.TIMESTAMP_FIELD)) {
+            return TimestampInequalityRule.getRule(inequalitySymbol, value);
+        } else {
+            return new InequalityRule(inequalitySymbol, field, value);
+        }
     }
-  }
 
     /** {@inheritDoc} */
-  public boolean evaluate(final ChainsawLoggingEvent event, Map matches) {
-    long first = 0;
-      try {
-          first = new Long(RESOLVER.getValue(field, event).toString()).longValue();
-    } catch (NumberFormatException nfe) {
-      return false;
-    }
-
-    long second = 0;
-
-    try {
-      second = new Long(value).longValue();
-    } catch (NumberFormatException nfe) {
-      return false;
-    }
-
-    boolean result = false;
-
-    if ("<".equals(inequalitySymbol)) {
-      result = first < second;
-    } else if (">".equals(inequalitySymbol)) {
-      result = first > second;
-    } else if ("<=".equals(inequalitySymbol)) {
-      result = first <= second;
-    } else if (">=".equals(inequalitySymbol)) {
-      result = first >= second;
-    }
-    if (result && matches != null) {
-        Set entries = (Set) matches.get(field.toUpperCase());
-        if (entries == null) {
-            entries = new HashSet();
-            matches.put(field.toUpperCase(), entries);
+    public boolean evaluate(final ChainsawLoggingEvent event, Map matches) {
+        long first = 0;
+        try {
+            first = new Long(RESOLVER.getValue(field, event).toString()).longValue();
+        } catch (NumberFormatException nfe) {
+            return false;
         }
-        entries.add(String.valueOf(first));
+
+        long second = 0;
+
+        try {
+            second = new Long(value).longValue();
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+
+        boolean result = false;
+
+        if ("<".equals(inequalitySymbol)) {
+            result = first < second;
+        } else if (">".equals(inequalitySymbol)) {
+            result = first > second;
+        } else if ("<=".equals(inequalitySymbol)) {
+            result = first <= second;
+        } else if (">=".equals(inequalitySymbol)) {
+            result = first >= second;
+        }
+        if (result && matches != null) {
+            Set entries = (Set) matches.get(field.toUpperCase());
+            if (entries == null) {
+                entries = new HashSet();
+                matches.put(field.toUpperCase(), entries);
+            }
+            entries.add(String.valueOf(first));
+        }
+        return result;
     }
-    return result;
-  }
 }

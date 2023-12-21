@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,9 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.log4j.chainsaw.logui;
 
+import java.awt.*;
+import java.beans.PropertyChangeListener;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.swing.*;
 import org.apache.log4j.chainsaw.ApplicationPreferenceModel;
 import org.apache.log4j.chainsaw.ChainsawConstants;
 import org.apache.log4j.chainsaw.ChainsawStatusBar;
@@ -31,13 +36,6 @@ import org.apache.log4j.chainsaw.receiver.ChainsawReceiver;
 import org.apache.log4j.chainsaw.zeroconf.ZeroConfPlugin;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import javax.swing.*;
-import java.awt.*;
-import java.beans.PropertyChangeListener;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class LogUIPanelBuilder {
     private static Logger logger = LogManager.getLogger(LogUIPanelBuilder.class);
@@ -55,10 +53,15 @@ public class LogUIPanelBuilder {
     private Map<String, RuleColorizer> allColorizers = new HashMap<>();
     private RuleColorizer globalRuleColorizer = new RuleColorizer();
 
-    public LogUIPanelBuilder(ChainsawTabbedPane tabbedPane, List<LogPanel> identifierPanels,
-                             ChainsawToolBarAndMenus chainsawToolBarAndMenus, Map<String, Component> panelMap,
-                             SettingsManager settingsManager, ApplicationPreferenceModel applicationPreferenceModel,
-                             ChainsawStatusBar chainsawStatusBar, ZeroConfPlugin zeroConfPlugin) {
+    public LogUIPanelBuilder(
+            ChainsawTabbedPane tabbedPane,
+            List<LogPanel> identifierPanels,
+            ChainsawToolBarAndMenus chainsawToolBarAndMenus,
+            Map<String, Component> panelMap,
+            SettingsManager settingsManager,
+            ApplicationPreferenceModel applicationPreferenceModel,
+            ChainsawStatusBar chainsawStatusBar,
+            ZeroConfPlugin zeroConfPlugin) {
         this.tabbedPane = tabbedPane;
         this.identifierPanels = identifierPanels;
         this.chainsawToolBarAndMenus = chainsawToolBarAndMenus;
@@ -73,8 +76,14 @@ public class LogUIPanelBuilder {
     }
 
     void buildLogPanel(boolean customExpression, final String ident, final ChainsawReceiver rx)
-        throws IllegalArgumentException {
-        final LogPanel thisPanel = new LogPanel(settingsManager, applicationPreferenceModel, chainsawStatusBar, ident, allColorizers, globalRuleColorizer);
+            throws IllegalArgumentException {
+        final LogPanel thisPanel = new LogPanel(
+                settingsManager,
+                applicationPreferenceModel,
+                chainsawStatusBar,
+                ident,
+                allColorizers,
+                globalRuleColorizer);
 
         if (!customExpression && rx != null) {
             thisPanel.setReceiver(rx);
@@ -93,33 +102,28 @@ public class LogUIPanelBuilder {
 
         tabbedPane.addChangeListener(iconHandler);
 
-        PropertyChangeListener toolbarMenuUpdateListener =
-            evt -> chainsawToolBarAndMenus.stateChange();
+        PropertyChangeListener toolbarMenuUpdateListener = evt -> chainsawToolBarAndMenus.stateChange();
 
         thisPanel.addPropertyChangeListener(toolbarMenuUpdateListener);
         thisPanel.addPropertyChangeListener(toolbarMenuUpdateListener);
 
-        thisPanel.addPropertyChangeListener(
-            "docked",
-            evt -> {
-                LogPanel logPanel = (LogPanel) evt.getSource();
+        thisPanel.addPropertyChangeListener("docked", evt -> {
+            LogPanel logPanel = (LogPanel) evt.getSource();
 
-                if (logPanel.isDocked()) {
-                    panelMap.put(logPanel.getIdentifier(), logPanel);
-                    tabbedPane.addANewTab(
-                        logPanel.getIdentifier(), logPanel, null,
-                        true);
-                    tabbedPane.setSelectedTab(tabbedPane.indexOfTab(logPanel.getIdentifier()));
-                } else {
-                    tabbedPane.remove(logPanel);
-                }
-            });
+            if (logPanel.isDocked()) {
+                panelMap.put(logPanel.getIdentifier(), logPanel);
+                tabbedPane.addANewTab(logPanel.getIdentifier(), logPanel, null, true);
+                tabbedPane.setSelectedTab(tabbedPane.indexOfTab(logPanel.getIdentifier()));
+            } else {
+                tabbedPane.remove(logPanel);
+            }
+        });
 
         logger.debug("adding logpanel to tabbed pane: {}", ident);
 
-        //NOTE: tab addition is a very fragile process - if you modify this code,
-        //verify the frames in the individual log panels initialize to their
-        //correct sizes
+        // NOTE: tab addition is a very fragile process - if you modify this code,
+        // verify the frames in the individual log panels initialize to their
+        // correct sizes
         tabbedPane.add(ident, thisPanel);
         panelMap.put(ident, thisPanel);
 
@@ -127,20 +131,12 @@ public class LogUIPanelBuilder {
          * Let the new LogPanel receive this batch
          */
 
-        SwingUtilities.invokeLater(
-            () -> {
-                tabbedPane.addANewTab(
-                    ident,
-                    thisPanel,
-                    new ImageIcon(ChainsawIcons.ANIM_RADIO_TOWER),
-                    false);
-                thisPanel.layoutComponents();
+        SwingUtilities.invokeLater(() -> {
+            tabbedPane.addANewTab(ident, thisPanel, new ImageIcon(ChainsawIcons.ANIM_RADIO_TOWER), false);
+            thisPanel.layoutComponents();
 
-                tabbedPane.addANewTab(ChainsawTabbedPane.ZEROCONF,
-                    zeroConfPlugin,
-                    null,
-                    false);
-            });
+            tabbedPane.addANewTab(ChainsawTabbedPane.ZEROCONF, zeroConfPlugin, null, false);
+        });
 
         logger.debug("added tab {}", ident);
     }

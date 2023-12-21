@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The ASF licenses this file to you under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,24 +16,6 @@
  */
 package org.apache.log4j.chainsaw.zeroconf;
 
-import org.apache.log4j.chainsaw.ChainsawConstants;
-import org.apache.log4j.chainsaw.receiver.ChainsawReceiver;
-import org.apache.log4j.chainsaw.DockablePanel;
-import org.apache.log4j.chainsaw.components.elements.SmallButton;
-import org.apache.log4j.chainsaw.help.HelpManager;
-import org.apache.log4j.chainsaw.icons.ChainsawIcons;
-import org.apache.log4j.chainsaw.prefs.SettingsManager;
-import org.apache.log4j.net.MulticastReceiver;
-import org.apache.log4j.net.UDPReceiver;
-import org.apache.log4j.net.XMLSocketReceiver;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import javax.jmdns.JmDNS;
-import javax.jmdns.ServiceEvent;
-import javax.jmdns.ServiceInfo;
-import javax.jmdns.ServiceListener;
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -42,6 +24,23 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceEvent;
+import javax.jmdns.ServiceInfo;
+import javax.jmdns.ServiceListener;
+import javax.swing.*;
+import org.apache.log4j.chainsaw.ChainsawConstants;
+import org.apache.log4j.chainsaw.DockablePanel;
+import org.apache.log4j.chainsaw.components.elements.SmallButton;
+import org.apache.log4j.chainsaw.help.HelpManager;
+import org.apache.log4j.chainsaw.icons.ChainsawIcons;
+import org.apache.log4j.chainsaw.prefs.SettingsManager;
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiver;
+import org.apache.log4j.net.MulticastReceiver;
+import org.apache.log4j.net.UDPReceiver;
+import org.apache.log4j.net.XMLSocketReceiver;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * This plugin is designed to detect specific Zeroconf zones (Rendevouz/Bonjour,
@@ -68,14 +67,13 @@ public class ZeroConfPlugin extends DockablePanel {
     private ZeroConfPreferenceModel preferenceModel;
 
     private final JMenu connectToMenu = new JMenu("Connect to");
-    private final JMenuItem helpItem = new JMenuItem(new AbstractAction("Learn more about ZeroConf...",
-        ChainsawIcons.ICON_HELP) {
+    private final JMenuItem helpItem =
+            new JMenuItem(new AbstractAction("Learn more about ZeroConf...", ChainsawIcons.ICON_HELP) {
 
-        public void actionPerformed(ActionEvent e) {
-            HelpManager.getInstance()
-                .showHelpForClass(ZeroConfPlugin.class);
-        }
-    });
+                public void actionPerformed(ActionEvent e) {
+                    HelpManager.getInstance().showHelpForClass(ZeroConfPlugin.class);
+                }
+            });
 
     private final JMenuItem nothingToConnectTo = new JMenuItem("No devices discovered");
     private static final String MULTICAST_APPENDER_SERVICE_NAME = "_log4j_xml_mcast_appender.local.";
@@ -85,13 +83,13 @@ public class ZeroConfPlugin extends DockablePanel {
     private static final String NEW_UDP_APPENDER_SERVICE_NAME = "_log4j._udp.local.";
 
     private JmDNS jmDNS;
-    
+
     public ZeroConfPlugin() {
         setName("Zeroconf");
         deviceTable.setRowHeight(ChainsawConstants.DEFAULT_ROW_HEIGHT);
-        try{
+        try {
             activateOptions();
-        }catch( IOException ex ){
+        } catch (IOException ex) {
             LOG.error(ex);
         }
     }
@@ -121,11 +119,11 @@ public class ZeroConfPlugin extends DockablePanel {
         JToolBar toolbar = new JToolBar();
 
         SmallButton helpButton = new SmallButton.Builder()
-            .text(helpItem.getText())
-            .icon(ChainsawIcons.ICON_HELP)
-            .action(() -> HelpManager.getInstance().showHelpForClass(ZeroConfPlugin.class))
-            .name("Learn more about ZeroConf...")
-            .build();
+                .text(helpItem.getText())
+                .icon(ChainsawIcons.ICON_HELP)
+                .action(() -> HelpManager.getInstance().showHelpForClass(ZeroConfPlugin.class))
+                .name("Learn more about ZeroConf...")
+                .build();
 
         toolbar.add(helpButton);
         toolbar.setFloatable(false);
@@ -134,41 +132,44 @@ public class ZeroConfPlugin extends DockablePanel {
 
         injectMenu();
 
-//        ((LoggerRepositoryEx) LogManager.getLoggerRepository()).getPluginRegistry().addPluginListener(new PluginListener() {
-//
-//            public void pluginStarted(PluginEvent e) {
-//
-//            }
-//
-//            public void pluginStopped(PluginEvent e) {
-//                Plugin plugin = e.getPlugin();
-//                synchronized (serviceInfoToReceiveMap) {
-//                    for (Iterator<Map.Entry<ServiceInfo, Plugin>> iter = serviceInfoToReceiveMap.entrySet().iterator(); iter.hasNext(); ) {
-//                        Map.Entry<ServiceInfo, Plugin> entry = iter.next();
-//                        if (entry.getValue() == plugin) {
-//                            iter.remove();
-//                        }
-//                    }
-//                }
-////                 need to make sure that the menu item tracking this item has it's icon and enabled state updade
-//                discoveredDevices.fireTableDataChanged();
-//            }
-//        });
+        //        ((LoggerRepositoryEx) LogManager.getLoggerRepository()).getPluginRegistry().addPluginListener(new
+        // PluginListener() {
+        //
+        //            public void pluginStarted(PluginEvent e) {
+        //
+        //            }
+        //
+        //            public void pluginStopped(PluginEvent e) {
+        //                Plugin plugin = e.getPlugin();
+        //                synchronized (serviceInfoToReceiveMap) {
+        //                    for (Iterator<Map.Entry<ServiceInfo, Plugin>> iter =
+        // serviceInfoToReceiveMap.entrySet().iterator(); iter.hasNext(); ) {
+        //                        Map.Entry<ServiceInfo, Plugin> entry = iter.next();
+        //                        if (entry.getValue() == plugin) {
+        //                            iter.remove();
+        //                        }
+        //                    }
+        //                }
+        ////                 need to make sure that the menu item tracking this item has it's icon and enabled state
+        // updade
+        //                discoveredDevices.fireTableDataChanged();
+        //            }
+        //        });
 
-//        File fileLocation = getPreferenceFileLocation();
-//        XStream stream = new XStream(new DomDriver());
-//        if (fileLocation.exists()) {
-//            try {
-//                this.preferenceModel = (ZeroConfPreferenceModel) stream
-//                    .fromXML(new FileReader(fileLocation));
-//            } catch (Exception e) {
-//                LOG.error("Failed to load ZeroConfPlugin configuration file", e);
-//            }
-//        } else {
-//            this.preferenceModel = new ZeroConfPreferenceModel();
-//        }
+        //        File fileLocation = getPreferenceFileLocation();
+        //        XStream stream = new XStream(new DomDriver());
+        //        if (fileLocation.exists()) {
+        //            try {
+        //                this.preferenceModel = (ZeroConfPreferenceModel) stream
+        //                    .fromXML(new FileReader(fileLocation));
+        //            } catch (Exception e) {
+        //                LOG.error("Failed to load ZeroConfPlugin configuration file", e);
+        //            }
+        //        } else {
+        //            this.preferenceModel = new ZeroConfPreferenceModel();
+        //        }
         discoveredDevices.setZeroConfPreferenceModel(preferenceModel);
-//        discoveredDevices.setZeroConfPluginParent(this);
+        //        discoveredDevices.setZeroConfPluginParent(this);
     }
 
     private void registerServiceListenersForAppenders() {
@@ -181,14 +182,12 @@ public class ZeroConfPlugin extends DockablePanel {
 
         for (Object serviceName1 : serviceNames) {
             String serviceName = serviceName1.toString();
-            jmDNS.addServiceListener(
-                serviceName,
-                new ZeroConfServiceListener());
+            jmDNS.addServiceListener(serviceName, new ZeroConfServiceListener());
 
             jmDNS.addServiceListener(serviceName, discoveredDevices);
         }
 
-        //now add each appender constant
+        // now add each appender constant
     }
 
     /**
@@ -214,7 +213,6 @@ public class ZeroConfPlugin extends DockablePanel {
                 } else if (discoveredDevices.getRowCount() > 0) {
                     connectToMenu.remove(nothingToConnectTo);
                 }
-
             });
 
             nothingToConnectTo.setEnabled(false);
@@ -250,9 +248,8 @@ public class ZeroConfPlugin extends DockablePanel {
      */
     private void deviceDiscovered(final ServiceInfo info) {
         final String name = info.getName();
-//        TODO currently adding ALL devices to autoConnectlist
-//        preferenceModel.addAutoConnectDevice(name);
-
+        //        TODO currently adding ALL devices to autoConnectlist
+        //        preferenceModel.addAutoConnectDevice(name);
 
         JMenuItem connectToDeviceMenuItem = new JMenuItem(new AbstractAction(info.getName()) {
 
@@ -281,12 +278,15 @@ public class ZeroConfPlugin extends DockablePanel {
         } else {
             connectToMenu.insert(connectToDeviceMenuItem, 0);
         }
-//         if the device name is one of the autoconnect devices, then connect immediately
-        if (preferenceModel != null && preferenceModel.getAutoConnectDevices() != null && preferenceModel.getAutoConnectDevices().contains(name)) {
+        //         if the device name is one of the autoconnect devices, then connect immediately
+        if (preferenceModel != null
+                && preferenceModel.getAutoConnectDevices() != null
+                && preferenceModel.getAutoConnectDevices().contains(name)) {
             new Thread(() -> {
-                LOG.info("Auto-connecting to {}", name);
-                connectTo(info);
-            }).start();
+                        LOG.info("Auto-connecting to {}", name);
+                        connectTo(info);
+                    })
+                    .start();
         }
     }
 
@@ -322,8 +322,7 @@ public class ZeroConfPlugin extends DockablePanel {
              * background thread or not.. All it says is to NOT do it in the AWT
              * thread, so I'm thinking it probably should be a background thread
              */
-            Runnable runnable = () -> ZeroConfPlugin.this.jmDNS.requestServiceInfo(event
-                .getType(), event.getName());
+            Runnable runnable = () -> ZeroConfPlugin.this.jmDNS.requestServiceInfo(event.getType(), event.getName());
 
             Thread thread = new Thread(runnable, "ChainsawZeroConfRequestResolutionThread");
             thread.setPriority(Thread.MIN_PRIORITY);
@@ -340,7 +339,6 @@ public class ZeroConfPlugin extends DockablePanel {
             deviceDiscovered(event.getInfo());
         }
     }
-
 
     /**
      * When the user double clicks on a row, then the device is connected to,
@@ -371,24 +369,25 @@ public class ZeroConfPlugin extends DockablePanel {
              * This methodh handles when the user clicks the
              * auto-connect
              */
-//            int index = listBox.locationToIndex(e.getPoint());
-//
-//            if (index != -1) {
-////                Point p = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), )
-//                Component c = SwingUtilities.getDeepestComponentAt(ZeroConfPlugin.this, e.getX(), e.getY());
-//                if (c instanceof JCheckBox) {
-//                    ServiceInfo info = (ServiceInfo) listBox.getModel()
-//                            .getElementAt(index);
-//                    String name = info.getName();
-//                    if (preferenceModel.getAutoConnectDevices().contains(name)) {
-//                        preferenceModel.removeAutoConnectDevice(name);
-//                    } else {
-//                        preferenceModel.addAutoConnectDevice(name);
-//                    }
-//                    discoveredDevices.fireContentsChanged();
-//                    repaint();
-//                }
-//            }
+            //            int index = listBox.locationToIndex(e.getPoint());
+            //
+            //            if (index != -1) {
+            ////                Point p = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), )
+            //                Component c = SwingUtilities.getDeepestComponentAt(ZeroConfPlugin.this, e.getX(),
+            // e.getY());
+            //                if (c instanceof JCheckBox) {
+            //                    ServiceInfo info = (ServiceInfo) listBox.getModel()
+            //                            .getElementAt(index);
+            //                    String name = info.getName();
+            //                    if (preferenceModel.getAutoConnectDevices().contains(name)) {
+            //                        preferenceModel.removeAutoConnectDevice(name);
+            //                    } else {
+            //                        preferenceModel.addAutoConnectDevice(name);
+            //                    }
+            //                    discoveredDevices.fireContentsChanged();
+            //                    repaint();
+            //                }
+            //            }
         }
     }
 
@@ -396,17 +395,18 @@ public class ZeroConfPlugin extends DockablePanel {
         if (!isConnectedTo(info)) {
             return; // not connected, who cares
         }
-//        Plugin plugin;
-//        synchronized (serviceInfoToReceiveMap) {
-//            plugin = serviceInfoToReceiveMap.get(info);
-//        }
-//        ((LoggerRepositoryEx) LogManager.getLoggerRepository()).getPluginRegistry().stopPlugin(plugin.getName());
-//
-//        JMenuItem item = locateMatchingMenuItem(info.getName());
-//        if (item != null) {
-//            item.setIcon(null);
-//            item.setEnabled(true);
-//        }
+        //        Plugin plugin;
+        //        synchronized (serviceInfoToReceiveMap) {
+        //            plugin = serviceInfoToReceiveMap.get(info);
+        //        }
+        //        ((LoggerRepositoryEx)
+        // LogManager.getLoggerRepository()).getPluginRegistry().stopPlugin(plugin.getName());
+        //
+        //        JMenuItem item = locateMatchingMenuItem(info.getName());
+        //        if (item != null) {
+        //            item.setIcon(null);
+        //            item.setEnabled(true);
+        //        }
     }
 
     /**
@@ -417,7 +417,7 @@ public class ZeroConfPlugin extends DockablePanel {
      */
     boolean isConnectedTo(ServiceInfo info) {
         return false;
-//        return serviceInfoToReceiveMap.containsKey(info);
+        //        return serviceInfoToReceiveMap.containsKey(info);
     }
 
     /**
@@ -427,31 +427,31 @@ public class ZeroConfPlugin extends DockablePanel {
      */
     private void connectTo(ServiceInfo info) {
         LOG.info("Connection request for {}", info);
-        //Chainsaw can construct receivers from discovered appenders
+        // Chainsaw can construct receivers from discovered appenders
         ChainsawReceiver receiver = getReceiver(info);
-        //if null, unable to resolve the service name..no-op
+        // if null, unable to resolve the service name..no-op
         if (receiver == null) {
             return;
         }
         // TODO tell LogUI that we have a new receiver
 
-//        ((LoggerRepositoryEx) LogManager.getLoggerRepository()).getPluginRegistry().addPlugin(receiver);
-//        receiver.activateOptions();
-//        LOG.info("Receiver '" + receiver.getName() + "' has been started");
-//
-//        // ServiceInfo obeys equals() and hashCode() contracts, so this should be safe.
-//        synchronized (serviceInfoToReceiveMap) {
-//            serviceInfoToReceiveMap.put(info, receiver);
-//        }
+        //        ((LoggerRepositoryEx) LogManager.getLoggerRepository()).getPluginRegistry().addPlugin(receiver);
+        //        receiver.activateOptions();
+        //        LOG.info("Receiver '" + receiver.getName() + "' has been started");
+        //
+        //        // ServiceInfo obeys equals() and hashCode() contracts, so this should be safe.
+        //        synchronized (serviceInfoToReceiveMap) {
+        //            serviceInfoToReceiveMap.put(info, receiver);
+        //        }
 
-//         this instance of the menu item needs to be disabled, and have an icon added
+        //         this instance of the menu item needs to be disabled, and have an icon added
         JMenuItem item = locateMatchingMenuItem(info.getName());
         if (item != null) {
             item.setIcon(new ImageIcon(ChainsawIcons.ANIM_NET_CONNECT));
             item.setEnabled(false);
         }
-//        // now notify the list model has changed, it needs redrawing of the receiver icon now it's connected
-//        discoveredDevices.fireContentsChanged();
+        //        // now notify the list model has changed, it needs redrawing of the receiver icon now it's connected
+        //        discoveredDevices.fireContentsChanged();
     }
 
     private ChainsawReceiver getReceiver(ServiceInfo info) {
@@ -466,30 +466,32 @@ public class ZeroConfPlugin extends DockablePanel {
             receiver.setName(name + "-receiver");
             return receiver;
         }
-        //FileAppender or socketappender
-        //TODO: add more checks (actual layout format, etc)
+        // FileAppender or socketappender
+        // TODO: add more checks (actual layout format, etc)
         if (TCP_APPENDER_SERVICE_NAME.equals(zone)) {
-            //CHECK content type
-            //text/plain = VFSLogFilePatternReceiver (if structured=false)
-//            String contentType = info.getPropertyString("contentType").toLowerCase();
-//            //won't work with log4j2, as Chainsaw depends on log4j1.x
-//            //this will work - regular text log files are fine
-//            if ("text/plain".equals(contentType)) {
-//                VFSLogFilePatternReceiver receiver = new VFSLogFilePatternReceiver();
-//                receiver.setAppendNonMatches(true);
-//                receiver.setFileURL(info.getPropertyString("fileURI"));
-//                receiver.setLogFormat(LogFilePatternLayoutBuilder.getLogFormatFromPatternLayout(info.getPropertyString("format")));
-//                receiver.setTimestampFormat(LogFilePatternLayoutBuilder.getTimeStampFormat(info.getPropertyString("format")));
-//                receiver.setName(name + "-receiver");
-//                receiver.setTailing(true);
-//                return receiver;
-//            }
+            // CHECK content type
+            // text/plain = VFSLogFilePatternReceiver (if structured=false)
+            //            String contentType = info.getPropertyString("contentType").toLowerCase();
+            //            //won't work with log4j2, as Chainsaw depends on log4j1.x
+            //            //this will work - regular text log files are fine
+            //            if ("text/plain".equals(contentType)) {
+            //                VFSLogFilePatternReceiver receiver = new VFSLogFilePatternReceiver();
+            //                receiver.setAppendNonMatches(true);
+            //                receiver.setFileURL(info.getPropertyString("fileURI"));
+            //
+            // receiver.setLogFormat(LogFilePatternLayoutBuilder.getLogFormatFromPatternLayout(info.getPropertyString("format")));
+            //
+            // receiver.setTimestampFormat(LogFilePatternLayoutBuilder.getTimeStampFormat(info.getPropertyString("format")));
+            //                receiver.setName(name + "-receiver");
+            //                receiver.setTailing(true);
+            //                return receiver;
+            //            }
         }
 
-        //MulticastAppender
+        // MulticastAppender
         if (MULTICAST_APPENDER_SERVICE_NAME.equals(zone)) {
             MulticastReceiver receiver = new MulticastReceiver();
-            //this needs to be a multicast address, not the host address, so we need to use a property
+            // this needs to be a multicast address, not the host address, so we need to use a property
             receiver.setAddress(info.getPropertyString("multicastAddress"));
             receiver.setPort(port);
             receiver.setName(name + "-receiver");
@@ -499,7 +501,7 @@ public class ZeroConfPlugin extends DockablePanel {
 
             return receiver;
         }
-        //UDPAppender
+        // UDPAppender
         if (UDP_APPENDER_SERVICE_NAME.equals(zone)) {
             UDPReceiver receiver = new UDPReceiver();
             receiver.setPort(port);
@@ -510,7 +512,7 @@ public class ZeroConfPlugin extends DockablePanel {
             return receiver;
         }
 
-        //non-log4j XML-based socketappender
+        // non-log4j XML-based socketappender
         if (XML_SOCKET_APPENDER_SERVICE_NAME.equals(zone)) {
             XMLSocketReceiver receiver = new XMLSocketReceiver();
             receiver.setPort(port);
@@ -521,7 +523,7 @@ public class ZeroConfPlugin extends DockablePanel {
             return receiver;
         }
 
-        //not recognized
+        // not recognized
         LOG.debug("Unable to find receiver for appender with service name: {}", zone);
         return null;
     }
@@ -544,5 +546,4 @@ public class ZeroConfPlugin extends DockablePanel {
         }
         return null;
     }
-
 }
