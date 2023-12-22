@@ -216,10 +216,6 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.rat</groupId>
-        <artifactId>apache-rat-plugin</artifactId>
-      </plugin>
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-project-info-reports-plugin</artifactId>
       </plugin>
@@ -369,18 +365,9 @@
             <artifactId>apache-rat-plugin</artifactId>
             <configuration>
               <consoleOutput>true</consoleOutput>
-              <excludes>
+              <excludes combine.children="append">
                 <!-- usually testing log files -->
                 <exclude>**/*.log</exclude>
-
-                <!-- should come by parent, but parent does not allow override so far (PR in progress -->
-                <exclude>.java-version</exclude>
-                <exclude>.mvn/jvm.config</exclude>
-                <exclude>**/*.txt</exclude>
-                <exclude>src/changelog/**/*.xml</exclude>
-                <exclude>.github/ISSUE_TEMPLATE/*.md</exclude>
-                <exclude>.github/pull_request_template.md</exclude>
-
               </excludes>
             </configuration>
           </plugin>
