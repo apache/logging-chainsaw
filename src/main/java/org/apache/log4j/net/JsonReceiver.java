@@ -35,13 +35,13 @@ import org.apache.logging.log4j.Logger;
  * @author Robert Middleton
  */
 public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, PortBased {
-    private ServerSocket m_serverSocket;
-    private Thread m_rxThread;
-    public static final int DEFAULT_PORT = 4449;
-    protected int m_port = DEFAULT_PORT;
-    private boolean active = false;
+    private static final Logger logger = LogManager.getLogger(JsonReceiver.class);
 
-    private static final Logger logger = LogManager.getLogger();
+    private ServerSocket serverSocket;
+    private Thread rxThread;
+    public static final int DEFAULT_PORT = 4449;
+    protected int port = DEFAULT_PORT;
+    private boolean active = false;
 
     /**
      * The MulticastDNS zone advertised by an XMLSocketReceiver
@@ -53,9 +53,9 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
         // mark this as no longer running
         active = false;
 
-        if (m_rxThread != null) {
-            m_rxThread.interrupt();
-            m_rxThread = null;
+        if (rxThread != null) {
+            rxThread.interrupt();
+            rxThread = null;
         }
         doShutdown();
     }
@@ -80,23 +80,23 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
         logger.debug("{} closing server socket", getName());
 
         try {
-            if (m_serverSocket != null) {
-                m_serverSocket.close();
+            if (serverSocket != null) {
+                serverSocket.close();
             }
         } catch (Exception e) {
             // ignore for now
         }
 
-        m_serverSocket = null;
+        serverSocket = null;
     }
 
     @Override
     public void start() {
         logger.debug("Starting receiver");
         if (!isActive()) {
-            m_rxThread = new Thread(this);
-            m_rxThread.setDaemon(true);
-            m_rxThread.start();
+            rxThread = new Thread(this);
+            rxThread.setDaemon(true);
+            rxThread.start();
 
             active = true;
         }
@@ -105,19 +105,18 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
     @Override
     @SuppressFBWarnings
     public void run() {
-        /**
-         * Ensure we start fresh.
-         */
         logger.debug("performing socket cleanup prior to entering loop for {}", name);
+        /* Ensure we start fresh. */
         closeServerSocket();
         logger.debug("socket cleanup complete for {}", name);
         active = true;
 
         // start the server socket
         try {
-            m_serverSocket = new ServerSocket(m_port, 1);
+            serverSocket = new ServerSocket(port, 1);
         } catch (Exception e) {
-            logger.error("error starting JsonReceiver (" + this.getName() + "), receiver did not start", e);
+            logger.error("error starting JsonReceiver ({}), receiver did not start", this.getName());
+            logger.error(e, e);
             active = false;
             doShutdown();
 
@@ -129,9 +128,7 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
         try {
             logger.debug("in run-about to enter while isactiveloop");
 
-            active = true;
-
-            while (!m_rxThread.isInterrupted()) {
+            while (!rxThread.isInterrupted()) {
                 // if we have a socket, start watching it
                 if (socket != null) {
                     logger.debug("socket not null - parsing data");
@@ -141,7 +138,7 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
                 logger.debug("waiting to accept socket");
 
                 // wait for a socket to open, then loop to start it
-                socket = m_serverSocket.accept();
+                socket = serverSocket.accept();
                 logger.debug("accepted socket");
             }
 
@@ -157,11 +154,11 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
 
     @Override
     public int getPort() {
-        return m_port;
+        return port;
     }
 
     public void setPort(int portnum) {
-        m_port = portnum;
+        port = portnum;
     }
 
     @Override
@@ -175,8 +172,8 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
         try {
             is = sock.getInputStream();
         } catch (Exception e) {
-            is = null;
-            logger.error("Exception opening InputStream to " + sock, e);
+            logger.error("Exception opening InputStream to {}", sock);
+            logger.error(e,e);
             return;
         }
 
@@ -193,6 +190,7 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
                     // Because the socket can be closed, if we don't have anything parsed
                     // assume that the socket is closed.
                     if (!iter.hasNext()) break;
+
                     while (iter.hasNext()) {
                         ECSLogEvent evt = iter.next();
                         append(evt.toChainsawLoggingEvent(build));
@@ -203,13 +201,12 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
             }
         }
 
-        // close the socket
         try {
             if (is != null) {
                 is.close();
             }
         } catch (Exception e) {
-            // logger.info("Could not close connection.", e);
+            logger.error("Could not close connection.", e);
         }
     }
 }
