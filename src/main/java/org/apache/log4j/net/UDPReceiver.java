@@ -34,6 +34,8 @@ import org.apache.logging.log4j.Logger;
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 public class UDPReceiver extends ChainsawReceiverSkeleton implements PortBased {
+    private static final Logger logger = LogManager.getLogger(UDPReceiver.class);
+
     private static final int PACKET_LENGTH = 16384;
     private UDPReceiverThread receiverThread;
     private String encoding;
@@ -45,8 +47,6 @@ public class UDPReceiver extends ChainsawReceiverSkeleton implements PortBased {
     private int port;
     private DatagramSocket socket;
     private boolean active = true;
-
-    private static final Logger logger = LogManager.getLogger();
 
     /**
      * The MulticastDNS zone advertised by a UDPReceiver
@@ -85,7 +85,7 @@ public class UDPReceiver extends ChainsawReceiverSkeleton implements PortBased {
     }
 
     public synchronized void shutdown() {
-        if (closed == true) {
+        if (closed) {
             return;
         }
         closed = true;
@@ -101,6 +101,7 @@ public class UDPReceiver extends ChainsawReceiverSkeleton implements PortBased {
                 receiverThread.join();
             }
         } catch (InterruptedException ie) {
+            logger.error(ie, ie);
         }
     }
 
@@ -147,8 +148,7 @@ public class UDPReceiver extends ChainsawReceiverSkeleton implements PortBased {
                 try {
                     socket.receive(p);
 
-                    // this string constructor which accepts a charset throws an exception if it is
-                    // null
+                    // this string constructor which accepts a charset throws an exception if it is null
                     String data;
                     if (encoding == null) {
                         data = new String(p.getData(), 0, p.getLength());
@@ -166,8 +166,6 @@ public class UDPReceiver extends ChainsawReceiverSkeleton implements PortBased {
                     ioe.printStackTrace();
                 }
             }
-
-            // LogLog.debug(UDPReceiver.this.getName() + "'s thread is ending.");
         }
     }
 }

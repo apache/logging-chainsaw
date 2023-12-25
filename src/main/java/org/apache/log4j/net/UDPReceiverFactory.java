@@ -21,9 +21,6 @@ import java.beans.PropertyDescriptor;
 import org.apache.log4j.chainsaw.receiver.ChainsawReceiver;
 import org.apache.log4j.chainsaw.receiver.ChainsawReceiverFactory;
 
-/**
- *
- */
 public class UDPReceiverFactory implements ChainsawReceiverFactory {
 
     @Override

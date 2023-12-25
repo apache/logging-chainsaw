@@ -18,7 +18,7 @@ package org.apache.log4j.net;
 
 import com.owlike.genson.annotation.JsonProperty;
 import java.time.ZonedDateTime;
-import java.util.List;
+
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
 
@@ -35,12 +35,11 @@ public class ECSLogEvent {
     public String message;
 
     @JsonProperty("process.thread.name")
-    public String thread_name;
+    public String threadName;
 
     @JsonProperty("log.logger")
     public String logger;
 
-    public List<String> tags;
 
     ChainsawLoggingEvent toChainsawLoggingEvent(ChainsawLoggingEventBuilder build) {
         build.clear();
@@ -48,7 +47,7 @@ public class ECSLogEvent {
         build.setLevelFromString(level)
                 .setMessage(message)
                 .setLogger(logger)
-                .setThreadName(thread_name)
+                .setThreadName(threadName)
                 .setTimestamp(ZonedDateTime.parse(timestamp).toInstant());
 
         return build.create();

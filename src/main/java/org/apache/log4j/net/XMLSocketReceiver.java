@@ -17,16 +17,17 @@
 package org.apache.log4j.net;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.io.InputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.List;
-import java.util.Vector;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.receiver.ChainsawReceiverSkeleton;
 import org.apache.log4j.spi.Decoder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.io.InputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * XMLSocketReceiver receives a remote logging event via XML on a configured
@@ -49,16 +50,16 @@ import org.apache.logging.log4j.Logger;
  * @author Scott Deboy &lt;sdeboy@apache.org&gt;
  */
 public class XMLSocketReceiver extends ChainsawReceiverSkeleton implements Runnable, PortBased {
+    private static final Logger logger = LogManager.getLogger(XMLSocketReceiver.class);
+
     // default to log4j xml decoder
     protected String decoder = "org.apache.log4j.xml.XMLDecoder";
     private ServerSocket serverSocket;
-    private List<Socket> socketList = new Vector<>();
+    private List<Socket> socketList = new ArrayList<>();
     private Thread rThread;
     public static final int DEFAULT_PORT = 4448;
     protected int port = DEFAULT_PORT;
     private boolean active = false;
-
-    private static final Logger logger = LogManager.getLogger();
 
     /**
      * The MulticastDNS zone advertised by an XMLSocketReceiver
@@ -70,8 +71,6 @@ public class XMLSocketReceiver extends ChainsawReceiverSkeleton implements Runna
      * _log4j_xml_tcpconnect_appender.local.
      */
 
-    public XMLSocketReceiver() {}
-
     /**
      * Get the port to receive logging events on.
      */
@@ -82,8 +81,8 @@ public class XMLSocketReceiver extends ChainsawReceiverSkeleton implements Runna
     /**
      * Set the port to receive logging events on.
      */
-    public void setPort(int _port) {
-        port = _port;
+    public void setPort(int port) {
+        this.port = port;
     }
 
     public String getDecoder() {
@@ -93,8 +92,8 @@ public class XMLSocketReceiver extends ChainsawReceiverSkeleton implements Runna
     /**
      * Specify the class name implementing org.apache.log4j.spi.Decoder that can process the file.
      */
-    public void setDecoder(String _decoder) {
-        decoder = _decoder;
+    public void setDecoder(String decoder) {
+        this.decoder = decoder;
     }
 
     /**
@@ -242,11 +241,11 @@ public class XMLSocketReceiver extends ChainsawReceiverSkeleton implements Runna
         try {
             is = sock.getInputStream();
         } catch (Exception e) {
-            is = null;
             logger.error("Exception opening InputStream to " + sock, e);
             return;
         }
 
+        // TODO: is is never updated
         while (is != null) {
             try {
                 byte[] b = new byte[1024];
@@ -272,7 +271,7 @@ public class XMLSocketReceiver extends ChainsawReceiverSkeleton implements Runna
                 is.close();
             }
         } catch (Exception e) {
-            // logger.info("Could not close connection.", e);
+            logger.error("Could not close connection.", e);
         }
     }
 }
