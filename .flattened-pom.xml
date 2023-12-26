@@ -203,10 +203,6 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.rat</groupId>
-        <artifactId>apache-rat-plugin</artifactId>
-      </plugin>
-      <plugin>
         <artifactId>maven-project-info-reports-plugin</artifactId>
       </plugin>
       <plugin>
@@ -220,14 +216,6 @@
         <artifactId>bnd-baseline-maven-plugin</artifactId>
         <configuration>
           <failOnMissing>false</failOnMissing>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.12.0</version>
-        <configuration>
-          <source>${maven.compiler.source}</source>
-          <target>${maven.compiler.target}</target>
         </configuration>
       </plugin>
     </plugins>
@@ -341,14 +329,8 @@
             <artifactId>apache-rat-plugin</artifactId>
             <configuration>
               <consoleOutput>true</consoleOutput>
-              <excludes>
+              <excludes combine.children="append">
                 <exclude>**/*.log</exclude>
-                <exclude>.java-version</exclude>
-                <exclude>.mvn/jvm.config</exclude>
-                <exclude>**/*.txt</exclude>
-                <exclude>src/changelog/**/*.xml</exclude>
-                <exclude>.github/ISSUE_TEMPLATE/*.md</exclude>
-                <exclude>.github/pull_request_template.md</exclude>
               </excludes>
             </configuration>
           </plugin>
