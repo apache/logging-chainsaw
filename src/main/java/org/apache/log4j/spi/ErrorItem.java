@@ -29,7 +29,7 @@ import org.apache.logging.log4j.Logger;
  * @author Ceki Gulcu
  */
 public class ErrorItem {
-    private static Logger logger = LogManager.getLogger(ErrorItem.class);
+    private static final Logger logger = LogManager.getLogger(ErrorItem.class);
     /**
      * Message.
      */

@@ -18,7 +18,6 @@ package org.apache.log4j.net;
 
 import com.owlike.genson.annotation.JsonProperty;
 import java.time.ZonedDateTime;
-
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
 import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEventBuilder;
 
@@ -39,7 +38,6 @@ public class ECSLogEvent {
 
     @JsonProperty("log.logger")
     public String logger;
-
 
     ChainsawLoggingEvent toChainsawLoggingEvent(ChainsawLoggingEventBuilder build) {
         build.clear();

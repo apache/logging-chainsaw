@@ -173,7 +173,7 @@ public class JsonReceiver extends ChainsawReceiverSkeleton implements Runnable, 
             is = sock.getInputStream();
         } catch (Exception e) {
             logger.error("Exception opening InputStream to {}", sock);
-            logger.error(e,e);
+            logger.error(e, e);
             return;
         }
 

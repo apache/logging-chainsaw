@@ -17,17 +17,16 @@
 package org.apache.log4j.net;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
-import org.apache.log4j.chainsaw.receiver.ChainsawReceiverSkeleton;
-import org.apache.log4j.spi.Decoder;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.log4j.chainsaw.logevents.ChainsawLoggingEvent;
+import org.apache.log4j.chainsaw.receiver.ChainsawReceiverSkeleton;
+import org.apache.log4j.spi.Decoder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * XMLSocketReceiver receives a remote logging event via XML on a configured
