@@ -398,7 +398,6 @@ public class LogUI extends JFrame {
         } else {
             logUIPanelBuilder.buildLogPanel(false, "Chainsaw", null);
         }
-
     }
 
     public void addWelcomePanel() {

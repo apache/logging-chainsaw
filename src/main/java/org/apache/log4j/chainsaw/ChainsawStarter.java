@@ -130,7 +130,6 @@ public class ChainsawStarter {
             splashViewer.removeSplash();
             logUI.buildChainsawLogPanel();
         });
-        //EventQueue.invokeLater();
 
         logger.info("SecurityManager is now: {}", System.getSecurityManager());
     }
