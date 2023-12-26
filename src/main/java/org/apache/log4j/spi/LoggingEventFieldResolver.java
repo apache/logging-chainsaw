@@ -65,7 +65,7 @@ public final class LoggingEventFieldResolver {
     /**
      * Keyword list.
      */
-    public static final List KEYWORD_LIST = new ArrayList();
+    public static final List<String> KEYWORD_LIST = new ArrayList<>();
     /**
      * LOGGER string literal.
      */
