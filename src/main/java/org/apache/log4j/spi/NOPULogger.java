@@ -19,6 +19,7 @@ package org.apache.log4j.spi;
 import org.apache.log4j.ULogger;
 
 /**
+ * TODO: is this still needed?
  * A no operation (NOP) implementation of {@link ULogger}.
  *
  * @author Ceki G&uuml;lc&uuml;

@@ -22,6 +22,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
+ * TODO: is this still needed?
+ *
  * A simple implementation that logs messages of level INFO or higher on
  * the console (<code>System.out</code>).
  * <p>
