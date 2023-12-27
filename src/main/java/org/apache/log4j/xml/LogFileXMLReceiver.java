@@ -56,6 +56,8 @@ import org.apache.logging.log4j.Logger;
  * @since 1.3
  */
 public class LogFileXMLReceiver extends ChainsawReceiverSkeleton {
+    private static final Logger logger = LogManager.getLogger(LogFileXMLReceiver.class);
+
     private String fileURL;
     private Rule expressionRule;
     private String filterExpression;
@@ -69,13 +71,6 @@ public class LogFileXMLReceiver extends ChainsawReceiverSkeleton {
     private String path;
     private boolean useCurrentThread;
 
-    private static final Logger logger = LogManager.getLogger();
-
-    /**
-     * Accessor
-     *
-     * @return file URL
-     */
     public String getFileURL() {
         return fileURL;
     }
@@ -89,11 +84,6 @@ public class LogFileXMLReceiver extends ChainsawReceiverSkeleton {
         this.fileURL = fileURL;
     }
 
-    /**
-     * Accessor
-     *
-     * @return
-     */
     public String getDecoder() {
         return decoder;
     }
@@ -107,20 +97,10 @@ public class LogFileXMLReceiver extends ChainsawReceiverSkeleton {
         decoder = _decoder;
     }
 
-    /**
-     * Accessor
-     *
-     * @return filter expression
-     */
     public String getFilterExpression() {
         return filterExpression;
     }
 
-    /**
-     * Accessor
-     *
-     * @return tailing flag
-     */
     public boolean isTailing() {
         return tailing;
     }
@@ -146,10 +126,8 @@ public class LogFileXMLReceiver extends ChainsawReceiverSkeleton {
     }
 
     private boolean passesExpression(ChainsawLoggingEvent event) {
-        if (event != null) {
-            if (expressionRule != null) {
-                return (expressionRule.evaluate(event, null));
-            }
+        if (event != null && expressionRule != null) {
+            return (expressionRule.evaluate(event, null));
         }
         return true;
     }
@@ -179,10 +157,10 @@ public class LogFileXMLReceiver extends ChainsawReceiverSkeleton {
     private void process(Reader unbufferedReader) throws IOException {
         BufferedReader bufferedReader = new BufferedReader(unbufferedReader);
         char[] content = new char[10000];
-        logger.debug("processing starting: " + fileURL);
+        logger.debug("processing starting: {}", fileURL);
         int length;
         do {
-            System.out.println("in do loop-about to process");
+            logger.debug("in do loop-about to process");
             while ((length = bufferedReader.read(content)) > -1) {
                 processEvents(decoderInstance.decodeEvents(String.valueOf(content, 0, length)));
             }
@@ -190,30 +168,29 @@ public class LogFileXMLReceiver extends ChainsawReceiverSkeleton {
                 try {
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    logger.error(e, e);
                 }
             }
         } while (tailing);
-        logger.debug("processing complete: " + fileURL);
+        logger.debug("processing complete: {}", fileURL);
 
         shutdown();
     }
 
-    private void processEvents(Collection<ChainsawLoggingEvent> c) {
-        if (c == null) {
+    private void processEvents(Collection<ChainsawLoggingEvent> chainsawLoggingEvents) {
+        if (chainsawLoggingEvents == null) {
             return;
         }
 
-        for (ChainsawLoggingEvent evt : c) {
-            if (passesExpression(evt)) {
-                if (evt.getProperty(Constants.HOSTNAME_KEY) != null) {
-                    evt.setProperty(Constants.HOSTNAME_KEY, host);
+        for (ChainsawLoggingEvent event : chainsawLoggingEvents) {
+            if (passesExpression(event)) {
+                if (event.getProperty(Constants.HOSTNAME_KEY) != null) {
+                    event.setProperty(Constants.HOSTNAME_KEY, host);
                 }
-                if (evt.getProperty(Constants.APPLICATION_KEY) != null) {
-                    evt.setProperty(Constants.APPLICATION_KEY, path);
+                if (event.getProperty(Constants.APPLICATION_KEY) != null) {
+                    event.setProperty(Constants.APPLICATION_KEY, path);
                 }
-                append(evt);
+                append(event);
             }
         }
     }
@@ -253,8 +230,7 @@ public class LogFileXMLReceiver extends ChainsawReceiverSkeleton {
                         }
                         path = url.getPath();
                     } catch (MalformedURLException e1) {
-                        // TODO Auto-generated catch block
-                        e1.printStackTrace();
+                        logger.error(e1, e1);
                     }
 
                     try {
@@ -262,7 +238,8 @@ public class LogFileXMLReceiver extends ChainsawReceiverSkeleton {
                             expressionRule = ExpressionRule.getRule(filterExpression);
                         }
                     } catch (Exception e) {
-                        logger.warn("Invalid filter expression: " + filterExpression, e);
+                        logger.warn("Invalid filter expression: {}", filterExpression);
+                        logger.warn(e);
                     }
 
                     Class c;
@@ -273,8 +250,7 @@ public class LogFileXMLReceiver extends ChainsawReceiverSkeleton {
                             decoderInstance = (Decoder) o;
                         }
                     } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                        logger.error(e, e);
                     }
 
                     try {
@@ -284,16 +260,15 @@ public class LogFileXMLReceiver extends ChainsawReceiverSkeleton {
                         logger.info("file not available");
                     } catch (IOException ioe) {
                         logger.warn("unable to load file", ioe);
-                        return;
                     }
                 }
             }
         };
+
         if (useCurrentThread) {
             runnable.run();
         } else {
             Thread thread = new Thread(runnable, "LogFileXMLReceiver-" + getName());
-
             thread.start();
         }
     }
