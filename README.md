@@ -15,6 +15,12 @@
  limitations under the License.
 -->
 
+> [!WARNING]
+> **This project is not maintained anymore!**
+> [It has been marked as dormant by Apache Logging Services consensus on 2024-02-16.](https://lists.apache.org/thread/29kx7oclwo7r16f7l4wk4w1pwtkk500z)
+> Users are advised to migrate to alternatives.
+> For other inquiries, see [the support policy](https://logging.apache.org/support.html).
+
 # Apache Chainsaw
 
 Apache Chainsaw is a GUI log file viewer
